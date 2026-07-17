@@ -80,6 +80,20 @@
     var summary = vault.querySelector('[data-vault-summary]');
     var list = vault.querySelector('[data-vault-list]');
     var currentUser = null;
+    var categoryTargets = {};
+
+    section.querySelectorAll('.doc-list > .doc-row').forEach(function (categoryRow) {
+      var title = categoryRow.querySelector('strong');
+      var categoryButton = categoryRow.querySelector(':scope > button');
+      if (!title || !categoryButton) return;
+      var categoryName = title.textContent.trim();
+      var filesContainer = document.createElement('div');
+      filesContainer.className = 'doc-category-files';
+      filesContainer.dataset.categoryFiles = categoryName;
+      categoryRow.dataset.documentCategory = categoryName;
+      categoryRow.appendChild(filesContainer);
+      categoryTargets[categoryName] = { row: categoryRow, button: categoryButton, files: filesContainer };
+    });
 
     async function applySession(session) {
       currentUser = session && session.user ? session.user : null;
@@ -152,11 +166,23 @@
       vault.querySelector('[data-vault-size]').textContent = formatSize(total) + ' בענן';
       vault.querySelector('[data-vault-storage]').style.width = Math.min(100, Math.max(documents.length ? 2 : 0, total / (1024 * 1024 * 1024) * 100)) + '%';
       list.innerHTML = '';
-      if (!documents.length) {
-        list.innerHTML = '<div class="vault-empty"><i class="fa-solid fa-folder-open"></i><p>עדיין לא הועלו מסמכים לטיול הזה.</p></div>';
-        return;
-      }
+      list.hidden = true;
+      Object.keys(categoryTargets).forEach(function (categoryName) {
+        var target = categoryTargets[categoryName];
+        target.files.innerHTML = '';
+        target.row.classList.remove('has-documents');
+        target.button.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> העלאה';
+      });
       documents.forEach(function (documentRecord) {
+        var categoryTarget = categoryTargets[documentRecord.category];
+        if (categoryTarget) {
+          categoryTarget.files.appendChild(createCategoryDocument(documentRecord));
+          categoryTarget.row.classList.add('has-documents');
+          var categoryCount = categoryTarget.files.children.length;
+          categoryTarget.button.innerHTML = '<i class="fa-solid fa-plus"></i> העלאה נוספת (' + categoryCount + ')';
+          return;
+        }
+        list.hidden = false;
         var row = document.createElement('article');
         row.className = 'vault-file';
         row.dataset.documentId = documentRecord.id;
@@ -164,6 +190,15 @@
         row._documentRecord = documentRecord;
         list.appendChild(row);
       });
+    }
+
+    function createCategoryDocument(documentRecord) {
+      var item = document.createElement('div');
+      item.className = 'doc-category-file';
+      item.dataset.documentId = documentRecord.id;
+      item.innerHTML = '<span class="doc-category-file-icon"><i class="fa-solid ' + iconFor(documentRecord.mime_type) + '"></i></span><span class="doc-category-file-copy"><strong>' + escapeHtml(documentRecord.file_name) + '</strong><small>' + formatSize(documentRecord.file_size) + ' · ' + new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(documentRecord.created_at)) + (documentRecord.note ? ' · ' + escapeHtml(documentRecord.note) : '') + '</small></span><span class="doc-category-file-actions"><button type="button" data-open-document><i class="fa-solid fa-eye"></i> פתיחה</button><button type="button" data-download-document aria-label="הורדה"><i class="fa-solid fa-download"></i></button><button type="button" class="danger" data-delete-document aria-label="מחיקה"><i class="fa-solid fa-trash"></i></button></span>';
+      item._documentRecord = documentRecord;
+      return item;
     }
 
     async function saveFiles(files) {
@@ -269,7 +304,7 @@
       drop.addEventListener(name, function (event) { event.preventDefault(); drop.classList.remove('dragging'); });
     });
     drop.addEventListener('drop', function (event) { saveFiles([].slice.call(event.dataTransfer.files || [])); });
-    vault.addEventListener('click', function (event) {
+    section.addEventListener('click', function (event) {
       var row = event.target.closest('[data-document-id]');
       if (!row || !row._documentRecord) return;
       if (event.target.closest('[data-open-document]')) openDocument(row._documentRecord, false);
