@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>הטיולים שלי</title><meta name="description" content="TravelMate - סוכן הנסיעות האישי שלך">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<main class="content" style="max-width:1280px;margin:auto">
+  <header class="hero" style="min-height:230px;background-image:url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&amp;fit=crop&amp;w=1600&amp;q=85')"><div class="hero-copy"><span class="status">הטיולים שלי</span><h1>לאן נוסעים הפעם?</h1><p>בחרי יעד והמשיכי לתכנון, למסמכים ולליווי בזמן אמת.</p></div><a class="share" href="trip/italy-2028/index.html">פתיחת מרכז טיול</a></header>
+  <section class="modules trip-list" data-trip-list style="grid-template-columns:repeat(3,minmax(0,1fr));margin-top:22px">
+    <a class="trip-card" href="trip/japan-2027/index.html" style="background-image:url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&amp;fit=crop&amp;w=1600&amp;q=85')"><span class="trip-overlay"></span><span class="trip-flag">🇯🇵</span><span class="trip-copy"><h2>יפן</h2><p>טוקיו, קיוטו ואוסקה</p><span class="tag">14-28 באוקטובר 2027</span> <span class="tag">14 ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left"></i></strong></span></a>
+    <a class="trip-card" href="trip/italy-2028/index.html" style="background-image:url('https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&amp;fit=crop&amp;w=1600&amp;q=85')"><span class="trip-overlay"></span><span class="trip-flag">🇮🇹</span><span class="trip-copy"><h2>איטליה</h2><p>רומא וטוסקנה</p><span class="tag">12-19 באפריל 2028</span> <span class="tag">7 ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left"></i></strong></span></a>
+    <button class="module add-destination" data-modal="destination"><span class="icon"><i class="fa-solid fa-plus"></i></span><strong>הוספת יעד חדש</strong><small>בחרי מדינה, עיר ותאריכים — כל הטיול ייבנה אוטומטית.</small></button>
+  </section>
+</main>
+<section id="modal-destination" class="modal-backdrop"><div class="modal destination-modal"><header><div><span>טיול חדש</span><h2>לאן תרצי לטוס?</h2><p>אפשר להקליד כל מדינה ועיר בעולם, למשל פראג, צ׳כיה או ברלין, גרמניה.</p></div><button class="modal-close" type="button" data-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header><form class="destination-form" data-destination-form><label>מדינה<input name="country" required autocomplete="country-name" placeholder="לדוגמה: גרמניה"></label><label>עיר<input name="city" required autocomplete="address-level2" placeholder="לדוגמה: ברלין"></label><label>תאריך יציאה<input name="start" type="date" required></label><label>תאריך חזרה<input name="end" type="date" required></label><label>תקציב משוער (€)<input name="budget" type="number" min="100" step="50" value="2500"></label><label>סוג הטיול<select name="type"><option>זוגי</option><option>משפחתי</option><option>חברים</option><option>סולו</option></select></label><p class="form-error" data-form-error role="alert"></p><button class="create-trip" type="submit"><i class="fa-solid fa-wand-magic-sparkles"></i> בניית הטיול אוטומטית</button></form></div></section>
+<script src="assets/app.js" defer></script><script src="assets/home.js" defer></script>
+</body></html>

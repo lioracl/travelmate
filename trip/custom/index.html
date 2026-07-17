@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>טיול חדש - TravelMate</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/styles.css"><link rel="stylesheet" href="../../assets/nearby.css">
+</head>
+<body>
+<div class="workspace">
+  <aside class="sidebar">
+    <a class="logo" href="../../index.html"><span class="brand-dot">⌁</span><strong>TravelMate</strong></a>
+    <a class="back" href="../../index.html"><i class="fa-solid fa-arrow-right"></i> כל הטיולים</a>
+    <div class="destination-mini"><span>✈️</span><div><strong data-country></strong><small data-dates></small></div></div>
+    <nav><a class="active" href="#overview"><i class="fa-solid fa-house"></i><span class="tip">סקירה</span></a><a href="#plan"><i class="fa-solid fa-calendar-days"></i><span class="tip">תוכנית</span></a><a href="#places"><i class="fa-solid fa-location-dot"></i><span class="tip">מקומות</span></a><a href="#documents"><i class="fa-solid fa-folder-open"></i><span class="tip">מסמכים</span></a><a href="#budget"><i class="fa-solid fa-wallet"></i><span class="tip">תקציב</span></a></nav>
+  </aside>
+  <main class="content">
+    <header class="mobile-header"><a href="../../index.html">←</a><strong data-country></strong></header>
+    <section id="overview" class="hero custom-hero section"><a href="../../index.html" class="hero-back">חזרה</a><div class="hero-copy"><span class="status">הטיול החדש שלך</span><h1><span data-city></span>, <span data-country></span></h1><p><span data-days></span> ימים · טיול <span data-type></span> · התוכנית נבנתה לפי התאריכים</p></div><a class="share" data-maps target="_blank" rel="noopener noreferrer">פתיחה במפה</a></section>
+    <section class="quick-grid"><article class="card"><div class="icon"><i class="fa-solid fa-calendar-check"></i></div><div><small>משך הטיול</small><strong><span data-days></span> ימים</strong><span data-dates></span></div></article><article class="card"><div class="icon"><i class="fa-solid fa-location-dot"></i></div><div><small>היעד</small><strong data-city></strong><span data-country></span></div><a class="open-map" data-maps target="_blank">ניווט</a></article><article class="card budget-card"><div><small>תקציב הטיול</small><strong>€<span data-budget></span></strong><span>המלצה ראשונית לחלוקה</span></div></article></section>
+    <section class="modules"><a class="module" href="#plan"><span class="icon"><i class="fa-solid fa-calendar-days"></i></span><strong>מסלול אוטומטי</strong><small>יום לכל תאריך בטיול</small></a><a class="module" href="#places"><span class="icon"><i class="fa-solid fa-location-dot"></i></span><strong>מקומות בעיר</strong><small>חיפוש עדכני לפי היעד</small></a><a class="module" href="#documents"><span class="icon"><i class="fa-solid fa-folder-open"></i></span><strong>מסמכים וקבצים</strong><small>שמירה במסד הנתונים</small></a></section>
+    <section id="plan" class="section"><div class="section-head"><div><p>נבנה לפי תאריכי הטיול</p><h1>תוכנית יומית</h1></div></div><div class="generated-days" data-generated-days></div></section>
+    <section id="places" class="section"><div class="section-head"><div><p>GPS, מפה וקישורים חכמים</p><h1>מקומות ומפה</h1></div></div><div class="auto-grid"><a class="auto-card" data-search="attractions" target="_blank"><i class="fa-solid fa-landmark"></i><h3>אטרקציות מומלצות</h3><p>חיפוש אתרים ודירוגים בעיר.</p></a><a class="auto-card" data-search="restaurants" target="_blank"><i class="fa-solid fa-utensils"></i><h3>מסעדות</h3><p>אפשרויות אוכל סביב היעד.</p></a><a class="auto-card" data-search="day trips" target="_blank"><i class="fa-solid fa-route"></i><h3>טיולי יום</h3><p>מסלולים מחוץ למרכז העיר.</p></a></div></section>
+    <section id="documents" class="section"><div class="section-head"><div><p>כרטיסים, הזמנות וקבצים</p><h1>מסמכים</h1></div><button class="pill-btn" type="button" data-vault-pick><i class="fa-solid fa-upload"></i> העלאת קובץ</button></div><div class="doc-list"><article class="doc-row action"><div class="icon"><i class="fa-solid fa-plane"></i></div><div><strong>טיסות</strong><span>אישורי הזמנה וצ׳ק־אין</span></div><button>העלאה</button></article><article class="doc-row action"><div class="icon"><i class="fa-solid fa-hotel"></i></div><div><strong>לינה</strong><span>אישור מלון וכתובת</span></div><button>העלאה</button></article><article class="doc-row"><div class="icon"><i class="fa-solid fa-shield"></i></div><div><strong>ביטוח</strong><span>ביטוח, דרכון ואשרות</span></div><button>העלאה</button></article></div></section>
+    <section id="budget" class="section"><div class="section-head"><div><p>חלוקה התחלתית</p><h1>תקציב</h1></div></div><div class="budget-hero"><div><span>תקציב כולל</span><strong>€<span data-budget></span></strong><p>החלוקה מתעדכנת לפי מספר הימים</p></div><div class="budget-ring">100%</div></div><div class="expense-list" data-expenses></div></section>
+    <section class="external-resources"><h2>מידע נוסף ל־<span data-city></span></h2><p>חיפוש חיצוני לפי ההקשר של היעד.</p><div class="resource-links"><a class="resource-link" data-maps target="_blank"><i class="fa-solid fa-map"></i><span><strong>Google Maps</strong><small>מפה וניווט בעיר</small></span></a><a class="resource-link" data-wiki target="_blank"><i class="fa-brands fa-wikipedia-w"></i><span><strong>Wikipedia</strong><small>רקע על העיר והמדינה</small></span></a><a class="resource-link" data-tourism target="_blank"><i class="fa-solid fa-globe"></i><span><strong>מדריך תיירות</strong><small>חיפוש האתר הרשמי של היעד</small></span></a></div></section>
+  </main>
+</div>
+<script src="../../assets/app.js?v=20260717-4" defer></script><script src="../../assets/custom-trip.js" defer></script><script src="../../assets/document-vault.js?v=20260717-1" defer></script>
+</body></html>
