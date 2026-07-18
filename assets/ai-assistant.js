@@ -158,7 +158,7 @@
   ui.orb.addEventListener('click', function () { setOpen(!state.open); });
   ui.panel.querySelector('[data-ai-close]').addEventListener('click', function () { setOpen(false); });
   ui.panel.querySelector('[data-ai-clear]').addEventListener('click', function () { state.messages = []; persistMessages(); renderHistory(); setStatus('שיחה חדשה'); });
-  ui.panel.querySelector('[data-ai-privacy]').addEventListener('click', function () { addMessage('assistant', 'אני שולח ל־AI רק את השאלה, היסטוריית השיחה הקצרה ותקציר הטיול: יעד, תאריכים, פעילויות ומקומות ששמרת. מסמכים, סיסמאות, GPS ופרטי הכספת אינם נשלחים.'); });
+  ui.panel.querySelector('[data-ai-privacy]').addEventListener('click', function () { addMessage('assistant', 'אני שולח ל־Google Gemini רק את השאלה, היסטוריית השיחה הקצרה ותקציר הטיול: יעד, תאריכים, פעילויות ומקומות ששמרת. מסמכים, סיסמאות, GPS ופרטי הכספת אינם נשלחים. במסלול החינמי Google עשויה להשתמש בתוכן לשיפור מוצריה.'); });
   ui.form.addEventListener('submit', function (event) { event.preventDefault(); sendMessage(); });
   ui.input.addEventListener('input', autoGrow);
   ui.input.addEventListener('keydown', function (event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });

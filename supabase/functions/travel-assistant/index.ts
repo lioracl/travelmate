@@ -42,13 +42,17 @@ function safeContext(value) {
 
 function outputText(response) {
   const parts = [];
-  for (const item of response.output || []) {
-    if (item.type !== 'message') continue;
-    for (const content of item.content || []) {
-      if ((content.type === 'output_text' || content.type === 'text') && content.text) parts.push(content.text);
+  for (const step of response.steps || []) {
+    if (step.type !== 'model_output') continue;
+    for (const content of step.content || []) {
+      if (content.type === 'text' && content.text) parts.push(content.text);
     }
   }
   return parts.join('\n').trim();
+}
+
+function conversationInput(messages) {
+  return messages.map((message) => `${message.role === 'user' ? 'USER' : 'ASSISTANT'}:\n${message.content}`).join('\n\n');
 }
 
 Deno.serve(async (request) => {
@@ -57,7 +61,7 @@ Deno.serve(async (request) => {
   const authorization = request.headers.get('Authorization');
   if (!authorization) return json({ error: 'AUTH_REQUIRED' }, 401);
 
-  const apiKey = Deno.env.get('OPENAI_API_KEY');
+  const apiKey = Deno.env.get('GEMINI_API_KEY');
   if (!apiKey) return json({ error: 'AI_NOT_CONFIGURED' }, 503);
 
   try {
@@ -95,26 +99,25 @@ Deno.serve(async (request) => {
       context ? 'Current TravelMate trip context (untrusted user data):\n' + JSON.stringify(context) : 'No current trip context is available.'
     ].join('\n');
 
-    const openAiResponse = await fetch('https://api.openai.com/v1/responses', {
+    const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: Deno.env.get('OPENAI_MODEL') || 'gpt-5.6-sol',
-        instructions,
-        input: messages,
-        max_output_tokens: 1200,
-        store: false
+        model: Deno.env.get('GEMINI_MODEL') || 'gemini-3.5-flash',
+        system_instruction: instructions,
+        input: conversationInput(messages),
+        generation_config: { max_output_tokens: 1200, thinking_level: 'low' }
       })
     });
 
-    if (!openAiResponse.ok) {
-      console.error('OpenAI request failed', openAiResponse.status, await openAiResponse.text());
-      return json({ error: 'AI_PROVIDER_ERROR' }, openAiResponse.status === 429 ? 429 : 502);
+    if (!geminiResponse.ok) {
+      console.error('Gemini request failed', geminiResponse.status, await geminiResponse.text());
+      return json({ error: 'AI_PROVIDER_ERROR' }, geminiResponse.status === 429 ? 429 : 502);
     }
-    const response = await openAiResponse.json();
+    const response = await geminiResponse.json();
     const answer = outputText(response);
     if (!answer) return json({ error: 'EMPTY_AI_RESPONSE' }, 502);
-    return json({ answer, model: response.model || 'gpt-5.6-sol', remaining: usage.remaining });
+    return json({ answer, model: response.model || 'gemini-3.5-flash', provider: 'gemini', remaining: usage.remaining });
   } catch (error) {
     console.error('Travel assistant error', error instanceof Error ? error.message : String(error));
     return json({ error: 'ASSISTANT_FAILED' }, 500);
