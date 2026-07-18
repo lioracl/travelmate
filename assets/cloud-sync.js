@@ -193,6 +193,11 @@
     return client.auth.resend({ type: 'signup', email: email, options: { emailRedirectTo: redirectTo } });
   }
 
+  async function updatePassword(password) {
+    var client = await getClient();
+    return client.auth.updateUser({ password: password });
+  }
+
   function authRedirectUrl(hash) {
     var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
     var base = local ? new URL(location.pathname.replace(/^\//, ''), 'https://lioracl.github.io/travelmate/') : new URL(location.pathname, location.origin);
@@ -226,6 +231,7 @@
     signIn: signIn,
     signUp: signUp,
     resendSignup: resendSignup,
+    updatePassword: updatePassword,
     authRedirectUrl: authRedirectUrl,
     signOut: signOut,
     onAuthChange: onAuthChange

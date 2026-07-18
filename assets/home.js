@@ -6,6 +6,7 @@
   var addButton = list && list.querySelector('.add-destination');
   var cloud = window.TravelMateCloud;
   var currentSession = null;
+  var passwordChangeMode = false;
 
   function daysBetween(start, end) { return Math.floor((new Date(end) - new Date(start)) / 86400000) + 1; }
   function formatDate(value) { return new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00')); }
@@ -31,7 +32,7 @@
     var panel = document.createElement('section');
     panel.className = 'cloud-account';
     panel.dataset.cloudAccount = '';
-    panel.innerHTML = '<div class="cloud-account-copy"><span class="cloud-account-icon"><i class="fa-solid fa-cloud"></i></span><div><strong>סנכרון בין המחשב לטלפון</strong><small data-cloud-message>התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div></div><form data-cloud-auth-form><input name="email" type="email" autocomplete="email" required placeholder="כתובת דוא״ל"><input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="סיסמת החשבון"><button type="submit">כניסה</button><button type="button" class="secondary" data-cloud-signup>יצירת חשבון</button><button type="button" class="secondary" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
+    panel.innerHTML = '<div class="cloud-account-copy"><span class="cloud-account-icon"><i class="fa-solid fa-cloud"></i></span><div><strong>סנכרון בין המחשב לטלפון</strong><small data-cloud-message>התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div></div><form data-cloud-auth-form><input name="email" type="email" autocomplete="email" required placeholder="כתובת דוא״ל"><input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="סיסמת החשבון"><button type="submit">כניסה</button><button type="button" class="secondary" data-cloud-signup>יצירת חשבון</button><button type="button" class="secondary" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
     var hero = document.querySelector('main > .hero');
     hero.insertAdjacentElement('afterend', panel);
     return panel;
@@ -39,6 +40,7 @@
 
   var accountPanel = createAccountPanel();
   var authForm = accountPanel.querySelector('[data-cloud-auth-form]');
+  var passwordForm = accountPanel.querySelector('[data-cloud-password-form]');
   var sessionPanel = accountPanel.querySelector('[data-cloud-session]');
   var message = accountPanel.querySelector('[data-cloud-message]');
 
@@ -58,11 +60,30 @@
 
   function setSession(session) {
     currentSession = session;
+    if (passwordChangeMode && session) return;
     authForm.hidden = Boolean(session);
+    passwordForm.hidden = true;
     sessionPanel.hidden = !session;
     accountPanel.querySelector('[data-cloud-email]').textContent = session && session.user ? session.user.email : '';
     if (session) synchronize();
     else setMessage('התחברו כדי לשמור את כל הטיולים בענן הפרטי.');
+  }
+
+  function showPasswordForm(session, isRecovery) {
+    currentSession = session || currentSession;
+    passwordChangeMode = true;
+    authForm.hidden = true;
+    sessionPanel.hidden = true;
+    passwordForm.hidden = false;
+    passwordForm.reset();
+    setMessage(isRecovery ? 'קישור השחזור אושר. בחר סיסמה חדשה לחשבון.' : 'בחר סיסמה חדשה לחשבון.');
+    passwordForm.elements.newPassword.focus();
+  }
+
+  function finishPasswordChange() {
+    passwordChangeMode = false;
+    passwordForm.hidden = true;
+    setSession(currentSession);
   }
 
   async function synchronize() {
@@ -105,6 +126,29 @@
   });
   accountPanel.querySelector('[data-cloud-signout]').addEventListener('click', function () { cloud.signOut(); });
   accountPanel.querySelector('[data-cloud-sync-now]').addEventListener('click', synchronize);
+  accountPanel.querySelector('[data-cloud-change-password]').addEventListener('click', function () { showPasswordForm(currentSession, false); });
+  accountPanel.querySelector('[data-cloud-password-cancel]').addEventListener('click', finishPasswordChange);
+  passwordForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var password = passwordForm.elements.newPassword.value;
+    if (password !== passwordForm.elements.confirmPassword.value) {
+      setMessage('הסיסמאות אינן זהות. בדוק והקלד אותן שוב.', true);
+      return;
+    }
+    var button = passwordForm.querySelector('button[type="submit"]');
+    button.disabled = true;
+    setMessage('שומר את הסיסמה החדשה…');
+    var result = await cloud.updatePassword(password);
+    button.disabled = false;
+    if (result.error) {
+      setMessage(authMessage(result.error), true);
+      return;
+    }
+    passwordChangeMode = false;
+    passwordForm.hidden = true;
+    setSession(currentSession);
+    setMessage('הסיסמה עודכנה בהצלחה והחשבון מחובר.');
+  });
 
   renderTrips(cloud ? cloud.getLocalTrips() : []);
 
@@ -134,5 +178,11 @@
     return;
   }
   cloud.getSession().then(setSession).catch(function () { setMessage('לא ניתן להתחבר לענן כרגע.', true); });
-  cloud.onAuthChange(function (_event, session) { setSession(session); });
+  cloud.onAuthChange(function (event, session) {
+    if (event === 'PASSWORD_RECOVERY') {
+      showPasswordForm(session, true);
+      return;
+    }
+    setSession(session);
+  });
 })();
