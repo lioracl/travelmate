@@ -162,5 +162,11 @@
   ui.form.addEventListener('submit', function (event) { event.preventDefault(); sendMessage(); });
   ui.input.addEventListener('input', autoGrow);
   ui.input.addEventListener('keydown', function (event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });
+  window.addEventListener('travelmate:ask-ai', function (event) {
+    var prompt = trimText(event.detail && event.detail.prompt, 4000);
+    setOpen(true);
+    if (prompt) { ui.input.value = prompt; autoGrow(); }
+    ui.input.focus();
+  });
   document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && state.open) setOpen(false); });
 })();
