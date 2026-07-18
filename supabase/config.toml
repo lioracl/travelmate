@@ -1,0 +1,4 @@
+project_id = "hyaebqvwvdnbmvijnjcf"
+
+[functions.travel-assistant]
+verify_jwt = true
