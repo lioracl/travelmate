@@ -10,6 +10,17 @@
   function clean(value) { return String(value || '').replace(/[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]/gu, '').trim(); }
   function round(value) { return Number.isFinite(Number(value)) ? Math.round(Number(value)) : '--'; }
   function escapeText(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
+  function wait(milliseconds) { return new Promise(function (resolve) { window.setTimeout(resolve, milliseconds); }); }
+
+  async function fetchJson(url, label) {
+    var controller = typeof AbortController === 'function' ? new AbortController() : null;
+    var timeout = window.setTimeout(function () { if (controller) controller.abort(); }, 12000);
+    try {
+      var response = await fetch(url, controller ? { signal: controller.signal } : undefined);
+      if (!response.ok) throw new Error(label + '-' + response.status);
+      return await response.json();
+    } finally { window.clearTimeout(timeout); }
+  }
 
   function weatherDetails(code, isDay) {
     code = Number(code);
@@ -76,10 +87,15 @@
     if (Number.isFinite(destination.latitude) && Number.isFinite(destination.longitude)) return destination;
     var cacheKey = 'travelmate-weather-place:' + [destination.city, destination.country].join('|').toLowerCase();
     try { var cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); if (cached && cached.latitude) return cached; } catch (error) {}
-    var query = [destination.city, destination.country].filter(Boolean).join(', ');
-    var response = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(query) + '&count=1&language=he&format=json');
-    if (!response.ok) throw new Error('geocoding');
-    var data = await response.json(); var result = data.results && data.results[0];
+    var queries = [[destination.city, destination.country].filter(Boolean).join(', '), destination.city].filter(Boolean);
+    var result = null;
+    for (var index = 0; index < queries.length && !result; index += 1) {
+      try {
+        var data = await fetchJson('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(queries[index]) + '&count=5&language=he&format=json', 'geocoding');
+        var results = data.results || [];
+        result = results.find(function (item) { return !destination.country || clean(item.country).includes(clean(destination.country)) || clean(destination.country).includes(clean(item.country)); }) || results[0] || null;
+      } catch (error) { if (index === queries.length - 1) throw error; }
+    }
     if (!result) throw new Error('location-not-found');
     var located = { city: result.name || destination.city, country: result.country || destination.country, latitude: result.latitude, longitude: result.longitude, timezone: result.timezone };
     try { localStorage.setItem(cacheKey, JSON.stringify(located)); } catch (error) {}
@@ -88,14 +104,19 @@
 
   async function fetchForecast(place, force) {
     var cacheKey = 'travelmate-weather-forecast:' + place.latitude.toFixed(3) + ',' + place.longitude.toFixed(3);
-    if (!force) {
-      try { var cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); if (cached && Date.now() - cached.savedAt < 900000) return cached.data; } catch (error) {}
-    }
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch (error) {}
+    if (!force && cached && Date.now() - cached.savedAt < 900000) return cached.data;
     var fields = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,uv_index_max';
     var current = 'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day';
     var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(place.latitude) + '&longitude=' + encodeURIComponent(place.longitude) + '&current=' + current + '&daily=' + fields + '&timezone=auto&forecast_days=7';
-    var response = await fetch(url); if (!response.ok) throw new Error('forecast');
-    var data = await response.json();
+    var data = null; var lastError = null;
+    for (var attempt = 0; attempt < 2 && !data; attempt += 1) {
+      try { data = await fetchJson(url, 'forecast'); }
+      catch (error) { lastError = error; if (attempt === 0) await wait(1200); }
+    }
+    if (!data && cached && cached.data) return cached.data;
+    if (!data) throw lastError || new Error('forecast');
     try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data: data })); } catch (error) {}
     return data;
   }
