@@ -188,6 +188,19 @@
     return client.auth.signUp({ email: email, password: password, options: { emailRedirectTo: redirectTo } });
   }
 
+  async function resendSignup(email, redirectTo) {
+    var client = await getClient();
+    return client.auth.resend({ type: 'signup', email: email, options: { emailRedirectTo: redirectTo } });
+  }
+
+  function authRedirectUrl(hash) {
+    var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    var base = local ? new URL(location.pathname.replace(/^\//, ''), 'https://lioracl.github.io/travelmate/') : new URL(location.pathname, location.origin);
+    base.search = location.search;
+    base.hash = hash || '';
+    return base.href;
+  }
+
   async function signOut() {
     var client = await getClient();
     return client.auth.signOut();
@@ -212,6 +225,8 @@
     syncLocalTrips: syncLocalTrips,
     signIn: signIn,
     signUp: signUp,
+    resendSignup: resendSignup,
+    authRedirectUrl: authRedirectUrl,
     signOut: signOut,
     onAuthChange: onAuthChange
   };

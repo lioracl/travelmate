@@ -31,7 +31,7 @@
     var panel = document.createElement('section');
     panel.className = 'cloud-account';
     panel.dataset.cloudAccount = '';
-    panel.innerHTML = '<div class="cloud-account-copy"><span class="cloud-account-icon"><i class="fa-solid fa-cloud"></i></span><div><strong>סנכרון בין המחשב לטלפון</strong><small data-cloud-message>התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div></div><form data-cloud-auth-form><input name="email" type="email" autocomplete="email" required placeholder="כתובת דוא״ל"><input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="סיסמת החשבון"><button type="submit">כניסה</button><button type="button" class="secondary" data-cloud-signup>יצירת חשבון</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
+    panel.innerHTML = '<div class="cloud-account-copy"><span class="cloud-account-icon"><i class="fa-solid fa-cloud"></i></span><div><strong>סנכרון בין המחשב לטלפון</strong><small data-cloud-message>התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div></div><form data-cloud-auth-form><input name="email" type="email" autocomplete="email" required placeholder="כתובת דוא״ל"><input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="סיסמת החשבון"><button type="submit">כניסה</button><button type="button" class="secondary" data-cloud-signup>יצירת חשבון</button><button type="button" class="secondary" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
     var hero = document.querySelector('main > .hero');
     hero.insertAdjacentElement('afterend', panel);
     return panel;
@@ -45,6 +45,15 @@
   function setMessage(value, error) {
     message.textContent = value;
     message.classList.toggle('error', Boolean(error));
+  }
+
+  function authMessage(error) {
+    var value = String(error && (error.message || error.code) || '');
+    if (/email not confirmed/i.test(value)) return 'החשבון עדיין לא אומת. לחץ על „לא קיבלתי מייל” כדי לשלוח שוב.';
+    if (/email address not authorized/i.test(value)) return 'Supabase אינו מורשה לשלוח לכתובת הזו. יש להגדיר SMTP פרטי או להשתמש בכתובת של חבר צוות הפרויקט.';
+    if (/rate limit|too many requests|over_email_send_rate_limit/i.test(value)) return 'הגעת למגבלת השליחה של Supabase. המתן כשעה ונסה שוב, או הגדר SMTP פרטי.';
+    if (/invalid login/i.test(value)) return 'כתובת הדוא״ל או הסיסמה אינן נכונות. אם טרם אימתת את החשבון, שלח שוב את מייל האימות.';
+    return 'הפעולה נכשלה: ' + (value || 'נסה שוב בעוד רגע.');
   }
 
   function setSession(session) {
@@ -74,15 +83,25 @@
     event.preventDefault();
     setMessage('מתחבר/ת…');
     var result = await cloud.signIn(authForm.elements.email.value.trim(), authForm.elements.password.value);
-    if (result.error) setMessage('כתובת הדוא״ל או הסיסמה אינן נכונות.', true);
+    if (result.error) setMessage(authMessage(result.error), true);
   });
 
   accountPanel.querySelector('[data-cloud-signup]').addEventListener('click', async function () {
     if (!authForm.reportValidity()) return;
     setMessage('יוצר/ת חשבון…');
-    var result = await cloud.signUp(authForm.elements.email.value.trim(), authForm.elements.password.value, location.origin + location.pathname);
-    if (result.error) setMessage('יצירת החשבון נכשלה. בדקו שהסיסמה כוללת לפחות 8 תווים.', true);
-    else if (!result.data.session) setMessage('נשלח מייל אימות. לאחר האישור חזרו לאתר והתחברו.');
+    var result = await cloud.signUp(authForm.elements.email.value.trim(), authForm.elements.password.value, cloud.authRedirectUrl());
+    if (result.error) setMessage(authMessage(result.error), true);
+    else if (!result.data.session && result.data.user && Array.isArray(result.data.user.identities) && !result.data.user.identities.length) setMessage('כבר קיים חשבון עם הכתובת הזו. לחץ על „לא קיבלתי מייל” לשליחה חוזרת, או נסה להתחבר.');
+    else if (!result.data.session) setMessage('בקשת ההרשמה התקבלה. בדוק גם בספאם; אם המייל לא הגיע, לחץ על „שלח שוב”.');
+  });
+  accountPanel.querySelector('[data-cloud-resend]').addEventListener('click', async function (event) {
+    if (!authForm.elements.email.reportValidity()) return;
+    var button = event.currentTarget; button.disabled = true; setMessage('שולח שוב את מייל האימות…');
+    var result = await cloud.resendSignup(authForm.elements.email.value.trim(), cloud.authRedirectUrl());
+    if (result.error) { setMessage(authMessage(result.error), true); button.disabled = false; return; }
+    setMessage('מייל אימות נוסף נשלח. בדוק גם בתיקיות ספאם וקידומי מכירות.');
+    button.textContent = 'נשלח · אפשר שוב בעוד דקה';
+    setTimeout(function () { button.disabled = false; button.textContent = 'לא קיבלתי מייל · שלח שוב'; }, 60000);
   });
   accountPanel.querySelector('[data-cloud-signout]').addEventListener('click', function () { cloud.signOut(); });
   accountPanel.querySelector('[data-cloud-sync-now]').addEventListener('click', synchronize);

@@ -24,7 +24,7 @@
 
   function createVaultMarkup() {
     return '<div class="vault-head"><div><span class="vault-badge"><i class="fa-solid fa-shield-halved"></i> ענן פרטי ומוצפן</span><h2>כספת המסמכים של הטיול</h2><p>הקבצים מוצפנים במכשיר לפני ההעלאה ונפתחים רק לאחר הזנת סיסמת הכספת.</p></div><button class="pill-btn" type="button" data-vault-pick><i class="fa-solid fa-cloud-arrow-up"></i> העלאת קבצים</button></div>' +
-      '<div class="vault-auth" data-vault-auth><div class="vault-auth-copy"><i class="fa-solid fa-user-lock"></i><div><strong>התחברות לכספת</strong><span>החשבון מגן על המסמכים ומאפשר גישה גם מהטלפון.</span></div></div><form data-vault-auth-form><input name="email" type="email" autocomplete="email" placeholder="כתובת דוא״ל" required><input name="password" type="password" autocomplete="current-password" minlength="8" placeholder="סיסמת חשבון · לפחות 8 תווים" required><button type="submit" data-auth-signin>כניסה</button><button type="button" class="secondary" data-auth-signup>יצירת חשבון</button></form></div>' +
+      '<div class="vault-auth" data-vault-auth><div class="vault-auth-copy"><i class="fa-solid fa-user-lock"></i><div><strong>התחברות לכספת</strong><span>החשבון מגן על המסמכים ומאפשר גישה גם מהטלפון.</span></div></div><form data-vault-auth-form><input name="email" type="email" autocomplete="email" placeholder="כתובת דוא״ל" required><input name="password" type="password" autocomplete="current-password" minlength="8" placeholder="סיסמת חשבון · לפחות 8 תווים" required><button type="submit" data-auth-signin>כניסה</button><button type="button" class="secondary" data-auth-signup>יצירת חשבון</button><button type="button" class="secondary" data-auth-resend>לא קיבלתי מייל · שלח שוב</button></form></div>' +
       '<div class="vault-session" data-vault-session hidden><div><i class="fa-solid fa-circle-check"></i><span>מחובר/ת בתור <strong data-vault-email></strong></span></div><button type="button" data-vault-signout>יציאה</button></div>' +
       '<div class="vault-unlock" data-vault-unlock hidden><label><span>סיסמת הצפנת הכספת</span><input data-vault-passphrase type="password" autocomplete="off" minlength="10" placeholder="10 תווים לפחות · אינה נשמרת בשום מקום"></label><small><i class="fa-solid fa-triangle-exclamation"></i> אם הסיסמה תאבד, לא ניתן יהיה לשחזר את המסמכים. מומלץ לשמור אותה במנהל סיסמאות.</small></div>' +
       '<form class="vault-upload" data-vault-form hidden><select name="category" aria-label="קטגוריה"><option>טיסות</option><option>לינה</option><option>ביטוח</option><option>תחבורה</option><option>כרטיסים</option><option>דרכון ואשרות</option><option>אחר</option></select><input name="note" type="text" maxlength="180" placeholder="הערה אופציונלית — ללא מספרי דרכון"><button class="vault-upload-button" type="submit"><i class="fa-solid fa-lock"></i> הצפנה ושמירה</button><label class="vault-drop" data-vault-drop><input name="files" type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.txt"><span><i class="fa-solid fa-file-shield"></i><strong>גררי קבצים לכאן או לחצי לבחירה</strong><small>PDF, תמונות וקובצי Office · עד 25MB לקובץ</small></span></label></form>' +
@@ -135,16 +135,26 @@
       var result = await client.auth.signUp({
         email: authForm.elements.email.value.trim(),
         password: authForm.elements.password.value,
-        options: { emailRedirectTo: location.origin + location.pathname + location.search + '#documents' }
+        options: { emailRedirectTo: authRedirectUrl('#documents') }
       });
       setAuthButtons(false);
       if (result.error) {
         setStatus(authErrorMessage(result.error), true);
       } else if (!result.data.session) {
-        setStatus('נשלח אלייך מייל אימות. לאחר האישור חזרי לעמוד והתחברי.');
+        setStatus(result.data.user && Array.isArray(result.data.user.identities) && !result.data.user.identities.length ? 'כבר קיים חשבון עם כתובת זו. אפשר לשלוח שוב את מייל האימות או לנסות להתחבר.' : 'בקשת ההרשמה התקבלה. בדוק גם בספאם; אם המייל לא הגיע, לחץ על „שלח שוב”.');
       } else {
         setStatus('החשבון נוצר והכספת מוכנה.');
       }
+    });
+
+    vault.querySelector('[data-auth-resend]').addEventListener('click', async function (event) {
+      if (!authForm.elements.email.reportValidity()) return;
+      var button = event.currentTarget; button.disabled = true; setStatus('שולח שוב את מייל האימות…');
+      var result = await client.auth.resend({ type: 'signup', email: authForm.elements.email.value.trim(), options: { emailRedirectTo: authRedirectUrl('#documents') } });
+      if (result.error) { setStatus(authErrorMessage(result.error), true); button.disabled = false; return; }
+      setStatus('מייל אימות נוסף נשלח. בדוק גם בספאם ובקידומי מכירות.');
+      button.textContent = 'נשלח · אפשר שוב בעוד דקה';
+      setTimeout(function () { button.disabled = false; button.textContent = 'לא קיבלתי מייל · שלח שוב'; }, 60000);
     });
 
     vault.querySelector('[data-vault-signout]').addEventListener('click', async function () {
@@ -360,7 +370,8 @@
   function formatSize(bytes) { bytes = Number(bytes || 0); if (bytes < 1024) return bytes + ' B'; if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / 1048576).toFixed(1) + ' MB'; }
   function iconFor(type) { type = type || ''; if (type.includes('pdf')) return 'fa-file-pdf'; if (type.includes('image')) return 'fa-file-image'; if (type.includes('word')) return 'fa-file-word'; if (type.includes('sheet') || type.includes('excel')) return 'fa-file-excel'; return 'fa-file-lines'; }
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
-  function authErrorMessage(error) { var message = String(error && error.message || ''); if (/invalid login/i.test(message)) return 'כתובת הדוא״ל או סיסמת החשבון אינן נכונות.'; if (/already registered/i.test(message)) return 'כבר קיים חשבון עם כתובת זו. נסי להתחבר.'; if (/password/i.test(message)) return 'הסיסמה חייבת להכיל לפחות 8 תווים.'; return 'ההתחברות נכשלה. נסי שוב בעוד רגע.'; }
+  function authRedirectUrl(hash) { var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname); var base = local ? new URL(location.pathname.replace(/^\//, ''), 'https://lioracl.github.io/travelmate/') : new URL(location.pathname, location.origin); base.search = location.search; base.hash = hash || ''; return base.href; }
+  function authErrorMessage(error) { var message = String(error && (error.message || error.code) || ''); if (/email not confirmed/i.test(message)) return 'החשבון עדיין לא אומת. לחץ על „לא קיבלתי מייל” כדי לשלוח שוב.'; if (/email address not authorized/i.test(message)) return 'Supabase אינו מורשה לשלוח לכתובת הזו. יש להגדיר SMTP פרטי או להשתמש בכתובת של חבר צוות הפרויקט.'; if (/rate limit|too many requests|over_email_send_rate_limit/i.test(message)) return 'הגעת למגבלת השליחה של Supabase. המתן כשעה ונסה שוב.'; if (/invalid login/i.test(message)) return 'כתובת הדוא״ל או סיסמת החשבון אינן נכונות.'; if (/already registered/i.test(message)) return 'כבר קיים חשבון עם כתובת זו. נסה להתחבר או שלח שוב את מייל האימות.'; if (/password/i.test(message)) return 'הסיסמה חייבת להכיל לפחות 8 תווים.'; return 'הפעולה נכשלה: ' + (message || 'נסה שוב בעוד רגע.'); }
   function databaseErrorMessage(error) { var message = String(error && error.message || ''); if (/travel_documents|schema cache|does not exist/i.test(message)) return 'הכספת עדיין לא הופעלה ב־Supabase. יש להריץ את קובץ ההגדרה ב־SQL Editor.'; return 'לא ניתן לקרוא כרגע את רשימת המסמכים.'; }
   function storageErrorMessage(error) { var message = String(error && error.message || ''); if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/row-level security|unauthorized|permission/i.test(message)) return 'אין הרשאה לפעולה. התחברי מחדש ובדקי שהרשאות הכספת הופעלו.'; return 'הפעולה מול האחסון נכשלה. נסי שוב.'; }
 
