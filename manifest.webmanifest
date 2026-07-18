@@ -1,0 +1,13 @@
+{
+  "name": "TravelMate – מלווה טיולים חכם",
+  "short_name": "TravelMate",
+  "description": "תכנון טיולים, מסמכים, GPS ועוזר AI במקום אחד",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fdfcf8",
+  "theme_color": "#292524",
+  "lang": "he",
+  "dir": "rtl",
+  "icons": [{"src":"./assets/app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
