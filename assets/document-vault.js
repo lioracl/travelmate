@@ -64,9 +64,11 @@
       return;
     }
 
-    var client = library.createClient(config.url, config.publishableKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-    });
+    var client = window.TravelMateCloud
+      ? await window.TravelMateCloud.getClient()
+      : library.createClient(config.url, config.publishableKey, {
+          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        });
     var bucket = config.documentBucket || 'travel-documents';
     var authPanel = vault.querySelector('[data-vault-auth]');
     var authForm = vault.querySelector('[data-vault-auth-form]');
