@@ -1,5 +1,50 @@
-const CACHE_NAME='travelmate-smart-v2';
-const CORE=['./','./index.html','./assets/styles.css','./assets/app.js','./assets/mobile-menu.css','./assets/smart-hub.css','./assets/smart-hub.js','./assets/weather-widget.css','./assets/weather-widget.js','./assets/app-icon.svg','./manifest.webmanifest'];
+const CACHE_NAME='travelmate-smart-v4';
+const CORE=[
+  './',
+  './index.html',
+  './trip/custom/index.html',
+  './assets/styles.css',
+  './assets/app.js',
+  './assets/home.js',
+  './assets/custom-trip.js',
+  './assets/cloud-sync.css',
+  './assets/cloud-sync.js',
+  './assets/supabase-config.js',
+  './assets/mobile-menu.css',
+  './assets/document-vault.css',
+  './assets/document-vault.js',
+  './assets/auto-planner.css',
+  './assets/auto-planner.js',
+  './assets/nearby.css',
+  './assets/nearby.js',
+  './assets/place-planner.css',
+  './assets/travel-services.css',
+  './assets/travel-services.js',
+  './assets/smart-hub.css',
+  './assets/smart-hub.js',
+  './assets/weather-widget.css',
+  './assets/weather-widget.js',
+  './assets/ai-assistant.css',
+  './assets/ai-assistant.js',
+  './assets/app-icon.svg',
+  './manifest.webmanifest'
+];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',event=>{if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;event.respondWith(event.request.mode==='navigate'?fetch(event.request).then(response=>{const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response}).catch(()=>caches.match(event.request).then(hit=>hit||caches.match('./index.html'))):caches.match(event.request).then(hit=>hit||fetch(event.request).then(response=>{if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy))}return response})))});
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;
+  event.respondWith(event.request.mode==='navigate'
+    ?fetch(event.request).then(response=>{
+      const copy=response.clone();
+      caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));
+      return response;
+    }).catch(()=>caches.match(event.request,{ignoreSearch:true}).then(hit=>hit||caches.match('./index.html')))
+    :caches.match(event.request).then(hit=>hit||fetch(event.request).then(response=>{
+      if(response.ok){
+        const copy=response.clone();
+        caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));
+      }
+      return response;
+    }).catch(()=>caches.match(event.request,{ignoreSearch:true})))
+  );
+});

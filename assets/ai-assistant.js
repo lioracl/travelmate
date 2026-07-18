@@ -9,7 +9,12 @@
   var cloud = window.TravelMateCloud;
   var state = { open: false, busy: false, session: null, messages: [], recognition: null };
   var tripContext = collectTripContext();
-  var storageKey = 'travelmate-ai-chat:' + (tripContext && tripContext.id ? tripContext.id : 'general');
+  var storageKey = conversationStorageKey();
+
+  function conversationStorageKey(userId) {
+    var owner = userId || localStorage.getItem('travelmate-active-user') || 'guest';
+    return 'travelmate-ai-chat:' + owner + ':' + (tripContext && tripContext.id ? tripContext.id : 'general');
+  }
 
   function escapeText(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
   function trimText(value, limit) { return String(value || '').trim().slice(0, limit); }
@@ -155,6 +160,14 @@
   }
 
   ui.panel.querySelector('[data-ai-context]').textContent = contextLabel(); renderPrompts(); restoreMessages(); renderHistory(); setupVoice();
+  if (cloud && cloud.onAuthChange) cloud.onAuthChange(function (event, session) {
+    var nextKey = conversationStorageKey(session && session.user ? session.user.id : 'guest');
+    if (nextKey === storageKey) return;
+    storageKey = nextKey;
+    state.messages = [];
+    restoreMessages();
+    renderHistory();
+  });
   ui.orb.addEventListener('click', function () { setOpen(!state.open); });
   ui.panel.querySelector('[data-ai-close]').addEventListener('click', function () { setOpen(false); });
   ui.panel.querySelector('[data-ai-clear]').addEventListener('click', function () { state.messages = []; persistMessages(); renderHistory(); setStatus('שיחה חדשה'); });

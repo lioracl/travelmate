@@ -2,6 +2,8 @@
   'use strict';
 
   var STORAGE_KEY = 'travelmate-trips';
+  var ACTIVE_USER_KEY = 'travelmate-active-user';
+  var USER_STORAGE_PREFIX = 'travelmate-trips-user:';
   var SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.min.js';
   var SUPABASE_SRI = 'sha384-BmlQlKlDvXvKoxkn5OQuUo/aJQCTXeB+Kls6EccBmG4Kf8AXvp89RtO9MtPxP/r5';
   var saveTimers = new Map();
@@ -50,6 +52,37 @@
     window.dispatchEvent(new CustomEvent('travelmate:local-trips-updated', { detail: trips }));
   }
 
+  function readTripList(key) {
+    try {
+      var value = JSON.parse(localStorage.getItem(key) || '[]');
+      return Array.isArray(value) ? value : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function activateUserStorage(userId) {
+    userId = userId ? String(userId) : '';
+    var activeUser = localStorage.getItem(ACTIVE_USER_KEY) || '';
+    if (activeUser === userId) return;
+
+    var currentTrips = getLocalTrips();
+    if (activeUser) localStorage.setItem(USER_STORAGE_PREFIX + activeUser, JSON.stringify(currentTrips));
+
+    if (!userId) {
+      localStorage.removeItem(ACTIVE_USER_KEY);
+      setLocalTrips([]);
+      return;
+    }
+
+    var userStorageKey = USER_STORAGE_PREFIX + userId;
+    var hasUserSnapshot = localStorage.getItem(userStorageKey) !== null;
+    var userTrips = hasUserSnapshot ? readTripList(userStorageKey) : (activeUser ? [] : currentTrips);
+    localStorage.setItem(ACTIVE_USER_KEY, userId);
+    localStorage.setItem(userStorageKey, JSON.stringify(userTrips));
+    setLocalTrips(userTrips);
+  }
+
   function upsertLocalTrip(trip) {
     var trips = getLocalTrips();
     var index = trips.findIndex(function (item) { return String(item.id) === String(trip.id); });
@@ -94,7 +127,9 @@
     var client = await getClient();
     var result = await client.auth.getSession();
     if (result.error) throw result.error;
-    return result.data.session;
+    var session = result.data.session;
+    activateUserStorage(session && session.user ? session.user.id : null);
+    return session;
   }
 
   async function listCloudTrips() {
@@ -130,8 +165,8 @@
   }
 
   async function getTrip(id) {
-    var local = getLocalTrips().find(function (trip) { return String(trip.id) === String(id); });
     var session = await getSession();
+    var local = getLocalTrips().find(function (trip) { return String(trip.id) === String(id); });
     if (!session || !session.user) return local || null;
     var client = await getClient();
     var result = await client.from('travel_trips').select('*').eq('id', String(id)).maybeSingle();
@@ -180,12 +215,16 @@
 
   async function signIn(email, password) {
     var client = await getClient();
-    return client.auth.signInWithPassword({ email: email, password: password });
+    var result = await client.auth.signInWithPassword({ email: email, password: password });
+    if (result.data && result.data.session && result.data.session.user) activateUserStorage(result.data.session.user.id);
+    return result;
   }
 
   async function signUp(email, password, redirectTo) {
     var client = await getClient();
-    return client.auth.signUp({ email: email, password: password, options: { emailRedirectTo: redirectTo } });
+    var result = await client.auth.signUp({ email: email, password: password, options: { emailRedirectTo: redirectTo } });
+    if (result.data && result.data.session && result.data.session.user) activateUserStorage(result.data.session.user.id);
+    return result;
   }
 
   async function resendSignup(email, redirectTo) {
@@ -208,13 +247,20 @@
 
   async function signOut() {
     var client = await getClient();
-    return client.auth.signOut();
+    saveTimers.forEach(function (timer) { clearTimeout(timer); });
+    saveTimers.clear();
+    var result = await client.auth.signOut();
+    if (!result.error) activateUserStorage(null);
+    return result;
   }
 
   async function onAuthChange(callback) {
     var client = await getClient();
     return client.auth.onAuthStateChange(function (event, session) {
-      setTimeout(function () { callback(event, session); }, 0);
+      setTimeout(function () {
+        activateUserStorage(session && session.user ? session.user.id : null);
+        callback(event, session);
+      }, 0);
     });
   }
 

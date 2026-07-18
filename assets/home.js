@@ -66,7 +66,10 @@
     sessionPanel.hidden = !session;
     accountPanel.querySelector('[data-cloud-email]').textContent = session && session.user ? session.user.email : '';
     if (session) synchronize();
-    else setMessage('התחברו כדי לשמור את כל הטיולים בענן הפרטי.');
+    else {
+      renderTrips(cloud ? cloud.getLocalTrips() : []);
+      setMessage('התחברו כדי לשמור את כל הטיולים בענן הפרטי.');
+    }
   }
 
   function showPasswordForm(session, isRecovery) {
@@ -149,8 +152,6 @@
     setSession(currentSession);
     setMessage('הסיסמה עודכנה בהצלחה והחשבון מחובר.');
   });
-
-  renderTrips(cloud ? cloud.getLocalTrips() : []);
 
   if (form) {
     var today = new Date();

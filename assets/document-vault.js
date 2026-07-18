@@ -26,15 +26,15 @@
     return '<div class="vault-head"><div><span class="vault-badge"><i class="fa-solid fa-shield-halved"></i> ענן פרטי ומוצפן</span><h2>כספת המסמכים של הטיול</h2><p>הקבצים מוצפנים במכשיר לפני ההעלאה ונפתחים רק לאחר הזנת סיסמת הכספת.</p></div><button class="pill-btn" type="button" data-vault-pick><i class="fa-solid fa-cloud-arrow-up"></i> העלאת קבצים</button></div>' +
       '<div class="vault-auth" data-vault-auth><div class="vault-auth-copy"><i class="fa-solid fa-user-lock"></i><div><strong>התחברות לכספת</strong><span>החשבון מגן על המסמכים ומאפשר גישה גם מהטלפון.</span></div></div><form data-vault-auth-form><input name="email" type="email" autocomplete="email" placeholder="כתובת דוא״ל" required><input name="password" type="password" autocomplete="current-password" minlength="8" placeholder="סיסמת חשבון · לפחות 8 תווים" required><button type="submit" data-auth-signin>כניסה</button><button type="button" class="secondary" data-auth-signup>יצירת חשבון</button><button type="button" class="secondary" data-auth-resend>לא קיבלתי מייל · שלח שוב</button></form></div>' +
       '<div class="vault-session" data-vault-session hidden><div><i class="fa-solid fa-circle-check"></i><span>מחובר/ת בתור <strong data-vault-email></strong></span></div><button type="button" data-vault-signout>יציאה</button></div>' +
-      '<div class="vault-unlock" data-vault-unlock hidden><label><span>סיסמת הצפנת הכספת</span><input data-vault-passphrase type="password" autocomplete="off" minlength="10" placeholder="10 תווים לפחות · אינה נשמרת בשום מקום"></label><small><i class="fa-solid fa-triangle-exclamation"></i> אם הסיסמה תאבד, לא ניתן יהיה לשחזר את המסמכים. מומלץ לשמור אותה במנהל סיסמאות.</small></div>' +
-      '<form class="vault-upload" data-vault-form hidden><select name="category" aria-label="קטגוריה"><option>טיסות</option><option>לינה</option><option>ביטוח</option><option>תחבורה</option><option>כרטיסים</option><option>דרכון ואשרות</option><option>אחר</option></select><input name="note" type="text" maxlength="180" placeholder="הערה אופציונלית — ללא מספרי דרכון"><button class="vault-upload-button" type="submit"><i class="fa-solid fa-lock"></i> הצפנה ושמירה</button><label class="vault-drop" data-vault-drop><input name="files" type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.txt"><span><i class="fa-solid fa-file-shield"></i><strong>גררי קבצים לכאן או לחצי לבחירה</strong><small>PDF, תמונות וקובצי Office · עד 25MB לקובץ</small></span></label></form>' +
+      '<div class="vault-unlock" data-vault-unlock hidden><label><span>סיסמת הצפנת הכספת</span><span class="vault-passphrase-control"><input data-vault-passphrase type="password" autocomplete="off" minlength="10" placeholder="אותה סיסמה שבה הצפנת את הקבצים"><button type="button" data-vault-toggle-passphrase aria-label="הצגת סיסמת הכספת"><i class="fa-solid fa-eye"></i></button></span></label><small><i class="fa-solid fa-triangle-exclamation"></i> לפתיחת מסמך יש להזין את אותה סיסמת כספת ששימשה בהעלאה. היא נפרדת מסיסמת החשבון ואינה נשמרת.</small></div>' +
+      '<form class="vault-upload" data-vault-form hidden><select name="category" aria-label="קטגוריה"><option>טיסות</option><option>לינה</option><option>ביטוח</option><option>תחבורה</option><option>כרטיסים</option><option>דרכון ואשרות</option><option>אחר</option></select><input name="note" type="text" maxlength="180" placeholder="הערה אופציונלית — ללא מספרי דרכון"><button class="vault-upload-button" type="submit"><i class="fa-solid fa-lock"></i> הצפנה ושמירה</button><label class="vault-drop" data-vault-drop><input name="files" type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.txt"><span><i class="fa-solid fa-file-shield"></i><strong>גרור קבצים לכאן או לחץ לבחירה</strong><small>PDF, תמונות וקובצי Office · עד 25MB לקובץ</small></span></label></form>' +
       '<p class="vault-status" data-vault-status aria-live="polite"></p><div class="vault-summary" data-vault-summary hidden><strong data-vault-count>0 מסמכים</strong><div><small data-vault-size>0 MB</small><div class="vault-storage"><i data-vault-storage style="width:0%"></i></div></div></div><div class="vault-list" data-vault-list></div>';
   }
 
   async function init() {
     if (initialized) return;
     var section = document.getElementById('documents');
-    var tripId = new URLSearchParams(location.search).get('id');
+    var tripId = new URLSearchParams(location.search).get('id') || document.body.dataset.tripId;
     var config = window.TRAVELMATE_SUPABASE;
     if (!section || !tripId || section.querySelector('[data-document-vault]')) return;
     initialized = true;
@@ -88,7 +88,7 @@
       var title = categoryRow.querySelector('strong');
       var categoryButton = categoryRow.querySelector(':scope > button');
       if (!title || !categoryButton) return;
-      var categoryName = title.textContent.trim();
+      var categoryName = categoryForTitle(title.textContent.trim());
       var filesContainer = document.createElement('div');
       filesContainer.className = 'doc-category-files';
       filesContainer.dataset.categoryFiles = categoryName;
@@ -112,7 +112,7 @@
         setStatus('יש להתחבר כדי לראות או להעלות מסמכים.');
         return;
       }
-      setStatus('הכספת מחוברת. הזיני את סיסמת ההצפנה כדי להעלות או לפתוח מסמך.');
+      setStatus('הכספת מחוברת. הזן את סיסמת ההצפנה כדי להעלות או לפתוח מסמך.');
       await renderDocuments();
     }
 
@@ -159,6 +159,13 @@
 
     vault.querySelector('[data-vault-signout]').addEventListener('click', async function () {
       await client.auth.signOut();
+    });
+
+    vault.querySelector('[data-vault-toggle-passphrase]').addEventListener('click', function (event) {
+      var showing = passphraseInput.type === 'text';
+      passphraseInput.type = showing ? 'password' : 'text';
+      event.currentTarget.setAttribute('aria-label', showing ? 'הצגת סיסמת הכספת' : 'הסתרת סיסמת הכספת');
+      event.currentTarget.querySelector('i').className = showing ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
     });
 
     function setAuthButtons(disabled) {
@@ -215,11 +222,11 @@
 
     async function saveFiles(files) {
       if (!currentUser) return setStatus('יש להתחבר לפני העלאת מסמך.', true);
-      if (!files.length) return setStatus('בחרי לפחות קובץ אחד.', true);
+      if (!files.length) return setStatus('בחר לפחות קובץ אחד.', true);
       var tooLarge = files.find(function (file) { return file.size > MAX_FILE_SIZE; });
       if (tooLarge) return setStatus('הקובץ ' + tooLarge.name + ' גדול מ־25MB.', true);
       var passphrase = passphraseInput.value;
-      if (passphrase.length < 10) return setStatus('בחרי סיסמת הצפנה באורך 10 תווים לפחות.', true);
+      if (passphrase.length < 10) return setStatus('בחר סיסמת הצפנה באורך 10 תווים לפחות.', true);
 
       uploadButton.disabled = true;
       var uploadedCount = 0;
@@ -269,25 +276,80 @@
 
     async function openDocument(record, download) {
       var passphrase = passphraseInput.value;
-      if (passphrase.length < 10) return setStatus('הזיני את סיסמת הצפנת הכספת לפני פתיחת המסמך.', true);
+      if (passphrase.length < 10) return setStatus('הזן את סיסמת הצפנת הכספת לפני פתיחת המסמך.', true);
       setStatus('מוריד/ה ומפענח/ת את המסמך…');
       var result = await client.storage.from(bucket).download(record.storage_path);
       if (result.error) return setStatus(storageErrorMessage(result.error), true);
       try {
         var decrypted = await decryptBlob(result.data, passphrase, base64ToBytes(record.encryption_salt), base64ToBytes(record.encryption_iv), record.mime_type);
-        var url = URL.createObjectURL(decrypted);
-        var link = document.createElement('a');
-        link.href = url;
-        if (download) link.download = record.file_name;
-        else { link.target = '_blank'; link.rel = 'noopener'; }
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
-        setStatus('המסמך פוענח במכשיר ונפתח בהצלחה.');
+        if (download) {
+          downloadBlob(decrypted, record.file_name);
+          setStatus('המסמך פוענח והורד למכשיר.');
+        } else {
+          await showDocumentPreview(decrypted, record);
+          setStatus('המסמך פוענח ונפתח בתצוגה המאובטחת.');
+        }
       } catch (error) {
+        console.error('TravelMate vault decrypt failed', error);
         setStatus('סיסמת ההצפנה שגויה או שהקובץ פגום.', true);
       }
+    }
+
+    function downloadBlob(blob, fileName) {
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || 'document';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+    }
+
+    async function showDocumentPreview(blob, record) {
+      var previous = document.querySelector('[data-vault-preview]');
+      if (previous && previous._closePreview) previous._closePreview();
+
+      var preview = document.createElement('div');
+      var objectUrl = URL.createObjectURL(blob);
+      var type = String(record.mime_type || blob.type || 'application/octet-stream').toLowerCase();
+      preview.className = 'vault-preview-backdrop open';
+      preview.dataset.vaultPreview = '';
+      preview.setAttribute('role', 'dialog');
+      preview.setAttribute('aria-modal', 'true');
+      preview.setAttribute('aria-label', 'תצוגת המסמך ' + record.file_name);
+      preview.innerHTML = '<article class="vault-preview"><header><div><span>תצוגה מאובטחת</span><h2>' + escapeHtml(record.file_name) + '</h2><p>' + escapeHtml(record.category) + ' · ' + formatSize(record.file_size) + '</p></div><button type="button" data-vault-preview-close aria-label="סגירת המסמך"><i class="fa-solid fa-xmark"></i></button></header><div class="vault-preview-body" data-vault-preview-body></div><footer><small><i class="fa-solid fa-shield-halved"></i> הקובץ פוענח רק בזיכרון המכשיר ולא נשלח לשירות חיצוני.</small><button type="button" data-vault-preview-download><i class="fa-solid fa-download"></i> הורדה למכשיר</button></footer></article>';
+      var body = preview.querySelector('[data-vault-preview-body]');
+
+      if (type.indexOf('image/') === 0) {
+        var image = document.createElement('img');
+        image.src = objectUrl;
+        image.alt = record.file_name;
+        body.appendChild(image);
+      } else if (type === 'application/pdf') {
+        var frame = document.createElement('iframe');
+        frame.src = objectUrl;
+        frame.title = record.file_name;
+        body.appendChild(frame);
+      } else if (type.indexOf('text/') === 0 || type === 'application/json') {
+        var text = document.createElement('pre');
+        text.textContent = await blob.text();
+        body.appendChild(text);
+      } else {
+        body.innerHTML = '<div class="vault-preview-unavailable"><i class="fa-solid fa-file-arrow-down"></i><strong>הקובץ פוענח בהצלחה</strong><p>הדפדפן אינו מציג קובץ מסוג זה בתוך האפליקציה. לחץ על „הורדה למכשיר” כדי לפתוח אותו באפליקציה המתאימה.</p></div>';
+      }
+
+      function closePreview() {
+        URL.revokeObjectURL(objectUrl);
+        preview.remove();
+      }
+      preview._closePreview = closePreview;
+      preview.querySelector('[data-vault-preview-close]').addEventListener('click', closePreview);
+      preview.querySelector('[data-vault-preview-download]').addEventListener('click', function () { downloadBlob(blob, record.file_name); });
+      preview.addEventListener('click', function (event) { if (event.target === preview) closePreview(); });
+      preview.addEventListener('keydown', function (event) { if (event.key === 'Escape') closePreview(); });
+      document.body.appendChild(preview);
+      preview.querySelector('[data-vault-preview-close]').focus();
     }
 
     async function deleteDocument(record) {
@@ -325,10 +387,10 @@
     });
     section.querySelectorAll('.doc-row button').forEach(function (templateButton) {
       templateButton.addEventListener('click', function () {
-        if (!currentUser) return setStatus('התחברי לכספת לפני העלאת מסמך.', true);
-        var title = templateButton.closest('.doc-row').querySelector('strong');
+        if (!currentUser) return setStatus('התחבר לכספת לפני העלאת מסמך.', true);
+        var categoryName = templateButton.closest('.doc-row').dataset.documentCategory;
         var categories = [].slice.call(form.elements.category.options).map(function (option) { return option.value; });
-        if (title && categories.includes(title.textContent)) form.elements.category.value = title.textContent;
+        if (categoryName && categories.includes(categoryName)) form.elements.category.value = categoryName;
         input.click();
       });
     });
@@ -367,13 +429,14 @@
     return Uint8Array.from(binary, function (character) { return character.charCodeAt(0); });
   }
   function sanitizeFileName(value) { return String(value || 'document').normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 90) || 'document'; }
+  function categoryForTitle(value) { value = String(value || ''); if (/טיס/.test(value)) return 'טיסות'; if (/מלון|לינה/.test(value)) return 'לינה'; if (/ביטוח|דרכון|אשר/.test(value)) return 'ביטוח'; if (/רכב|רכבת|JR|תחבורה/.test(value)) return 'תחבורה'; if (/כרטיס/.test(value)) return 'כרטיסים'; return value || 'אחר'; }
   function formatSize(bytes) { bytes = Number(bytes || 0); if (bytes < 1024) return bytes + ' B'; if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / 1048576).toFixed(1) + ' MB'; }
   function iconFor(type) { type = type || ''; if (type.includes('pdf')) return 'fa-file-pdf'; if (type.includes('image')) return 'fa-file-image'; if (type.includes('word')) return 'fa-file-word'; if (type.includes('sheet') || type.includes('excel')) return 'fa-file-excel'; return 'fa-file-lines'; }
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
   function authRedirectUrl(hash) { var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname); var base = local ? new URL(location.pathname.replace(/^\//, ''), 'https://lioracl.github.io/travelmate/') : new URL(location.pathname, location.origin); base.search = location.search; base.hash = hash || ''; return base.href; }
   function authErrorMessage(error) { var message = String(error && (error.message || error.code) || ''); if (/email not confirmed/i.test(message)) return 'החשבון עדיין לא אומת. לחץ על „לא קיבלתי מייל” כדי לשלוח שוב.'; if (/email address not authorized/i.test(message)) return 'Supabase אינו מורשה לשלוח לכתובת הזו. יש להגדיר SMTP פרטי או להשתמש בכתובת של חבר צוות הפרויקט.'; if (/rate limit|too many requests|over_email_send_rate_limit/i.test(message)) return 'הגעת למגבלת השליחה של Supabase. המתן כשעה ונסה שוב.'; if (/invalid login/i.test(message)) return 'כתובת הדוא״ל או סיסמת החשבון אינן נכונות.'; if (/already registered/i.test(message)) return 'כבר קיים חשבון עם כתובת זו. נסה להתחבר או שלח שוב את מייל האימות.'; if (/password/i.test(message)) return 'הסיסמה חייבת להכיל לפחות 8 תווים.'; return 'הפעולה נכשלה: ' + (message || 'נסה שוב בעוד רגע.'); }
   function databaseErrorMessage(error) { var message = String(error && error.message || ''); if (/travel_documents|schema cache|does not exist/i.test(message)) return 'הכספת עדיין לא הופעלה ב־Supabase. יש להריץ את קובץ ההגדרה ב־SQL Editor.'; return 'לא ניתן לקרוא כרגע את רשימת המסמכים.'; }
-  function storageErrorMessage(error) { var message = String(error && error.message || ''); if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/row-level security|unauthorized|permission/i.test(message)) return 'אין הרשאה לפעולה. התחברי מחדש ובדקי שהרשאות הכספת הופעלו.'; return 'הפעולה מול האחסון נכשלה. נסי שוב.'; }
+  function storageErrorMessage(error) { var message = String(error && error.message || ''); if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/row-level security|unauthorized|permission/i.test(message)) return 'אין הרשאה לפעולה. התחבר מחדש ובדוק שהרשאות הכספת הופעלו.'; return 'הפעולה מול האחסון נכשלה. נסה שוב.'; }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
