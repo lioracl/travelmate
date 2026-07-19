@@ -95,7 +95,7 @@
   function toRow(trip, userId, timestamp) {
     var payload = Object.assign({}, trip, { cloudUpdatedAt: timestamp });
     return {
-      user_id: userId,
+      user_id: String(trip.ownerId || userId),
       id: String(trip.id),
       country: String(trip.country || ''),
       city: String(trip.city || ''),
@@ -105,13 +105,15 @@
       trip_type: String(trip.type || 'סולו'),
       days: Number(trip.days || 1),
       payload: payload,
-      updated_at: timestamp
+      updated_at: timestamp,
+      updated_by: userId
     };
   }
 
   function fromRow(row) {
     return Object.assign({}, row.payload || {}, {
       id: String(row.id),
+      ownerId: String(row.user_id),
       country: row.country,
       city: row.city,
       start: row.start_date,
@@ -144,10 +146,22 @@
     var session = await getSession();
     if (!session || !session.user) return { saved: false, reason: 'SIGNED_OUT' };
     var timestamp = new Date().toISOString();
+    trip.ownerId = String(trip.ownerId || session.user.id);
     trip.cloudUpdatedAt = timestamp;
     upsertLocalTrip(trip);
-    var result = await client.from('travel_trips').upsert(toRow(trip, session.user.id, timestamp), { onConflict: 'user_id,id' });
+    var row = toRow(trip, session.user.id, timestamp);
+    var result;
+    if (String(row.user_id) === String(session.user.id)) {
+      result = await client.from('travel_trips').upsert(row, { onConflict: 'user_id,id' });
+    } else {
+      var update = Object.assign({}, row);
+      delete update.user_id;
+      delete update.id;
+      result = await client.from('travel_trips').update(update)
+        .eq('user_id', row.user_id).eq('id', row.id).select('id').maybeSingle();
+    }
     if (result.error) throw result.error;
+    if (String(row.user_id) !== String(session.user.id) && !result.data) throw new Error('TRIP_EDIT_FORBIDDEN');
     window.dispatchEvent(new CustomEvent('travelmate:trip-synced', { detail: { id: trip.id, timestamp: timestamp } }));
     return { saved: true, timestamp: timestamp };
   }
@@ -164,14 +178,18 @@
     }, typeof delay === 'number' ? delay : 650));
   }
 
-  async function getTrip(id) {
+  async function getTrip(id, expectedOwnerId) {
     var session = await getSession();
     var local = getLocalTrips().find(function (trip) { return String(trip.id) === String(id); });
     if (!session || !session.user) return local || null;
     var client = await getClient();
-    var result = await client.from('travel_trips').select('*').eq('id', String(id)).maybeSingle();
+    var query = client.from('travel_trips').select('*').eq('id', String(id));
+    var ownerId = expectedOwnerId || (local && local.ownerId);
+    if (ownerId) query = query.eq('user_id', String(ownerId));
+    var result = await query.maybeSingle();
     if (result.error) throw result.error;
     if (!result.data) {
+      if (local && local.ownerId && String(local.ownerId) !== String(session.user.id)) return null;
       if (local) await saveTrip(local);
       return local || null;
     }
@@ -182,6 +200,97 @@
     }
     await saveTrip(local);
     return local;
+  }
+
+  async function acceptTripInvite(token) {
+    var client = await getClient();
+    var session = await getSession();
+    if (!session || !session.user) return { accepted: false, reason: 'SIGNED_OUT' };
+    var result = await client.rpc('accept_trip_invite', { p_token: token });
+    if (result.error) throw result.error;
+    return { accepted: true, trip: result.data };
+  }
+
+  async function createTripInvite(ownerId, tripId, role) {
+    var client = await getClient();
+    var result = await client.rpc('create_trip_invite', {
+      p_trip_owner_id: ownerId,
+      p_trip_id: String(tripId),
+      p_role: role === 'viewer' ? 'viewer' : 'editor'
+    });
+    if (result.error) throw result.error;
+    return result.data;
+  }
+
+  async function listTripMembers(ownerId, tripId) {
+    var client = await getClient();
+    var result = await client.from('trip_members').select('user_id,display_name,role,joined_at')
+      .eq('trip_owner_id', ownerId).eq('trip_id', String(tripId)).order('joined_at', { ascending: true });
+    if (result.error) throw result.error;
+    return result.data || [];
+  }
+
+  async function updateTripMember(ownerId, tripId, userId, role) {
+    var client = await getClient();
+    var result = await client.from('trip_members').update({ role: role === 'viewer' ? 'viewer' : 'editor' })
+      .eq('trip_owner_id', ownerId).eq('trip_id', String(tripId)).eq('user_id', userId);
+    if (result.error) throw result.error;
+    return true;
+  }
+
+  async function removeTripMember(ownerId, tripId, userId) {
+    var client = await getClient();
+    var result = await client.from('trip_members').delete()
+      .eq('trip_owner_id', ownerId).eq('trip_id', String(tripId)).eq('user_id', userId);
+    if (result.error) throw result.error;
+    return true;
+  }
+
+  async function listTripMessages(ownerId, tripId) {
+    var client = await getClient();
+    var result = await client.from('trip_messages').select('id,sender_user_id,body,created_at')
+      .eq('trip_owner_id', ownerId).eq('trip_id', String(tripId))
+      .order('created_at', { ascending: false }).limit(100);
+    if (result.error) throw result.error;
+    return (result.data || []).reverse();
+  }
+
+  async function sendTripMessage(ownerId, tripId, body) {
+    var client = await getClient();
+    var session = await getSession();
+    if (!session || !session.user) throw new Error('SIGNED_OUT');
+    var result = await client.from('trip_messages').insert({
+      trip_owner_id: ownerId,
+      trip_id: String(tripId),
+      sender_user_id: session.user.id,
+      body: String(body || '').trim()
+    }).select('id,sender_user_id,body,created_at').single();
+    if (result.error) throw result.error;
+    return result.data;
+  }
+
+  async function subscribeToSharedTrip(ownerId, tripId, callbacks) {
+    var client = await getClient();
+    var session = await getSession();
+    callbacks = callbacks || {};
+    var channel = client.channel('travelmate-trip:' + ownerId + ':' + tripId)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'travel_trips', filter: 'id=eq.' + String(tripId) }, function (payload) {
+        if (!payload.new || String(payload.new.user_id) !== String(ownerId)) return;
+        var incoming = fromRow(payload.new);
+        upsertLocalTrip(incoming);
+        if (!session || String(payload.new.updated_by || '') !== String(session.user.id)) {
+          if (callbacks.onTripUpdate) callbacks.onTripUpdate(incoming);
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trip_members', filter: 'trip_id=eq.' + String(tripId) }, function (payload) {
+        var row = payload.new || payload.old;
+        if (row && String(row.trip_owner_id) === String(ownerId) && callbacks.onMembersChange) callbacks.onMembersChange(payload);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'trip_messages', filter: 'trip_id=eq.' + String(tripId) }, function (payload) {
+        if (payload.new && String(payload.new.trip_owner_id) === String(ownerId) && callbacks.onMessage) callbacks.onMessage(payload.new);
+      });
+    await channel.subscribe();
+    return function () { client.removeChannel(channel); };
   }
 
   async function syncLocalTrips() {
@@ -197,6 +306,7 @@
       var local = localTrips[localIndex];
       var cloud = cloudById.get(String(local.id));
       if (!cloud) {
+        if (local.ownerId && String(local.ownerId) !== String(session.user.id)) continue;
         await saveTrip(local);
         merged.push(local);
       } else if (Date.parse(local.cloudUpdatedAt || 0) > Date.parse(cloud.cloudUpdatedAt || 0)) {
@@ -271,6 +381,14 @@
     setLocalTrips: setLocalTrips,
     upsertLocalTrip: upsertLocalTrip,
     getTrip: getTrip,
+    acceptTripInvite: acceptTripInvite,
+    createTripInvite: createTripInvite,
+    listTripMembers: listTripMembers,
+    updateTripMember: updateTripMember,
+    removeTripMember: removeTripMember,
+    listTripMessages: listTripMessages,
+    sendTripMessage: sendTripMessage,
+    subscribeToSharedTrip: subscribeToSharedTrip,
     saveTrip: saveTrip,
     queueTripSave: queueTripSave,
     syncLocalTrips: syncLocalTrips,

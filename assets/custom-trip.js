@@ -7,7 +7,23 @@
   window.travelMateTripReady = (async function () {
     var trip = null;
     if (cloud && tripId) {
-      try { trip = await cloud.getTrip(tripId); }
+      try {
+        var invitedOwnerId = null;
+        var inviteToken = new URLSearchParams(location.search).get('invite');
+        if (inviteToken) {
+          var invitation = await cloud.acceptTripInvite(inviteToken);
+          if (!invitation.accepted && invitation.reason === 'SIGNED_OUT') {
+            sessionStorage.setItem('travelmate-pending-invite', location.href);
+          } else if (invitation.accepted) {
+            invitedOwnerId = invitation.trip && invitation.trip.owner_id;
+            var cleanUrl = new URL(location.href);
+            cleanUrl.searchParams.delete('invite');
+            history.replaceState({}, '', cleanUrl.href);
+            window.dispatchEvent(new CustomEvent('travelmate:invite-accepted'));
+          }
+        }
+        trip = await cloud.getTrip(tripId, invitedOwnerId);
+      }
       catch (error) {
         console.error('TravelMate cloud trip load failed', error);
         trip = cloud.getLocalTrips().find(function (item) { return String(item.id) === String(tripId); }) || null;

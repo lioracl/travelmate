@@ -65,7 +65,15 @@
     passwordForm.hidden = true;
     sessionPanel.hidden = !session;
     accountPanel.querySelector('[data-cloud-email]').textContent = session && session.user ? session.user.email : '';
-    if (session) synchronize();
+    if (session) {
+      var pendingInvite = sessionStorage.getItem('travelmate-pending-invite');
+      if (pendingInvite) {
+        sessionStorage.removeItem('travelmate-pending-invite');
+        location.href = pendingInvite;
+        return;
+      }
+      synchronize();
+    }
     else {
       renderTrips(cloud ? cloud.getLocalTrips() : []);
       setMessage('התחברו כדי לשמור את כל הטיולים בענן הפרטי.');
