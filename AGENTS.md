@@ -26,3 +26,8 @@
 - Keep all deployed paths relative so the app works under `/travelmate/`.
 - Treat `main` as the stable production branch for later store releases.
 
+## App versioning
+
+- Keep the user-facing version and release notes in `assets/about.js` current for every user-facing release.
+- Use semantic-style numbering: patch fixes increment the third number (for example `1.0.1`), meaningful features increment the minor number (for example `1.1`), and deep or incompatible product changes increment the major number (for example `2.0`).
+- Update the About highlights when a release materially changes the product.

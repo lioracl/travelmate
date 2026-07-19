@@ -1,4 +1,4 @@
-const CACHE_NAME='travelmate-smart-v8';
+const CACHE_NAME='travelmate-smart-v10';
 const CORE=[
   './',
   './index.html',
@@ -27,6 +27,8 @@ const CORE=[
   './assets/weather-widget.js',
   './assets/ai-assistant.css',
   './assets/ai-assistant.js',
+  './assets/about.css',
+  './assets/about.js',
   './assets/collaboration.css',
   './assets/collaboration.js',
   './assets/navigation-memory.css',
