@@ -5,6 +5,8 @@
   var PBKDF2_ITERATIONS = 310000;
   var SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.min.js';
   var SUPABASE_SRI = 'sha384-BmlQlKlDvXvKoxkn5OQuUo/aJQCTXeB+Kls6EccBmG4Kf8AXvp89RtO9MtPxP/r5';
+  var PDF_JS_VERSION = '5.7.284';
+  var pdfJsPromise;
   var initialized = false;
 
   function loadSupabaseLibrary() {
@@ -20,6 +22,20 @@
       document.head.appendChild(script);
     });
     return window.travelMateSupabaseLoader;
+  }
+
+  function loadPdfJs() {
+    if (pdfJsPromise) return pdfJsPromise;
+    var libraryUrl = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDF_JS_VERSION + '/build/pdf.min.mjs';
+    var workerUrl = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDF_JS_VERSION + '/build/pdf.worker.min.mjs';
+    pdfJsPromise = import(libraryUrl).then(function (library) {
+      library.GlobalWorkerOptions.workerSrc = workerUrl;
+      return library;
+    }).catch(function (error) {
+      pdfJsPromise = null;
+      throw error;
+    });
+    return pdfJsPromise;
   }
 
   function createVaultMarkup() {
@@ -321,24 +337,6 @@
       preview.innerHTML = '<article class="vault-preview"><header><div><span>תצוגה מאובטחת</span><h2>' + escapeHtml(record.file_name) + '</h2><p>' + escapeHtml(record.category) + ' · ' + formatSize(record.file_size) + '</p></div><button type="button" data-vault-preview-close aria-label="סגירת המסמך"><i class="fa-solid fa-xmark"></i></button></header><div class="vault-preview-body" data-vault-preview-body></div><footer><small><i class="fa-solid fa-shield-halved"></i> הקובץ פוענח רק בזיכרון המכשיר ולא נשלח לשירות חיצוני.</small><button type="button" data-vault-preview-download><i class="fa-solid fa-download"></i> הורדה למכשיר</button></footer></article>';
       var body = preview.querySelector('[data-vault-preview-body]');
 
-      if (type.indexOf('image/') === 0) {
-        var image = document.createElement('img');
-        image.src = objectUrl;
-        image.alt = record.file_name;
-        body.appendChild(image);
-      } else if (type === 'application/pdf') {
-        var frame = document.createElement('iframe');
-        frame.src = objectUrl;
-        frame.title = record.file_name;
-        body.appendChild(frame);
-      } else if (type.indexOf('text/') === 0 || type === 'application/json') {
-        var text = document.createElement('pre');
-        text.textContent = await blob.text();
-        body.appendChild(text);
-      } else {
-        body.innerHTML = '<div class="vault-preview-unavailable"><i class="fa-solid fa-file-arrow-down"></i><strong>הקובץ פוענח בהצלחה</strong><p>הדפדפן אינו מציג קובץ מסוג זה בתוך האפליקציה. לחץ על „הורדה למכשיר” כדי לפתוח אותו באפליקציה המתאימה.</p></div>';
-      }
-
       function closePreview() {
         URL.revokeObjectURL(objectUrl);
         preview.remove();
@@ -349,7 +347,77 @@
       preview.addEventListener('click', function (event) { if (event.target === preview) closePreview(); });
       preview.addEventListener('keydown', function (event) { if (event.key === 'Escape') closePreview(); });
       document.body.appendChild(preview);
+
+      if (type.indexOf('image/') === 0) {
+        var image = document.createElement('img');
+        image.src = objectUrl;
+        image.alt = record.file_name;
+        body.appendChild(image);
+      } else if (type === 'application/pdf') {
+        await renderPdfPreview(blob, body);
+      } else if (type.indexOf('text/') === 0 || type === 'application/json') {
+        var text = document.createElement('pre');
+        text.textContent = await blob.text();
+        body.appendChild(text);
+      } else {
+        body.innerHTML = '<div class="vault-preview-unavailable"><i class="fa-solid fa-file-arrow-down"></i><strong>הקובץ פוענח בהצלחה</strong><p>הדפדפן אינו מציג קובץ מסוג זה בתוך האפליקציה. לחץ על „הורדה למכשיר” כדי לפתוח אותו באפליקציה המתאימה.</p></div>';
+      }
+
       preview.querySelector('[data-vault-preview-close]').focus();
+    }
+
+    async function renderPdfPreview(blob, body) {
+      body.innerHTML = '<div class="vault-pdf-loading"><i class="fa-solid fa-spinner fa-spin"></i><strong>מכין תצוגה מקדימה…</strong><span>המסמך נשאר במכשיר ואינו נשלח החוצה</span></div>';
+      try {
+        var pdfjs = await loadPdfJs();
+        var bytes = new Uint8Array(await blob.arrayBuffer());
+        var pdf = await pdfjs.getDocument({ data: bytes }).promise;
+        body.innerHTML = '<div class="vault-pdf-viewer"><div class="vault-pdf-toolbar"><button type="button" data-pdf-previous><i class="fa-solid fa-arrow-right"></i> הקודם</button><strong data-pdf-status></strong><button type="button" data-pdf-next>הבא <i class="fa-solid fa-arrow-left"></i></button></div><div class="vault-pdf-page"><canvas aria-label="עמוד PDF"></canvas></div></div>';
+        var canvas = body.querySelector('canvas');
+        var status = body.querySelector('[data-pdf-status]');
+        var previousButton = body.querySelector('[data-pdf-previous]');
+        var nextButton = body.querySelector('[data-pdf-next]');
+        var currentPage = 1;
+        var rendering = false;
+
+        async function renderPage(pageNumber) {
+          if (rendering) return;
+          rendering = true;
+          previousButton.disabled = true;
+          nextButton.disabled = true;
+          status.textContent = 'טוען עמוד ' + pageNumber + ' מתוך ' + pdf.numPages + '…';
+          try {
+            var page = await pdf.getPage(pageNumber);
+            var naturalViewport = page.getViewport({ scale: 1 });
+            var availableWidth = Math.max(260, Math.min(body.clientWidth - 28, 1000));
+            var viewport = page.getViewport({ scale: availableWidth / naturalViewport.width });
+            var outputScale = Math.min(window.devicePixelRatio || 1, 2);
+            var context = canvas.getContext('2d', { alpha: false });
+            canvas.width = Math.floor(viewport.width * outputScale);
+            canvas.height = Math.floor(viewport.height * outputScale);
+            canvas.style.width = Math.floor(viewport.width) + 'px';
+            canvas.style.height = Math.floor(viewport.height) + 'px';
+            await page.render({
+              canvasContext: context,
+              transform: outputScale === 1 ? null : [outputScale, 0, 0, outputScale, 0, 0],
+              viewport: viewport
+            }).promise;
+            currentPage = pageNumber;
+            status.textContent = 'עמוד ' + currentPage + ' מתוך ' + pdf.numPages;
+          } finally {
+            rendering = false;
+            previousButton.disabled = currentPage <= 1;
+            nextButton.disabled = currentPage >= pdf.numPages;
+          }
+        }
+
+        previousButton.addEventListener('click', function () { if (currentPage > 1) renderPage(currentPage - 1); });
+        nextButton.addEventListener('click', function () { if (currentPage < pdf.numPages) renderPage(currentPage + 1); });
+        await renderPage(1);
+      } catch (error) {
+        console.error('TravelMate PDF preview failed', error);
+        body.innerHTML = '<div class="vault-preview-unavailable"><i class="fa-solid fa-file-pdf"></i><strong>לא הצלחנו להציג את ה־PDF בתוך האפליקציה</strong><p>אפשר עדיין להשתמש בכפתור „הורדה למכשיר” למטה. בדוק את החיבור ונסה לפתוח שוב כדי לטעון את קורא ה־PDF.</p></div>';
+      }
     }
 
     async function deleteDocument(record) {
