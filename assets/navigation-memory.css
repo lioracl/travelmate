@@ -1,0 +1,3 @@
+.trip-action-back{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#1f7658;font-weight:900;box-shadow:var(--shadow)}
+.trip-action-back:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
+@media(max-width:700px){.section-head{align-items:flex-start;flex-wrap:wrap}.trip-action-back{order:-1;width:100%;justify-content:center}.hero-back{display:none}}
