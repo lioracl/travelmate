@@ -10,6 +10,22 @@
   }
 
   function key(city, country) { return normalize(city) + '|' + normalize(country); }
+  function flag(country) {
+    var aliases = {
+      'יפן': 'JP', japan: 'JP', 'איטליה': 'IT', italy: 'IT', 'צכיה': 'CZ', 'צכית': 'CZ', czechia: 'CZ', 'czech republic': 'CZ',
+      'ליטא': 'LT', lithuania: 'LT', 'ישראל': 'IL', israel: 'IL', 'גרמניה': 'DE', germany: 'DE', 'צרפת': 'FR', france: 'FR',
+      'ספרד': 'ES', spain: 'ES', 'פורטוגל': 'PT', portugal: 'PT', 'יוון': 'GR', greece: 'GR', 'בריטניה': 'GB', 'אנגליה': 'GB', 'united kingdom': 'GB', uk: 'GB',
+      'ארצות הברית': 'US', 'ארהב': 'US', usa: 'US', 'united states': 'US', 'קנדה': 'CA', canada: 'CA', 'הולנד': 'NL', netherlands: 'NL',
+      'בלגיה': 'BE', belgium: 'BE', 'אוסטריה': 'AT', austria: 'AT', 'שוויץ': 'CH', switzerland: 'CH', 'פולין': 'PL', poland: 'PL',
+      'הונגריה': 'HU', hungary: 'HU', 'קרואטיה': 'HR', croatia: 'HR', 'תאילנד': 'TH', thailand: 'TH', 'וייטנאם': 'VN', vietnam: 'VN',
+      'הודו': 'IN', india: 'IN', 'סין': 'CN', china: 'CN', 'דרום קוריאה': 'KR', 'south korea': 'KR', 'טורקיה': 'TR', turkey: 'TR',
+      'קפריסין': 'CY', cyprus: 'CY', 'גאורגיה': 'GE', georgia: 'GE', 'מקסיקו': 'MX', mexico: 'MX', 'ברזיל': 'BR', brazil: 'BR',
+      'ארגנטינה': 'AR', argentina: 'AR', 'אוסטרליה': 'AU', australia: 'AU', 'ניו זילנד': 'NZ', 'new zealand': 'NZ'
+    };
+    var normalized = normalize(country);
+    var code = /^[a-z]{2}$/i.test(normalized) ? normalized.toUpperCase() : aliases[normalized];
+    return code ? String.fromCodePoint.apply(String, code.split('').map(function (letter) { return 127397 + letter.charCodeAt(0); })) : '🌍';
+  }
   function readCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch (error) { return {}; } }
   function writeCache(cache) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (error) {} }
   function cached(city, country) { return readCache()[key(city, country)] || ''; }
@@ -76,5 +92,5 @@
     });
   }
 
-  window.TravelMateDestinationImages = { fallback: FALLBACK, cached: cached, resolve: resolve, apply: apply };
+  window.TravelMateDestinationImages = { fallback: FALLBACK, cached: cached, resolve: resolve, apply: apply, flag: flag };
 })();

@@ -49,6 +49,7 @@
     if (window.TravelMateDestinationImages) window.TravelMateDestinationImages.apply(document.querySelector('.custom-hero'), trip.city, trip.country);
     text('[data-city]', trip.city);
     text('[data-country]', trip.country);
+    text('[data-country-flag]', window.TravelMateDestinationImages ? window.TravelMateDestinationImages.flag(trip.country) : '🌍');
     text('[data-days]', trip.days);
     text('[data-type]', trip.type);
     text('[data-budget]', Number(trip.budget).toLocaleString('he-IL'));
