@@ -1,0 +1,58 @@
+.network-usage-meter {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  z-index: 115;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(120,145,126,.28);
+  border-radius: 999px;
+  padding: 6px 11px;
+  background: rgba(255,255,255,.92);
+  color: #275d45;
+  box-shadow: 0 8px 25px -14px rgba(41,37,36,.55);
+  backdrop-filter: blur(16px);
+  font-size: 11px;
+  font-weight: 900;
+  direction: rtl;
+}
+.network-usage-meter[data-network="cellular"] { color:#8d504b; background:rgba(255,244,242,.94) }
+.network-usage-meter[data-network="offline"],.network-usage-meter[data-network="unknown"] { color:#6b625c }
+.network-usage-meter i { font-size:13px }
+.network-usage-panel {
+  position: fixed;
+  top: max(52px, calc(env(safe-area-inset-top) + 48px));
+  left: max(10px, env(safe-area-inset-left));
+  z-index: 119;
+  width: min(340px, calc(100vw - 20px));
+  border: 1px solid rgba(120,145,126,.24);
+  border-radius: 22px;
+  padding: 16px;
+  background: rgba(255,255,255,.98);
+  color: #292524;
+  box-shadow: 0 22px 60px -22px rgba(41,37,36,.58);
+  direction: rtl;
+  text-align: right;
+}
+.network-usage-panel[hidden] { display:none!important }
+.network-usage-panel header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px }
+.network-usage-panel header small { display:block; color:#786f69; font-size:11px; margin-bottom:4px }
+.network-usage-panel header strong { font-size:15px }
+.network-usage-panel header button { width:34px; height:34px; display:grid; place-items:center; border:1px solid #e8e2dc; border-radius:999px; background:#fff; color:#292524 }
+.network-usage-total { display:flex; align-items:end; justify-content:space-between; gap:12px; margin:14px 0 8px; padding:13px; border-radius:16px; background:#eef6f0 }
+.network-usage-total span { font-size:12px; color:#5f6f64 }
+.network-usage-total strong { font-size:22px; color:#275d45 }
+.network-usage-panel p { margin:10px 0; color:#786f69; font-size:12px; line-height:1.55 }
+.network-mode-picker { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:12px }
+.network-mode-picker button { min-height:38px; border:1px solid #e8e2dc; border-radius:999px; background:#fff; color:#6b625c; font-size:11px; font-weight:900 }
+.network-mode-picker button.active { border-color:#78917e; background:#275d45; color:#fff }
+.network-reset { width:100%; min-height:38px; margin-top:10px; border:0; border-radius:999px; background:#f7f2ee; color:#8d504b; font-size:11px; font-weight:900 }
+.network-privacy { display:block; margin-top:10px; color:#786f69; font-size:10px; text-align:center }
+@media(max-width:650px) {
+  .network-usage-meter { top:max(8px,env(safe-area-inset-top)); left:max(8px,env(safe-area-inset-left)); min-height:32px; padding:5px 9px }
+  .network-usage-panel { top:max(48px,calc(env(safe-area-inset-top) + 44px)); left:8px; width:calc(100vw - 16px) }
+  .network-usage-meter.in-trip { top:max(86px,calc(env(safe-area-inset-top) + 82px)) }
+  .network-usage-panel.in-trip { top:max(126px,calc(env(safe-area-inset-top) + 122px)) }
+}
