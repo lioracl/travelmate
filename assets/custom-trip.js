@@ -46,6 +46,7 @@
     function text(selector, value) { document.querySelectorAll(selector).forEach(function (node) { node.textContent = value; }); }
     function format(value) { return new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00')); }
     document.title = trip.city + ', ' + trip.country + ' - TravelMate';
+    if (window.TravelMateDestinationImages) window.TravelMateDestinationImages.apply(document.querySelector('.custom-hero'), trip.city, trip.country);
     text('[data-city]', trip.city);
     text('[data-country]', trip.country);
     text('[data-days]', trip.days);

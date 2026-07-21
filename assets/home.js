@@ -80,7 +80,11 @@
   }
 
   function tripCard(trip) {
-    return cardShell(trip, false, 'trip/custom/index.html?id=' + encodeURIComponent(trip.id), 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80');
+    var images = window.TravelMateDestinationImages;
+    var background = images && images.cached(trip.city, trip.country) || images && images.fallback || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80';
+    var shell = cardShell(trip, false, 'trip/custom/index.html?id=' + encodeURIComponent(trip.id), background);
+    if (images) images.apply(shell.querySelector('.trip-card'), trip.city, trip.country);
+    return shell;
   }
 
   function renderTrips(trips) {
