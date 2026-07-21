@@ -1,4 +1,4 @@
-const CACHE_NAME='travelmate-smart-v20';
+const CACHE_NAME='travelmate-smart-v21';
 const CORE=[
   './',
   './index.html',
@@ -40,6 +40,8 @@ const CORE=[
   './assets/navigation-memory.js',
   './assets/transport-planner.css',
   './assets/transport-planner.js',
+  './assets/place-directions.css',
+  './assets/place-directions.js',
   './assets/app-icon.svg',
   './manifest.webmanifest'
 ];
