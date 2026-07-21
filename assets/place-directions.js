@@ -140,7 +140,7 @@
   }
 
   function enhanceResults(root) {
-    (root || document).querySelectorAll('.nearby-result, .places-grid .place-card').forEach(enhanceCard);
+    (root || document).querySelectorAll('.nearby-result, .places-grid .place-card, .saved-place').forEach(enhanceCard);
   }
 
   modal.addEventListener('click', function (event) {
@@ -162,7 +162,7 @@
   enhanceResults(document);
   new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
-      mutation.addedNodes.forEach(function (node) { if (node.nodeType === 1) enhanceResults(node.matches && node.matches('.nearby-result') ? node.parentNode : node); });
+      mutation.addedNodes.forEach(function (node) { if (node.nodeType === 1) enhanceResults(node.matches && node.matches('.nearby-result, .saved-place') ? node.parentNode : node); });
     });
   }).observe(document.body, { childList: true, subtree: true });
 })();
