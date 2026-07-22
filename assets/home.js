@@ -1,6 +1,29 @@
 (function () {
   'use strict';
 
+  var closeAppButton = document.querySelector('[data-close-app]');
+  if (closeAppButton) closeAppButton.addEventListener('click', function () {
+    closeAppButton.disabled = true;
+    closeAppButton.innerHTML = '<i class="fa-solid fa-power-off"></i> סוגר…';
+    try {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App && window.Capacitor.Plugins.App.exitApp) {
+        window.Capacitor.Plugins.App.exitApp();
+        return;
+      }
+      if (navigator.app && navigator.app.exitApp) {
+        navigator.app.exitApp();
+        return;
+      }
+      window.close();
+    } catch (error) {}
+    setTimeout(function () {
+      if (document.hidden) return;
+      closeAppButton.disabled = false;
+      closeAppButton.innerHTML = '<i class="fa-solid fa-mobile-screen-button"></i> סגור ממסך היישומים';
+      closeAppButton.title = 'בדפדפן רגיל מערכת ההפעלה אינה מאפשרת לאתר לסגור את החלון בעצמו';
+    }, 450);
+  });
+
   var form = document.querySelector('[data-destination-form]');
   var list = document.querySelector('[data-trip-list]');
   var addButton = list && list.querySelector('.add-destination');

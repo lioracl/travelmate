@@ -42,12 +42,31 @@
     } catch (error) { if (!state.rate) renderCurrency(true); }
   }
   function shekels(euros) { return Number(euros || 0) * Number(state.rate || 0) * (1 + state.fee / 100); }
+  function referenceShekels(euros) { return Number(euros || 0) * Number(state.rate || 0); }
+  function renderBudgetCategoryIls() {
+    document.querySelectorAll('#budget [data-expenses] .expense').forEach(function (row) {
+      var euroNode = row.querySelector('div span');
+      if (!euroNode) return;
+      if (!row.dataset.euroAmount) {
+        var match = euroNode.textContent.match(/[\d,.]+/);
+        row.dataset.euroAmount = match ? String(Number(match[0].replace(/,/g, ''))) : '0';
+      }
+      var insight = row.querySelector('[data-category-ils]');
+      if (!insight) {
+        insight = document.createElement('small');
+        insight.dataset.categoryIls = '';
+        insight.className = 'budget-category-ils';
+        euroNode.insertAdjacentElement('afterend', insight);
+      }
+      insight.textContent = state.rate ? 'כ־' + money(referenceShekels(row.dataset.euroAmount), 'ILS') + ' לפי השער היציג' : 'מעדכן סכום בשקלים…';
+    });
+  }
   function renderCurrency(failed) {
     document.querySelectorAll('[data-currency-insight]').forEach(function (host) {
       var amount = Number(host.dataset.euros || 0);
       host.innerHTML = state.rate ? '<div><span>כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>שער ייחוס: €1 = ₪' + state.rate.toFixed(4) + ' · ' + escapeHtml(state.rateDate || 'עדכון אחרון') + ' · <a href="https://frankfurter.dev/" target="_blank" rel="noopener">נתוני ECB דרך Frankfurter</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן שער אירו–שקל…') + '</span><small>הסכום באירו נשאר המטבע הראשי</small></div>';
       var button = host.querySelector('[data-fee-edit]'); if (button) button.onclick = editFee;
-    }); renderExpenseList();
+    }); renderBudgetCategoryIls(); renderExpenseList();
   }
   function editFee() { var value = prompt('מה עמלת ההמרה של הכרטיס שלך באחוזים?', String(state.fee)); if (value === null) return; var fee = Number(String(value).replace(',', '.')); if (!Number.isFinite(fee) || fee < 0 || fee > 20) return toast('יש להזין עמלה בין 0% ל־20%.'); state.fee = fee; writeJson(storageKey('currency-fee'), fee); saveTripData(); renderCurrency(); }
   function injectCurrencyCards() {
@@ -91,15 +110,84 @@
 
   function createMemoriesSection() {
     var content = document.querySelector('.content'); if (!content || document.getElementById('memories')) return; var section = document.createElement('section'); section.id = 'memories'; section.className = 'section trip-memories';
-    section.innerHTML = '<div class="section-head"><div><p>תמונות, רגעים וסיפור המסע</p><h1>אלבום וסיכום הטיול</h1></div></div><div class="memory-layout"><article class="album-card"><span class="memory-icon"><i class="fa-brands fa-google"></i></span><h2>אלבום Google Photos</h2><p>הדבק קישור לאלבום משותף של הטיול. הקישור נשמר עם הטיול, והתמונות נשארות ב־Google Photos.</p><form data-album-form><input name="url" type="url" inputmode="url" placeholder="https://photos.app.goo.gl/…"><button type="submit">שמירת קישור</button></form><div class="album-actions" data-album-actions></div><small>חיבור מלא לבחירת תמונות דורש הרשאת Google Photos Picker; קישור משותף הוא החיבור הפשוט והפרטי ביותר כעת.</small></article><article class="memory-card"><span class="memory-icon"><i class="fa-solid fa-pen-fancy"></i></span><h2>רגע מהטיול</h2><form data-memory-form><textarea name="note" maxlength="500" required placeholder="מה תרצה לזכור מהיום?"></textarea><button type="submit">שמירת רגע</button></form><div class="memory-list" data-memory-list></div></article></div><article class="trip-summary-card"><div><small>יומן מסע אוטומטי</small><h2>סיכום הטיול</h2><p>נבנה מהיעד, הזיכרונות וההוצאות ששמרת.</p></div><div class="trip-summary-text" data-trip-summary></div><div class="trip-summary-actions"><button type="button" data-summary-refresh><i class="fa-solid fa-rotate"></i> רענון</button><button type="button" data-summary-ai><i class="fa-solid fa-wand-magic-sparkles"></i> שדרוג עם נבו</button><button type="button" data-summary-copy><i class="fa-regular fa-copy"></i> העתקה</button></div></article>';
+    section.innerHTML = '<div class="section-head"><div><p>תמונות, רגעים וסיפור המסע</p><h1>אלבום וסיכום הטיול</h1></div></div><div class="memory-layout"><article class="album-card"><span class="memory-icon"><i class="fa-brands fa-google"></i></span><h2>אלבום Google Photos</h2><p>הדבק קישור לאלבום משותף של הטיול. הקישור נשמר עם הטיול, והתמונות נשארות ב־Google Photos.</p><form data-album-form><input name="url" type="url" inputmode="url" placeholder="https://photos.app.goo.gl/…"><button type="submit">שמירת קישור</button></form><div class="album-actions" data-album-actions></div><small>חיבור מלא לבחירת תמונות דורש הרשאת Google Photos Picker; קישור משותף הוא החיבור הפשוט והפרטי ביותר כעת.</small></article><article class="memory-card"><span class="memory-icon"><i class="fa-solid fa-pen-fancy"></i></span><h2>רגע מהטיול</h2><form data-memory-form><textarea name="note" maxlength="500" placeholder="מה תרצה לזכור מהיום?"></textarea><label class="memory-file-picker"><input name="attachments" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"><i class="fa-solid fa-paperclip"></i><span><strong>הוספת תמונות או מסמכים</strong><small>עד 5 קבצים, 25MB לכל קובץ · נשמר ישירות עם הרגע, ללא הכספת</small></span></label><div class="memory-file-selection" data-memory-file-selection hidden></div><p class="memory-upload-status" data-memory-upload-status></p><button type="submit">שמירת רגע</button></form><div class="memory-list" data-memory-list></div></article></div><article class="trip-summary-card"><div><small>יומן מסע אוטומטי</small><h2>סיכום הטיול</h2><p>נבנה מהיעד, הזיכרונות וההוצאות ששמרת.</p></div><div class="trip-summary-text" data-trip-summary></div><div class="trip-summary-actions"><button type="button" data-summary-refresh><i class="fa-solid fa-rotate"></i> רענון</button><button type="button" data-summary-ai><i class="fa-solid fa-wand-magic-sparkles"></i> שדרוג עם נבו</button><button type="button" data-summary-copy><i class="fa-regular fa-copy"></i> העתקה</button></div></article>';
     var external = content.querySelector('.external-resources'); if (external) content.insertBefore(section, external); else content.appendChild(section); var nav = document.querySelector('.sidebar nav'); if (nav && !nav.querySelector('[href="#memories"]')) nav.insertAdjacentHTML('beforeend', '<a href="#memories" aria-label="אלבום וסיכום"><i class="fa-solid fa-images"></i><span class="tip">אלבום וסיכום</span></a>');
     var albumForm = section.querySelector('[data-album-form]'); albumForm.url.value = state.albumUrl; albumForm.onsubmit = function (event) { event.preventDefault(); var url = event.target.url.value.trim(); if (url && !/^https:\/\/(photos\.app\.goo\.gl|photos\.google\.com)\//i.test(url)) return toast('יש להזין קישור תקין של Google Photos.'); state.albumUrl = url; writeJson(storageKey('album-url'), url); saveTripData(); renderAlbumActions(); renderSummary(); toast('קישור האלבום נשמר עם הטיול.'); };
-    section.querySelector('[data-memory-form]').onsubmit = function (event) { event.preventDefault(); state.memories.push({ id: Date.now(), note: event.target.note.value.trim(), date: new Date().toISOString() }); writeJson(storageKey('memories'), state.memories); saveTripData(); event.target.reset(); renderMemories(); renderSummary(); };
+    var memoryForm = section.querySelector('[data-memory-form]');
+    memoryForm.attachments.onchange = function () { renderSelectedMemoryFiles(memoryForm); };
+    memoryForm.onsubmit = async function (event) {
+      event.preventDefault();
+      var files = Array.prototype.slice.call(memoryForm.attachments.files || []);
+      var note = memoryForm.note.value.trim();
+      var status = section.querySelector('[data-memory-upload-status]');
+      if (!note && !files.length) return toast('כתוב זיכרון או בחר קובץ לצירוף.');
+      if (files.length > 5) return toast('אפשר לצרף עד 5 קבצים לכל רגע.');
+      if (files.some(function (file) { return file.size > 25 * 1024 * 1024; })) return toast('כל קובץ יכול להיות בגודל של עד 25MB.');
+      var submit = memoryForm.querySelector('button[type="submit"]');
+      submit.disabled = true; status.textContent = files.length ? 'מעלה את הקבצים ושומר את הרגע…' : 'שומר את הרגע…';
+      try {
+        var memoryId = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
+        var attachments = [];
+        for (var index = 0; index < files.length; index += 1) attachments.push(await storeMemoryAttachment(files[index], memoryId));
+        state.memories.push({ id: memoryId, note: note || 'קובץ מצורף', date: new Date().toISOString(), attachments: attachments });
+        writeJson(storageKey('memories'), state.memories); saveTripData(); memoryForm.reset(); renderSelectedMemoryFiles(memoryForm); status.textContent = ''; renderMemories(); renderSummary(); toast('הרגע והקבצים נשמרו.');
+      } catch (error) { status.textContent = 'לא הצלחנו לשמור את הקובץ. בדוק את החיבור ונסה שוב.'; }
+      finally { submit.disabled = false; }
+    };
     section.querySelector('[data-summary-refresh]').onclick = renderSummary; section.querySelector('[data-summary-ai]').onclick = function () { window.dispatchEvent(new CustomEvent('travelmate:ask-ai', { detail: { prompt: buildSummaryPrompt() } })); }; section.querySelector('[data-summary-copy]').onclick = function () { var text = section.querySelector('[data-trip-summary]').innerText; navigator.clipboard && navigator.clipboard.writeText(text).then(function () { toast('סיכום הטיול הועתק.'); }); };
     renderAlbumActions(); renderMemories(); renderSummary(); setupCollapsibleSections();
   }
   function renderAlbumActions() { var host = document.querySelector('[data-album-actions]'); if (!host) return; host.innerHTML = state.albumUrl ? '<a href="' + escapeHtml(state.albumUrl) + '" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> פתיחת האלבום</a><button type="button" data-album-remove>הסרת קישור</button>' : '<a href="https://photos.google.com/" target="_blank" rel="noopener"><i class="fa-solid fa-plus"></i> יצירת אלבום ב־Google Photos</a>'; var remove = host.querySelector('[data-album-remove]'); if (remove) remove.onclick = function () { state.albumUrl = ''; writeJson(storageKey('album-url'), ''); saveTripData(); document.querySelector('[data-album-form]').url.value = ''; renderAlbumActions(); renderSummary(); }; }
-  function renderMemories() { var host = document.querySelector('[data-memory-list]'); if (!host) return; host.innerHTML = state.memories.length ? state.memories.slice().reverse().map(function (memory) { return '<article><span>' + new Intl.DateTimeFormat('he-IL', { dateStyle: 'medium' }).format(new Date(memory.date)) + '</span><p>' + escapeHtml(memory.note) + '</p></article>'; }).join('') : '<div class="trip-experience-empty">עדיין לא נשמרו רגעים.</div>'; }
+  function renderSelectedMemoryFiles(form) { var host = document.querySelector('[data-memory-file-selection]'); if (!host) return; var files = Array.prototype.slice.call(form.attachments.files || []); host.hidden = !files.length; host.innerHTML = files.map(function (file) { return '<span><i class="fa-solid ' + (file.type.indexOf('image/') === 0 ? 'fa-image' : 'fa-file') + '"></i>' + escapeHtml(file.name) + ' <small>' + Math.max(1, Math.round(file.size / 1024)) + 'KB</small></span>'; }).join(''); }
+  function safeFileName(name) { return String(name || 'file').normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(-120) || 'file'; }
+  function memoryDatabase() { return new Promise(function (resolve, reject) { var request = indexedDB.open('travelmate-memory-files', 1); request.onupgradeneeded = function () { if (!request.result.objectStoreNames.contains('files')) request.result.createObjectStore('files'); }; request.onsuccess = function () { resolve(request.result); }; request.onerror = function () { reject(request.error); }; }); }
+  async function putLocalMemoryFile(key, file) { var database = await memoryDatabase(); return new Promise(function (resolve, reject) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').put(file, key); transaction.oncomplete = function () { database.close(); resolve(); }; transaction.onerror = function () { database.close(); reject(transaction.error); }; }); }
+  async function getLocalMemoryFile(key) { var database = await memoryDatabase(); return new Promise(function (resolve, reject) { var request = database.transaction('files').objectStore('files').get(key); request.onsuccess = function () { database.close(); resolve(request.result); }; request.onerror = function () { database.close(); reject(request.error); }; }); }
+  async function deleteLocalMemoryFile(key) { var database = await memoryDatabase(); return new Promise(function (resolve) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = function () { database.close(); resolve(); }; transaction.onerror = function () { database.close(); resolve(); }; }); }
+  async function storeMemoryAttachment(file, memoryId) {
+    try {
+      if (!cloud) throw new Error('no-cloud');
+      var session = await cloud.getSession();
+      if (!session || !session.user) throw new Error('signed-out');
+      var client = await cloud.getClient();
+      var path = session.user.id + '/memories/' + encodeURIComponent(tripId()) + '/' + memoryId + '/' + Date.now() + '-' + safeFileName(file.name);
+      var result = await client.storage.from('travel-documents').upload(path, file, { contentType: file.type || 'application/octet-stream', cacheControl: '0', upsert: false });
+      if (result.error) throw result.error;
+      return { name: file.name, type: file.type || 'application/octet-stream', size: file.size, storagePath: path, cloud: true };
+    } catch (error) {
+      var key = tripId() + ':' + memoryId + ':' + Date.now() + ':' + Math.random().toString(36).slice(2);
+      await putLocalMemoryFile(key, file);
+      return { name: file.name, type: file.type || 'application/octet-stream', size: file.size, localKey: key, local: true };
+    }
+  }
+  async function openMemoryAttachment(attachment) {
+    try {
+      var url = '';
+      if (attachment.cloud) {
+        var client = await cloud.getClient(); var signed = await client.storage.from('travel-documents').createSignedUrl(attachment.storagePath, 300);
+        if (signed.error || !signed.data) throw signed.error || new Error('missing-url'); url = signed.data.signedUrl;
+      } else {
+        var blob = await getLocalMemoryFile(attachment.localKey); if (!blob) throw new Error('missing-file'); url = URL.createObjectURL(blob); setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+      }
+      var link = document.createElement('a'); link.href = url; link.target = '_blank'; link.rel = 'noopener'; link.click();
+    } catch (error) { toast('הקובץ אינו זמין במכשיר הזה כרגע.'); }
+  }
+  async function removeMemory(memoryId) {
+    var memory = state.memories.find(function (item) { return String(item.id) === String(memoryId); }); if (!memory) return;
+    var attachments = Array.isArray(memory.attachments) ? memory.attachments : [];
+    try { var cloudPaths = attachments.filter(function (item) { return item.cloud && item.storagePath; }).map(function (item) { return item.storagePath; }); if (cloudPaths.length && cloud) { var client = await cloud.getClient(); await client.storage.from('travel-documents').remove(cloudPaths); } } catch (error) {}
+    await Promise.all(attachments.filter(function (item) { return item.localKey; }).map(function (item) { return deleteLocalMemoryFile(item.localKey); }));
+    state.memories = state.memories.filter(function (item) { return String(item.id) !== String(memoryId); }); writeJson(storageKey('memories'), state.memories); saveTripData(); renderMemories(); renderSummary();
+  }
+  function renderMemories() {
+    var host = document.querySelector('[data-memory-list]'); if (!host) return;
+    host.innerHTML = state.memories.length ? state.memories.slice().reverse().map(function (memory) {
+      var attachments = Array.isArray(memory.attachments) ? memory.attachments : [];
+      return '<article><header><span>' + new Intl.DateTimeFormat('he-IL', { dateStyle: 'medium' }).format(new Date(memory.date)) + '</span><button type="button" data-memory-delete="' + escapeHtml(memory.id) + '" aria-label="מחיקת הרגע"><i class="fa-solid fa-trash"></i></button></header><p>' + escapeHtml(memory.note) + '</p>' + (attachments.length ? '<div class="memory-attachments">' + attachments.map(function (attachment, index) { return '<button type="button" data-memory-id="' + escapeHtml(memory.id) + '" data-memory-attachment="' + index + '"><i class="fa-solid ' + (String(attachment.type).indexOf('image/') === 0 ? 'fa-image' : 'fa-file-lines') + '"></i><span>' + escapeHtml(attachment.name) + '<small>' + (attachment.local ? 'נשמר במכשיר' : 'נשמר בענן הפרטי') + '</small></span></button>'; }).join('') + '</div>' : '') + '</article>';
+    }).join('') : '<div class="trip-experience-empty">עדיין לא נשמרו רגעים.</div>';
+    host.querySelectorAll('[data-memory-attachment]').forEach(function (button) { button.onclick = function () { var memory = state.memories.find(function (item) { return String(item.id) === String(button.dataset.memoryId); }); if (memory && memory.attachments[Number(button.dataset.memoryAttachment)]) openMemoryAttachment(memory.attachments[Number(button.dataset.memoryAttachment)]); }; });
+    host.querySelectorAll('[data-memory-delete]').forEach(function (button) { button.onclick = function () { if (confirm('למחוק את הרגע ואת הקבצים שצורפו אליו?')) removeMemory(button.dataset.memoryDelete); }; });
+  }
   function summaryText() { var trip = state.trip || {}; var total = state.expenses.reduce(function (sum, item) { return sum + expenseInEuros(item); }, 0); var lines = ['הטיול ל' + [trip.city, trip.country].filter(Boolean).join(', ') + (trip.start && trip.end ? ' התקיים בין ' + trip.start + ' ל־' + trip.end + '.' : '.')]; if (state.memories.length) lines.push('הרגעים שנשמרו: ' + state.memories.slice(-5).map(function (item) { return item.note; }).join(' · ') + '.'); if (state.expenses.length) lines.push('נרשמו ' + state.expenses.length + ' הוצאות בסכום משוער של ' + money(total, 'EUR') + (state.rate ? ' — כ־' + money(shekels(total), 'ILS') + ' כולל עמלת ההמרה שהוגדרה.' : '.')); if (state.albumUrl) lines.push('אלבום התמונות מחובר וזמין לפתיחה מהאפליקציה.'); if (!state.memories.length && !state.expenses.length) lines.push('ככל שתשמור זיכרונות והוצאות, הסיכום יהפוך עשיר ומדויק יותר.'); return lines.join('\n\n'); }
   function renderSummary() { var host = document.querySelector('[data-trip-summary]'); if (host) host.textContent = summaryText(); }
   function buildSummaryPrompt() { return 'כתוב סיכום מסע מרגש אך אמיתי לטיול ב' + [state.trip.city, state.trip.country].filter(Boolean).join(', ') + '. השתמש רק בפרטים הבאים. זיכרונות: ' + state.memories.map(function (item) { return item.note; }).join(' | ') + '. הוצאות: ' + state.expenses.map(function (item) { return item.category + ' ' + item.amount + ' ' + (item.currency || 'EUR'); }).join(' | ') + '. כלול פתיחה קצרה, רגעים בולטים, נתון תקציבי וסיום אישי. אל תמציא מקומות או אירועים שלא סופקו.'; }

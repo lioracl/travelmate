@@ -59,11 +59,27 @@
     });
   }
 
-  // A protected entry sits behind the trip overview. Device Back can reach it,
-  // but the popstate handler immediately restores the current trip instead of
-  // allowing the browser to leave it. Only the visible top arrow exits the trip.
-  history.replaceState({ travelMateTripGuard: true }, '', baseUrl.href + '#overview');
-  history.pushState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
+  // Keep several same-document entries behind the overview. Mobile browsers can
+  // dispatch more than one Back event before JavaScript gets a chance to respond;
+  // the extra entries keep even a rapid double/triple press inside this trip.
+  var guardDepth = 8;
+  function armTripShield() {
+    history.replaceState({ travelMateTripGuard: true, travelMateGuardIndex: 0 }, '', baseUrl.href + '#overview');
+    for (var guardIndex = 1; guardIndex <= guardDepth; guardIndex += 1) {
+      history.pushState({ travelMateTripGuard: true, travelMateGuardIndex: guardIndex }, '', baseUrl.href + '#overview');
+    }
+    history.pushState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
+  }
+  function restoreProtectedOverview() {
+    history.replaceState({ travelMateTripGuard: true, travelMateGuardIndex: 0 }, '', baseUrl.href + '#overview');
+    for (var guardIndex = 1; guardIndex <= guardDepth; guardIndex += 1) {
+      history.pushState({ travelMateTripGuard: true, travelMateGuardIndex: guardIndex }, '', baseUrl.href + '#overview');
+    }
+    history.pushState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
+    lastKnownSection = 'overview';
+    scrollToCurrent();
+  }
+  armTripShield();
   if (requestedHash !== '#overview') pushSection(requestedHash.slice(1), 'overview');
 
   document.addEventListener('click', function (event) {
@@ -109,12 +125,10 @@
   window.addEventListener('popstate', function (event) {
     closeOverlays();
     if (event.state && event.state.travelMateTripGuard) {
-      history.pushState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
-      lastKnownSection = 'overview';
-      scrollToCurrent();
+      restoreProtectedOverview();
       return;
     }
-    if (event.state && event.state.travelMateAction) {
+    if (!event.state || event.state.travelMateAction || event.state.travelMateModal || event.state.travelMateOverlay) {
       history.replaceState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
       lastKnownSection = 'overview';
       scrollToCurrent();
@@ -122,6 +136,12 @@
     }
     lastKnownSection = sectionId();
     scrollToCurrent();
+  });
+
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted && !(history.state && (history.state.travelMateTrip || history.state.travelMateTripGuard))) {
+      restoreProtectedOverview();
+    }
   });
 
   addSectionBackButtons();
