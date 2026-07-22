@@ -30,7 +30,9 @@
     updateExitButtons();
   }
   function pushSection(id, from) {
-    history.pushState({ travelMateTrip: true, travelMateAction: id, travelMateFrom: from || sectionId() }, '', baseUrl.href + '#' + id);
+    var nextState = { travelMateTrip: true, travelMateAction: id, travelMateFrom: from || sectionId() };
+    if (history.state && history.state.travelMateAction) history.replaceState(nextState, '', baseUrl.href + '#' + id);
+    else history.pushState(nextState, '', baseUrl.href + '#' + id);
     lastKnownSection = id;
     scrollToCurrent();
   }
@@ -108,6 +110,12 @@
     closeOverlays();
     if (event.state && event.state.travelMateTripGuard) {
       history.pushState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
+      lastKnownSection = 'overview';
+      scrollToCurrent();
+      return;
+    }
+    if (event.state && event.state.travelMateAction) {
+      history.replaceState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
       lastKnownSection = 'overview';
       scrollToCurrent();
       return;
