@@ -6,6 +6,8 @@
   var STORAGE_KEY = 'travelmate-route-origin';
   var currentPlace = null;
   var resolvedTrip = null;
+  var shareModal = null;
+  var sharePlace = null;
   if (window.travelMateTripReady) {
     Promise.resolve(window.travelMateTripReady).then(function (trip) { resolvedTrip = trip || null; }).catch(function () {});
   }
@@ -27,6 +29,168 @@
   function destinationFor(place) {
     if (place.lat && place.lon) return place.lat + ',' + place.lon;
     return [place.name, getTripContext()].filter(Boolean).join(', ');
+  }
+
+  function safeUrl(value) {
+    try {
+      var url = new URL(String(value || ''), location.href);
+      return /^https?:$/.test(url.protocol) ? url.href : '';
+    } catch (error) { return ''; }
+  }
+
+  function safeExternalUrl(value) {
+    var href = safeUrl(value);
+    if (!href) return '';
+    try {
+      var parsed = new URL(href);
+      if (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost') return '';
+      if (parsed.origin === location.origin && parsed.pathname === location.pathname) return '';
+      return href;
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function cleanPlace(place) {
+    place = place || {};
+    return {
+      name: String(place.name || 'מקום ששיתפו איתי').trim().slice(0, 160),
+      category: String(place.category || '').trim().slice(0, 100),
+      description: String(place.description || '').trim().slice(0, 320),
+      lat: String(place.lat || '').trim().slice(0, 30),
+      lon: String(place.lon || '').trim().slice(0, 30),
+      image: safeUrl(place.image),
+      officialUrl: safeExternalUrl(place.officialUrl),
+      ratingsUrl: safeUrl(place.ratingsUrl || place.maps),
+      sourceUrl: safeExternalUrl(place.sourceUrl)
+    };
+  }
+
+  function placeFromCard(card) {
+    var title = card.querySelector('h3');
+    var description = card.querySelector('p');
+    var category = card.querySelector('.nearby-type, .saved-place-type');
+    var image = card.querySelector('img');
+    var ratings = card.querySelector('.google-rating-link');
+    var officialIcon = card.querySelector('.nearby-links a i.fa-globe');
+    var source = card.querySelector('.nearby-links a[href*="openstreetmap.org"]');
+    return cleanPlace({
+      name: title && title.textContent,
+      description: description && description.textContent,
+      category: category && category.textContent,
+      image: image && image.src,
+      lat: card.dataset.placeLat,
+      lon: card.dataset.placeLon,
+      ratingsUrl: ratings && ratings.href,
+      officialUrl: officialIcon && officialIcon.closest('a') && officialIcon.closest('a').href,
+      sourceUrl: source && source.href
+    });
+  }
+
+  function appLinkFor(place) {
+    var trip = resolvedTrip || window.travelMateCurrentTrip || {};
+    var link;
+    if (/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) {
+      link = new URL('https://lioracl.github.io/travelmate/trip/custom/index.html');
+      var localId = new URLSearchParams(location.search).get('id');
+      if (localId) link.searchParams.set('id', localId);
+    } else {
+      link = new URL(location.href);
+      link.search = '';
+      if (trip.id) link.searchParams.set('id', trip.id);
+      else {
+        var currentId = new URLSearchParams(location.search).get('id');
+        if (currentId) link.searchParams.set('id', currentId);
+      }
+    }
+    link.searchParams.set('sharedPlace', '1');
+    link.searchParams.set('placeName', place.name);
+    if (place.category) link.searchParams.set('placeCategory', place.category);
+    if (place.description) link.searchParams.set('placeInfo', place.description.slice(0, 180));
+    if (place.lat) link.searchParams.set('placeLat', place.lat);
+    if (place.lon) link.searchParams.set('placeLon', place.lon);
+    if (place.ratingsUrl) link.searchParams.set('placeRatings', place.ratingsUrl);
+    if (place.officialUrl) link.searchParams.set('placeOfficial', place.officialUrl);
+    link.hash = 'places';
+    return link.href;
+  }
+
+  function shareTextFor(place) {
+    var lines = ['📍 ' + place.name];
+    if (place.category) lines.push(place.category);
+    if (place.description) lines.push(place.description);
+    if (place.ratingsUrl) lines.push('⭐ ציונים וביקורות: ' + place.ratingsUrl);
+    if (place.officialUrl) lines.push('🌐 אתר רשמי: ' + place.officialUrl);
+    lines.push('🧭 פתיחה וניווט ב־TravelMate: ' + appLinkFor(place));
+    return lines.join('\n');
+  }
+
+  function buildShareModal() {
+    var section = document.createElement('section');
+    section.className = 'place-share-backdrop';
+    section.dataset.placeShareModal = '';
+    section.setAttribute('aria-hidden', 'true');
+    section.innerHTML = '<div class="place-share-dialog" role="dialog" aria-modal="true" aria-labelledby="place-share-title"><header><div><small>שיתוף חכם</small><h2 id="place-share-title" data-place-share-title>שיתוף מקום</h2></div><button type="button" data-place-share-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header><p data-place-share-summary></p><div class="place-share-actions"><button type="button" class="whatsapp" data-place-share-whatsapp><i class="fa-brands fa-whatsapp"></i><span><strong>שליחה ב־WhatsApp</strong><small>כולל פרטים וקישור חזרה לאפליקציה</small></span></button><button type="button" data-place-share-native><i class="fa-solid fa-share-nodes"></i><span><strong>שיתוף במכשיר</strong><small>הודעות, דוא״ל ואפליקציות נוספות</small></span></button><button type="button" data-place-share-copy><i class="fa-solid fa-link"></i><span><strong>העתקת קישור</strong><small>קישור חכם למקום ולניווט</small></span></button></div><p class="place-share-status" data-place-share-status role="status"></p></div>';
+    document.body.appendChild(section);
+    section.addEventListener('click', function (event) {
+      if (event.target === section || event.target.closest('[data-place-share-close]')) closeShareModal();
+      if (event.target.closest('[data-place-share-whatsapp]')) shareToWhatsApp(sharePlace);
+      if (event.target.closest('[data-place-share-native]')) nativeShare(sharePlace);
+      if (event.target.closest('[data-place-share-copy]')) copyShareLink(sharePlace);
+    });
+    return section;
+  }
+
+  function openShareModal(place) {
+    sharePlace = cleanPlace(place);
+    if (!shareModal) shareModal = buildShareModal();
+    shareModal.querySelector('[data-place-share-title]').textContent = 'שיתוף ' + sharePlace.name;
+    shareModal.querySelector('[data-place-share-summary]').textContent = sharePlace.description || 'הפרטים והיעד יצורפו אוטומטית לקישור.';
+    shareModal.querySelector('[data-place-share-status]').textContent = '';
+    shareModal.classList.add('open');
+    shareModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('place-share-open');
+    shareModal.querySelector('[data-place-share-close]').focus();
+  }
+
+  function closeShareModal() {
+    if (!shareModal) return;
+    shareModal.classList.remove('open');
+    shareModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('place-share-open');
+    sharePlace = null;
+  }
+
+  function shareToWhatsApp(place) {
+    if (!place) return;
+    window.open('https://wa.me/?text=' + encodeURIComponent(shareTextFor(cleanPlace(place))), '_blank', 'noopener');
+  }
+
+  async function nativeShare(place) {
+    if (!place) return;
+    place = cleanPlace(place);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: place.name + ' · TravelMate', text: shareTextFor(place), url: appLinkFor(place) });
+        return;
+      } catch (error) { if (error && error.name === 'AbortError') return; }
+    }
+    shareToWhatsApp(place);
+  }
+
+  async function copyShareLink(place) {
+    if (!place) return;
+    var link = appLinkFor(cleanPlace(place));
+    try { await navigator.clipboard.writeText(link); }
+    catch (error) {
+      var input = document.createElement('textarea');
+      input.value = link;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      input.remove();
+    }
+    if (shareModal) shareModal.querySelector('[data-place-share-status]').textContent = 'הקישור הועתק.';
   }
 
   function mapsDirections(mode, place, origin) {
@@ -119,7 +283,7 @@
   }
 
   function openModal(place) {
-    currentPlace = place;
+    currentPlace = cleanPlace(place);
     modal.querySelector('[data-directions-place]').textContent = 'איך מגיעים אל ' + place.name + '?';
     modal.querySelector('[data-directions-city]').textContent = getTripContext() || 'מרכז היעד';
     renderModes();
@@ -147,19 +311,57 @@
       var content = card.querySelector('div') || card;
       content.appendChild(links);
     }
+    var place = placeFromCard(card);
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'place-directions-button';
     button.innerHTML = '<i class="fa-solid fa-route"></i> איך מגיעים?';
     button.addEventListener('click', function () {
-      openModal({ name: title.textContent.trim(), lat: card.dataset.placeLat || '', lon: card.dataset.placeLon || '' });
+      openModal(placeFromCard(card));
     });
+    var shareButton = document.createElement('button');
+    shareButton.type = 'button';
+    shareButton.className = 'place-share-button';
+    shareButton.innerHTML = '<i class="fa-brands fa-whatsapp"></i> שיתוף מקום';
+    shareButton.addEventListener('click', function () { openShareModal(placeFromCard(card)); });
     links.prepend(button);
+    links.insertBefore(shareButton, button.nextSibling);
     card.dataset.directionsReady = '1';
   }
 
   function enhanceResults(root) {
     (root || document).querySelectorAll('.nearby-result, .places-grid .place-card, .saved-place').forEach(enhanceCard);
+  }
+
+  function sharedPlaceFromUrl() {
+    var params = new URLSearchParams(location.search);
+    if (params.get('sharedPlace') !== '1' || !params.get('placeName')) return null;
+    return cleanPlace({
+      name: params.get('placeName'),
+      category: params.get('placeCategory'),
+      description: params.get('placeInfo'),
+      lat: params.get('placeLat'),
+      lon: params.get('placeLon'),
+      ratingsUrl: params.get('placeRatings'),
+      officialUrl: params.get('placeOfficial')
+    });
+  }
+
+  function showSharedPlaceCard() {
+    var place = sharedPlaceFromUrl();
+    var section = document.getElementById('places');
+    if (!place || !section || section.querySelector('[data-shared-place-card]')) return;
+    var card = document.createElement('article');
+    card.className = 'shared-place-card';
+    card.dataset.sharedPlaceCard = '';
+    card.innerHTML = '<span class="shared-place-icon"><i class="fa-solid fa-location-dot"></i></span><div><small>מקום ששיתפו איתך</small><h2>' + escapeHtml(place.name) + '</h2>' + (place.description ? '<p>' + escapeHtml(place.description) + '</p>' : '') + '</div><div class="shared-place-actions"><button type="button" data-shared-place-navigate><i class="fa-solid fa-route"></i> ניווט</button><button type="button" data-shared-place-share><i class="fa-solid fa-share-nodes"></i> שיתוף</button></div>';
+    card.addEventListener('click', function (event) {
+      if (event.target.closest('[data-shared-place-navigate]')) openModal(place);
+      if (event.target.closest('[data-shared-place-share]')) openShareModal(place);
+    });
+    var heading = section.querySelector('.section-head');
+    if (heading) heading.insertAdjacentElement('afterend', card);
+    else section.prepend(card);
   }
 
   modal.addEventListener('click', function (event) {
@@ -178,7 +380,18 @@
   });
   document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
 
+  window.TravelMatePlaceActions = {
+    navigate: function (place) { openModal(cleanPlace(place)); },
+    share: function (place) { openShareModal(cleanPlace(place)); },
+    whatsApp: function (place) { shareToWhatsApp(cleanPlace(place)); },
+    appLink: function (place) { return appLinkFor(cleanPlace(place)); },
+    clean: cleanPlace
+  };
+  document.addEventListener('travelmate:navigate-place', function (event) { openModal(cleanPlace(event.detail)); });
+  document.addEventListener('travelmate:share-place', function (event) { openShareModal(cleanPlace(event.detail)); });
+
   enhanceResults(document);
+  showSharedPlaceCard();
   new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
       mutation.addedNodes.forEach(function (node) { if (node.nodeType === 1) enhanceResults(node.matches && node.matches('.nearby-result, .saved-place') ? node.parentNode : node); });

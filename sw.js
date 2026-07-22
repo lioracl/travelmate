@@ -1,4 +1,4 @@
-const CACHE_NAME='travelmate-smart-v32';
+const CACHE_NAME='travelmate-smart-v33';
 const CORE=[
   './',
   './index.html',
@@ -35,12 +35,14 @@ const CORE=[
   './assets/network-usage.css',
   './assets/network-usage.js',
   './assets/collaboration.css',
+  './assets/chat-place-sharing.css',
   './assets/collaboration.js',
   './assets/navigation-memory.css',
   './assets/navigation-memory.js',
   './assets/transport-planner.css',
   './assets/transport-planner.js',
   './assets/place-directions.css',
+  './assets/place-sharing.css',
   './assets/place-directions.js',
   './assets/app-icon.svg',
   './manifest.webmanifest'
