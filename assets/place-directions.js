@@ -56,6 +56,16 @@
     return 'https://waze.com/ul?' + params.toString();
   }
 
+  function gettDirections(place) {
+    var params = new URLSearchParams({ pickup: 'my_location' });
+    if (place.lat && place.lon) {
+      params.set('dropoff_latitude', place.lat);
+      params.set('dropoff_longitude', place.lon);
+    }
+    params.set('dropoffpoi_name_optional', place.name || destinationFor(place));
+    return 'gett://order?' + params.toString();
+  }
+
   function buildModal() {
     var modal = document.createElement('section');
     modal.className = 'place-directions-backdrop';
@@ -104,7 +114,8 @@
       modeLink('fa-car', 'רכב', 'ניווט לפי עומסי התנועה', mapsDirections('driving', currentPlace, origin.value)) +
       modeLink('fa-bicycle', 'אופניים', 'מסלול רכיבה כאשר זמין', mapsDirections('bicycling', currentPlace, origin.value)) +
       modeLink('fa-diamond-turn-right', 'Waze', 'המיקום הנוכחי נלקח אוטומטית והיעד כבר מוזן', wazeDirections(currentPlace)) +
-      modeLink('fa-taxi', 'מונית Uber', origin.mode === 'gps' ? 'נקודת האיסוף היא המיקום הנוכחי והיעד כבר מוזן' : 'נקודת האיסוף והיעד מוכנים באפליקציה', uberDirections(currentPlace, origin.mode, origin.value));
+      modeLink('fa-taxi', 'מונית Uber', origin.mode === 'gps' ? 'נקודת האיסוף היא המיקום הנוכחי והיעד כבר מוזן' : 'נקודת האיסוף והיעד מוכנים באפליקציה', uberDirections(currentPlace, origin.mode, origin.value)) +
+      modeLink('fa-car-side', 'מונית Gett', 'Gett תיפתח עם המיקום הנוכחי כנקודת איסוף ועם היעד שנבחר', gettDirections(currentPlace));
   }
 
   function openModal(place) {
