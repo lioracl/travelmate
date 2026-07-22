@@ -131,7 +131,7 @@ Deno.serve(async (request) => {
     ].join('\n');
 
     if (receipt) {
-      const receiptResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${Deno.env.get('GEMINI_MODEL') || 'gemini-3.5-flash'}:generateContent`, {
+      const receiptResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash'}:generateContent`, {
         method: 'POST',
         headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -146,7 +146,7 @@ Deno.serve(async (request) => {
       return json({ receipt: receiptJson(receiptText), provider: 'gemini', remaining: usage.remaining });
     }
 
-    const model = Deno.env.get('GEMINI_MODEL') || 'gemini-3.5-flash';
+    const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
     const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: 'POST',
       headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
@@ -158,8 +158,11 @@ Deno.serve(async (request) => {
     });
 
     if (!geminiResponse.ok) {
-      console.error('Gemini request failed', geminiResponse.status, await geminiResponse.text());
-      return json({ error: 'AI_PROVIDER_ERROR' }, geminiResponse.status === 429 ? 429 : 502);
+      const providerText = await geminiResponse.text();
+      let providerCode = '';
+      try { providerCode = JSON.parse(providerText)?.error?.status || ''; } catch (error) {}
+      console.error('Gemini request failed', geminiResponse.status, providerText);
+      return json({ error: 'AI_PROVIDER_ERROR', providerStatus: geminiResponse.status, providerCode }, geminiResponse.status === 429 ? 429 : 502);
     }
     const response = await geminiResponse.json();
     const answer = outputText(response);

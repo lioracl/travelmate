@@ -12,7 +12,21 @@
   var theme = document.createElement('meta'); theme.name = 'theme-color'; theme.content = '#292524'; document.head.appendChild(theme);
   var serviceWorkerRegistration = null;
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register(new URL('sw.js', rootUrl).href).then(function (registration) { serviceWorkerRegistration = registration; }).catch(function () {});
+    var hadServiceWorkerController = Boolean(navigator.serviceWorker.controller);
+    var serviceWorkerReloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadServiceWorkerController || serviceWorkerReloaded) return;
+      serviceWorkerReloaded = true;
+      try {
+        if (sessionStorage.getItem('travelmate-sw-refresh-v26') === 'done') return;
+        sessionStorage.setItem('travelmate-sw-refresh-v26', 'done');
+      } catch (error) {}
+      location.reload();
+    });
+    navigator.serviceWorker.register(new URL('sw.js', rootUrl).href, { updateViaCache: 'none' }).then(function (registration) {
+      serviceWorkerRegistration = registration;
+      registration.update().catch(function () {});
+    }).catch(function () {});
   }
 
   if (!/\/trip\//.test(location.pathname.replace(/\\/g, '/'))) return;
