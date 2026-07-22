@@ -147,7 +147,15 @@
     state.messages.forEach(function (message) { addMessage(message.role, message.content); });
   }
 
-  function setOpen(open) {
+  function setOpen(open, fromHistory) {
+    if (open && !state.open && !fromHistory && !(history.state && history.state.travelMateOverlay === 'ai')) {
+      var overlayState = Object.assign({}, history.state || {}, { travelMateTrip: true, travelMateOverlay: 'ai' });
+      history.pushState(overlayState, '', location.href);
+    }
+    if (!open && state.open && !fromHistory && history.state && history.state.travelMateOverlay === 'ai') {
+      history.back();
+      return;
+    }
     state.open = open; ui.panel.hidden = !open; ui.orb.setAttribute('aria-expanded', String(open));
     if (open) { lockPageScroll(); syncVisualViewport(); ui.input.focus(); ui.chat.scrollTop = ui.chat.scrollHeight; setTimeout(syncVisualViewport, 120); }
     else unlockPageScroll();
@@ -272,6 +280,9 @@
     setOpen(true);
     if (prompt) { ui.input.value = prompt; autoGrow(); }
     ui.input.focus();
+  });
+  window.addEventListener('popstate', function () {
+    if (state.open && !(history.state && history.state.travelMateOverlay === 'ai')) setOpen(false, true);
   });
   document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && state.open) setOpen(false); });
   document.addEventListener('touchmove', function (event) {
