@@ -7,6 +7,7 @@
   var baseUrl = new URL(location.href);
   baseUrl.hash = '';
   baseUrl.searchParams.delete('invite');
+  var lastKnownSection = location.hash.replace(/^#/, '') || 'overview';
   try { sessionStorage.setItem('travelmate-last-trip-url', baseUrl.href); } catch (error) {}
 
   function sectionId() { return location.hash.replace(/^#/, '') || 'overview'; }
@@ -23,6 +24,8 @@
   function updateBackLabels() {
     var inside = !isOverview() || !!document.querySelector('.modal-backdrop.open');
     document.querySelectorAll('.mobile-back,.hero-back').forEach(function (button) {
+      if (!button.dataset.tripExitHref) button.dataset.tripExitHref = button.getAttribute('href') || '../../index.html';
+      button.setAttribute('href', inside ? '#overview' : button.dataset.tripExitHref);
       button.setAttribute('aria-label', inside ? 'חזרה לטיול' : 'חזרה לכל הטיולים');
       if (button.classList.contains('hero-back')) {
         var label = inside ? 'חזרה לטיול' : 'כל הטיולים';
@@ -55,18 +58,20 @@
   var initialHash = location.hash;
   if (initialHash && initialHash !== '#overview') {
     history.replaceState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
-    history.pushState({ travelMateTrip: true, travelMateAction: initialHash.slice(1) }, '', baseUrl.href + initialHash);
+    history.pushState({ travelMateTrip: true, travelMateAction: initialHash.slice(1), travelMateFrom: 'overview' }, '', baseUrl.href + initialHash);
   } else {
     history.replaceState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + (initialHash || '#overview'));
   }
 
   document.addEventListener('click', function (event) {
-    var sectionLink = event.target.closest('a[href^="#"]');
+    var pageBack = event.target.closest('.mobile-back,.hero-back');
+    var sectionLink = pageBack ? null : event.target.closest('a[href^="#"]');
     if (sectionLink && sectionLink.getAttribute('href').length > 1) {
       var id = sectionLink.getAttribute('href').slice(1);
       if (document.getElementById(id)) {
         event.preventDefault();
-        history.pushState({ travelMateTrip: true, travelMateAction: id }, '', baseUrl.href + '#' + id);
+        if (id !== sectionId()) history.pushState({ travelMateTrip: true, travelMateAction: id, travelMateFrom: sectionId() }, '', baseUrl.href + '#' + id);
+        lastKnownSection = id;
         scrollToCurrent();
         closeOverlays();
         return;
@@ -79,8 +84,7 @@
       return;
     }
 
-    var pageBack = event.target.closest('.mobile-back,.hero-back');
-    if (pageBack && !isOverview()) {
+    if (pageBack && (!isOverview() || !!document.querySelector('.modal-backdrop.open'))) {
       event.preventDefault();
       returnToTrip();
       return;
@@ -99,8 +103,18 @@
     }
   }, true);
 
+  window.addEventListener('hashchange', function () {
+    var id = sectionId();
+    if (!(history.state && history.state.travelMateTrip)) {
+      history.replaceState({ travelMateTrip: true, travelMateAction: id, travelMateFrom: lastKnownSection }, '', location.href);
+    }
+    lastKnownSection = id;
+    scrollToCurrent();
+  });
+
   window.addEventListener('popstate', function () {
     closeOverlays();
+    lastKnownSection = sectionId();
     scrollToCurrent();
   });
 
