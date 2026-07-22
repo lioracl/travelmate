@@ -112,13 +112,28 @@
   function setStatus(value) { ui.status.textContent = value; }
   function typingRow() { return addMessage('assistant', '<span class="ai-typing" aria-label="נבו חושב"><i></i><i></i><i></i></span>', { html: true, temporary: true }); }
 
+  function activeCloud() { return window.TravelMateCloud || cloud; }
+
   async function getSession() {
-    if (!cloud) return null;
-    try { state.session = await cloud.getSession(); return state.session; } catch (error) { return null; }
+    var service = activeCloud();
+    if (!service) return null;
+    try {
+      state.session = await service.getSession();
+      if (state.session && state.session.expires_at && state.session.expires_at * 1000 < Date.now() + 60000) {
+        var client = await service.getClient();
+        var refreshed = await client.auth.refreshSession();
+        state.session = refreshed.data && refreshed.data.session || state.session;
+      }
+      return state.session;
+    } catch (error) { return null; }
   }
 
   function friendlyError(error) {
-    var message = String(error && (error.message || error.context && error.context.status) || '');
+    var message = String(error && (error.travelMateCode || error.message || error.context && error.context.status) || '');
+    if (/AI_NOT_CONFIGURED/i.test(message)) return 'נבו עדיין לא מחובר למפתח Gemini בשרת. בדוק שסוד GEMINI_API_KEY קיים ב־Supabase.';
+    if (/USAGE_CHECK_FAILED/i.test(message)) return 'בדיקת מכסת השימוש של נבו נכשלה. נסה לצאת ולהיכנס מחדש לחשבון.';
+    if (/AI_PROVIDER_ERROR|EMPTY_AI_RESPONSE/i.test(message)) return 'שירות Gemini לא החזיר תשובה תקינה. אפשר לנסות שוב בעוד רגע.';
+    if (/AI_TIMEOUT/i.test(message)) return 'נבו לא קיבל תשובה בזמן. בדוק את החיבור ונסה שוב — השיחה נשמרה.';
     if (/401|JWT|Unauthorized/i.test(message)) return 'כדי לדבר איתי צריך להתחבר לחשבון TravelMate.';
     if (/429|limit|rate/i.test(message)) return 'הגעת למגבלת השימוש היומית בעוזר. אפשר לחזור ולשאול אותי מחר.';
     if (/404|FunctionsHttpError|Failed to send/i.test(message)) return 'שירות ה־AI עדיין לא הופעל ב־Supabase. הממשק כבר מוכן, ונדרשת הפעלה חד־פעמית של הפונקציה.';
@@ -137,9 +152,14 @@
         typing.remove(); addMessage('assistant', '<div class="ai-login-card">כדי להשתמש בעוזר החכם צריך להתחבר לחשבון. כך השימוש מוגן והמפתח הסודי נשאר מחוץ לטלפון.<br><a href="' + escapeText(homeUrl) + '">מעבר להתחברות</a></div>', { html: true, temporary: true });
         setStatus('נדרשת התחברות'); return;
       }
-      var client = await cloud.getClient();
-      var result = await client.functions.invoke('travel-assistant', { body: { messages: state.messages.slice(-12), context: tripContext, locale: document.documentElement.lang || 'he' } });
-      if (result.error) throw result.error;
+      var service = activeCloud();
+      var client = await service.getClient();
+      var invokeRequest = client.functions.invoke('travel-assistant', { body: { messages: state.messages.slice(-12), context: tripContext, locale: document.documentElement.lang || 'he' } });
+      var result = await Promise.race([invokeRequest, new Promise(function (resolve, reject) { setTimeout(function () { reject(new Error('AI_TIMEOUT')); }, 30000); })]);
+      if (result.error) {
+        try { var errorBody = await result.error.context.clone().json(); result.error.travelMateCode = errorBody && errorBody.error; } catch (parseError) {}
+        throw result.error;
+      }
       var answer = trimText(result.data && result.data.answer, 10000) || 'לא התקבלה תשובה. נסה לנסח את השאלה מחדש.';
       typing.remove(); state.messages.push({ role: 'assistant', content: answer }); state.messages = state.messages.slice(-16); persistMessages(); addMessage('assistant', answer); setStatus('מחובר · ההקשר של הטיול פעיל');
     } catch (error) {
@@ -160,7 +180,7 @@
   }
 
   ui.panel.querySelector('[data-ai-context]').textContent = contextLabel(); renderPrompts(); restoreMessages(); renderHistory(); setupVoice();
-  if (cloud && cloud.onAuthChange) cloud.onAuthChange(function (event, session) {
+  if (activeCloud() && activeCloud().onAuthChange) activeCloud().onAuthChange(function (event, session) {
     var nextKey = conversationStorageKey(session && session.user ? session.user.id : 'guest');
     if (nextKey === storageKey) return;
     storageKey = nextKey;

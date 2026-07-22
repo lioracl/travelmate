@@ -41,6 +41,8 @@ function safeContext(value) {
 }
 
 function outputText(response) {
+  const candidateText = response?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
+  if (candidateText) return candidateText;
   const parts = [];
   for (const step of response.steps || []) {
     if (step.type !== 'model_output') continue;
@@ -53,6 +55,13 @@ function outputText(response) {
 
 function conversationInput(messages) {
   return messages.map((message) => `${message.role === 'user' ? 'USER' : 'ASSISTANT'}:\n${message.content}`).join('\n\n');
+}
+
+function geminiContents(messages) {
+  return messages.map((message) => ({
+    role: message.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: message.content }]
+  }));
 }
 
 function safeReceipt(value) {
@@ -137,14 +146,14 @@ Deno.serve(async (request) => {
       return json({ receipt: receiptJson(receiptText), provider: 'gemini', remaining: usage.remaining });
     }
 
-    const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
+    const model = Deno.env.get('GEMINI_MODEL') || 'gemini-3.5-flash';
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: 'POST',
       headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: Deno.env.get('GEMINI_MODEL') || 'gemini-3.5-flash',
-        system_instruction: instructions,
-        input: conversationInput(messages),
-        generation_config: { max_output_tokens: 1200, thinking_level: 'low' }
+        systemInstruction: { parts: [{ text: instructions }] },
+        contents: geminiContents(messages),
+        generationConfig: { maxOutputTokens: 1200 }
       })
     });
 
@@ -155,7 +164,7 @@ Deno.serve(async (request) => {
     const response = await geminiResponse.json();
     const answer = outputText(response);
     if (!answer) return json({ error: 'EMPTY_AI_RESPONSE' }, 502);
-    return json({ answer, model: response.model || 'gemini-3.5-flash', provider: 'gemini', remaining: usage.remaining });
+    return json({ answer, model, provider: 'gemini', remaining: usage.remaining });
   } catch (error) {
     console.error('Travel assistant error', error instanceof Error ? error.message : String(error));
     return json({ error: 'ASSISTANT_FAILED' }, 500);

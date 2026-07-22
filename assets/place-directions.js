@@ -49,6 +49,13 @@
     return 'https://m.uber.com/ul/?' + params.toString();
   }
 
+  function wazeDirections(place) {
+    var params = new URLSearchParams({ navigate: 'yes' });
+    if (place.lat && place.lon) params.set('ll', place.lat + ',' + place.lon);
+    else params.set('q', destinationFor(place));
+    return 'https://waze.com/ul?' + params.toString();
+  }
+
   function buildModal() {
     var modal = document.createElement('section');
     modal.className = 'place-directions-backdrop';
@@ -96,7 +103,8 @@
       modeLink('fa-person-walking', 'הליכה', 'מסלול רגלי עד הכניסה', mapsDirections('walking', currentPlace, origin.value)) +
       modeLink('fa-car', 'רכב', 'ניווט לפי עומסי התנועה', mapsDirections('driving', currentPlace, origin.value)) +
       modeLink('fa-bicycle', 'אופניים', 'מסלול רכיבה כאשר זמין', mapsDirections('bicycling', currentPlace, origin.value)) +
-      modeLink('fa-taxi', 'מונית Uber', 'פתיחת האפליקציה עם היעד מוכן', uberDirections(currentPlace, origin.mode, origin.value));
+      modeLink('fa-diamond-turn-right', 'Waze', 'המיקום הנוכחי נלקח אוטומטית והיעד כבר מוזן', wazeDirections(currentPlace)) +
+      modeLink('fa-taxi', 'מונית Uber', origin.mode === 'gps' ? 'נקודת האיסוף היא המיקום הנוכחי והיעד כבר מוזן' : 'נקודת האיסוף והיעד מוכנים באפליקציה', uberDirections(currentPlace, origin.mode, origin.value));
   }
 
   function openModal(place) {
