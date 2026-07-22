@@ -115,10 +115,52 @@
     return link.href;
   }
 
-  function shareTextFor(place) {
+  function currentTripData() {
+    var trip = resolvedTrip || window.travelMateCurrentTrip || {};
+    var id = String(trip.id || new URLSearchParams(location.search).get('id') || '');
+    try {
+      var stored = JSON.parse(localStorage.getItem('travelmate-trips') || '[]');
+      var latest = stored.find(function (item) { return String(item.id) === id; });
+      if (latest) trip = Object.assign({}, trip, latest);
+    } catch (error) {}
+    return trip;
+  }
+
+  function shareChecklistItems(place) {
+    var trip = currentTripData();
+    var items = [];
+    (trip.activities || []).slice().sort(function (a, b) {
+      return String(a.date || '').localeCompare(String(b.date || '')) || String(a.time || '').localeCompare(String(b.time || ''));
+    }).forEach(function (activity) {
+      if (activity && activity.title) items.push([activity.date, activity.time, activity.title].filter(Boolean).join(' · '));
+    });
+    (trip.savedPlaces || []).forEach(function (saved) {
+      if (!saved || !saved.name || (saved.name === place.name && String(saved.lat || '') === String(place.lat || ''))) return;
+      items.push([saved.date, saved.time, saved.name].filter(Boolean).join(' · '));
+    });
+    return items.filter(function (item, index, list) { return list.indexOf(item) === index; }).slice(0, 24);
+  }
+
+  function shareOptionsFromModal() {
+    if (!shareModal) return { note: '', items: [] };
+    return {
+      note: String(shareModal.querySelector('[data-place-share-note]').value || '').trim().slice(0, 600),
+      items: [].slice.call(shareModal.querySelectorAll('[data-place-share-item]:checked')).map(function (input) {
+        return String(input.value || '').trim().slice(0, 180);
+      }).filter(Boolean).slice(0, 12)
+    };
+  }
+
+  function shareTextFor(place, options) {
+    options = options || { note: '', items: [] };
     var lines = ['📍 ' + place.name];
     if (place.category) lines.push(place.category);
     if (place.description) lines.push(place.description);
+    if (options.note) lines.push('', '💬 ' + options.note);
+    if (options.items && options.items.length) {
+      lines.push('', '✅ פריטים נוספים מהטיול:');
+      options.items.forEach(function (item) { lines.push('• ' + item); });
+    }
     if (place.ratingsUrl) lines.push('⭐ ציונים וביקורות: ' + place.ratingsUrl);
     if (place.officialUrl) lines.push('🌐 אתר רשמי: ' + place.officialUrl);
     lines.push('🧭 פתיחה וניווט ב־TravelMate: ' + appLinkFor(place));
@@ -130,7 +172,7 @@
     section.className = 'place-share-backdrop';
     section.dataset.placeShareModal = '';
     section.setAttribute('aria-hidden', 'true');
-    section.innerHTML = '<div class="place-share-dialog" role="dialog" aria-modal="true" aria-labelledby="place-share-title"><header><div><small>שיתוף חכם</small><h2 id="place-share-title" data-place-share-title>שיתוף מקום</h2></div><button type="button" data-place-share-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header><p data-place-share-summary></p><div class="place-share-actions"><button type="button" class="whatsapp" data-place-share-whatsapp><i class="fa-brands fa-whatsapp"></i><span><strong>שליחה ב־WhatsApp</strong><small>כולל פרטים וקישור חזרה לאפליקציה</small></span></button><button type="button" data-place-share-native><i class="fa-solid fa-share-nodes"></i><span><strong>שיתוף במכשיר</strong><small>הודעות, דוא״ל ואפליקציות נוספות</small></span></button><button type="button" data-place-share-copy><i class="fa-solid fa-link"></i><span><strong>העתקת קישור</strong><small>קישור חכם למקום ולניווט</small></span></button></div><p class="place-share-status" data-place-share-status role="status"></p></div>';
+    section.innerHTML = '<div class="place-share-dialog" role="dialog" aria-modal="true" aria-labelledby="place-share-title"><header><div><small>שיתוף חכם</small><h2 id="place-share-title" data-place-share-title>שיתוף מקום</h2></div><button type="button" data-place-share-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header><p data-place-share-summary></p><label class="place-share-note"><strong>הודעה אישית</strong><textarea data-place-share-note maxlength="600" rows="3" placeholder="לדוגמה: נפגשים כאן בשעה 18:00…"></textarea></label><fieldset class="place-share-checklist" data-place-share-checklist><legend>צירוף פריטים מהטיול</legend><p>סמן פעילויות או מקומות נוספים שיישלחו יחד עם המיקום.</p><div data-place-share-items></div></fieldset><div class="place-share-actions"><button type="button" class="whatsapp" data-place-share-whatsapp><i class="fa-brands fa-whatsapp"></i><span><strong>שליחה ב־WhatsApp</strong><small>כולל המיקום, הטקסט והפריטים שסומנו</small></span></button><button type="button" data-place-share-native><i class="fa-solid fa-share-nodes"></i><span><strong>שיתוף במכשיר</strong><small>הודעות, דוא״ל ואפליקציות נוספות</small></span></button><button type="button" data-place-share-copy><i class="fa-solid fa-link"></i><span><strong>העתקת קישור</strong><small>קישור חכם למקום ולניווט</small></span></button></div><p class="place-share-status" data-place-share-status role="status"></p></div>';
     document.body.appendChild(section);
     section.addEventListener('click', function (event) {
       if (event.target === section || event.target.closest('[data-place-share-close]')) closeShareModal();
@@ -146,6 +188,13 @@
     if (!shareModal) shareModal = buildShareModal();
     shareModal.querySelector('[data-place-share-title]').textContent = 'שיתוף ' + sharePlace.name;
     shareModal.querySelector('[data-place-share-summary]').textContent = sharePlace.description || 'הפרטים והיעד יצורפו אוטומטית לקישור.';
+    shareModal.querySelector('[data-place-share-note]').value = '';
+    var checklist = shareModal.querySelector('[data-place-share-checklist]');
+    var items = shareChecklistItems(sharePlace);
+    checklist.hidden = !items.length;
+    shareModal.querySelector('[data-place-share-items]').innerHTML = items.map(function (item) {
+      return '<label><input type="checkbox" data-place-share-item value="' + escapeHtml(item) + '"><span><i class="fa-solid fa-check"></i>' + escapeHtml(item) + '</span></label>';
+    }).join('');
     shareModal.querySelector('[data-place-share-status]').textContent = '';
     shareModal.classList.add('open');
     shareModal.setAttribute('aria-hidden', 'false');
@@ -163,7 +212,7 @@
 
   function shareToWhatsApp(place) {
     if (!place) return;
-    window.open('https://wa.me/?text=' + encodeURIComponent(shareTextFor(cleanPlace(place))), '_blank', 'noopener');
+    window.open('https://wa.me/?text=' + encodeURIComponent(shareTextFor(cleanPlace(place), shareOptionsFromModal())), '_blank', 'noopener');
   }
 
   async function nativeShare(place) {
@@ -171,7 +220,7 @@
     place = cleanPlace(place);
     if (navigator.share) {
       try {
-        await navigator.share({ title: place.name + ' · TravelMate', text: shareTextFor(place), url: appLinkFor(place) });
+        await navigator.share({ title: place.name + ' · TravelMate', text: shareTextFor(place, shareOptionsFromModal()) });
         return;
       } catch (error) { if (error && error.name === 'AbortError') return; }
     }

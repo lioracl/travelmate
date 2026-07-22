@@ -1,4 +1,4 @@
-const CACHE_NAME='travelmate-smart-v33';
+const CACHE_NAME='travelmate-smart-v34';
 const CORE=[
   './',
   './index.html',
