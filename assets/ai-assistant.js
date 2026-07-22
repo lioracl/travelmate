@@ -6,6 +6,7 @@
 
   var cloud = window.TravelMateCloud;
   var state = { open: false, busy: false, session: null, messages: [], recognition: null };
+  var pageLock = null;
   var tripContext = collectTripContext();
   var storageKey = conversationStorageKey();
 
@@ -58,6 +59,51 @@
 
   var ui = createUi();
 
+  function syncVisualViewport() {
+    var viewport = window.visualViewport;
+    var height = viewport ? viewport.height : window.innerHeight;
+    var offsetTop = viewport ? viewport.offsetTop : 0;
+    document.documentElement.style.setProperty('--ai-viewport-height', Math.round(height) + 'px');
+    document.documentElement.style.setProperty('--ai-viewport-top', Math.round(offsetTop) + 'px');
+    document.body.classList.toggle('ai-keyboard-open', state.open && window.innerHeight - height > 120);
+  }
+
+  function lockPageScroll() {
+    if (pageLock) return;
+    pageLock = {
+      scrollY: window.scrollY,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      left: document.body.style.left,
+      right: document.body.style.right,
+      width: document.body.style.width,
+      overflow: document.body.style.overflow
+    };
+    document.documentElement.classList.add('ai-assistant-open');
+    document.body.classList.add('ai-assistant-open');
+    document.body.style.position = 'fixed';
+    document.body.style.top = -pageLock.scrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function unlockPageScroll() {
+    if (!pageLock) return;
+    var scrollY = pageLock.scrollY;
+    document.body.style.position = pageLock.position;
+    document.body.style.top = pageLock.top;
+    document.body.style.left = pageLock.left;
+    document.body.style.right = pageLock.right;
+    document.body.style.width = pageLock.width;
+    document.body.style.overflow = pageLock.overflow;
+    document.documentElement.classList.remove('ai-assistant-open');
+    document.body.classList.remove('ai-assistant-open', 'ai-keyboard-open');
+    pageLock = null;
+    window.scrollTo(0, scrollY);
+  }
+
   function contextLabel() {
     if (tripContext && tripContext.city) return 'מכיר את הטיול ל' + tripContext.city + ' · ללא מסמכים או GPS';
     if (tripContext && tripContext.destination) return 'מכיר את המסך הנוכחי · ללא מסמכים או GPS';
@@ -103,7 +149,8 @@
 
   function setOpen(open) {
     state.open = open; ui.panel.hidden = !open; ui.orb.setAttribute('aria-expanded', String(open));
-    if (open) { ui.input.focus(); ui.chat.scrollTop = ui.chat.scrollHeight; }
+    if (open) { lockPageScroll(); syncVisualViewport(); ui.input.focus(); ui.chat.scrollTop = ui.chat.scrollHeight; setTimeout(syncVisualViewport, 120); }
+    else unlockPageScroll();
   }
 
   function setBusy(busy) { state.busy = busy; ui.input.disabled = busy; ui.form.querySelector('[data-ai-send]').disabled = busy; }
@@ -217,6 +264,8 @@
   ui.panel.querySelector('[data-ai-privacy]').addEventListener('click', function () { addMessage('assistant', 'אני שולח ל־Google Gemini רק את השאלה, היסטוריית השיחה הקצרה ותקציר הטיול: יעד, תאריכים, פעילויות ומקומות ששמרת. מסמכים, סיסמאות, GPS ופרטי הכספת אינם נשלחים. במסלול החינמי Google עשויה להשתמש בתוכן לשיפור מוצריה.'); });
   ui.form.addEventListener('submit', function (event) { event.preventDefault(); sendMessage(); });
   ui.input.addEventListener('input', autoGrow);
+  ui.input.addEventListener('focus', function () { setTimeout(syncVisualViewport, 80); setTimeout(syncVisualViewport, 320); });
+  ui.input.addEventListener('blur', function () { setTimeout(syncVisualViewport, 120); });
   ui.input.addEventListener('keydown', function (event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });
   window.addEventListener('travelmate:ask-ai', function (event) {
     var prompt = trimText(event.detail && event.detail.prompt, 4000);
@@ -225,4 +274,13 @@
     ui.input.focus();
   });
   document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && state.open) setOpen(false); });
+  document.addEventListener('touchmove', function (event) {
+    if (!state.open) return;
+    if (!event.target.closest('.ai-chat, .ai-quick-prompts, .ai-composer textarea')) event.preventDefault();
+  }, { passive: false });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', syncVisualViewport);
+    window.visualViewport.addEventListener('scroll', syncVisualViewport);
+  } else window.addEventListener('resize', syncVisualViewport);
+  syncVisualViewport();
 })();
