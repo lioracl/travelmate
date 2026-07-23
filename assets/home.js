@@ -64,7 +64,7 @@
     function restart() {
       clearInterval(timer);
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        timer = setInterval(function () { showSlide(activeIndex + 1); }, 6500);
+        timer = setInterval(function () { showSlide(activeIndex + 1); }, 3800);
       }
     }
     carousel.querySelector('[data-carousel-previous]').addEventListener('click', function () { showSlide(activeIndex - 1); restart(); });
