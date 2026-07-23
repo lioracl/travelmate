@@ -4,9 +4,13 @@
 
   var hero = document.querySelector('.hero');
   if (hero) {
-    var image = getComputedStyle(hero).backgroundImage;
-    var matches = image.match(/url\((['"]?)(.*?)\1\)/);
-    if (matches && matches[2]) document.body.style.setProperty('--trip-bg-image', 'url("' + matches[2] + '")');
+    function syncDestinationBackground() {
+      var image = getComputedStyle(hero).backgroundImage;
+      var matches = image.match(/url\((['"]?)(.*?)\1\)/);
+      if (matches && matches[2]) document.body.style.setProperty('--trip-bg-image', 'url("' + matches[2] + '")');
+    }
+    syncDestinationBackground();
+    new MutationObserver(syncDestinationBackground).observe(hero, { attributes: true, attributeFilter: ['style', 'data-destination-image'] });
   }
 
   var sidebar = document.querySelector('.sidebar');
