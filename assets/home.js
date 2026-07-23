@@ -33,6 +33,46 @@
   var renderedTrips = new Map();
   var staticActivityKey = 'travelmate-static-trip-activity';
 
+  (function initHomeCarousel() {
+    var carousel = document.querySelector('[data-home-carousel]');
+    if (!carousel) return;
+    var slides = Array.from(carousel.querySelectorAll('[data-carousel-slide]'));
+    var dotsHost = carousel.querySelector('[data-carousel-dots]');
+    var activeIndex = Math.max(0, slides.findIndex(function (slide) { return slide.classList.contains('active'); }));
+    var timer;
+    slides.forEach(function (_, index) {
+      var dot = document.createElement('button');
+      dot.type = 'button';
+      dot.setAttribute('aria-label', 'הצגת יעד ' + (index + 1));
+      dot.addEventListener('click', function () { showSlide(index); restart(); });
+      dotsHost.appendChild(dot);
+    });
+    function showSlide(index) {
+      activeIndex = (index + slides.length) % slides.length;
+      slides.forEach(function (slide, slideIndex) {
+        var offset = slideIndex - activeIndex;
+        if (offset > slides.length / 2) offset -= slides.length;
+        if (offset < -slides.length / 2) offset += slides.length;
+        slide.style.setProperty('--slide-offset', offset);
+        slide.classList.toggle('active', slideIndex === activeIndex);
+        slide.setAttribute('aria-hidden', slideIndex === activeIndex ? 'false' : 'true');
+      });
+      Array.from(dotsHost.children).forEach(function (dot, dotIndex) {
+        dot.classList.toggle('active', dotIndex === activeIndex);
+      });
+    }
+    function restart() {
+      clearInterval(timer);
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        timer = setInterval(function () { showSlide(activeIndex + 1); }, 6500);
+      }
+    }
+    carousel.querySelector('[data-carousel-previous]').addEventListener('click', function () { showSlide(activeIndex - 1); restart(); });
+    carousel.querySelector('[data-carousel-next]').addEventListener('click', function () { showSlide(activeIndex + 1); restart(); });
+    showSlide(activeIndex);
+    restart();
+  })();
+
   function daysBetween(start, end) { return Math.floor((new Date(end) - new Date(start)) / 86400000) + 1; }
   function formatDate(value) { return new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00')); }
   function escapeText(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
@@ -282,7 +322,7 @@
     sessionPanel.hidden = !session;
     accountPanel.querySelector('[data-cloud-email]').textContent = session && session.user ? session.user.email : '';
     if (accountOpenButton) {
-      accountOpenButton.innerHTML = session ? '<i class="fa-solid fa-user-check"></i> החשבון שלי' : '<i class="fa-solid fa-user"></i> התחברות או יצירת חשבון';
+      accountOpenButton.innerHTML = session ? '<i class="fa-solid fa-user-check"></i> החשבון שלי' : '<i class="fa-regular fa-user"></i> התחברות';
     }
     if (session) {
       closeAccountModal();
