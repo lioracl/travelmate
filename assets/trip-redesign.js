@@ -17,6 +17,38 @@
     new MutationObserver(syncDestinationBackground).observe(hero, { attributes: true, attributeFilter: ['style', 'data-destination-image'] });
   }
 
+  var mapTrigger = document.querySelector('.custom-hero .share[data-maps]');
+  if (mapTrigger) {
+    function currentMapQuery() {
+      var mapCity = document.querySelector('[data-city]');
+      var mapCountry = document.querySelector('[data-country]');
+      return [mapCity && mapCity.textContent.trim(), mapCountry && mapCountry.textContent.trim()].filter(Boolean).join(', ');
+    }
+    var mapDialog = document.createElement('section');
+    mapDialog.className = 'trip-map-dialog';
+    mapDialog.hidden = true;
+    mapDialog.setAttribute('role', 'dialog');
+    mapDialog.setAttribute('aria-modal', 'true');
+    mapDialog.setAttribute('aria-labelledby', 'trip-map-title');
+    mapDialog.innerHTML = '<div><header><div><span>מפת היעד</span><h2 id="trip-map-title"></h2></div><button type="button" data-trip-map-close aria-label="סגירת המפה"><i class="fa-solid fa-xmark"></i></button></header><iframe title="מפת היעד" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>';
+    document.body.appendChild(mapDialog);
+    var mapFrame = mapDialog.querySelector('iframe');
+    function closeMap() { mapDialog.hidden = true; mapTrigger.focus(); }
+    mapTrigger.addEventListener('click', function (event) {
+      event.preventDefault();
+      var mapQuery = currentMapQuery();
+      mapDialog.querySelector('h2').textContent = mapQuery;
+      mapFrame.title = 'מפת ' + mapQuery;
+      var frameUrl = 'https://www.google.com/maps?q=' + encodeURIComponent(mapQuery) + '&output=embed';
+      if (mapFrame.src !== frameUrl) mapFrame.src = frameUrl;
+      mapDialog.hidden = false;
+      mapDialog.querySelector('[data-trip-map-close]').focus();
+    });
+    mapDialog.querySelector('[data-trip-map-close]').addEventListener('click', closeMap);
+    mapDialog.addEventListener('click', function (event) { if (event.target === mapDialog) closeMap(); });
+    document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !mapDialog.hidden) closeMap(); });
+  }
+
   var sidebar = document.querySelector('.sidebar');
   if (!sidebar || sidebar.querySelector('[data-trip-logout]')) return;
 
