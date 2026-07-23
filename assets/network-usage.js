@@ -45,7 +45,7 @@
     if (type === 'cellular' || type === 'wimax') return { type: 'cellular', detected: true, label: cellularLabel(), icon: 'fa-signal' };
     if (type === 'ethernet') return { type: 'wifi', detected: true, label: 'רשת קווית', icon: 'fa-ethernet' };
     if (type === 'none') return { type: 'offline', detected: true, label: 'לא מחובר', icon: 'fa-signal' };
-    return { type: 'unknown', detected: false, label: 'רשת פעילה', icon: 'fa-circle-question' };
+    return { type: 'unknown', detected: false, label: 'רשת פעילה', icon: 'fa-wifi' };
   }
 
   function cellularLabel() {
