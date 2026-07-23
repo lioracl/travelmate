@@ -36,6 +36,21 @@
   (function initHomeCarousel() {
     var carousel = document.querySelector('[data-home-carousel]');
     if (!carousel) return;
+    var track = carousel.querySelector('.carousel-track');
+    var extraDestinationImages = [
+      'photo-1502602898657-3e91760cbb34','photo-1493976040374-85c8e12f0c0e','photo-1533104816931-20fa691ff6ca','photo-1516483638261-f4dbaf036963',
+      'photo-1505765050516-f72dcac9c60e','photo-1528127269322-539801943592','photo-1548013146-72479768bada','photo-1469474968028-56623f02e42e',
+      'photo-1507525428034-b723cf961d3e','photo-1510414842594-a61c69b5ae57','photo-1483683804023-6ccdb62f86ef','photo-1494526585095-c41746248156',
+      'photo-1512100356356-de1b84283e18','photo-1530789253388-582c481c54b0','photo-1500534314209-a25ddb2bd429','photo-1518548419970-58e3b4079ab2',
+      'photo-1516426122078-c23e76319801','photo-1501785888041-af3ef285b470','photo-1526772662000-3f88f10405ff','photo-1470214304380-aadaedcfff1b'
+    ];
+    extraDestinationImages.forEach(function (imageId) {
+      var slide = document.createElement('article');
+      slide.className = 'destination-slide';
+      slide.dataset.carouselSlide = '';
+      slide.style.setProperty('--slide-image', "url('https://images.unsplash.com/" + imageId + "?auto=format&fit=crop&w=900&q=84')");
+      track.appendChild(slide);
+    });
     var slides = Array.from(carousel.querySelectorAll('[data-carousel-slide]'));
     var dotsHost = carousel.querySelector('[data-carousel-dots]');
     var activeIndex = Math.max(0, slides.findIndex(function (slide) { return slide.classList.contains('active'); }));
@@ -53,7 +68,14 @@
         var offset = slideIndex - activeIndex;
         if (offset > slides.length / 2) offset -= slides.length;
         if (offset < -slides.length / 2) offset += slides.length;
+        var distance = Math.abs(offset);
         slide.style.setProperty('--slide-offset', offset);
+        slide.style.setProperty('--slide-x', (offset * 118) + 'px');
+        slide.style.setProperty('--slide-scale', slideIndex === activeIndex ? '1.12' : String(Math.max(.72, 1 - distance * .08)));
+        slide.style.setProperty('--slide-rotate', (offset * -1.4) + 'deg');
+        slide.style.zIndex = String(50 - distance);
+        slide.style.opacity = distance > 4 ? '0' : String(Math.max(.38, 1 - distance * .13));
+        slide.style.visibility = distance > 4 ? 'hidden' : 'visible';
         slide.classList.toggle('active', slideIndex === activeIndex);
         slide.setAttribute('aria-hidden', slideIndex === activeIndex ? 'false' : 'true');
       });

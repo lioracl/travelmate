@@ -18,6 +18,8 @@
   font-weight: 900;
   direction: rtl;
 }
+
+.network-usage-meter{width:40px;height:40px;min-height:40px;padding:0;justify-content:center;gap:0;border:0;background:#0e614b!important;color:#fff!important;box-shadow:0 12px 28px rgba(14,97,75,.34);backdrop-filter:none}.network-usage-meter [data-network-text]{display:none}.network-usage-meter i{font-size:16px}.network-usage-panel{top:max(58px,calc(env(safe-area-inset-top) + 54px))}@media(max-width:650px){.network-usage-meter{width:38px;height:38px;min-height:38px;padding:0}.network-usage-panel{top:max(54px,calc(env(safe-area-inset-top) + 50px))}}
 .network-usage-meter[data-network="cellular"] { color:#8d504b; background:rgba(255,244,242,.94) }
 .network-usage-meter[data-network="offline"],.network-usage-meter[data-network="unknown"] { color:#6b625c }
 .network-usage-meter i { font-size:13px }
