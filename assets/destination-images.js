@@ -3,6 +3,7 @@
 
   var CACHE_KEY = 'travelmate-destination-images-v4';
   var FALLBACK = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=82';
+  var PRAGUE_IMAGE = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Prague%20castle%20panorama.jpg?width=2200';
   var pending = new Map();
 
   function normalize(value) {
@@ -60,6 +61,7 @@
   }
 
   function resolve(city, country) {
+    if (/^(פראג|prague)$/i.test(String(city || '').trim())) return Promise.resolve(PRAGUE_IMAGE);
     var cacheKey = key(city, country);
     var saved = cached(city, country);
     if (saved) return Promise.resolve(saved);
