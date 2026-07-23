@@ -1,0 +1,45 @@
+:root{--trip-glass:rgba(6,20,16,.66);--trip-glass-soft:rgba(255,255,255,.1);--trip-line:rgba(255,255,255,.2)}
+html[dir="rtl"] body:not(.home-page){min-height:100vh;color:#fff;background:#071611 var(--trip-bg-image,linear-gradient(135deg,#0e614b,#071611)) center/cover fixed no-repeat}
+body:not(.home-page):after{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(0,0,0,.44),rgba(0,0,0,.7) 72%,rgba(0,0,0,.76));pointer-events:none}
+body:not(.home-page) .workspace{display:block;min-height:100vh}
+body:not(.home-page) .sidebar{position:fixed;top:18px;right:18px;left:auto;z-index:100;width:76px;height:calc(100vh - 36px);margin:0;padding:14px 10px;display:flex;align-items:center;border:1px solid var(--trip-line);border-radius:0;background:rgba(5,20,16,.48);box-shadow:0 22px 60px rgba(0,0,0,.28);backdrop-filter:blur(18px) saturate(130%)}
+body:not(.home-page) .sidebar .logo{width:52px;height:52px;margin:0 0 12px;display:grid;place-items:center;color:#fff}
+body:not(.home-page) .sidebar .logo strong,body:not(.home-page) .sidebar .back,body:not(.home-page) .sidebar .destination-mini{display:none}
+body:not(.home-page) .sidebar .brand-dot{width:44px;height:44px;border-radius:0;background:#0e614b;color:#f97c22}
+body:not(.home-page) .sidebar nav{width:100%;display:flex;flex-direction:column;gap:7px}
+body:not(.home-page) .sidebar nav a,body:not(.home-page) .live-button{width:54px;min-height:46px;border:1px solid transparent;border-radius:0;color:rgba(255,255,255,.72);background:transparent}
+body:not(.home-page) .sidebar nav a:hover,body:not(.home-page) .sidebar nav a.active,body:not(.home-page) .live-button:hover{border-color:var(--trip-line);background:rgba(255,255,255,.14);color:#fff;backdrop-filter:blur(12px)}
+body:not(.home-page) .sidebar .tip{right:calc(100% + 12px);left:auto;border-radius:0;background:rgba(5,20,16,.88);border:1px solid var(--trip-line);backdrop-filter:blur(12px)}
+body:not(.home-page) .trip-logout{width:54px;min-height:34px;margin-top:9px;border:0;border-radius:0;background:#e40516;color:#fff;font:300 11px "Rubik",sans-serif;display:grid;place-items:center}
+body:not(.home-page) .trip-logout i{font-size:14px}
+body:not(.home-page) .content{max-width:none;margin-right:110px;padding:18px 28px 70px}
+body:not(.home-page) .mobile-header{border-radius:0;background:rgba(5,20,16,.55);border-color:var(--trip-line);color:#fff;backdrop-filter:blur(16px)}
+body:not(.home-page) .hero{min-height:440px;margin-top:0;padding:48px;align-items:center;justify-content:center;text-align:center;border:1px solid var(--trip-line);border-radius:0;outline:0;background-position:center;background-size:cover;box-shadow:0 26px 80px rgba(0,0,0,.34)}
+body:not(.home-page) .hero:before{background:radial-gradient(circle at 50% 48%,rgba(0,0,0,.3),rgba(0,0,0,.72) 76%)}
+body:not(.home-page) .hero-copy{max-width:760px;text-align:center}
+body:not(.home-page) .hero h1{margin:8px 0 12px;font:300 clamp(54px,8vw,104px)/.95 "Rubik",sans-serif;letter-spacing:-.04em}
+body:not(.home-page) .hero p{font:300 clamp(16px,2vw,22px) "Rubik",sans-serif;color:rgba(255,255,255,.88)}
+body:not(.home-page) .hero .status{border:0;border-radius:0;background:transparent;box-shadow:none;color:#f97c22;font-weight:400}
+body:not(.home-page) .hero-back,body:not(.home-page) .hero .share{border:1px solid var(--trip-line);border-radius:0;background:rgba(5,20,16,.48);color:#fff;box-shadow:none}
+body:not(.home-page) .hero-country-flag{top:50%;left:calc(50% + 145px);width:auto;height:auto;border:0;border-radius:0;background:transparent;box-shadow:none;font-size:36px;transform:translateY(34px)}
+body:not(.home-page) .quick-grid{margin:18px 0;gap:14px}
+body:not(.home-page) .card,body:not(.home-page) .panel,body:not(.home-page) .module,body:not(.home-page) .plan-card,body:not(.home-page) .place-card,body:not(.home-page) .doc-row,body:not(.home-page) .expense,body:not(.home-page) .tip-card,body:not(.home-page) .nearby,body:not(.home-page) .summary-card,body:not(.home-page) .auto-card,body:not(.home-page) .service-card,body:not(.home-page) .transport-card,body:not(.home-page) .external-resources{border:1px solid var(--trip-line);border-radius:0;background:var(--trip-glass-soft);color:#fff;box-shadow:0 18px 48px rgba(0,0,0,.18);backdrop-filter:blur(16px) saturate(125%)}
+body:not(.home-page) .section:not(.hero){scroll-margin-top:18px;margin-top:22px;padding:26px;border:1px solid var(--trip-line);border-radius:0;background:var(--trip-glass);box-shadow:0 20px 60px rgba(0,0,0,.2);backdrop-filter:blur(20px) saturate(120%)}
+body:not(.home-page) .section-head h1,body:not(.home-page) .panel h2,body:not(.home-page) .auto-card h3,body:not(.home-page) .service-card h3{color:#fff;font-weight:400}
+body:not(.home-page) .section-head p,body:not(.home-page) .card small,body:not(.home-page) .card span,body:not(.home-page) .module small,body:not(.home-page) .plan-card p,body:not(.home-page) .place-card p,body:not(.home-page) .tip-card p,body:not(.home-page) .doc-row span,body:not(.home-page) .auto-card p,body:not(.home-page) .service-card p{color:rgba(255,255,255,.68)}
+body:not(.home-page) .icon,body:not(.home-page) .mark,body:not(.home-page) .forecast-icon,body:not(.home-page) .weather-top-icon{border-radius:0;background:rgba(14,97,75,.72);color:#fff}
+body:not(.home-page) .pill-btn,body:not(.home-page) .open-map,body:not(.home-page) .panel-head button,body:not(.home-page) .plan-card button,body:not(.home-page) .doc-row button{border-radius:0;border:1px solid var(--trip-line);background:rgba(14,97,75,.78);color:#fff}
+body:not(.home-page) .weather-top-widget{position:relative;z-index:3;margin:0 0 14px;border:1px solid var(--trip-line);border-radius:0;background:rgba(5,20,16,.55);color:#fff;box-shadow:none;backdrop-filter:blur(18px)}
+body:not(.home-page) .weather-top-copy small,body:not(.home-page) .weather-top-chevron{color:rgba(255,255,255,.68)}
+body:not(.home-page) .modal-backdrop{background:rgba(0,0,0,.64);backdrop-filter:blur(14px)}
+body:not(.home-page) .modal{border:1px solid var(--trip-line);border-radius:0;background:rgba(5,20,16,.9);color:#fff;backdrop-filter:blur(22px)}
+body:not(.home-page) .modal header,body:not(.home-page) .modal footer{border-color:var(--trip-line);background:transparent}
+body:not(.home-page) .modal p,body:not(.home-page) .forecast-day span,body:not(.home-page) .forecast-day small{color:rgba(255,255,255,.68)}
+body:not(.home-page) .forecast-day,body:not(.home-page) .weather-live-day{border-color:var(--trip-line);border-radius:0;background:rgba(255,255,255,.08);color:#fff}
+body:not(.home-page) .weather-live-modal header{background:rgba(5,20,16,.88)}
+body:not(.home-page) .weather-live-day span,body:not(.home-page) .weather-source{color:rgba(255,255,255,.65)}
+body:not(.home-page) .weather-live-metrics b{border-radius:0;background:rgba(255,255,255,.1)}
+.trip-logout-dialog{position:fixed;inset:0;z-index:1800;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.62);backdrop-filter:blur(12px)}
+.trip-logout-dialog[hidden]{display:none}.trip-logout-dialog>div{width:min(360px,100%);padding:24px;border:1px solid var(--trip-line);background:rgba(5,20,16,.9);color:#fff;backdrop-filter:blur(20px);text-align:right}.trip-logout-dialog h2{margin:0 0 8px;font-weight:400}.trip-logout-dialog p{margin:0 0 20px;color:rgba(255,255,255,.68)}.trip-logout-actions{display:flex;gap:8px}.trip-logout-actions button{flex:1;min-height:34px;border:1px solid var(--trip-line);border-radius:0;background:rgba(255,255,255,.08);color:#fff}.trip-logout-actions [data-trip-logout-confirm]{border-color:#e40516;background:#e40516}
+@media(max-width:1000px){body:not(.home-page) .sidebar{display:none}body:not(.home-page) .content{margin-right:0;padding:14px}body:not(.home-page) .mobile-header{display:flex}body:not(.home-page) .hero{min-height:380px;padding:34px 20px}body:not(.home-page) .section:not(.hero){padding:20px}}
+@media(max-width:650px){body:not(.home-page) .hero{min-height:340px;align-items:center;justify-content:center;padding:70px 18px 28px}body:not(.home-page) .hero h1{font-size:52px}body:not(.home-page) .hero-country-flag{position:static!important;transform:none;margin-bottom:6px}body:not(.home-page) .quick-grid,body:not(.home-page) .modules{grid-template-columns:1fr}body:not(.home-page) .section:not(.hero){padding:16px}body:not(.home-page) .weather-live-grid{overflow-x:auto;grid-auto-flow:column;grid-auto-columns:minmax(250px,82vw)}}
