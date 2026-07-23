@@ -323,7 +323,7 @@
     sessionPanel.hidden = !session;
     accountPanel.querySelector('[data-cloud-email]').textContent = session && session.user ? session.user.email : '';
     if (accountOpenButton) {
-      accountOpenButton.innerHTML = session ? '<i class="fa-solid fa-user-check"></i> החשבון שלי' : '<i class="fa-regular fa-user"></i> התחברות';
+      accountOpenButton.innerHTML = session ? 'החשבון שלי' : '<span>התחברות</span>';
     }
     if (session) {
       closeAccountModal();
