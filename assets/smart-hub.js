@@ -106,7 +106,7 @@
   ];
 
   function createUi() {
-    var launch = document.createElement('button'); launch.type = 'button'; launch.className = 'smart-hub-launch'; launch.innerHTML = '<i class="fa-solid fa-sparkles"></i><span>מרכז חכם <small>20 כלים</small></span>';
+    var launch = document.createElement('button'); launch.type = 'button'; launch.className = 'smart-hub-launch'; launch.innerHTML = '<i class="fa-solid fa-brain"></i><span>מרכז חכם <small>20 כלים</small></span>';
     launch.setAttribute('aria-label', 'פתיחת המרכז החכם'); document.body.appendChild(launch);
     var backdrop = document.createElement('section'); backdrop.className = 'modal-backdrop'; backdrop.id = 'modal-smart-hub'; backdrop.setAttribute('role', 'dialog'); backdrop.setAttribute('aria-modal', 'true');
     backdrop.innerHTML = '<div class="modal smart-hub-modal"><header><div class="smart-hub-heading"><span class="smart-hub-avatar"><i class="fa-solid fa-sparkles"></i></span><div><span>TravelMate Smart</span><h2>המרכז החכם של הטיול</h2><p>' + escapeHtml(state.trip.city) + ' · כל מה שצריך לפני הטיול ובדרך</p></div></div><button class="modal-close" type="button" data-smart-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header><div class="smart-hub-body"><div class="smart-hub-home"><div class="smart-hub-intro"><div><strong>מה תרצה לעשות עכשיו?</strong><span>הכלים מתאימים את עצמם ליעד, לזמן ולמיקום שלך.</span></div><button class="smart-hub-now" type="button" data-tool="now"><i class="fa-solid fa-location-crosshairs"></i> הצעה חכמה עכשיו</button></div><div class="smart-hub-groups"></div></div><div class="smart-tool-view"><button class="smart-tool-back" type="button"><i class="fa-solid fa-arrow-right"></i> חזרה לכל הכלים</button><div data-smart-tool-content></div></div></div></div>';
@@ -121,6 +121,7 @@
     launch.addEventListener('click', openHub); backdrop.querySelector('[data-smart-close]').addEventListener('click', closeHub); backdrop.querySelector('.smart-tool-back').addEventListener('click', showHome);
     backdrop.addEventListener('click', function (event) { var trigger = event.target.closest('[data-tool]'); if (trigger) openTool(trigger.dataset.tool); if (event.target === backdrop) closeHub(); });
     document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && backdrop.classList.contains('open')) closeHub(); });
+    launch.dataset.smartHubReady = 'true';
   }
 
   function openHub() { state.ui.backdrop.classList.add('open'); state.ui.launch.setAttribute('aria-expanded', 'true'); }
