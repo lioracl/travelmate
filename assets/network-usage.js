@@ -6,6 +6,7 @@
 
   var STORAGE_KEY = 'travelmate:network-usage:v1';
   var MODE_KEY = 'travelmate:network-mode:v1';
+  var POSITION_KEY = 'travelmate:network-meter-position:v1';
   var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
   var countedEntries = new Set();
   var state = readUsage();
@@ -168,6 +169,7 @@
     meter.className = 'network-usage-meter';
     if (document.querySelector('.mobile-header')) meter.classList.add('in-trip');
     meter.setAttribute('aria-expanded', 'false');
+    meter.title = 'ניתן לגרור את הכפתור למקום נוח';
     meter.innerHTML = '<i class="fa-solid fa-wifi" aria-hidden="true"></i><span data-network-text></span>';
 
     panel = document.createElement('section');
@@ -181,9 +183,55 @@
       '<button class="network-reset" type="button" data-network-reset>איפוס המד של היום</button><small class="network-privacy"><i class="fa-solid fa-shield-halved"></i> הנתון נשמר רק במכשיר הזה.</small>';
 
     document.body.append(meter, panel);
+    var didDrag = false;
+    var dragState = null;
+    try {
+      var savedPosition = JSON.parse(localStorage.getItem(POSITION_KEY) || 'null');
+      if (savedPosition && Number.isFinite(savedPosition.left) && Number.isFinite(savedPosition.top)) {
+        meter.style.left = Math.min(Math.max(8, savedPosition.left), window.innerWidth - 48) + 'px';
+        meter.style.top = Math.min(Math.max(8, savedPosition.top), window.innerHeight - 48) + 'px';
+      }
+    } catch (error) {}
+    function positionPanel() {
+      var rect = meter.getBoundingClientRect();
+      var panelWidth = Math.min(330, window.innerWidth - 16);
+      panel.style.left = Math.min(Math.max(8, rect.left), window.innerWidth - panelWidth - 8) + 'px';
+      panel.style.top = Math.min(rect.bottom + 10, window.innerHeight - 120) + 'px';
+    }
+    meter.addEventListener('pointerdown', function (event) {
+      dragState = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, left: meter.offsetLeft, top: meter.offsetTop };
+      didDrag = false;
+      meter.setPointerCapture(event.pointerId);
+      meter.classList.add('dragging');
+    });
+    meter.addEventListener('pointermove', function (event) {
+      if (!dragState || event.pointerId !== dragState.pointerId) return;
+      var deltaX = event.clientX - dragState.x;
+      var deltaY = event.clientY - dragState.y;
+      if (Math.abs(deltaX) + Math.abs(deltaY) > 5) didDrag = true;
+      if (!didDrag) return;
+      meter.style.left = Math.min(Math.max(8, dragState.left + deltaX), window.innerWidth - meter.offsetWidth - 8) + 'px';
+      meter.style.top = Math.min(Math.max(8, dragState.top + deltaY), window.innerHeight - meter.offsetHeight - 8) + 'px';
+    });
+    function finishDrag(event) {
+      if (!dragState || event.pointerId !== dragState.pointerId) return;
+      meter.classList.remove('dragging');
+      if (didDrag) {
+        localStorage.setItem(POSITION_KEY, JSON.stringify({ left: meter.offsetLeft, top: meter.offsetTop }));
+        positionPanel();
+      }
+      dragState = null;
+      setTimeout(function () { didDrag = false; }, 0);
+    }
+    meter.addEventListener('pointerup', finishDrag);
+    meter.addEventListener('pointercancel', finishDrag);
+    window.addEventListener('pointerup', finishDrag);
+    window.addEventListener('pointercancel', finishDrag);
     meter.addEventListener('click', function () {
+      if (didDrag) return;
       panel.hidden = !panel.hidden;
       meter.setAttribute('aria-expanded', String(!panel.hidden));
+      if (!panel.hidden) positionPanel();
       render();
     });
     panel.addEventListener('click', function (event) {
