@@ -118,7 +118,49 @@
       groupsNode.appendChild(section);
     });
     state.ui = { launch: launch, backdrop: backdrop, modal: backdrop.querySelector('.smart-hub-modal'), content: backdrop.querySelector('[data-smart-tool-content]') };
-    launch.addEventListener('click', openHub); backdrop.querySelector('[data-smart-close]').addEventListener('click', closeHub); backdrop.querySelector('.smart-tool-back').addEventListener('click', showHome);
+    var launchDrag = { active: false, moved: false, pointerId: null, offsetX: 0, offsetY: 0, startX: 0, startY: 0 };
+    function placeLaunch(left, top) {
+      var maxLeft = Math.max(8, window.innerWidth - launch.offsetWidth - 8);
+      var maxTop = Math.max(8, window.innerHeight - launch.offsetHeight - 8);
+      launch.style.left = Math.min(Math.max(8, left), maxLeft) + 'px';
+      launch.style.top = Math.min(Math.max(8, top), maxTop) + 'px';
+      launch.style.right = 'auto';
+      launch.style.bottom = 'auto';
+    }
+    try {
+      var savedLaunchPosition = JSON.parse(localStorage.getItem('travelmate-smart-hub-position-v3') || 'null');
+      if (savedLaunchPosition && Number.isFinite(savedLaunchPosition.left) && Number.isFinite(savedLaunchPosition.top)) placeLaunch(savedLaunchPosition.left, savedLaunchPosition.top);
+    } catch (error) {}
+    launch.addEventListener('pointerdown', function (event) {
+      var rect = launch.getBoundingClientRect();
+      launchDrag = { active: true, moved: false, pointerId: event.pointerId, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top, startX: event.clientX, startY: event.clientY };
+      launch.setPointerCapture(event.pointerId);
+    });
+    launch.addEventListener('pointermove', function (event) {
+      if (!launchDrag.active || event.pointerId !== launchDrag.pointerId) return;
+      if (!(event.buttons & 1)) return;
+      if (Math.abs(event.clientX - launchDrag.startX) + Math.abs(event.clientY - launchDrag.startY) > 4) launchDrag.moved = true;
+      if (launchDrag.moved) placeLaunch(event.clientX - launchDrag.offsetX, event.clientY - launchDrag.offsetY);
+    });
+    launch.addEventListener('pointerup', function (event) {
+      if (!launchDrag.active || event.pointerId !== launchDrag.pointerId) return;
+      launchDrag.active = false;
+      if (launchDrag.moved) {
+        var rect = launch.getBoundingClientRect();
+        try { localStorage.setItem('travelmate-smart-hub-position-v3', JSON.stringify({ left: rect.left, top: rect.top })); } catch (error) {}
+      } else {
+        openHub();
+      }
+    });
+    launch.addEventListener('pointercancel', function () { launchDrag.active = false; });
+    launch.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openHub(); }
+    });
+    window.addEventListener('resize', function () {
+      var rect = launch.getBoundingClientRect();
+      placeLaunch(rect.left, rect.top);
+    });
+    backdrop.querySelector('[data-smart-close]').addEventListener('click', closeHub); backdrop.querySelector('.smart-tool-back').addEventListener('click', showHome);
     backdrop.addEventListener('click', function (event) { var trigger = event.target.closest('[data-tool]'); if (trigger) openTool(trigger.dataset.tool); if (event.target === backdrop) closeHub(); });
     document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && backdrop.classList.contains('open')) closeHub(); });
     launch.dataset.smartHubReady = 'true';
