@@ -2,7 +2,7 @@
   'use strict';
 
   var release = {
-    version: '1.18.2',
+    version: '1.18.3',
     label: 'זיכרונות מצורפים וניווט מוגן',
     date: '22 ביולי 2026',
     highlights: [
