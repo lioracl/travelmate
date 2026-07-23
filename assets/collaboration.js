@@ -5,6 +5,7 @@
   var cloud = window.TravelMateCloud;
   var state = { trip: null, session: null, members: [], messages: [], unsubscribe: null };
   var ui;
+  var PLACE_MESSAGE_PREFIX = '[[TM_PLACE_V1]]';
 
   function escapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function (character) {
@@ -34,6 +35,30 @@
     return Boolean(state.session && String(state.trip.ownerId) === String(state.session.user.id));
   }
 
+  function cleanPlace(place) {
+    if (window.TravelMatePlaceActions && window.TravelMatePlaceActions.clean) return window.TravelMatePlaceActions.clean(place);
+    place = place || {};
+    return {
+      name: String(place.name || 'מקום').trim().slice(0, 160),
+      category: String(place.category || '').trim().slice(0, 100),
+      description: String(place.description || '').trim().slice(0, 280),
+      lat: String(place.lat || '').trim().slice(0, 30),
+      lon: String(place.lon || '').trim().slice(0, 30),
+      officialUrl: String(place.officialUrl || '').slice(0, 500),
+      ratingsUrl: String(place.ratingsUrl || place.maps || '').slice(0, 500)
+    };
+  }
+
+  function encodePlaceMessage(place) {
+    return PLACE_MESSAGE_PREFIX + JSON.stringify(cleanPlace(place));
+  }
+
+  function decodePlaceMessage(body) {
+    if (String(body || '').indexOf(PLACE_MESSAGE_PREFIX) !== 0) return null;
+    try { return cleanPlace(JSON.parse(String(body).slice(PLACE_MESSAGE_PREFIX.length))); }
+    catch (error) { return null; }
+  }
+
   function createInterface() {
     var nav = document.querySelector('.sidebar nav');
     if (nav && !nav.querySelector('[href="#group"]')) {
@@ -50,9 +75,10 @@
       '<div class="collaboration-signed-out" data-group-signed-out hidden><i class="fa-solid fa-user-lock"></i><div><strong>צריך להתחבר כדי לשתף את הטיול</strong><p>אפשר להתחבר דרך אזור המסמכים ולאחר מכן לחזור לכאן.</p></div><a href="#documents">מעבר להתחברות</a></div>' +
       '<div class="collaboration-grid" data-group-content hidden>' +
         '<article class="group-card members-card"><header><div><span>חברי הטיול</span><h2><span data-member-count>0</span> מטיילים</h2></div><button type="button" data-create-invite><i class="fa-solid fa-user-plus"></i> הזמנה</button></header><div class="member-list" data-member-list></div><p class="group-privacy"><i class="fa-solid fa-lock"></i> רק חברי הטיול יכולים לראות את התוכנית והשיחות.</p></article>' +
-        '<article class="group-card chat-card"><header><div><span>שיחה קבוצתית</span><h2>הודעות</h2></div><span class="chat-online" data-chat-status>מחובר</span></header><div class="group-chat" data-group-chat aria-live="polite"></div><form class="group-composer" data-group-composer><textarea name="message" maxlength="2000" rows="1" placeholder="כתיבת הודעה לקבוצה…" aria-label="הודעה לקבוצה" required></textarea><button type="submit" aria-label="שליחת הודעה"><i class="fa-solid fa-paper-plane"></i></button></form></article>' +
+        '<article class="group-card chat-card"><header><div><span>שיחה קבוצתית</span><h2>הודעות</h2></div><span class="chat-online" data-chat-status>מחובר</span></header><div class="group-chat" data-group-chat aria-live="polite"></div><form class="group-composer" data-group-composer><button type="button" class="composer-place-button" data-chat-share-place aria-label="שיתוף מקום בקבוצה" title="שיתוף מקום"><i class="fa-solid fa-location-dot"></i></button><textarea name="message" maxlength="2000" rows="1" placeholder="כתיבת הודעה לקבוצה…" aria-label="הודעה לקבוצה" required></textarea><button type="submit" aria-label="שליחת הודעה"><i class="fa-solid fa-paper-plane"></i></button></form></article>' +
       '</div>' +
       '<div class="invite-dialog" data-invite-dialog hidden><div class="invite-card"><button type="button" class="invite-close" data-invite-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button><i class="fa-solid fa-people-roof invite-hero-icon"></i><h2>הזמנת מטיילים</h2><p>בחר הרשאה וצור קישור שאפשר לשלוח ב־WhatsApp.</p><label>הרשאה<select data-invite-role><option value="editor">יכול לערוך את הטיול</option><option value="viewer">צפייה בלבד</option></select></label><button type="button" class="invite-create" data-invite-generate><i class="fa-solid fa-link"></i> יצירת קישור מאובטח</button><div class="invite-result" data-invite-result hidden><input type="text" readonly data-invite-url><div><button type="button" data-invite-share><i class="fa-brands fa-whatsapp"></i> שיתוף</button><button type="button" data-invite-copy><i class="fa-solid fa-copy"></i> העתקה</button></div><small>הקישור תקף לשבעה ימים ועד 20 מצטרפים.</small></div><p class="invite-status" data-invite-status></p></div></div>' +
+      '<div class="chat-place-dialog" data-chat-place-dialog hidden><div class="chat-place-picker"><button type="button" class="invite-close" data-chat-place-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button><span class="chat-place-hero"><i class="fa-solid fa-map-location-dot"></i></span><h2>שיתוף מקום בקבוצה</h2><p>בחר מקום מהתוכנית. הוא יישלח ככרטיס עם ניווט ושיתוף חכם.</p><div class="chat-place-list" data-chat-place-list></div><a href="#places" data-chat-place-go><i class="fa-solid fa-plus"></i> הוספת מקום חדש</a></div></div>' +
       '<div class="collaboration-toast" data-collaboration-toast role="status"></div>';
     var external = document.querySelector('.external-resources');
     if (external) external.insertAdjacentElement('beforebegin', section);
@@ -67,6 +93,9 @@
       chat: section.querySelector('[data-group-chat]'),
       chatStatus: section.querySelector('[data-chat-status]'),
       composer: section.querySelector('[data-group-composer]'),
+      sharePlaceButton: section.querySelector('[data-chat-share-place]'),
+      placeDialog: section.querySelector('[data-chat-place-dialog]'),
+      placeList: section.querySelector('[data-chat-place-list]'),
       dialog: section.querySelector('[data-invite-dialog]'),
       inviteRole: section.querySelector('[data-invite-role]'),
       inviteResult: section.querySelector('[data-invite-result]'),
@@ -101,7 +130,7 @@
     var me = currentMember();
     document.body.classList.toggle('trip-viewer', Boolean(me && me.role === 'viewer'));
     ui.composer.querySelector('textarea').disabled = !me;
-    ui.composer.querySelector('button').disabled = !me;
+    ui.composer.querySelectorAll('button').forEach(function (button) { button.disabled = !me; });
   }
 
   function messageNode(message) {
@@ -110,7 +139,14 @@
     article.className = 'group-message' + (mine ? ' mine' : '');
     article.dataset.messageId = message.id;
     var time = new Intl.DateTimeFormat('he-IL', { hour: '2-digit', minute: '2-digit' }).format(new Date(message.created_at));
-    article.innerHTML = '<span class="message-sender">' + escapeHtml(mine ? 'אתה' : memberName(message.sender_user_id)) + '</span><p>' + escapeHtml(message.body) + '</p><time>' + escapeHtml(time) + '</time>';
+    var place = decodePlaceMessage(message.body);
+    if (place) {
+      article.classList.add('place-message');
+      article.__travelMatePlace = place;
+      article.innerHTML = '<span class="message-sender">' + escapeHtml(mine ? 'אתה' : memberName(message.sender_user_id)) + '</span><div class="message-place-card"><span class="message-place-pin"><i class="fa-solid fa-location-dot"></i></span><div class="message-place-copy"><small>' + escapeHtml(place.category || 'מקום משותף') + '</small><strong>' + escapeHtml(place.name) + '</strong>' + (place.description ? '<p>' + escapeHtml(place.description) + '</p>' : '') + '</div><div class="message-place-actions"><button type="button" data-message-place-navigate><i class="fa-solid fa-route"></i> ניווט</button><button type="button" data-message-place-share><i class="fa-brands fa-whatsapp"></i> שיתוף</button></div></div><time>' + escapeHtml(time) + '</time>';
+    } else {
+      article.innerHTML = '<span class="message-sender">' + escapeHtml(mine ? 'אתה' : memberName(message.sender_user_id)) + '</span><p>' + escapeHtml(message.body) + '</p><time>' + escapeHtml(time) + '</time>';
+    }
     return article;
   }
 
@@ -186,6 +222,63 @@
     }
   }
 
+  function tripPlaces() {
+    var trip = window.travelMateCurrentTrip || state.trip || {};
+    return (trip.savedPlaces || state.trip.savedPlaces || []).map(cleanPlace).filter(function (place, index, list) {
+      return place.name && list.findIndex(function (item) { return item.name === place.name && item.lat === place.lat && item.lon === place.lon; }) === index;
+    });
+  }
+
+  function renderPlacePicker() {
+    var places = tripPlaces();
+    if (!places.length) {
+      ui.placeList.innerHTML = '<div class="chat-place-empty"><i class="fa-solid fa-map-pin"></i><strong>עדיין אין מקומות בתוכנית</strong><span>אפשר להוסיף מקום במסך המקומות ואז לשתף אותו כאן.</span></div>';
+      return;
+    }
+    ui.placeList.innerHTML = '';
+    places.forEach(function (place, index) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.chatPlaceIndex = index;
+      button.__travelMatePlace = place;
+      button.innerHTML = '<span><i class="fa-solid fa-location-dot"></i></span><span><strong>' + escapeHtml(place.name) + '</strong><small>' + escapeHtml(place.category || place.description || 'מקום בתוכנית') + '</small></span><i class="fa-solid fa-paper-plane"></i>';
+      ui.placeList.appendChild(button);
+    });
+  }
+
+  function openPlacePicker() {
+    renderPlacePicker();
+    ui.placeDialog.hidden = false;
+    document.body.classList.add('chat-place-open');
+    ui.placeDialog.querySelector('[data-chat-place-close]').focus();
+  }
+
+  function closePlacePicker() {
+    ui.placeDialog.hidden = true;
+    document.body.classList.remove('chat-place-open');
+  }
+
+  async function sendBody(body) {
+    var message = await cloud.sendTripMessage(state.trip.ownerId, state.trip.id, body);
+    if (!state.messages.some(function (item) { return String(item.id) === String(message.id); })) {
+      state.messages.push(message);
+      renderMessages();
+    }
+    return message;
+  }
+
+  async function sendPlace(place, button) {
+    button.disabled = true;
+    try {
+      await sendBody(encodePlaceMessage(place));
+      closePlacePicker();
+      toast('המקום נשלח לקבוצה עם כפתור ניווט');
+    } catch (error) {
+      console.error('TravelMate place message failed', error);
+      toast('שליחת המקום נכשלה זמנית');
+    } finally { button.disabled = false; }
+  }
+
   function bindEvents() {
     ui.inviteButton.addEventListener('click', openInvite);
     ui.dialog.querySelector('[data-invite-close]').addEventListener('click', closeInvite);
@@ -193,6 +286,26 @@
     ui.dialog.querySelector('[data-invite-generate]').addEventListener('click', generateInvite);
     ui.dialog.querySelector('[data-invite-share]').addEventListener('click', shareInvite);
     ui.dialog.querySelector('[data-invite-copy]').addEventListener('click', copyInvite);
+    ui.sharePlaceButton.addEventListener('click', openPlacePicker);
+    ui.placeDialog.querySelector('[data-chat-place-close]').addEventListener('click', closePlacePicker);
+    ui.placeDialog.querySelector('[data-chat-place-go]').addEventListener('click', closePlacePicker);
+    ui.placeDialog.addEventListener('click', function (event) {
+      if (event.target === ui.placeDialog) { closePlacePicker(); return; }
+      var button = event.target.closest('[data-chat-place-index]');
+      if (button) sendPlace(button.__travelMatePlace, button);
+    });
+    ui.chat.addEventListener('click', function (event) {
+      var article = event.target.closest('.place-message');
+      if (!article || !article.__travelMatePlace) return;
+      if (event.target.closest('[data-message-place-navigate]')) {
+        if (window.TravelMatePlaceActions) window.TravelMatePlaceActions.navigate(article.__travelMatePlace);
+        else document.dispatchEvent(new CustomEvent('travelmate:navigate-place', { detail: article.__travelMatePlace }));
+      }
+      if (event.target.closest('[data-message-place-share]')) {
+        if (window.TravelMatePlaceActions) window.TravelMatePlaceActions.share(article.__travelMatePlace);
+        else document.dispatchEvent(new CustomEvent('travelmate:share-place', { detail: article.__travelMatePlace }));
+      }
+    });
     ui.composer.addEventListener('submit', async function (event) {
       event.preventDefault();
       var textarea = ui.composer.elements.message;
@@ -200,12 +313,8 @@
       if (!body) return;
       textarea.disabled = true;
       try {
-        var message = await cloud.sendTripMessage(state.trip.ownerId, state.trip.id, body);
+        await sendBody(body);
         textarea.value = '';
-        if (!state.messages.some(function (item) { return String(item.id) === String(message.id); })) {
-          state.messages.push(message);
-          renderMessages();
-        }
       } catch (error) {
         console.error('TravelMate message send failed', error);
         toast('שליחת ההודעה נכשלה זמנית');
