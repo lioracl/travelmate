@@ -316,6 +316,7 @@
 
   function setSession(session) {
     currentSession = session;
+    document.body.classList.toggle('is-authenticated', Boolean(session));
     if (passwordChangeMode && session) return;
     authForm.hidden = Boolean(session);
     passwordForm.hidden = true;
