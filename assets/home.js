@@ -89,8 +89,10 @@
         timer = setInterval(function () { showSlide(activeIndex + 1); }, 3800);
       }
     }
-    carousel.querySelector('[data-carousel-previous]').addEventListener('click', function () { showSlide(activeIndex - 1); restart(); });
-    carousel.querySelector('[data-carousel-next]').addEventListener('click', function () { showSlide(activeIndex + 1); restart(); });
+    var previousButton = carousel.querySelector('[data-carousel-previous]');
+    var nextButton = carousel.querySelector('[data-carousel-next]');
+    if (previousButton) previousButton.addEventListener('click', function () { showSlide(activeIndex - 1); restart(); });
+    if (nextButton) nextButton.addEventListener('click', function () { showSlide(activeIndex + 1); restart(); });
     showSlide(activeIndex);
     restart();
   })();
