@@ -205,12 +205,22 @@
   });
 
   function createAccountPanel() {
-    var panel = document.createElement('section');
+    var backdrop = document.createElement('section');
+    backdrop.className = 'cloud-account-backdrop';
+    backdrop.dataset.cloudAccountBackdrop = '';
+    backdrop.hidden = true;
+    backdrop.setAttribute('aria-hidden', 'true');
+    var panel = document.createElement('div');
     panel.className = 'cloud-account';
     panel.dataset.cloudAccount = '';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-labelledby', 'cloud-account-title');
     panel.innerHTML = '<div class="cloud-account-copy"><span class="cloud-account-icon"><i class="fa-solid fa-cloud"></i></span><div><strong>סנכרון בין המחשב לטלפון</strong><small data-cloud-message>התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div></div><form data-cloud-auth-form><input name="email" type="email" autocomplete="email" required placeholder="כתובת דוא״ל"><input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="סיסמת החשבון"><button type="submit">כניסה</button><button type="button" class="secondary" data-cloud-signup>יצירת חשבון</button><button type="button" class="secondary" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
-    var hero = document.querySelector('main > .hero');
-    hero.insertAdjacentElement('afterend', panel);
+    panel.insertAdjacentHTML('afterbegin', '<button class="cloud-account-close" type="button" data-cloud-account-close aria-label="סגירת חלון ההתחברות"><i class="fa-solid fa-xmark"></i></button>');
+    panel.querySelector('.cloud-account-copy strong').id = 'cloud-account-title';
+    backdrop.appendChild(panel);
+    document.body.appendChild(backdrop);
     return panel;
   }
 
@@ -219,6 +229,32 @@
   var passwordForm = accountPanel.querySelector('[data-cloud-password-form]');
   var sessionPanel = accountPanel.querySelector('[data-cloud-session]');
   var message = accountPanel.querySelector('[data-cloud-message]');
+  var accountBackdrop = accountPanel.closest('[data-cloud-account-backdrop]');
+  var accountOpenButton = document.querySelector('[data-cloud-account-open]');
+
+  function openAccountModal() {
+    accountBackdrop.hidden = false;
+    accountBackdrop.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('cloud-account-open');
+    var firstField = accountPanel.querySelector('form:not([hidden]) input');
+    if (firstField) firstField.focus();
+  }
+
+  function closeAccountModal() {
+    accountBackdrop.hidden = true;
+    accountBackdrop.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('cloud-account-open');
+    if (accountOpenButton) accountOpenButton.focus();
+  }
+
+  if (accountOpenButton) accountOpenButton.addEventListener('click', openAccountModal);
+  accountPanel.querySelector('[data-cloud-account-close]').addEventListener('click', closeAccountModal);
+  accountBackdrop.addEventListener('click', function (event) {
+    if (event.target === accountBackdrop) closeAccountModal();
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !accountBackdrop.hidden) closeAccountModal();
+  });
 
   function setMessage(value, error) {
     message.textContent = value;
@@ -241,7 +277,11 @@
     passwordForm.hidden = true;
     sessionPanel.hidden = !session;
     accountPanel.querySelector('[data-cloud-email]').textContent = session && session.user ? session.user.email : '';
+    if (accountOpenButton) {
+      accountOpenButton.innerHTML = session ? '<i class="fa-solid fa-user-check"></i> החשבון שלי' : '<i class="fa-solid fa-user"></i> התחברות או יצירת חשבון';
+    }
     if (session) {
+      closeAccountModal();
       var pendingInvite = sessionStorage.getItem('travelmate-pending-invite');
       if (pendingInvite) {
         sessionStorage.removeItem('travelmate-pending-invite');
@@ -264,6 +304,7 @@
     passwordForm.hidden = false;
     passwordForm.reset();
     setMessage(isRecovery ? 'קישור השחזור אושר. בחר סיסמה חדשה לחשבון.' : 'בחר סיסמה חדשה לחשבון.');
+    openAccountModal();
     passwordForm.elements.newPassword.focus();
   }
 
