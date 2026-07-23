@@ -74,7 +74,7 @@
     button.innerHTML = '<span class="weather-top-icon"><i class="fa-solid fa-cloud-sun"></i></span><span class="weather-top-copy"><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><i class="fa-solid fa-chevron-down weather-top-chevron"></i>';
     var content = document.querySelector('.content'); var hero = content && content.querySelector('.hero');
     if (!content || !hero) return null;
-    content.insertBefore(button, hero);
+    hero.insertAdjacentElement('afterend', button);
 
     var backdrop = document.createElement('section');
     backdrop.id = 'modal-weather-live'; backdrop.className = 'modal-backdrop'; backdrop.setAttribute('role', 'dialog'); backdrop.setAttribute('aria-modal', 'true'); backdrop.setAttribute('aria-labelledby', 'weather-live-title');
