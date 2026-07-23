@@ -19,3 +19,9 @@ body>main.content>.hero .status{padding:0;border:0;background:transparent;box-sh
 :where(.badge,.category,.place-type,.tag,.overline,.pill-btn,.mini-btn,.resource-link i,.service-link.secondary){background:var(--secondary-soft)!important;color:var(--secondary)!important;border-color:rgba(169,101,50,.28)!important}
 :where(.danger,.mini-btn.danger,.smart-actions .danger,.form-error,.error){color:var(--tertiary)!important}
 :where(.smart-actions .danger){background:var(--tertiary)!important;color:#fff!important;border-color:var(--tertiary)!important}
+
+/* Hebrew-first interface flow. Technical values keep their natural LTR entry direction. */
+html,body{direction:rtl}
+:where(main,section,article,header,footer,nav,aside,form,dialog,.modal,.about-dialog,.cloud-account,.ai-panel,.smart-hub-modal){direction:rtl}
+:where(input:not([type="email"]):not([type="url"]):not([type="tel"]),textarea,select,button){direction:rtl;text-align:right}
+:where(input[type="email"],input[type="url"],input[type="tel"],[data-cloud-email]){direction:ltr;text-align:left}
