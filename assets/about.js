@@ -2,7 +2,7 @@
   'use strict';
 
   var release = {
-    version: '1.18.9',
+    version: '1.18.10',
     label: 'שיתוף חכם ועיצוב מסך פתיחה',
     date: '23 ביולי 2026',
     highlights: [
