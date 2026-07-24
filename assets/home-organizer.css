@@ -15,6 +15,213 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 @media(max-width:700px){.home-sidebar{top:auto;right:12px;bottom:10px;left:12px;width:auto;height:56px;flex-direction:row;justify-content:center;padding:6px;background:rgba(255,255,255,.72);backdrop-filter:blur(16px)}.home-sidebar-logo{margin:0 0 0 auto}.home-sidebar nav{flex:0 1 auto;flex-direction:row;gap:5px}.home-sidebar>.trip-logout{margin:0 auto 0 0}.home-sidebar .tip{display:none}.home-page.is-authenticated main.content{padding:14px 14px 84px!important}}
 .home-sidebar>.trip-logout i{color:transparent;-webkit-text-stroke:1.2px #414846}
 
+/* Authenticated trips dashboard — landing-page visual language */
+.home-page.is-authenticated{
+  min-height:100svh;
+  background:
+    linear-gradient(rgba(5,20,16,.58),rgba(5,20,16,.76)),
+    url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=2000&q=88") center/cover fixed;
+  color:#fff;
+}
+.home-page.is-authenticated:before{
+  opacity:.1;
+}
+.home-page.is-authenticated .home-sidebar{
+  position:fixed;
+  z-index:108;
+  top:0;
+  right:0;
+  bottom:auto;
+  left:0;
+  width:auto;
+  height:82px;
+  padding:0 42px;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:28px;
+  border-bottom:1px solid rgba(255,255,255,.16);
+  background:rgba(5,20,16,.2);
+  color:#fff;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+.home-page.is-authenticated .home-sidebar-logo{
+  width:auto;
+  height:auto;
+  margin:0;
+  display:flex;
+  gap:9px;
+  background:transparent;
+  color:#fff;
+  font-size:18px;
+}
+.home-page.is-authenticated .home-sidebar-logo:after{
+  content:"TravelMate";
+  font-weight:600;
+}
+.home-page.is-authenticated .home-sidebar nav{
+  flex:1;
+  flex-direction:row;
+  align-items:center;
+  gap:22px;
+}
+.home-page.is-authenticated .home-sidebar nav :is(a,button),
+.home-page.is-authenticated .home-sidebar>.trip-logout{
+  width:auto;
+  height:42px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:rgba(255,255,255,.76);
+}
+.home-page.is-authenticated .home-sidebar nav a.active{
+  color:#f97c22;
+}
+.home-page.is-authenticated .home-sidebar .tip{
+  position:static;
+  width:auto;
+  padding:0;
+  background:transparent;
+  color:inherit;
+  font:300 13px Rubik,sans-serif;
+  box-shadow:none;
+  backdrop-filter:none;
+  opacity:1;
+  visibility:visible;
+  transform:none;
+}
+.home-page.is-authenticated .home-sidebar>.trip-logout{
+  margin:0 0 0 auto;
+}
+.home-page.is-authenticated .home-sidebar>.trip-logout i{
+  color:transparent;
+  -webkit-text-stroke:1.1px rgba(255,255,255,.78);
+}
+.home-page.is-authenticated main.content{
+  max-width:1280px!important;
+  min-height:100svh;
+  margin:auto!important;
+  padding:124px 42px 72px!important;
+}
+.home-page.is-authenticated .trip-area-head{
+  margin:0 0 22px;
+  padding:22px 24px;
+  border:1px solid rgba(255,255,255,.26);
+  border-radius:2px;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.home-page.is-authenticated .trip-area-head h2{
+  color:#fff;
+  font:400 34px/1.1 Rubik,sans-serif;
+}
+.home-page.is-authenticated .trip-area-head span{
+  border-radius:2px;
+  background:rgba(255,255,255,.16);
+  color:#fff;
+}
+.home-page.is-authenticated #active-trips{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:18px;
+  margin-top:0!important;
+}
+.home-page.is-authenticated .trip-card-shell,
+.home-page.is-authenticated #active-trips>.trip-card,
+.home-page.is-authenticated #active-trips>.add-destination{
+  min-height:360px;
+}
+.home-page.is-authenticated .trip-card{
+  min-height:360px;
+  border:1px solid rgba(255,255,255,.3)!important;
+  border-radius:2px!important;
+  box-shadow:none;
+}
+.home-page.is-authenticated .trip-card:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:52%;
+  background:rgba(5,20,16,.38);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.home-page.is-authenticated .trip-overlay{
+  background:linear-gradient(180deg,rgba(5,20,16,.06),rgba(5,20,16,.56));
+}
+.home-page.is-authenticated .trip-copy{
+  z-index:2;
+}
+.home-page.is-authenticated .trip-copy h2{
+  font:400 32px Rubik,sans-serif;
+}
+.home-page.is-authenticated .trip-flag,
+.home-page.is-authenticated .trip-activity-toggle,
+.home-page.is-authenticated .trip-date-state{
+  border:1px solid rgba(255,255,255,.5);
+  border-radius:2px;
+  background:rgba(255,255,255,.72);
+  box-shadow:none;
+  backdrop-filter:blur(12px);
+}
+.home-page.is-authenticated .add-destination{
+  border:1px solid rgba(255,255,255,.3)!important;
+  border-radius:2px!important;
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  box-shadow:none;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.home-page.is-authenticated .add-destination small{
+  max-width:220px;
+  color:rgba(255,255,255,.7);
+}
+.home-page.is-authenticated .add-destination .icon{
+  border:1px solid rgba(255,255,255,.34);
+  border-radius:2px;
+  background:transparent;
+  color:#fff;
+}
+
+@media(max-width:800px){
+  .home-page.is-authenticated .home-sidebar{
+    top:0;
+    right:0;
+    bottom:auto;
+    left:0;
+    height:72px;
+    padding:0 16px;
+    justify-content:flex-start;
+    background:rgba(5,20,16,.48);
+  }
+  .home-page.is-authenticated .home-sidebar-logo:after,
+  .home-page.is-authenticated .home-sidebar nav .tip,
+  .home-page.is-authenticated .home-sidebar>.trip-logout .tip{
+    display:none;
+  }
+  .home-page.is-authenticated .home-sidebar nav{
+    flex:1;
+    justify-content:center;
+    gap:12px;
+  }
+  .home-page.is-authenticated .home-sidebar nav :is(a,button),
+  .home-page.is-authenticated .home-sidebar>.trip-logout{
+    width:38px;
+    justify-content:center;
+  }
+  .home-page.is-authenticated main.content{
+    padding:96px 16px 86px!important;
+  }
+  .home-page.is-authenticated #active-trips{
+    grid-template-columns:1fr!important;
+  }
+}
+
 .landing-login{min-height:32px;height:32px;padding:0 12px;background:var(--secondary)!important;border-radius:999px;font-size:11px;line-height:1;box-shadow:none}.landing-login:hover{background:#dc6410!important}
 
 .landing-intro{position:relative;z-index:7;pointer-events:none}.destination-carousel{z-index:3;margin-top:-95px;height:500px}.carousel-track{height:470px}.carousel-dots{margin-top:-34px}@media(max-width:800px){.destination-carousel{margin-top:-70px;height:450px}.carousel-track{height:420px}}@media(max-width:500px){.destination-carousel{margin-top:-48px;height:400px}.carousel-track{height:370px}}
