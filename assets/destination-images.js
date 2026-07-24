@@ -11,7 +11,7 @@
   }
 
   function key(city, country) { return normalize(city) + '|' + normalize(country); }
-  function flag(country) {
+  function flagCode(country) {
     var aliases = {
       'יפן': 'JP', japan: 'JP', 'איטליה': 'IT', italy: 'IT', 'צכיה': 'CZ', 'צכית': 'CZ', czechia: 'CZ', 'czech republic': 'CZ',
       'ליטא': 'LT', lithuania: 'LT', 'ישראל': 'IL', israel: 'IL', 'גרמניה': 'DE', germany: 'DE', 'צרפת': 'FR', france: 'FR',
@@ -25,6 +25,10 @@
     };
     var normalized = normalize(country);
     var code = /^[a-z]{2}$/i.test(normalized) ? normalized.toUpperCase() : aliases[normalized];
+    return code || '';
+  }
+  function flag(country) {
+    var code = flagCode(country);
     return code ? String.fromCodePoint.apply(String, code.split('').map(function (letter) { return 127397 + letter.charCodeAt(0); })) : '🌍';
   }
   function readCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch (error) { return {}; } }
@@ -94,5 +98,5 @@
     });
   }
 
-  window.TravelMateDestinationImages = { fallback: FALLBACK, cached: cached, resolve: resolve, apply: apply, flag: flag };
+  window.TravelMateDestinationImages = { fallback: FALLBACK, cached: cached, resolve: resolve, apply: apply, flag: flag, flagCode: flagCode };
 })();

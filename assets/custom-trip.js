@@ -50,6 +50,12 @@
     text('[data-city]', trip.city);
     text('[data-country]', trip.country);
     text('[data-country-flag]', window.TravelMateDestinationImages ? window.TravelMateDestinationImages.flag(trip.country) : '🌍');
+    if (window.TravelMateDestinationImages && window.TravelMateDestinationImages.flagCode) {
+      var countryCode = window.TravelMateDestinationImages.flagCode(trip.country);
+      if (countryCode) document.querySelectorAll('[data-country-flag]').forEach(function (node) {
+        node.innerHTML = '<img class="country-flag-svg" src="https://flagcdn.com/' + countryCode.toLowerCase() + '.svg" alt="" width="28" height="20">';
+      });
+    }
     text('[data-days]', trip.days);
     text('[data-type]', trip.type);
     text('[data-budget]', Number(trip.budget).toLocaleString('he-IL'));

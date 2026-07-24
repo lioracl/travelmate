@@ -1,6 +1,7 @@
 (function () {
   'use strict';
   if (document.body.classList.contains('home-page') || !document.querySelector('.workspace')) return;
+  document.body.classList.add('tm-new-design');
 
   var hero = document.querySelector('.hero');
   if (hero) {
@@ -50,7 +51,61 @@
   }
 
   var sidebar = document.querySelector('.sidebar');
-  if (!sidebar || sidebar.querySelector('[data-trip-logout]')) return;
+  if (!sidebar) return;
+
+  var content = document.querySelector('.content');
+  var viewParams = new URLSearchParams(window.location.search);
+  var currentView = viewParams.get('view') || 'overview';
+  var overviewClasses = ['trip-overview-summary', 'trip-home-actions'];
+
+  function pageUrl(view) {
+    var url = new URL(window.location.href);
+    url.hash = '';
+    url.searchParams.set('view', view);
+    return url.href;
+  }
+
+  function sectionView(section) {
+    if (section.id) return section.id;
+    for (var index = 0; index < overviewClasses.length; index += 1) {
+      if (section.classList.contains(overviewClasses[index])) return 'overview';
+    }
+    return '';
+  }
+
+  function syncTripPages() {
+    sidebar.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+      var view = link.getAttribute('href').slice(1);
+      link.href = pageUrl(view);
+    });
+    sidebar.querySelectorAll('nav a').forEach(function (link) {
+      var linkUrl;
+      try { linkUrl = new URL(link.href, window.location.href); } catch (error) { return; }
+      var linkView = linkUrl.searchParams.get('view') || linkUrl.hash.slice(1);
+      link.classList.toggle('active', linkView === currentView);
+      if (linkView === currentView) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    if (!content) return;
+    content.querySelectorAll(':scope > section').forEach(function (section) {
+      if (section.classList.contains('hero')) {
+        section.hidden = false;
+        return;
+      }
+      section.hidden = sectionView(section) !== currentView;
+    });
+    document.body.dataset.tripView = currentView;
+  }
+
+  document.querySelectorAll('.trip-home-actions a[href^="#"]').forEach(function (link) {
+    link.href = pageUrl(link.getAttribute('href').slice(1));
+  });
+  syncTripPages();
+  new MutationObserver(syncTripPages).observe(sidebar, { childList: true, subtree: true });
+  if (content) new MutationObserver(syncTripPages).observe(content, { childList: true });
+
+  return;
+  if (document.querySelector('[data-floating-logout]')) return;
 
   var logout = document.createElement('button');
   logout.type = 'button';

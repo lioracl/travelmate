@@ -4,9 +4,19 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>הטיולים שלי</title><meta name="description" content="TravelMate - סוכן הנסיעות האישי שלך">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><link rel="stylesheet" href="assets/styles.css?v=20260723-7"><link rel="stylesheet" href="assets/cloud-sync.css?v=20260723-9">
-  <link rel="stylesheet" href="assets/home-organizer.css?v=20260723-8">
+  <link rel="stylesheet" href="assets/home-organizer.css?v=20260723-9">
 </head>
 <body class="home-page">
+<aside class="home-sidebar" aria-label="תפריט כל הטיולים">
+  <a class="home-sidebar-logo" href="index.html" aria-label="TravelMate"><i class="fa-solid fa-route" aria-hidden="true"></i><span class="tip">TravelMate</span></a>
+  <nav aria-label="פעולות במסך כל הטיולים">
+    <a class="active" href="#active-trips" aria-current="page"><i class="fa-regular fa-map" aria-hidden="true"></i><span class="tip">כל הטיולים</span></a>
+    <button type="button" data-modal="destination"><i class="fa-regular fa-square-plus" aria-hidden="true"></i><span class="tip">טיול חדש</span></button>
+    <a href="#trip-archive"><i class="fa-regular fa-folder-open" aria-hidden="true"></i><span class="tip">ארכיון הטיולים</span></a>
+    <button type="button" data-cloud-account-open><i class="fa-regular fa-user" aria-hidden="true"></i><span class="tip">החשבון שלי</span></button>
+    <button type="button" data-about-open><i class="fa-regular fa-circle-question" aria-hidden="true"></i><span class="tip">אודות</span></button>
+  </nav>
+</aside>
 <main class="content" style="max-width:1280px;margin:auto">
   <header class="home-landing" data-home-carousel>
     <nav class="landing-nav" aria-label="ניווט ראשי"><a class="landing-brand" href="index.html"><i class="fa-solid fa-route"></i><strong>TravelMate</strong></a><div class="landing-menu"><a href="#active-trips">הטיולים שלי</a><a href="#active-trips">יעדים</a><button type="button" data-about-open>אודות</button></div><button class="landing-login" type="button" data-cloud-account-open><span>התחברות</span></button></nav>
@@ -29,5 +39,5 @@
   </section>
 </main>
 <section id="modal-destination" class="modal-backdrop"><div class="modal destination-modal"><header><div><span>טיול חדש</span><h2>לאן תרצי לטוס?</h2><p>אפשר להקליד כל מדינה ועיר בעולם, למשל פראג, צ׳כיה או ברלין, גרמניה.</p></div><button class="modal-close" type="button" data-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header><form class="destination-form" data-destination-form><label>מדינה<input name="country" required autocomplete="country-name" placeholder="לדוגמה: גרמניה"></label><label>עיר<input name="city" required autocomplete="address-level2" placeholder="לדוגמה: ברלין"></label><label>תאריך יציאה<input name="start" type="date" required></label><label>תאריך חזרה<input name="end" type="date" required></label><label>תקציב משוער (€)<input name="budget" type="number" min="100" step="50" value="2500"></label><label>סוג הטיול<select name="type"><option>זוגי</option><option>משפחתי</option><option>חברים</option><option>סולו</option></select></label><p class="form-error" data-form-error role="alert"></p><button class="create-trip" type="submit"><i class="fa-solid fa-wand-magic-sparkles"></i> בניית הטיול אוטומטית</button></form></div></section>
-<script src="assets/network-usage.js?v=20260723-2" defer></script><script src="assets/supabase-config.js?v=20260717-1" defer></script><script src="assets/cloud-sync.js?v=20260719-4" defer></script><script src="assets/destination-images.js?v=20260723-6" defer></script><script src="assets/app.js?v=20260723-22" defer></script><script src="assets/home.js?v=20260723-10" defer></script>
+<script src="assets/network-usage.js?v=20260723-51" defer></script><script src="assets/supabase-config.js?v=20260717-1" defer></script><script src="assets/cloud-sync.js?v=20260719-4" defer></script><script src="assets/destination-images.js?v=20260723-7" defer></script><script src="assets/app.js?v=20260723-51" defer></script><script src="assets/home.js?v=20260723-11" defer></script>
 </body></html>

@@ -141,6 +141,7 @@
     list.insertAdjacentElement('beforebegin', heading);
     archive = document.createElement('section');
     archive.className = 'trip-archive';
+    archive.id = 'trip-archive';
     archive.dataset.tripArchive = '';
     archive.innerHTML = '<button class="trip-archive-toggle" type="button" data-archive-toggle aria-expanded="false"><i class="fa-solid fa-box-archive"></i><span><strong>ארכיון הטיולים</strong><small>טיול עתידי יופעל אוטומטית שבוע לפני היציאה</small></span><b data-archive-count>0</b><i class="fa-solid fa-chevron-down"></i></button><div class="modules trip-archive-list" data-archive-list hidden></div>';
     list.insertAdjacentElement('afterend', archive);
