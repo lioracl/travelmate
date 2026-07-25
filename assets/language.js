@@ -11,6 +11,11 @@
   var observer;
 
   var en = {
+    'שכחתי סיסמה': 'Forgot password',
+    'ליצירת חשבון חדש נדרשת סיסמה של לפחות 8 תווים.': 'A new account requires a password of at least 8 characters.',
+    'שולח קישור לאיפוס הסיסמה…': 'Sending password reset link…',
+    'קישור לאיפוס הסיסמה נשלח. בדוק גם בתיקיות ספאם וקידומי מכירות.': 'Password reset link sent. Check spam and promotions too.',
+    'נשלח · אפשר שוב בעוד דקה': 'Sent · available again in one minute',
     'הטיולים שלי': 'My trips', 'לאן נוסעים הפעם?': 'Where are we going this time?',
     'בחר יעד והמשך לתכנון, למסמכים ולליווי בזמן אמת.': 'Choose a destination and continue to planning, documents and real-time travel support.',
     'פתיחת מרכז טיול': 'Open trip center', 'סגירת האפליקציה': 'Close app', 'הוספת יעד חדש': 'Add a new destination',
@@ -137,7 +142,8 @@
     'היי, אני נבו 👋 העוזר האישי שלך ב־TravelMate. אפשר לשאול אותי על יעדים, תכנון, תקציב, אריזה — או על כל נושא אחר.': 'Hi, I’m Nevo 👋 your personal TravelMate assistant. Ask me about destinations, planning, budgets, packing — or anything else.',
     'עזור לי לבחור יעד': 'Help me choose a destination', 'בנה רשימת אריזה': 'Build a packing list',
     'איך לחסוך בטיול?': 'How can I save on my trip?', 'תן לי רעיון מגניב לסופ״ש': 'Give me a cool weekend idea',
-    'הודעה לעוזר': 'Message to assistant', 'AI עשוי לטעות': 'AI can make mistakes'
+    'הודעה לעוזר': 'Message to assistant', 'AI עשוי לטעות': 'AI can make mistakes',
+    'שיתוף ב־WhatsApp': 'Share via WhatsApp', 'טיול משותף': 'Shared trip', 'הטיול שלי': 'My trip'
   });
 
   function readLanguage() {

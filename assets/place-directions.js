@@ -141,6 +141,18 @@
     return items.filter(function (item, index, list) { return list.indexOf(item) === index; }).slice(0, 24);
   }
 
+  function tripDestinationPlace() {
+    var trip = currentTripData();
+    var city = String(trip.city || '').trim();
+    var country = String(trip.country || '').trim();
+    var dates = [trip.start, trip.end].filter(Boolean).join(' – ');
+    return cleanPlace({
+      name: [city, country].filter(Boolean).join(', ') || 'הטיול שלי',
+      category: 'טיול משותף',
+      description: ['TravelMate', dates].filter(Boolean).join(' · ')
+    });
+  }
+
   function shareOptionsFromModal() {
     if (!shareModal) return { note: '', items: [] };
     return {
@@ -438,6 +450,10 @@
   };
   document.addEventListener('travelmate:navigate-place', function (event) { openModal(cleanPlace(event.detail)); });
   document.addEventListener('travelmate:share-place', function (event) { openShareModal(cleanPlace(event.detail)); });
+  var tripWhatsAppButton = document.querySelector('[data-trip-share-whatsapp]');
+  if (tripWhatsAppButton) {
+    tripWhatsAppButton.addEventListener('click', function () { openShareModal(tripDestinationPlace()); });
+  }
 
   enhanceResults(document);
   showSharedPlaceCard();

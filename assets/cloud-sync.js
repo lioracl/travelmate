@@ -342,6 +342,11 @@
     return client.auth.resend({ type: 'signup', email: email, options: { emailRedirectTo: redirectTo } });
   }
 
+  async function resetPassword(email, redirectTo) {
+    var client = await getClient();
+    return client.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+  }
+
   async function updatePassword(password) {
     var client = await getClient();
     return client.auth.updateUser({ password: password });
@@ -395,6 +400,7 @@
     signIn: signIn,
     signUp: signUp,
     resendSignup: resendSignup,
+    resetPassword: resetPassword,
     updatePassword: updatePassword,
     authRedirectUrl: authRedirectUrl,
     signOut: signOut,
