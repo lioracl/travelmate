@@ -388,7 +388,16 @@ body.home-page.is-authenticated .trip-card-shell.cloud-trip-card{
 body.tm-new-design .hero .weather-top-widget,
 body.tm-new-design .hero .weather-top-widget :where(small,strong,span,i){
   color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
   text-shadow:0 1px 10px rgba(0,0,0,.28)!important
+}
+body.tm-new-design .hero .weather-top-widget>.weather-top-copy,
+body.tm-new-design .hero .weather-top-widget>.weather-top-copy small,
+body.tm-new-design .hero .weather-top-widget>.weather-top-copy strong,
+body.tm-new-design .hero .weather-top-widget>.weather-top-temperature{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  opacity:1!important
 }
 body.tm-new-design .hero .weather-top-icon,
 body.tm-new-design .hero .weather-top-icon svg{
