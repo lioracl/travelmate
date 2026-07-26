@@ -383,3 +383,14 @@ body.home-page.is-authenticated .trip-card-shell.cloud-trip-card{
   border:0!important;
   outline:0!important
 }
+
+/* Weather card content stays bright and readable over every destination image. */
+body.tm-new-design .hero .weather-top-widget,
+body.tm-new-design .hero .weather-top-widget :where(small,strong,span,i){
+  color:#fff!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.28)!important
+}
+body.tm-new-design .hero .weather-top-icon,
+body.tm-new-design .hero .weather-top-icon svg{
+  color:#fff!important
+}
