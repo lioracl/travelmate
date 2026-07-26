@@ -309,7 +309,12 @@ body.tm-new-design .trip-home-actions a{
   min-height:142px!important;
   padding:20px 10px!important;
   justify-content:center!important;
-  gap:16px!important
+  gap:16px!important;
+  color:rgba(255,255,255,.96)!important
+}
+body.tm-new-design .trip-home-actions a span{
+  color:rgba(255,255,255,.96)!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.28)!important
 }
 body.tm-new-design .trip-home-actions a i{
   color:#fff!important;
