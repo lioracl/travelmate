@@ -2,7 +2,7 @@
   'use strict';
 
   var release = {
-    version: '1.24.11',
+    version: '1.24.12',
     label: 'מסך הטיולים מעודן',
     date: '26 ביולי 2026',
     highlights: [
