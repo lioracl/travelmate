@@ -20,6 +20,9 @@
       script.onload = function () { resolve(window.supabase); };
       script.onerror = function () { reject(new Error('SUPABASE_LIBRARY_FAILED')); };
       document.head.appendChild(script);
+    }).catch(function (error) {
+      window.travelMateSupabaseLoader = null;
+      throw error;
     });
     return window.travelMateSupabaseLoader;
   }

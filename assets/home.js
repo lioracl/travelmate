@@ -407,16 +407,24 @@
 
   authForm.addEventListener('submit', async function (event) {
     event.preventDefault();
-    var button = authForm.querySelector('button[type="submit"]');
-    button.disabled = true;
+    var submitButton = authForm.querySelector('.cloud-login-submit');
+    cloud = window.TravelMateCloud || cloud;
+    if (!cloud || typeof cloud.signIn !== 'function') {
+      setMessage('שירות ההתחברות עדיין נטען. נסו שוב בעוד רגע.', true);
+      return;
+    }
+    submitButton.disabled = true;
+    submitButton.setAttribute('aria-busy', 'true');
     setMessage('מתחבר/ת…');
     try {
       var result = await cloud.signIn(authForm.elements.email.value.trim(), authForm.elements.password.value);
       if (result.error) setMessage(authMessage(result.error), true);
     } catch (error) {
+      console.error('TravelMate sign in failed', error);
       setMessage(authMessage(error), true);
     } finally {
-      button.disabled = false;
+      submitButton.disabled = false;
+      submitButton.removeAttribute('aria-busy');
     }
   });
 
