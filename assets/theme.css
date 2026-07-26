@@ -240,8 +240,8 @@ body.tm-new-design[data-trip-view="overview"] .hero .weather-top-widget{
 body.tm-new-design[data-trip-view="overview"] .hero .weather-top-copy{
   position:absolute!important;
   top:20px!important;
-  right:20px!important;
-  left:62px!important;
+  right:62px!important;
+  left:20px!important;
   display:flex!important;
   flex-direction:column!important;
   align-items:flex-start!important;
@@ -263,7 +263,8 @@ body.tm-new-design[data-trip-view="overview"] .hero .weather-top-copy strong{
 body.tm-new-design[data-trip-view="overview"] .hero .weather-top-icon{
   position:absolute!important;
   top:20px!important;
-  left:20px!important;
+  right:20px!important;
+  left:auto!important;
   width:34px!important;
   height:34px!important;
   border:0!important;
