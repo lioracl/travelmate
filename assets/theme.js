@@ -31,6 +31,10 @@
   }
 
   function createToggle() {
+    if (document.body.classList.contains('home-page')) {
+      document.querySelectorAll('[data-theme-toggle]').forEach(function (button) { button.remove(); });
+      return;
+    }
     if (document.querySelector('[data-theme-toggle]')) return;
     var menu = document.querySelector('.home-sidebar, .sidebar');
     if (!menu) return;
