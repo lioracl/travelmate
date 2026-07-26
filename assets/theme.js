@@ -31,24 +31,7 @@
   }
 
   function createToggle() {
-    if (document.body.classList.contains('home-page')) {
-      document.querySelectorAll('[data-theme-toggle]').forEach(function (button) { button.remove(); });
-      return;
-    }
-    if (document.querySelector('[data-theme-toggle]')) return;
-    var menu = document.querySelector('.home-sidebar, .sidebar');
-    if (!menu) return;
-    var button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'theme-toggle';
-    button.dataset.themeToggle = '';
-    var nav = menu.querySelector('nav');
-    if (nav) menu.insertBefore(button, nav);
-    else menu.appendChild(button);
-    button.addEventListener('click', function () {
-      saveTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
-    });
-    applyTheme(root.dataset.theme || readTheme());
+    document.querySelectorAll('[data-theme-toggle]').forEach(function (button) { button.remove(); });
   }
 
   applyTheme(readTheme());
