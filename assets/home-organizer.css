@@ -13,6 +13,7 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 
 .home-sidebar{position:fixed;z-index:108;top:20px;right:18px;bottom:20px;width:58px;display:none;flex-direction:column;align-items:center;padding:8px 0;background:transparent;color:#414846}.home-page.is-authenticated .home-sidebar{display:flex}.home-sidebar-logo,.home-sidebar nav a,.home-sidebar nav button,.home-sidebar>.trip-logout{position:relative;width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:2px;background:transparent;color:#414846;font:inherit;text-decoration:none;box-shadow:none}.home-sidebar-logo{margin-bottom:18px;background:#0e614b;color:#fff}.home-sidebar nav{display:flex;flex:1;flex-direction:column;align-items:center;gap:12px}.home-sidebar nav a.active{color:#f97c22}.home-sidebar i{font-size:19px}.home-sidebar>.trip-logout{margin-top:auto;color:#414846}.home-sidebar .tip{position:absolute;right:52px;top:50%;z-index:4;width:max-content;padding:7px 10px;border-radius:2px;background:rgba(255,255,255,.82);color:#414846;font:300 12px Rubik,sans-serif;box-shadow:0 8px 24px rgba(65,72,70,.12);backdrop-filter:blur(14px);opacity:0;visibility:hidden;transform:translateY(-50%);pointer-events:none;transition:opacity .15s}.home-sidebar :is(a,button):hover .tip,.home-sidebar :is(a,button):focus-visible .tip{opacity:1;visibility:visible;transition-delay:1s}.home-page.is-authenticated main.content{padding-right:92px!important}.home-page.is-authenticated .trip-archive{scroll-margin-top:20px}
 @media(max-width:700px){.home-sidebar{top:auto;right:12px;bottom:10px;left:12px;width:auto;height:56px;flex-direction:row;justify-content:center;padding:6px;background:rgba(255,255,255,.72);backdrop-filter:blur(16px)}.home-sidebar-logo{margin:0 0 0 auto}.home-sidebar nav{flex:0 1 auto;flex-direction:row;gap:5px}.home-sidebar>.trip-logout{margin:0 auto 0 0}.home-sidebar .tip{display:none}.home-page.is-authenticated main.content{padding:14px 14px 84px!important}}
+
 .home-sidebar>.trip-logout i{color:transparent;-webkit-text-stroke:1.2px #414846}
 
 /* Authenticated trips dashboard — landing-page visual language */
@@ -229,3 +230,27 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 .carousel-track{overflow:visible}.destination-slide{transform:translate(calc(-50% + var(--slide-x,0px)),-50%) scale(var(--slide-scale,.8)) rotate(var(--slide-rotate,0deg));transform-origin:center bottom;transition:transform .72s cubic-bezier(.2,.78,.18,1),opacity .5s,visibility .5s}.destination-slide.active{width:196px;height:390px;transform:translate(calc(-50% + var(--slide-x,0px)),-50%) scale(var(--slide-scale,1.12)) rotate(0deg);box-shadow:0 38px 80px rgba(0,0,0,.62)}.carousel-dots{display:none}@media(max-width:800px){.destination-slide.active{width:172px;height:355px}}@media(max-width:500px){.destination-slide.active{width:52vw;height:340px}}
 
 .landing-intro{z-index:100;margin-top:42px;text-shadow:0 3px 22px rgba(0,0,0,.82)}.landing-intro h1{margin:0;font-size:clamp(42px,5.4vw,72px);line-height:1;font-weight:300}.landing-intro p{margin-top:12px;color:rgba(255,255,255,.88);font-size:clamp(14px,1.6vw,19px);font-weight:300}.destination-carousel{z-index:3;margin-top:-62px}.carousel-track{z-index:1}@media(max-width:800px){.landing-intro{margin-top:34px}.destination-carousel{margin-top:-48px}}@media(max-width:500px){.landing-intro{margin-top:30px}.landing-intro h1{font-size:38px}.landing-intro p{font-size:14px}.destination-carousel{margin-top:-32px}}
+
+/* Authenticated trips header: one brand label and icon-only actions. */
+.home-page.is-authenticated .home-sidebar-logo .tip{display:none}
+.home-page.is-authenticated .home-sidebar-logo i{display:none}
+.home-page.is-authenticated .home-sidebar nav :is(a,button),
+.home-page.is-authenticated .home-sidebar>.trip-logout{width:42px;justify-content:center}
+.home-page.is-authenticated .home-sidebar nav .tip,
+.home-page.is-authenticated .home-sidebar>.trip-logout .tip{
+  position:absolute;top:calc(100% + 8px);right:50%;width:max-content;
+  padding:7px 10px;border-radius:2px;background:rgba(255,255,255,.88);
+  color:#414846;font:300 12px Rubik,sans-serif;
+  box-shadow:0 8px 24px rgba(65,72,70,.12);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  opacity:0;visibility:hidden;transform:translateX(50%);
+  pointer-events:none;transition:opacity .15s;
+}
+.home-page.is-authenticated .home-sidebar :is(a,button):hover .tip,
+.home-page.is-authenticated .home-sidebar :is(a,button):focus-visible .tip{
+  opacity:1;visibility:visible;transition-delay:1s
+}
+@media(max-width:700px){
+  .home-page.is-authenticated .home-sidebar nav .tip,
+  .home-page.is-authenticated .home-sidebar>.trip-logout .tip{display:none}
+}
