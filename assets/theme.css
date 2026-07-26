@@ -136,3 +136,84 @@ html[data-theme="dark"] body.home-page.is-authenticated :where(
   color:#f3f5f4!important
 }
 @media(max-width:700px){.theme-toggle .tip{display:none}}
+
+/* Authenticated trips overview refinements. */
+body.home-page.is-authenticated main.content{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  column-gap:18px;
+  align-content:start
+}
+body.home-page.is-authenticated :where(.trip-area-head,#active-trips){
+  grid-column:1/-1
+}
+body.home-page.is-authenticated .trip-area-head{
+  padding:4px 2px!important;
+  border:0!important;
+  background:transparent!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  box-shadow:none!important
+}
+body.home-page.is-authenticated .trip-area-head span{
+  background:transparent!important;
+  border:0!important
+}
+body.home-page.is-authenticated #active-trips>.trip-card-shell{
+  border-radius:14px!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.24),rgba(255,255,255,.1))!important;
+  overflow:hidden
+}
+body.home-page.is-authenticated .trip-card{
+  border-radius:14px!important
+}
+body.home-page.is-authenticated .trip-card:after{
+  display:none!important
+}
+body.home-page.is-authenticated .trip-overlay{
+  background:linear-gradient(180deg,rgba(5,20,16,.04),rgba(5,20,16,.5))!important
+}
+body.home-page.is-authenticated .trip-copy{
+  right:16px;bottom:16px;left:16px;
+  padding:16px;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:12px;
+  background:linear-gradient(135deg,rgba(5,20,16,.44),rgba(5,20,16,.22));
+  -webkit-backdrop-filter:blur(18px) saturate(145%);
+  backdrop-filter:blur(18px) saturate(145%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)
+}
+body.home-page.is-authenticated #active-trips>.add-destination{
+  min-height:160px;
+  border:0!important;
+  background:transparent!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  box-shadow:none!important
+}
+body.home-page.is-authenticated .add-destination :is(strong,small){
+  display:none!important
+}
+body.home-page.is-authenticated .add-destination .icon{
+  width:96px!important;
+  height:96px!important;
+  border:0!important;
+  background:transparent!important;
+  font-size:64px!important;
+  color:#fff!important
+}
+body.home-page.is-authenticated :where(.trip-archive,.home-about){
+  align-self:stretch;
+  margin-top:24px!important
+}
+body.home-page.is-authenticated .home-sidebar nav i{
+  font-size:17px!important;
+  font-weight:400!important;
+  -webkit-text-stroke:0!important;
+  opacity:.88
+}
+@media(max-width:800px){
+  body.home-page.is-authenticated main.content{grid-template-columns:1fr}
+  body.home-page.is-authenticated :where(.trip-archive,.home-about){grid-column:1}
+  body.home-page.is-authenticated #active-trips>.add-destination{min-height:120px}
+}
