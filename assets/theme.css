@@ -334,6 +334,37 @@ body.tm-new-design .trip-home-actions a i{
 
 body.tm-new-design .sidebar>.theme-toggle{display:none!important}
 
+/* Keep typography readable and consistent across every glass card. */
+body.tm-new-design :where(
+  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
+  .nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,
+  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
+  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
+  .smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,.forecast-day,.resource-link
+),
+body.home-page.is-authenticated :where(
+  .trip-area-head,.trip-card,.trip-card-shell,.trip-copy,.trip-archive,.home-about
+){
+  color:rgba(255,255,255,.96)!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.24)
+}
+body.tm-new-design :where(
+  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
+  .nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,
+  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
+  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
+  .smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,.forecast-day,.resource-link
+) :where(h1,h2,h3,h4,p,small,strong,span,label),
+body.home-page.is-authenticated :where(
+  .trip-area-head,.trip-card,.trip-card-shell,.trip-copy,.trip-archive,.home-about
+) :where(h1,h2,h3,h4,p,small,strong,span,label){
+  color:inherit!important
+}
+body.home-page.is-authenticated .trip-archive :where(h1,h2,h3,h4,p,small,strong,span,label),
+body.home-page.is-authenticated .home-about :where(h1,h2,h3,h4,p,small,strong,span,label){
+  color:rgba(255,255,255,.96)!important
+}
+
 body.home-page.is-authenticated :is(
   .trip-card,.trip-card-shell,.trip-copy,.trip-archive,.home-about
 ){
