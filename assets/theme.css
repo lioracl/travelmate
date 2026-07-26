@@ -403,3 +403,10 @@ body.tm-new-design .hero .weather-top-icon,
 body.tm-new-design .hero .weather-top-icon svg{
   color:#fff!important
 }
+
+body.tm-new-design #trip-home-actions-title{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  opacity:1!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.28)!important
+}
