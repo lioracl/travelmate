@@ -54,7 +54,7 @@ body.tm-new-design .weather-top-widget,
 body.home-page.is-authenticated :where(
   .trip-area-head,.trip-card,.trip-card-shell,.add-destination,.trip-archive,.home-about
 ){
-  border:1px solid rgba(255,255,255,.42)!important;
+  border:0!important;
   background:linear-gradient(135deg,rgba(255,255,255,.24),rgba(255,255,255,.1))!important;
   -webkit-backdrop-filter:blur(28px) saturate(165%)!important;
   backdrop-filter:blur(28px) saturate(165%)!important;
@@ -62,6 +62,20 @@ body.home-page.is-authenticated :where(
 }
 body.tm-new-design .weather-top-widget{
   background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,.08))!important
+}
+body.tm-new-design :where(
+  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
+  .nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,
+  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
+  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
+  .smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,.forecast-day,.resource-link,
+  .weather-top-widget,.currency-insight
+),
+body.home-page.is-authenticated :where(
+  .trip-card,.trip-card-shell,.trip-copy,.trip-archive,.home-about
+){
+  border:0!important;
+  outline:0!important
 }
 
 html[data-theme="dark"] body{
@@ -176,7 +190,7 @@ body.home-page.is-authenticated .trip-overlay{
 body.home-page.is-authenticated .trip-copy{
   right:16px;bottom:16px;left:16px;
   padding:16px;
-  border:1px solid rgba(255,255,255,.25);
+  border:0;
   border-radius:12px;
   background:linear-gradient(135deg,rgba(5,20,16,.44),rgba(5,20,16,.22));
   -webkit-backdrop-filter:blur(18px) saturate(145%);
@@ -303,4 +317,15 @@ body.tm-new-design .trip-home-actions a i{
 }
 @media(max-width:520px){
   body.tm-new-design .trip-home-actions nav{grid-template-columns:1fr!important}
+}
+
+body.home-page.is-authenticated :is(
+  .trip-card,.trip-card-shell,.trip-copy,.trip-archive,.home-about
+){
+  border:0!important;
+  outline:0!important
+}
+body.home-page.is-authenticated .trip-card-shell.cloud-trip-card{
+  border:0!important;
+  outline:0!important
 }
