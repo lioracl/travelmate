@@ -231,26 +231,48 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 
 .landing-intro{z-index:100;margin-top:42px;text-shadow:0 3px 22px rgba(0,0,0,.82)}.landing-intro h1{margin:0;font-size:clamp(42px,5.4vw,72px);line-height:1;font-weight:300}.landing-intro p{margin-top:12px;color:rgba(255,255,255,.88);font-size:clamp(14px,1.6vw,19px);font-weight:300}.destination-carousel{z-index:3;margin-top:-62px}.carousel-track{z-index:1}@media(max-width:800px){.landing-intro{margin-top:34px}.destination-carousel{margin-top:-48px}}@media(max-width:500px){.landing-intro{margin-top:30px}.landing-intro h1{font-size:38px}.landing-intro p{font-size:14px}.destination-carousel{margin-top:-32px}}
 
-/* Authenticated trips header: one brand label and icon-only actions. */
+/* Authenticated trips header: text-only actions on this screen. */
 .home-page.is-authenticated .home-sidebar-logo .tip{display:none}
 .home-page.is-authenticated .home-sidebar-logo i{display:none}
+.home-page.is-authenticated .home-sidebar nav i,
+.home-page.is-authenticated .home-sidebar>.trip-logout i{display:none}
 .home-page.is-authenticated .home-sidebar nav :is(a,button),
-.home-page.is-authenticated .home-sidebar>.trip-logout{width:42px;justify-content:center}
+.home-page.is-authenticated .home-sidebar>.trip-logout{
+  width:auto;
+  min-width:max-content;
+  justify-content:center
+}
 .home-page.is-authenticated .home-sidebar nav .tip,
 .home-page.is-authenticated .home-sidebar>.trip-logout .tip{
-  position:absolute;top:calc(100% + 8px);right:50%;width:max-content;
-  padding:7px 10px;border-radius:2px;background:rgba(255,255,255,.88);
-  color:#414846;font:300 12px Rubik,sans-serif;
-  box-shadow:0 8px 24px rgba(65,72,70,.12);
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-  opacity:0;visibility:hidden;transform:translateX(50%);
-  pointer-events:none;transition:opacity .15s;
-}
-.home-page.is-authenticated .home-sidebar :is(a,button):hover .tip,
-.home-page.is-authenticated .home-sidebar :is(a,button):focus-visible .tip{
-  opacity:1;visibility:visible;transition-delay:1s
+  position:static;
+  width:auto;
+  padding:0;
+  background:transparent;
+  color:inherit;
+  font:300 13px Rubik,sans-serif;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  opacity:1;
+  visibility:visible;
+  transform:none;
+  pointer-events:none
 }
 @media(max-width:700px){
+  .home-page.is-authenticated .home-sidebar{
+    gap:10px;
+    overflow-x:auto
+  }
+  .home-page.is-authenticated .home-sidebar nav{
+    min-width:max-content;
+    gap:14px
+  }
+  .home-page.is-authenticated .home-sidebar nav :is(a,button),
+  .home-page.is-authenticated .home-sidebar>.trip-logout{
+    width:auto
+  }
   .home-page.is-authenticated .home-sidebar nav .tip,
-  .home-page.is-authenticated .home-sidebar>.trip-logout .tip{display:none}
+  .home-page.is-authenticated .home-sidebar>.trip-logout .tip{
+    display:inline
+  }
 }
