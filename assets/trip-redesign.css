@@ -281,3 +281,82 @@ body.tm-new-design .trip-home-actions a{
 body.tm-new-design .trip-home-actions a i{
   font-size:21px;
 }
+
+/* Places page: compact header and content directly over the destination image. */
+body.tm-new-design[data-trip-view="places"] .custom-hero .hero-copy > h1,
+body.tm-new-design[data-trip-view="places"] .custom-hero .hero-country-line,
+body.tm-new-design[data-trip-view="places"] .custom-hero .hero-copy > p{
+  margin:0!important;
+  font-size:18px!important;
+  line-height:1.35!important;
+}
+body.tm-new-design[data-trip-view="places"] .custom-hero .hero-back::before{
+  content:"\2192";
+  color:#fff!important;
+}
+body.tm-new-design[data-trip-view="places"] #places{
+  padding-inline:28px;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+body.tm-new-design[data-trip-view="places"] #places > .section-head{
+  margin-bottom:20px;
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+body.tm-new-design[data-trip-view="places"] #places > .section-head .trip-action-back,
+body.tm-new-design[data-trip-view="places"] #places > .section-head .tm-collapse-button{
+  display:none!important;
+}
+body.tm-new-design[data-trip-view="places"] #places .nearby-panel.place-planner{
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+body.tm-new-design[data-trip-view="places"] #places :where(
+  h1,h2,h3,h4,p,span,small,strong,b,label,.nearby-status,.place-planner-note
+){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+body.tm-new-design[data-trip-view="places"] #places .place-planner-note{
+  border:0!important;
+  background:rgba(255,255,255,.1)!important;
+}
+body.tm-new-design[data-trip-view="places"] #places :where(input,select,textarea){
+  border-color:rgba(255,255,255,.24)!important;
+  background:rgba(7,18,15,.28)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+body.tm-new-design[data-trip-view="places"] #places :where(input,textarea)::placeholder{
+  color:rgba(255,255,255,.72)!important;
+  -webkit-text-fill-color:rgba(255,255,255,.72)!important;
+}
+body.tm-new-design[data-trip-view="places"] #places select option{
+  color:#414846;
+  background:#fff;
+}
+body.tm-new-design[data-trip-view="places"] #places :where(
+  .nearby-search,.nearby-map-button,[data-nearby-map-search]
+){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+@media(max-width:850px){
+  body.tm-new-design[data-trip-view="places"] #places{padding-inline:16px}
+  body.tm-new-design[data-trip-view="places"] .custom-hero .hero-copy > h1,
+  body.tm-new-design[data-trip-view="places"] .custom-hero .hero-country-line,
+  body.tm-new-design[data-trip-view="places"] .custom-hero .hero-copy > p{
+    font-size:16px!important;
+  }
+}
