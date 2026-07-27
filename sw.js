@@ -1,4 +1,4 @@
-const CACHE_NAME='travelmate-smart-v44';
+const CACHE_NAME='travelmate-smart-v45';
 const CORE=[
   './',
   './index.html',
@@ -66,7 +66,7 @@ self.addEventListener('fetch',event=>{
   const url=new URL(event.request.url);
   const freshAsset=/\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
   event.respondWith(event.request.mode==='navigate'
-    ?networkFirst(event.request).catch(()=>caches.match('./index.html'))
+    ?networkFirst(event.request).catch(()=>caches.match(event.request).then(hit=>hit||(url.pathname.includes('/trip/custom/')?caches.match('./trip/custom/index.html'):caches.match('./index.html'))))
     :freshAsset
       ?networkFirst(event.request)
     :caches.match(event.request).then(hit=>hit||fetch(event.request).then(response=>{

@@ -1,4 +1,7 @@
 .auto-place-dialog,.auto-place-dialog form,.auto-place-dialog form>section,.auto-place-preview{box-sizing:border-box;min-width:0;max-width:100%}
+.auto-place-dialog{display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden}
+.auto-place-dialog-body{min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.auto-place-dialog>header,.auto-place-dialog>footer{position:relative;top:auto;bottom:auto}
 .auto-place-days{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:7px;overflow:visible;padding:0}
 .auto-place-days label,.auto-place-days label>span{min-width:0;white-space:normal;text-align:center}
 .auto-place-switches{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
@@ -28,4 +31,4 @@
 .auto-place-choice i{font-size:13px;pointer-events:none}
 .auto-place-preview-item.excluded{opacity:.48}
 .auto-place-preview-empty-day{margin:0;padding:16px;color:#6c7e76;font-size:12px;text-align:center}
-@media(max-width:680px){.auto-place-preview-item{grid-template-columns:44px 106px minmax(0,1fr)}.auto-place-preview-time input{width:106px;min-width:106px}.auto-place-preview-day>header{display:grid;grid-template-columns:minmax(0,1fr) auto}.auto-place-preview-day>header button{grid-column:1/-1;min-height:40px}.auto-place-day-select{grid-template-columns:96px minmax(0,1fr)}}
+@media(max-width:680px){.auto-place-dialog{height:94dvh;max-height:94dvh}.auto-place-preview-item{grid-template-columns:44px 106px minmax(0,1fr)}.auto-place-preview-time input{width:106px;min-width:106px}.auto-place-preview-day>header{display:grid;grid-template-columns:minmax(0,1fr) auto}.auto-place-preview-day>header button{grid-column:1/-1;min-height:40px}.auto-place-day-select{grid-template-columns:96px minmax(0,1fr)}}

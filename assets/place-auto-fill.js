@@ -4,14 +4,14 @@
   var featureScript = document.currentScript;
   var featureStyle = document.createElement('link');
   featureStyle.rel = 'stylesheet';
-  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260727-4';
+  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260727-7';
   document.head.appendChild(featureStyle);
   var smartStyle = document.createElement('link');
   smartStyle.rel = 'stylesheet';
-  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260727-4';
+  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260727-7';
   document.head.appendChild(smartStyle);
   var smartScript = document.createElement('script');
-  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260727-4';
+  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260727-7';
   document.head.appendChild(smartScript);
 
   var STORAGE_KEY = 'travelmate-trips';
@@ -481,6 +481,8 @@
       state.proposal = buildProposal(state.candidates, settings, state.trip);
       state.settings = settings;
       renderPreview();
+      var previewBody = dialog.querySelector('.auto-place-dialog-body');
+      if (previewBody) previewBody.scrollTop = 0;
       status.textContent = 'נבנתה הצעה סביב ' + state.origin.label + (state.rainyDates.length ? ' · ימים עם סיכוי לגשם הותאמו למקומות מקורים.' : '') + ' בדוק ואשר את המקומות הרצויים.';
     } catch (error) {
       state.proposal = [];
@@ -564,7 +566,7 @@
     dialog.hidden = true;
     dialog.innerHTML = '<div class="auto-place-dialog" role="dialog" aria-modal="true" aria-labelledby="auto-place-title">' +
       '<header><div><small>תכנון בלי הוספה ידנית</small><h2 id="auto-place-title">מילוי ימים אוטומטי</h2><p>בחר מה לחפש, מאיפה מתחילים וכמה פעילויות יהיו בכל יום.</p></div><button type="button" data-auto-place-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header>' +
-      '<form data-auto-place-form><section><h3><span>1</span> מה מעניין אותך?</h3><div class="auto-place-categories">' +
+      '<div class="auto-place-dialog-body"><form data-auto-place-form><section><h3><span>1</span> מה מעניין אותך?</h3><div class="auto-place-categories">' +
       Object.keys(categoryLabels).map(function (key) { return '<label><input type="checkbox" name="category" value="' + key + '"' + (key === 'attractions' || key === 'museums' ? ' checked' : '') + '><span><i class="fa-solid fa-check"></i>' + categoryLabels[key] + '</span></label>'; }).join('') +
       '</div><label class="auto-place-field wide"><span>חיפוש חופשי נוסף</span><input name="freeTerm" type="search" placeholder="לדוגמה: בתי כנסת, שווקים או פארקי שעשועים"></label></section>' +
       '<section><h3><span>2</span> נקודת מוצא ומרחק</h3><div class="auto-place-origins"><label><input type="radio" name="originMode" value="destination" checked><span><i class="fa-solid fa-city"></i><strong>מרכז היעד</strong><small>' + escapeHtml(trip.city) + '</small></span></label><label><input type="radio" name="originMode" value="gps"><span><i class="fa-solid fa-location-crosshairs"></i><strong>המיקום שלי</strong><small>GPS בזמן השימוש</small></span></label><label><input type="radio" name="originMode" value="custom"><span><i class="fa-solid fa-hotel"></i><strong>כתובת או מלון</strong><small>נקודת מוצא קבועה</small></span></label></div>' +
@@ -572,7 +574,7 @@
       '<section><h3><span>3</span> איך לבחור את המקומות?</h3><div class="auto-place-grid"><label class="auto-place-field"><span>סדר עדיפות</span><select name="sortBy"><option value="recommended" selected>מומלצים — דירוג, מידע ומרחק</option><option value="rating">דירוג גבוה קודם</option><option value="distance">הכי קרוב קודם</option><option value="information">הכי הרבה מידע קודם</option><option value="random">גיוון והפתעה</option></select></label><label class="auto-place-field"><span>דירוג מינימלי, כשקיים במקור</span><select name="minimumRating"><option value="0" selected>ללא סינון</option><option value="3.5">3.5 ומעלה</option><option value="4">4.0 ומעלה</option><option value="4.5">4.5 ומעלה</option></select></label><label class="auto-place-field"><span>קצב הטיול</span><select name="pace"><option value="relaxed">רגוע — 2 פעילויות</option><option value="balanced" selected>מאוזן — 3 פעילויות</option><option value="intensive">עמוס — 5 פעילויות</option><option value="custom">לפי הבחירה שלי</option></select></label><label class="auto-place-field"><span>תקציב יומי משוער לאדם</span><select name="dailyBudget"><option value="0" selected>ללא מגבלה</option><option value="25">עד €25</option><option value="50">עד €50</option><option value="100">עד €100</option><option value="200">עד €200</option></select></label></div><div class="auto-place-switches"><label><input type="checkbox" name="requireWebsite"><span><i class="fa-solid fa-globe"></i><b>רק עם אתר רשמי</b></span></label><label><input type="checkbox" name="requireHours"><span><i class="fa-regular fa-clock"></i><b>רק עם שעות פתיחה</b></span></label><label><input type="checkbox" name="weatherAware" checked><span><i class="fa-solid fa-cloud-sun"></i><b>התאמה למזג האוויר</b></span></label><label><input type="checkbox" name="familyFriendly"><span><i class="fa-solid fa-children"></i><b>מתאים למשפחה</b></span></label><label><input type="checkbox" name="wheelchair"><span><i class="fa-solid fa-wheelchair"></i><b>נגיש לכיסא גלגלים</b></span></label><label><input type="checkbox" name="preferFree"><span><i class="fa-solid fa-piggy-bank"></i><b>העדף מקומות חינמיים</b></span></label></div><p class="auto-place-note"><i class="fa-solid fa-circle-info"></i> המסלול יסודר אוטומטית לפי קרבה וזמן מעבר. דירוג ומאפייני נגישות מוצגים רק כאשר מקור המקומות מספק אותם.</p></section>' +
       '<section><h3><span>4</span> ימים ושעות</h3><div class="auto-place-days">' + dateOptions(trip).map(function (date) { return '<label><input type="checkbox" name="date" value="' + date.value + '" checked><span>' + escapeHtml(date.label) + '</span></label>'; }).join('') + '</div><div class="auto-place-grid three"><label class="auto-place-field"><span>השעה המוקדמת ביותר</span><input type="time" name="startTime" value="09:30"></label><label class="auto-place-field"><span>משך פעילות</span><select name="duration"><option value="60">שעה</option><option value="90" selected>שעה וחצי</option><option value="120">שעתיים</option><option value="180">3 שעות</option></select></label><label class="auto-place-field"><span>זמן מעבר</span><select name="gap"><option value="15">15 דקות</option><option value="30" selected>30 דקות</option><option value="45">45 דקות</option><option value="60">שעה</option></select></label></div><div class="auto-place-switches single"><label><input type="checkbox" name="smartTimes" checked><span><i class="fa-solid fa-clock"></i><b>בחר שעות חכמות לפי סוג המקום והזמן הפנוי ביום</b></span></label></div><label class="auto-place-keep"><input type="checkbox" name="keepExisting" checked><span><i class="fa-solid fa-lock"></i><strong>שמור את מה שכבר תכננתי</strong><small>המילוי האוטומטי בודק את הפעילויות הקיימות ומחפש חלונות פנויים ללא חפיפה.</small></span></label></section>' +
       '<p class="auto-place-status" data-auto-place-status role="status">התוכנית תוצג לבדיקה לפני שהיא נשמרת.</p><button class="auto-place-build" type="submit" data-auto-place-build><i class="fa-solid fa-wand-magic-sparkles"></i> בנה לי הצעה</button></form>' +
-      '<div class="auto-place-preview" data-auto-place-preview></div><footer data-auto-place-preview-actions hidden><button type="button" data-auto-place-back>שינוי ההגדרות</button><button type="button" class="primary" data-auto-place-apply><i class="fa-solid fa-calendar-check"></i> מילוי הימים שסומנו</button></footer></div>';
+      '<div class="auto-place-preview" data-auto-place-preview></div></div><footer data-auto-place-preview-actions hidden><button type="button" data-auto-place-back>שינוי ההגדרות</button><button type="button" class="primary" data-auto-place-apply><i class="fa-solid fa-calendar-check"></i> מילוי הימים שסומנו</button></footer></div>';
     document.body.appendChild(dialog);
     dialog.querySelector('[data-auto-place-form]').addEventListener('submit', createPreview);
     dialog.querySelectorAll('[name="originMode"]').forEach(function (input) {
@@ -656,6 +658,8 @@
     dialog.querySelector('[data-auto-place-status]').textContent = 'התוכנית תוצג לבדיקה לפני שהיא נשמרת.';
     dialog.hidden = false;
     document.body.classList.add('auto-place-open');
+    var dialogBody = dialog.querySelector('.auto-place-dialog-body');
+    if (dialogBody) dialogBody.scrollTop = 0;
     dialog.querySelector('[data-auto-place-close]').focus();
   }
 

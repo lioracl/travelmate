@@ -12,16 +12,8 @@
   var theme = document.createElement('meta'); theme.name = 'theme-color'; theme.content = '#292524'; document.head.appendChild(theme);
   var serviceWorkerRegistration = null;
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    var hadServiceWorkerController = Boolean(navigator.serviceWorker.controller);
-    var serviceWorkerReloaded = false;
     navigator.serviceWorker.addEventListener('controllerchange', function () {
-      if (!hadServiceWorkerController || serviceWorkerReloaded) return;
-      serviceWorkerReloaded = true;
-      try {
-        if (sessionStorage.getItem('travelmate-sw-refresh-v26') === 'done') return;
-        sessionStorage.setItem('travelmate-sw-refresh-v26', 'done');
-      } catch (error) {}
-      location.reload();
+      window.dispatchEvent(new CustomEvent('travelmate:app-update-ready'));
     });
     navigator.serviceWorker.register(new URL('sw.js', rootUrl).href, { updateViaCache: 'none' }).then(function (registration) {
       serviceWorkerRegistration = registration;
