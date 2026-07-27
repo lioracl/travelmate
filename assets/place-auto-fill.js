@@ -341,8 +341,7 @@
       chosen.push(available.splice(index, 1)[0]);
     }
     var result = chosen.map(function (place, index) {
-      var dayIndex = Math.floor(index / settings.perDay);
-      var slot = index % settings.perDay;
+      var dayIndex = index % settings.dates.length;
       return Object.assign({}, place, {
         id: 'auto-place-' + Date.now() + '-' + index,
         date: settings.dates[dayIndex],
@@ -422,18 +421,20 @@
       (groups[place.date] = groups[place.date] || []).push(place);
     });
     var dates = dateOptions(state.trip);
-    preview.innerHTML = Object.keys(groups).map(function (date) {
+    preview.innerHTML = state.settings.dates.map(function (date) {
       var label = (dates.find(function (item) { return item.value === date; }) || {}).label || date;
-      return '<section class="auto-place-preview-day"><header><strong>' + escapeHtml(label) + '</strong><span>' + groups[date].length + ' פעילויות</span><button type="button" data-auto-replace-day="' + escapeHtml(date) + '"><i class="fa-solid fa-rotate"></i> החלף יום</button></header>' +
-        groups[date].map(function (place) {
+      var dayPlaces = groups[date] || [];
+      return '<section class="auto-place-preview-day" data-auto-preview-date="' + escapeHtml(date) + '"><header><strong>' + escapeHtml(label) + '</strong><span data-auto-day-count>' + dayPlaces.length + ' פעילויות</span><button type="button" data-auto-replace-day="' + escapeHtml(date) + '"><i class="fa-solid fa-rotate"></i> החלף את הפעילויות ביום</button></header>' +
+        (dayPlaces.length ? '' : '<p class="auto-place-preview-empty-day" data-auto-empty-day>עדיין לא נמצא מקום מתאים ליום הזה. אפשר להרחיב את הרדיוס או להפחית סינון.</p>') +
+        dayPlaces.map(function (place) {
           var index = state.proposal.indexOf(place);
           var rating = place.rating ? '<span class="auto-place-rating"><i class="fa-solid fa-star"></i>' + place.rating.toFixed(1) + '</span>' : '<span class="auto-place-rating muted">ללא דירוג זמין</span>';
           var daySelect = dates.map(function (item) { return '<option value="' + escapeHtml(item.value) + '"' + (item.value === place.date ? ' selected' : '') + '>' + escapeHtml(item.label) + '</option>'; }).join('');
-          return '<article class="auto-place-preview-item' + (place.selected === false ? ' excluded' : '') + '"><button type="button" class="auto-place-choice" data-auto-place-toggle="' + index + '" aria-pressed="' + (place.selected === false ? 'false' : 'true') + '" aria-label="בחירת המקום"><span><i class="fa-solid fa-check"></i></span></button>' +
+          return '<article class="auto-place-preview-item' + (place.selected === false ? ' excluded' : '') + '" data-auto-preview-index="' + index + '"><button type="button" class="auto-place-choice" data-auto-place-toggle="' + index + '" aria-pressed="' + (place.selected === false ? 'false' : 'true') + '" aria-label="בחירת המקום"><span><i class="fa-solid fa-check"></i></span></button>' +
             '<span class="auto-place-preview-time"><input type="time" value="' + escapeHtml(place.time) + '" data-auto-place-time="' + index + '" aria-label="שעת הפעילות"></span><span><strong>' + escapeHtml(place.name) +
             '</strong><small>' + escapeHtml(place.category) + ' · ' + (place.distance < 1000 ? Math.round(place.distance) + ' מ׳' : (place.distance / 1000).toFixed(1) + ' ק״מ') +
             '</small><span class="auto-place-meta">' + rating + '<span><i class="fa-solid fa-person-walking"></i> כ־' + (place.travelFromPreviousMinutes || 5) + ' דק׳ מהתחנה הקודמת</span><span><i class="fa-solid fa-coins"></i> כ־€' + (place.costEstimate || 0) + '</span>' + (place.officialUrl ? '<span><i class="fa-solid fa-globe"></i> אתר רשמי</span>' : '') + (place.openingHours ? '<span><i class="fa-regular fa-clock"></i> שעות זמינות</span>' : '') + '</span></span>' +
-            '<button type="button" class="auto-place-details-button" data-auto-place-details="' + index + '" aria-expanded="false"><i class="fa-solid fa-circle-info"></i><span>פרטים</span></button><label class="auto-place-day-select"><span>יום</span><select data-auto-place-date="' + index + '">' + daySelect + '</select></label>' +
+            '<button type="button" class="auto-place-details-button" data-auto-place-details="' + index + '" aria-expanded="false"><i class="fa-solid fa-circle-info"></i><span>פרטים</span></button><label class="auto-place-day-select"><span>העבר ליום אחר</span><select data-auto-place-date="' + index + '" aria-label="העברת המקום ליום אחר">' + daySelect + '</select></label>' +
             '<div class="auto-place-details" data-auto-place-details-panel="' + index + '" hidden><p>' + escapeHtml(place.description) + '</p><dl>' +
             (place.address ? '<div><dt>כתובת</dt><dd>' + escapeHtml(place.address) + '</dd></div>' : '') +
             (place.openingHours ? '<div><dt>שעות פתיחה</dt><dd>' + escapeHtml(place.openingHours) + '</dd></div>' : '') +
@@ -517,6 +518,20 @@
     if (window.showDayToast) window.showDayToast('הימים מולאו אוטומטית במקומות שבחרת.');
   }
 
+  function refreshPreviewDayState() {
+    dialog.querySelectorAll('[data-auto-preview-date]').forEach(function (section) {
+      var items = section.querySelectorAll('.auto-place-preview-item');
+      var count = section.querySelector('[data-auto-day-count]');
+      var empty = section.querySelector('[data-auto-empty-day]');
+      if (count) count.textContent = items.length + ' פעילויות';
+      if (!items.length && !empty) {
+        section.insertAdjacentHTML('beforeend', '<p class="auto-place-preview-empty-day" data-auto-empty-day>עדיין לא נמצא מקום מתאים ליום הזה.</p>');
+      } else if (items.length && empty) {
+        empty.remove();
+      }
+    });
+  }
+
   function replacePreviewDay(date) {
     var used = {};
     state.proposal.forEach(function (place) { used[String(place.name).toLowerCase()] = true; });
@@ -587,9 +602,16 @@
       var safeTime = nextFreeTime(requestedDate, requestedTime, Number(place.duration || state.settings.duration || 90), Number(state.settings.gap || 30), state.trip, others);
       place.date = requestedDate;
       place.time = safeTime;
+      var item = (dateInput || timeInput).closest('[data-auto-preview-index]');
+      var timeField = item && item.querySelector('[data-auto-place-time]');
+      if (timeField) timeField.value = safeTime;
+      if (dateInput && item) {
+        var destinationDay = dialog.querySelector('[data-auto-preview-date="' + requestedDate + '"]');
+        if (destinationDay) destinationDay.appendChild(item);
+        refreshPreviewDayState();
+      }
       dialog.querySelector('[data-auto-place-status]').textContent = safeTime === requestedTime ?
         'היום והשעה עודכנו בהצעה.' : 'השעה שבחרת הייתה תפוסה, לכן הפעילות הועברה אוטומטית לחלון הפנוי הקרוב: ' + safeTime + '.';
-      renderPreview();
     });
     dialog.addEventListener('click', function (event) {
       var toggle = event.target.closest('[data-auto-place-toggle]');
@@ -600,7 +622,9 @@
         var toggledPlace = state.proposal[toggleIndex];
         if (!toggledPlace) return;
         toggledPlace.selected = toggledPlace.selected === false;
-        renderPreview();
+        toggle.setAttribute('aria-pressed', String(toggledPlace.selected !== false));
+        var toggledItem = toggle.closest('.auto-place-preview-item');
+        if (toggledItem) toggledItem.classList.toggle('excluded', toggledPlace.selected === false);
         return;
       }
       var replaceDay = event.target.closest('[data-auto-replace-day]');
