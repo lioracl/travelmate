@@ -421,3 +421,22 @@ body.tm-new-design[data-trip-view="overview"] .hero .weather-top-widget{
   backdrop-filter:blur(18px) saturate(135%)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 10px 28px rgba(0,0,0,.06)!important
 }
+
+/* Keep all trip-page typography bright over destination photography. */
+body.tm-new-design .content :where(
+  h1,h2,h3,h4,h5,h6,p,small,strong,span,label,legend,a,button,li,dt,dd,time
+),
+body.tm-new-design .sidebar :where(a,button,span,small,strong){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.3)
+}
+body.tm-new-design .content :where(input,select,textarea,option){
+  color:#26302d!important;
+  -webkit-text-fill-color:#26302d!important;
+  text-shadow:none
+}
+body.tm-new-design .content :where(input,textarea)::placeholder{
+  color:rgba(38,48,45,.62)!important;
+  -webkit-text-fill-color:rgba(38,48,45,.62)!important
+}
