@@ -1,6 +1,12 @@
 (function () {
   'use strict';
 
+  var featureScript = document.currentScript;
+  var featureStyle = document.createElement('link');
+  featureStyle.rel = 'stylesheet';
+  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260727-2';
+  document.head.appendChild(featureStyle);
+
   var STORAGE_KEY = 'travelmate-trips';
   var endpoints = [
     'https://overpass-api.de/api/interpreter',
@@ -181,6 +187,9 @@
         tags['addr:city']
       ].filter(Boolean).join(' ');
       var details = [address, tags.opening_hours ? 'שעות: ' + tags.opening_hours : '', tags.cuisine ? 'סגנון: ' + tags.cuisine.replace(/;/g, ', ') : ''].filter(Boolean);
+      var rating = Number(tags.rating || tags.stars || tags['review:rating'] || 0);
+      if (!Number.isFinite(rating) || rating < 1 || rating > 5) rating = 0;
+      var informationScore = [website, address, tags.opening_hours, tags.phone || tags['contact:phone'], tags.wikipedia, tags.wikidata].filter(Boolean).length;
       return {
         name: name,
         categoryKey: category,
@@ -189,6 +198,11 @@
         lat: Number(lat),
         lon: Number(lon),
         distance: distance(origin.lat, origin.lon, lat, lon),
+        rating: rating,
+        informationScore: informationScore,
+        openingHours: tags.opening_hours || '',
+        phone: tags.phone || tags['contact:phone'] || '',
+        address: address,
         officialUrl: /^https?:/i.test(website) ? website : '',
         ratingsUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(name + ' ' + lat + ',' + lon),
         sourceUrl: 'https://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lon + '#map=17/' + lat + '/' + lon
@@ -208,6 +222,10 @@
       startTime: form.elements.startTime.value || '09:30',
       gap: Number(form.elements.gap.value),
       duration: Number(form.elements.duration.value),
+      sortBy: form.elements.sortBy.value,
+      minimumRating: Number(form.elements.minimumRating.value || 0),
+      requireWebsite: form.elements.requireWebsite.checked,
+      requireHours: form.elements.requireHours.checked,
       dates: [].slice.call(form.querySelectorAll('[name="date"]:checked')).map(function (input) { return input.value; }),
       keepExisting: form.elements.keepExisting.checked
     };
@@ -231,7 +249,20 @@
   function buildProposal(candidates, settings, trip) {
     var existingNames = {};
     (trip.savedPlaces || []).forEach(function (place) { existingNames[String(place.name).toLowerCase()] = true; });
-    var available = candidates.filter(function (place) { return !existingNames[String(place.name).toLowerCase()]; });
+    var available = candidates.filter(function (place) {
+      if (existingNames[String(place.name).toLowerCase()]) return false;
+      if (settings.minimumRating && (!place.rating || place.rating < settings.minimumRating)) return false;
+      if (settings.requireWebsite && !place.officialUrl) return false;
+      if (settings.requireHours && !place.openingHours) return false;
+      return true;
+    });
+    available.sort(function (first, second) {
+      if (settings.sortBy === 'rating') return (second.rating || 0) - (first.rating || 0) || second.informationScore - first.informationScore || first.distance - second.distance;
+      if (settings.sortBy === 'information') return second.informationScore - first.informationScore || first.distance - second.distance;
+      if (settings.sortBy === 'random') return Math.random() - 0.5;
+      if (settings.sortBy === 'distance') return first.distance - second.distance;
+      return (second.rating || 0) - (first.rating || 0) || second.informationScore - first.informationScore || first.distance - second.distance;
+    });
     var needed = settings.dates.length * settings.perDay;
     var chosen = [];
     var categories = settings.categories.length ? settings.categories : Object.keys(categoryLabels);
@@ -276,10 +307,20 @@
       return '<section class="auto-place-preview-day"><header><strong>' + escapeHtml(label) + '</strong><span>' + groups[date].length + ' פעילויות</span></header>' +
         groups[date].map(function (place) {
           var index = state.proposal.indexOf(place);
-          return '<label class="auto-place-preview-item"><input type="checkbox" data-auto-place-choice="' + index + '" checked>' +
+          var rating = place.rating ? '<span class="auto-place-rating"><i class="fa-solid fa-star"></i>' + place.rating.toFixed(1) + '</span>' : '<span class="auto-place-rating muted">ללא דירוג זמין</span>';
+          return '<article class="auto-place-preview-item"><label class="auto-place-choice"><input type="checkbox" data-auto-place-choice="' + index + '" checked><span></span></label>' +
             '<span class="auto-place-preview-time">' + escapeHtml(place.time) + '</span><span><strong>' + escapeHtml(place.name) +
             '</strong><small>' + escapeHtml(place.category) + ' · ' + (place.distance < 1000 ? Math.round(place.distance) + ' מ׳' : (place.distance / 1000).toFixed(1) + ' ק״מ') +
-            '</small></span><i class="fa-solid fa-check"></i></label>';
+            '</small><span class="auto-place-meta">' + rating + (place.officialUrl ? '<span><i class="fa-solid fa-globe"></i> אתר רשמי</span>' : '') + (place.openingHours ? '<span><i class="fa-regular fa-clock"></i> שעות זמינות</span>' : '') + '</span></span>' +
+            '<button type="button" class="auto-place-details-button" data-auto-place-details="' + index + '" aria-expanded="false"><i class="fa-solid fa-circle-info"></i><span>פרטים</span></button>' +
+            '<div class="auto-place-details" data-auto-place-details-panel="' + index + '" hidden><p>' + escapeHtml(place.description) + '</p><dl>' +
+            (place.address ? '<div><dt>כתובת</dt><dd>' + escapeHtml(place.address) + '</dd></div>' : '') +
+            (place.openingHours ? '<div><dt>שעות פתיחה</dt><dd>' + escapeHtml(place.openingHours) + '</dd></div>' : '') +
+            (place.phone ? '<div><dt>טלפון</dt><dd>' + escapeHtml(place.phone) + '</dd></div>' : '') +
+            '</dl><div class="auto-place-detail-links">' +
+            '<a href="' + escapeHtml(place.ratingsUrl) + '" target="_blank" rel="noopener"><i class="fa-solid fa-star"></i> דירוגים ב־Google</a>' +
+            (place.officialUrl ? '<a href="' + escapeHtml(place.officialUrl) + '" target="_blank" rel="noopener"><i class="fa-solid fa-globe"></i> אתר המקום</a>' : '') +
+            '<a href="' + escapeHtml(place.sourceUrl) + '" target="_blank" rel="noopener"><i class="fa-solid fa-map"></i> מפה</a></div></div></article>';
         }).join('') + '</section>';
     }).join('');
     actions.hidden = false;
@@ -356,7 +397,8 @@
       '</div><label class="auto-place-field wide"><span>חיפוש חופשי נוסף</span><input name="freeTerm" type="search" placeholder="לדוגמה: בתי כנסת, שווקים או פארקי שעשועים"></label></section>' +
       '<section><h3><span>2</span> נקודת מוצא ומרחק</h3><div class="auto-place-origins"><label><input type="radio" name="originMode" value="destination" checked><span><i class="fa-solid fa-city"></i><strong>מרכז היעד</strong><small>' + escapeHtml(trip.city) + '</small></span></label><label><input type="radio" name="originMode" value="gps"><span><i class="fa-solid fa-location-crosshairs"></i><strong>המיקום שלי</strong><small>GPS בזמן השימוש</small></span></label><label><input type="radio" name="originMode" value="custom"><span><i class="fa-solid fa-hotel"></i><strong>כתובת או מלון</strong><small>נקודת מוצא קבועה</small></span></label></div>' +
       '<label class="auto-place-field wide" data-auto-origin-text hidden><span>שם המלון, כתובת או מקום</span><input name="originText" placeholder="לדוגמה: Hotel Central, Prague"></label><div class="auto-place-grid"><label class="auto-place-field"><span>מרחק מרבי</span><select name="radius"><option value="1000">1 ק״מ</option><option value="3000" selected>3 ק״מ</option><option value="5000">5 ק״מ</option><option value="10000">10 ק״מ</option><option value="20000">20 ק״מ</option></select></label><label class="auto-place-field"><span>פעילויות בכל יום</span><select name="perDay"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label></div></section>' +
-      '<section><h3><span>3</span> ימים ושעות</h3><div class="auto-place-days">' + dateOptions(trip).map(function (date) { return '<label><input type="checkbox" name="date" value="' + date.value + '" checked><span>' + escapeHtml(date.label) + '</span></label>'; }).join('') + '</div><div class="auto-place-grid three"><label class="auto-place-field"><span>שעת התחלה</span><input type="time" name="startTime" value="09:30"></label><label class="auto-place-field"><span>משך פעילות</span><select name="duration"><option value="60">שעה</option><option value="90" selected>שעה וחצי</option><option value="120">שעתיים</option><option value="180">3 שעות</option></select></label><label class="auto-place-field"><span>זמן מעבר</span><select name="gap"><option value="15">15 דקות</option><option value="30" selected>30 דקות</option><option value="45">45 דקות</option><option value="60">שעה</option></select></label></div><label class="auto-place-keep"><input type="checkbox" name="keepExisting" checked><span><i class="fa-solid fa-lock"></i><strong>שמור את מה שכבר תכננתי</strong><small>המילוי האוטומטי לא מוחק פעילויות ומקומות קיימים.</small></span></label></section>' +
+      '<section><h3><span>3</span> איך לבחור את המקומות?</h3><div class="auto-place-grid"><label class="auto-place-field"><span>סדר עדיפות</span><select name="sortBy"><option value="recommended" selected>מומלצים — דירוג, מידע ומרחק</option><option value="rating">דירוג גבוה קודם</option><option value="distance">הכי קרוב קודם</option><option value="information">הכי הרבה מידע קודם</option><option value="random">גיוון והפתעה</option></select></label><label class="auto-place-field"><span>דירוג מינימלי, כשקיים במקור</span><select name="minimumRating"><option value="0" selected>ללא סינון</option><option value="3.5">3.5 ומעלה</option><option value="4">4.0 ומעלה</option><option value="4.5">4.5 ומעלה</option></select></label></div><div class="auto-place-switches"><label><input type="checkbox" name="requireWebsite"><span><i class="fa-solid fa-globe"></i><b>רק עם אתר רשמי</b></span></label><label><input type="checkbox" name="requireHours"><span><i class="fa-regular fa-clock"></i><b>רק עם שעות פתיחה</b></span></label></div><p class="auto-place-note"><i class="fa-solid fa-circle-info"></i> דירוג יוצג רק כאשר מקור המקומות מספק אותו. תמיד ניתן לפתוח את Google ולראות דירוגים עדכניים לפני האישור.</p></section>' +
+      '<section><h3><span>4</span> ימים ושעות</h3><div class="auto-place-days">' + dateOptions(trip).map(function (date) { return '<label><input type="checkbox" name="date" value="' + date.value + '" checked><span>' + escapeHtml(date.label) + '</span></label>'; }).join('') + '</div><div class="auto-place-grid three"><label class="auto-place-field"><span>שעת התחלה</span><input type="time" name="startTime" value="09:30"></label><label class="auto-place-field"><span>משך פעילות</span><select name="duration"><option value="60">שעה</option><option value="90" selected>שעה וחצי</option><option value="120">שעתיים</option><option value="180">3 שעות</option></select></label><label class="auto-place-field"><span>זמן מעבר</span><select name="gap"><option value="15">15 דקות</option><option value="30" selected>30 דקות</option><option value="45">45 דקות</option><option value="60">שעה</option></select></label></div><label class="auto-place-keep"><input type="checkbox" name="keepExisting" checked><span><i class="fa-solid fa-lock"></i><strong>שמור את מה שכבר תכננתי</strong><small>המילוי האוטומטי לא מוחק פעילויות ומקומות קיימים.</small></span></label></section>' +
       '<p class="auto-place-status" data-auto-place-status role="status">התוכנית תוצג לבדיקה לפני שהיא נשמרת.</p><button class="auto-place-build" type="submit" data-auto-place-build><i class="fa-solid fa-wand-magic-sparkles"></i> בנה לי הצעה</button></form>' +
       '<div class="auto-place-preview" data-auto-place-preview></div><footer data-auto-place-preview-actions hidden><button type="button" data-auto-place-back>שינוי ההגדרות</button><button type="button" class="primary" data-auto-place-apply><i class="fa-solid fa-calendar-check"></i> מילוי הימים שסומנו</button></footer></div>';
     document.body.appendChild(dialog);
@@ -375,6 +417,16 @@
       dialog.querySelector('[data-auto-place-status]').textContent = 'אפשר לשנות את ההגדרות ולבנות הצעה חדשה.';
     });
     dialog.querySelector('[data-auto-place-apply]').addEventListener('click', applyProposal);
+    dialog.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-auto-place-details]');
+      if (!button) return;
+      var panel = dialog.querySelector('[data-auto-place-details-panel="' + button.dataset.autoPlaceDetails + '"]');
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+      button.setAttribute('aria-expanded', String(!panel.hidden));
+      var label = button.querySelector('span');
+      if (label) label.textContent = panel.hidden ? 'פרטים' : 'סגירה';
+    });
     dialog.addEventListener('click', function (event) { if (event.target === dialog) closeDialog(); });
   }
 
