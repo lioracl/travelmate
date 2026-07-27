@@ -410,3 +410,14 @@ body.tm-new-design #trip-home-actions-title{
   opacity:1!important;
   text-shadow:0 1px 10px rgba(0,0,0,.28)!important
 }
+
+body.tm-new-design[data-trip-view="overview"] .hero .weather-top-widget{
+  background:linear-gradient(
+    135deg,
+    rgba(255,255,255,.12),
+    rgba(255,255,255,.035)
+  )!important;
+  -webkit-backdrop-filter:blur(18px) saturate(135%)!important;
+  backdrop-filter:blur(18px) saturate(135%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 10px 28px rgba(0,0,0,.06)!important
+}
