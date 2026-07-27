@@ -429,7 +429,7 @@
           var index = state.proposal.indexOf(place);
           var rating = place.rating ? '<span class="auto-place-rating"><i class="fa-solid fa-star"></i>' + place.rating.toFixed(1) + '</span>' : '<span class="auto-place-rating muted">ללא דירוג זמין</span>';
           var daySelect = dates.map(function (item) { return '<option value="' + escapeHtml(item.value) + '"' + (item.value === place.date ? ' selected' : '') + '>' + escapeHtml(item.label) + '</option>'; }).join('');
-          return '<article class="auto-place-preview-item"><label class="auto-place-choice"><input type="checkbox" data-auto-place-choice="' + index + '"' + (place.selected === false ? '' : ' checked') + '><span></span></label>' +
+          return '<article class="auto-place-preview-item' + (place.selected === false ? ' excluded' : '') + '"><button type="button" class="auto-place-choice" data-auto-place-toggle="' + index + '" aria-pressed="' + (place.selected === false ? 'false' : 'true') + '" aria-label="בחירת המקום"><span><i class="fa-solid fa-check"></i></span></button>' +
             '<span class="auto-place-preview-time"><input type="time" value="' + escapeHtml(place.time) + '" data-auto-place-time="' + index + '" aria-label="שעת הפעילות"></span><span><strong>' + escapeHtml(place.name) +
             '</strong><small>' + escapeHtml(place.category) + ' · ' + (place.distance < 1000 ? Math.round(place.distance) + ' מ׳' : (place.distance / 1000).toFixed(1) + ' ק״מ') +
             '</small><span class="auto-place-meta">' + rating + '<span><i class="fa-solid fa-person-walking"></i> כ־' + (place.travelFromPreviousMinutes || 5) + ' דק׳ מהתחנה הקודמת</span><span><i class="fa-solid fa-coins"></i> כ־€' + (place.costEstimate || 0) + '</span>' + (place.officialUrl ? '<span><i class="fa-solid fa-globe"></i> אתר רשמי</span>' : '') + (place.openingHours ? '<span><i class="fa-regular fa-clock"></i> שעות זמינות</span>' : '') + '</span></span>' +
@@ -491,9 +491,8 @@
   }
 
   function applyProposal() {
-    var selected = state.proposal.filter(function (_, index) {
-      var input = dialog.querySelector('[data-auto-place-choice="' + index + '"]');
-      return input && input.checked;
+    var selected = state.proposal.filter(function (place) {
+      return place.selected !== false;
     });
     if (!selected.length) {
       dialog.querySelector('[data-auto-place-status]').textContent = 'יש להשאיר לפחות מקום אחד מסומן.';
@@ -515,7 +514,6 @@
     });
     saveTrip(fresh);
     closeDialog();
-    location.hash = 'plan';
     if (window.showDayToast) window.showDayToast('הימים מולאו אוטומטית במקומות שבחרת.');
   }
 
@@ -594,6 +592,17 @@
       renderPreview();
     });
     dialog.addEventListener('click', function (event) {
+      var toggle = event.target.closest('[data-auto-place-toggle]');
+      if (toggle) {
+        event.preventDefault();
+        event.stopPropagation();
+        var toggleIndex = Number(toggle.dataset.autoPlaceToggle);
+        var toggledPlace = state.proposal[toggleIndex];
+        if (!toggledPlace) return;
+        toggledPlace.selected = toggledPlace.selected === false;
+        renderPreview();
+        return;
+      }
       var replaceDay = event.target.closest('[data-auto-replace-day]');
       if (replaceDay) {
         replacePreviewDay(replaceDay.dataset.autoReplaceDay);

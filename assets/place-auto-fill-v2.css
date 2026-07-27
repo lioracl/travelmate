@@ -19,3 +19,12 @@
 .auto-place-details{grid-column:1/-1;min-width:0;padding:12px;border-radius:13px;background:#f4f8f6;color:#40564d}.auto-place-details p{margin:0 0 9px;line-height:1.55}.auto-place-details dl{margin:0;display:grid;gap:7px}.auto-place-details dl div{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px}.auto-place-details dt{font-weight:900}.auto-place-details dd{margin:0;overflow-wrap:anywhere}
 .auto-place-detail-links{margin-top:11px;display:flex;flex-wrap:wrap;gap:7px}.auto-place-detail-links a{padding:8px 10px;display:inline-flex;align-items:center;gap:6px;border:1px solid #bdd6ca;border-radius:10px;background:#fff;color:#1c664b;font-weight:900;text-decoration:none}
 @media(max-width:680px){.auto-place-backdrop{overflow:hidden}.auto-place-dialog{width:100%;max-width:100vw;overflow-x:hidden}.auto-place-switches{grid-template-columns:1fr}.auto-place-days{grid-template-columns:1fr 1fr}.auto-place-grid,.auto-place-grid.three,.auto-place-field{width:100%;min-width:0}.auto-place-preview-item{grid-template-columns:24px 76px minmax(0,1fr)}.auto-place-preview-time input{width:76px}.auto-place-details-button{grid-column:2/-1;justify-content:center}.auto-place-day-select{grid-column:1/-1}.auto-place-details{padding:10px}.auto-place-details dl div{grid-template-columns:1fr}.auto-place-detail-links{display:grid}.auto-place-detail-links a{justify-content:center}}
+
+/* Mobile-safe proposal selection: a real 44px button replaces the invisible checkbox. */
+.auto-place-preview-item{grid-template-columns:44px 58px minmax(0,1fr) auto}
+.auto-place-choice{width:44px;height:44px;padding:0;display:grid;place-items:center;align-self:start;border:0;border-radius:12px;background:transparent;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;position:relative;z-index:2}
+.auto-place-choice span{width:25px;height:25px;display:grid;place-items:center;border:2px solid #a9c5b7;border-radius:8px;background:#fff;color:transparent;pointer-events:none}
+.auto-place-choice[aria-pressed="true"] span{border-color:#237a5a;background:#237a5a;color:#fff}
+.auto-place-choice i{font-size:13px;pointer-events:none}
+.auto-place-preview-item.excluded{opacity:.48}
+@media(max-width:680px){.auto-place-preview-item{grid-template-columns:44px 76px minmax(0,1fr)}}
