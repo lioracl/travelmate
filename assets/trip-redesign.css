@@ -360,3 +360,66 @@ body.tm-new-design[data-trip-view="places"] #places :where(
     font-size:16px!important;
   }
 }
+
+/* Documents view: keep the destination image visible and leave only useful controls. */
+body.tm-new-design[data-trip-view="documents"] #documents{
+  position:relative;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+body.tm-new-design[data-trip-view="documents"] #documents > .section-head{
+  position:relative;
+  min-height:64px;
+  padding-inline:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body.tm-new-design[data-trip-view="documents"] #documents > .section-head .trip-action-back,
+body.tm-new-design[data-trip-view="documents"] #documents > .section-head .tm-collapse-button,
+body.tm-new-design[data-trip-view="documents"] #documents > .section-head > div > p{
+  display:none!important;
+}
+body.tm-new-design[data-trip-view="documents"] #documents > .section-head > div > h1{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+body.tm-new-design[data-trip-view="documents"] #documents > .section-head > .pill-btn{
+  position:absolute!important;
+  top:50%!important;
+  left:0!important;
+  right:auto!important;
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  margin:0!important;
+  padding:0!important;
+  transform:translateY(-50%);
+  display:grid!important;
+  place-items:center;
+  overflow:hidden;
+  color:transparent!important;
+  font-size:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+body.tm-new-design[data-trip-view="documents"] #documents > .section-head > .pill-btn i{
+  display:none!important;
+}
+body.tm-new-design[data-trip-view="documents"] #documents > .section-head > .pill-btn::before{
+  content:"";
+  width:28px;
+  height:28px;
+  background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='1.45' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4m0 0-4 4m4-4 4 4'/%3E%3Cpath d='M5 14v5h14v-5'/%3E%3C/svg%3E");
+}
+body.tm-new-design[data-trip-view="documents"] #documents .document-vault{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
