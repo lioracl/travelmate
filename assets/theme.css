@@ -720,14 +720,12 @@ html body .collaboration-signed-out>i{
   box-shadow:none!important;
 }
 
-/* Places header search: one compact search row, without an extra card surface. */
-html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head{
-  align-items:center!important;
-  flex-wrap:wrap;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search{
-  width:min(520px,100%);
-  margin:0 0 0 auto!important;
+/* Places header search: one compact row aligned left in the trip header. */
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search{
+  order:3;
+  width:min(420px,42%);
+  margin-inline-start:auto!important;
+  margin-inline-end:0!important;
   padding:0!important;
   display:grid!important;
   grid-template-columns:minmax(0,1fr) 46px!important;
@@ -740,10 +738,10 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #places>.se
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
 }
-html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search label{
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search label{
   display:block!important;
 }
-html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search label>span{
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search label>span{
   position:absolute!important;
   width:1px!important;
   height:1px!important;
@@ -751,7 +749,7 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #places>.se
   clip-path:inset(50%)!important;
   white-space:nowrap!important;
 }
-html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search input{
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search input{
   width:100%!important;
   min-height:46px!important;
   border:1px solid rgba(255,255,255,.26)!important;
@@ -763,26 +761,27 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #places>.se
   -webkit-backdrop-filter:blur(14px) saturate(130%)!important;
   backdrop-filter:blur(14px) saturate(130%)!important;
 }
-html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search input::placeholder{
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search input::placeholder{
   color:rgba(255,255,255,.7)!important;
   -webkit-text-fill-color:rgba(255,255,255,.7)!important;
 }
-html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search button{
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search button{
   width:46px!important;
   min-width:46px!important;
   min-height:46px!important;
   padding:0!important;
   font-size:0!important;
 }
-html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search button i{
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search button i{
   margin:0!important;
   font-size:16px!important;
 }
 
 /* Weather-card buttons: compact glass controls with a clear hover/focus state. */
 html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
-  .nearby-search,.nearby-map-button,[data-nearby-map-search],.nearby-free-search button
-){
+  .nearby-search,.nearby-map-button,[data-nearby-map-search]
+),
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search button{
   border:1px solid rgba(255,255,255,.28)!important;
   border-radius:14px!important;
   background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.07))!important;
@@ -794,15 +793,18 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #places :wh
   text-shadow:0 1px 8px rgba(0,0,0,.28)!important;
 }
 html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
-  .nearby-search,.nearby-map-button,[data-nearby-map-search],.nearby-free-search button
-):is(:hover,:focus-visible){
+  .nearby-search,.nearby-map-button,[data-nearby-map-search]
+):is(:hover,:focus-visible),
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search button:is(:hover,:focus-visible){
   border-color:rgba(255,255,255,.48)!important;
   background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.11))!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 24px rgba(0,0,0,.12)!important;
 }
 @media(max-width:850px){
-  html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search{
+  html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search{
+    order:4;
     width:100%;
+    flex:0 0 100%!important;
     margin:8px 0 0!important;
   }
 }
