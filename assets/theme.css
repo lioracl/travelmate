@@ -1122,6 +1122,169 @@ html body.tm-new-design[data-trip-view="plan"] #plan .saved-place{
   }
 }
 
+/* 1.29.1 — softer weather-card navigation, clearer plan actions and Nebo. */
+@media(min-width:1001px){
+  body:not(.home-page) .workspace>.sidebar{
+    border:0!important;
+    border-radius:24px!important;
+    background:linear-gradient(145deg,rgba(248,253,250,.94),rgba(226,240,233,.88))!important;
+    box-shadow:0 16px 42px rgba(16,75,57,.16)!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a,
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about,
+  body:not(.home-page) .workspace>.sidebar .sidebar-service{
+    border:0!important;
+    border-radius:14px!important;
+    box-shadow:none!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a:not(.active):not(:hover):not(:focus-visible),
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about:not(:hover):not(:focus-visible){
+    background:transparent!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a.active,
+  body:not(.home-page) .workspace>.sidebar nav [aria-current="page"]{
+    background:linear-gradient(135deg,#e7f4ed,#d1e9dc)!important;
+    color:#145941!important;
+    -webkit-text-fill-color:#145941!important;
+    box-shadow:inset 4px 0 0 #1d7656!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a.active :where(i,.tip),
+  body:not(.home-page) .workspace>.sidebar nav [aria-current="page"] :where(i,.tip){
+    color:#145941!important;
+    -webkit-text-fill-color:#145941!important
+  }
+}
+
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
+  padding:14px 16px!important;
+  border:0!important;
+  border-radius:20px!important;
+  background:linear-gradient(135deg,rgba(250,253,251,.96),rgba(226,240,233,.9))!important;
+  box-shadow:0 12px 30px rgba(19,83,62,.13)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(125%)!important;
+  backdrop-filter:blur(18px) saturate(125%)!important
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-action{
+  min-height:42px!important;
+  border:1px solid rgba(20,101,75,.2)!important;
+  border-radius:14px!important;
+  background:rgba(255,255,255,.72)!important;
+  color:#145941!important;
+  -webkit-text-fill-color:#145941!important
+}
+body.tm-new-design[data-trip-view="plan"] #plan [data-smart-build]{
+  border-color:transparent!important;
+  background:linear-gradient(135deg,#237f60,#145941)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 8px 18px rgba(20,89,65,.2)!important
+}
+body.tm-new-design[data-trip-view="plan"] #plan [data-smart-build] i{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+
+body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions){
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  flex-wrap:wrap!important
+}
+body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button{
+  width:auto!important;
+  min-width:42px!important;
+  min-height:36px!important;
+  height:36px!important;
+  padding:0 11px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  border:1px solid rgba(20,101,75,.2)!important;
+  border-radius:12px!important;
+  background:rgba(250,253,251,.9)!important;
+  color:#176f51!important;
+  -webkit-text-fill-color:#176f51!important
+}
+body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button::after{
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap
+}
+body.tm-new-design[data-trip-view="plan"] #plan [data-toggle-done]::after,
+body.tm-new-design[data-trip-view="plan"] #plan [data-toggle-saved-done]::after{content:"הושלם"}
+body.tm-new-design[data-trip-view="plan"] #plan [data-edit]::after,
+body.tm-new-design[data-trip-view="plan"] #plan [data-edit-saved-place]::after{content:"עריכה"}
+body.tm-new-design[data-trip-view="plan"] #plan [data-delete]::after,
+body.tm-new-design[data-trip-view="plan"] #plan [data-delete-saved-place]::after{content:"מחיקה"}
+body.tm-new-design[data-trip-view="plan"] #plan [data-smart-replace-activity]::after,
+body.tm-new-design[data-trip-view="plan"] #plan [data-smart-replace-place]::after{content:"החלפה"}
+body.tm-new-design[data-trip-view="plan"] #plan :is([data-delete],[data-delete-saved-place]){
+  border-color:rgba(180,35,24,.2)!important;
+  background:rgba(255,245,243,.92)!important;
+  color:#a52b22!important;
+  -webkit-text-fill-color:#a52b22!important
+}
+
+body.tm-new-design .ai-orb{
+  border:1px solid rgba(20,101,75,.24)!important;
+  border-radius:20px!important;
+  background:linear-gradient(145deg,rgba(248,253,250,.98),rgba(205,232,218,.96))!important;
+  color:#145941!important;
+  -webkit-text-fill-color:#145941!important;
+  box-shadow:0 14px 34px rgba(16,75,57,.22)!important
+}
+body.tm-new-design .ai-orb-ring{
+  border-color:rgba(20,101,75,.24)!important
+}
+body.tm-new-design .ai-panel{
+  border:0!important;
+  background:linear-gradient(145deg,rgba(252,254,253,.98),rgba(232,244,238,.97))!important;
+  box-shadow:0 24px 70px rgba(14,62,47,.27)!important
+}
+body.tm-new-design .ai-panel-header{
+  border-bottom:1px solid rgba(20,101,75,.16)!important;
+  background:linear-gradient(135deg,#edf8f2,#d9eee3)!important;
+  color:#163f32!important;
+  -webkit-text-fill-color:#163f32!important
+}
+body.tm-new-design .ai-panel-title small{color:#507567!important}
+body.tm-new-design .ai-avatar,
+body.tm-new-design .ai-icon-button{
+  border:1px solid rgba(20,101,75,.16)!important;
+  background:rgba(255,255,255,.56)!important;
+  color:#176f51!important;
+  -webkit-text-fill-color:#176f51!important
+}
+
+@media(max-width:1000px){
+  body:not(.home-page) .workspace>.sidebar{
+    border:0!important;
+    border-radius:0 24px 24px 0!important;
+    background:linear-gradient(145deg,rgba(250,253,251,.98),rgba(222,239,231,.97))!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a,
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about{
+    border:0!important;
+    border-radius:14px!important
+  }
+  body:not(.home-page) .mobile-menu-button{
+    border:0!important;
+    border-radius:15px!important;
+    background:linear-gradient(135deg,#eef8f3,#d5ebdf)!important;
+    box-shadow:0 8px 20px rgba(20,89,65,.16)!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions){
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    width:100%!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button{
+    width:100%!important;
+    padding:0 7px!important
+  }
+}
+
 @media(max-width:430px){
   body:not(.home-page) main.content{padding:8px!important}
   body:not(.home-page) .section:not(.hero){padding:12px!important}
@@ -1308,5 +1471,46 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
     color:#145941!important;
     -webkit-text-fill-color:#145941!important;
     font-size:22px!important
+  }
+}
+
+/* Final sidebar authority: one surface, no nested outlines. */
+@media(min-width:1001px){
+  html body:not(.home-page) .workspace>.sidebar{
+    border:0!important;
+    border-radius:24px!important;
+    background:linear-gradient(145deg,rgba(248,253,250,.94),rgba(226,240,233,.9))!important;
+    box-shadow:0 16px 42px rgba(16,75,57,.16)!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about),
+  html body:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
+    border:0!important;
+    border-radius:14px!important;
+    box-shadow:none!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav a.active,
+  html body:not(.home-page) .workspace>.sidebar nav [aria-current="page"]{
+    background:linear-gradient(135deg,#e7f4ed,#d1e9dc)!important;
+    color:#145941!important;
+    -webkit-text-fill-color:#145941!important;
+    box-shadow:inset 4px 0 0 #1d7656!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav a.active :where(i,.tip),
+  html body:not(.home-page) .workspace>.sidebar nav [aria-current="page"] :where(i,.tip){
+    color:#145941!important;
+    -webkit-text-fill-color:#145941!important
+  }
+}
+@media(max-width:1000px){
+  html body:not(.home-page) .workspace>.sidebar{
+    border:0!important;
+    border-radius:0 24px 24px 0!important;
+    background:linear-gradient(145deg,rgba(250,253,251,.98),rgba(222,239,231,.97))!important;
+    box-shadow:0 20px 55px rgba(12,62,46,.24)!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about),
+  html body:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
+    border:0!important;
+    box-shadow:none!important
   }
 }
