@@ -727,9 +727,7 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.
   margin-inline-start:auto!important;
   margin-inline-end:0!important;
   padding:0!important;
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) 46px!important;
-  gap:8px!important;
+  display:block!important;
   align-items:center!important;
   border:0!important;
   border-radius:0!important;
@@ -739,6 +737,7 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.
   backdrop-filter:none!important;
 }
 html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search label{
+  position:relative!important;
   display:block!important;
 }
 html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search label>span{
@@ -753,7 +752,8 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.
   width:100%!important;
   min-height:46px!important;
   border:1px solid rgba(255,255,255,.26)!important;
-  border-radius:14px!important;
+  border-radius:999px!important;
+  padding-inline:18px 52px!important;
   background:rgba(8,25,20,.24)!important;
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
@@ -765,23 +765,23 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.
   color:rgba(255,255,255,.7)!important;
   -webkit-text-fill-color:rgba(255,255,255,.7)!important;
 }
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search button{
-  width:46px!important;
-  min-width:46px!important;
-  min-height:46px!important;
-  padding:0!important;
-  font-size:0!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search button i{
+html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search .nearby-header-search-icon{
+  position:absolute!important;
+  left:18px!important;
+  top:50%!important;
+  z-index:2;
   margin:0!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
   font-size:16px!important;
+  pointer-events:none;
+  transform:translateY(-50%);
 }
 
 /* Weather-card buttons: compact glass controls with a clear hover/focus state. */
 html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
   .nearby-search,.nearby-map-button,[data-nearby-map-search]
-),
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search button{
+){
   border:1px solid rgba(255,255,255,.28)!important;
   border-radius:14px!important;
   background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.07))!important;
@@ -794,8 +794,7 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.
 }
 html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
   .nearby-search,.nearby-map-button,[data-nearby-map-search]
-):is(:hover,:focus-visible),
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search button:is(:hover,:focus-visible){
+):is(:hover,:focus-visible){
   border-color:rgba(255,255,255,.48)!important;
   background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.11))!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 24px rgba(0,0,0,.12)!important;

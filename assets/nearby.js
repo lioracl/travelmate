@@ -104,8 +104,7 @@
     var form = document.createElement('form');
     form.className = 'nearby-free-search';
     form.setAttribute('data-nearby-free-form', '');
-    form.innerHTML = '<label><span>חיפוש חופשי</span><input type="search" data-nearby-free-input placeholder="לדוגמה: מוזיאונים, בית כנסת או בית מרקחת" autocomplete="off"></label><button type="submit"><i class="fa-solid fa-magnifying-glass"></i> חיפוש באזור היעד</button>';
-    form.querySelector('button').setAttribute('aria-label', 'חיפוש באזור היעד');
+    form.innerHTML = '<label><span>חיפוש חופשי</span><input type="search" data-nearby-free-input placeholder="חפש" autocomplete="off"><i class="fa-solid fa-magnifying-glass nearby-header-search-icon" aria-hidden="true"></i></label>';
     var tripHeader = document.getElementById('overview');
     (tripHeader || panel).appendChild(form);
     return form;
@@ -117,7 +116,7 @@
 
     async function searchAt(lat, lon, accuracy) {
       var requestId = ++searchSequence;
-      gpsButton.disabled = true; mapSearch.disabled = true; freeForm.querySelector('button').disabled = true; status.classList.remove('is-error'); status.textContent = 'מחפש מקומות מדויקים ומכין קישורים לציונים ב־Google…'; results.innerHTML = ''; lastPoint = { lat: Number(lat), lon: Number(lon) };
+      gpsButton.disabled = true; mapSearch.disabled = true; freeInput.disabled = true; status.classList.remove('is-error'); status.textContent = 'מחפש מקומות מדויקים ומכין קישורים לציונים ב־Google…'; results.innerHTML = ''; lastPoint = { lat: Number(lat), lon: Number(lon) };
       try {
         var radius = panel.querySelector('[data-nearby-radius]').value, category = panel.querySelector('[data-nearby-category]').value, freeTerm = freeInput.value.trim(), includeWiki = !freeTerm && (category === 'all' || category === 'attractions' || category === 'trips');
         var settled = await Promise.allSettled([overpassPlaces(queryFor(category, radius, lat, lon, freeTerm)), includeWiki ? Promise.all([wikipediaPlaces('he', lat, lon, radius), wikipediaPlaces('en', lat, lon, radius)]) : Promise.resolve([[], []])]);
@@ -125,7 +124,7 @@
         var osmData = settled[0].status === 'fulfilled' ? settled[0].value : { elements: [] }, wikiGroups = settled[1].status === 'fulfilled' ? settled[1].value : [[], []], warnings = settled.filter(function (item) { return item.status === 'rejected'; }), wikiSeen = {}, wikiCombined = wikiGroups[0].concat(wikiGroups[1]).filter(function (place) { var key = place.name.toLowerCase(); if (wikiSeen[key]) return false; wikiSeen[key] = true; return true; });
         renderPlaces(osmData, wikiCombined, lat, lon, status, results, accuracy, warnings, freeTerm, category, panel.dataset.destinationName);
       } catch (error) { if (requestId === searchSequence) { status.classList.add('is-error'); status.textContent = error.message || 'לא הצלחנו לטעון מקומות כרגע.'; } }
-      finally { if (requestId === searchSequence) { gpsButton.disabled = false; freeForm.querySelector('button').disabled = false; mapSearch.disabled = !selectedPoint; } }
+      finally { if (requestId === searchSequence) { gpsButton.disabled = false; freeInput.disabled = false; mapSearch.disabled = !selectedPoint; } }
     }
 
     freeForm.addEventListener('submit', function (event) { event.preventDefault(); var category = panel.querySelector('[data-nearby-category]').value; if (!freeInput.value.trim() && category === 'all') { freeInput.focus(); status.textContent = 'כתוב מה תרצה למצוא, לדוגמה: מוזיאונים, או בחר קטגוריה מהרשימה.'; return; } var point = selectedPoint || lastPoint || destinationPoint(); if (!point) { status.classList.add('is-error'); status.textContent = 'מרכז העיר עדיין לא אותר. נסה שוב בעוד רגע, השתמש ב־GPS או בחר נקודה במפה.'; return; } searchAt(point.lat, point.lon); });
