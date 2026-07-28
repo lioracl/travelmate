@@ -2036,3 +2036,357 @@ html body.tm-new-design main.content>section:is(
     -webkit-text-fill-color:#a52b22!important;
   }
 }
+
+/* 1.29.4 — borderless navigation, exact weather glass and aligned itinerary. */
+@media(min-width:1001px){
+  html body:not(.home-page) .workspace>.sidebar{
+    width:232px!important;
+    padding:16px 14px!important;
+    border:0!important;
+    border-radius:24px 0 0 24px!important;
+    background:linear-gradient(155deg,rgba(248,253,250,.96),rgba(222,239,231,.93))!important;
+    box-shadow:0 22px 54px rgba(10,58,43,.2)!important
+  }
+  html body:not(.home-page) main.content{
+    margin-right:260px!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav{
+    gap:2px!important;
+    padding:5px 0!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about),
+  html body:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
+    min-height:43px!important;
+    padding:0 10px!important;
+    border:0!important;
+    border-radius:10px!important;
+    background:transparent!important;
+    box-shadow:none!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about):hover,
+  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about):focus-visible{
+    background:rgba(22,111,81,.07)!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav a.active{
+    background:transparent!important;
+    color:#0f6b4d!important;
+    box-shadow:inset -3px 0 0 #16805c!important;
+    font-weight:950!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about) :is(i,.tip){
+    color:inherit!important;
+    -webkit-text-fill-color:currentColor!important
+  }
+  html body.tm-new-design .sidebar .trip-logout{
+    min-height:46px!important;
+    border:0!important;
+    border-top:1px solid rgba(162,59,54,.18)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important
+  }
+}
+
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+){
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--tm-weather-card-background)!important;
+  color:var(--tm-weather-card-text)!important;
+  box-shadow:var(--tm-weather-card-shadow)!important;
+  backdrop-filter:blur(18px)!important;
+  -webkit-backdrop-filter:blur(18px)!important
+}
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+) :where(
+  .document-vault-panel,.doc-row,.vault-status,.expense,.summary-card,.service-card,
+  .transport-card,.getaway-result,.group-card,.album-card,.memory-card,.trip-summary-card,
+  .group-chat,.group-members,.invite-card,.car-rental-card,.album-panel,.receipt-card,
+  article[class*="-card"],div[class*="-card"]
+){
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--tm-weather-card-background)!important;
+  color:#fff!important;
+  box-shadow:var(--tm-weather-card-shadow)!important
+}
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+) :where(h1,h2,h3,h4,p,strong,span,small,label,i){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 1px 12px rgba(0,0,0,.18)!important
+}
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+) :where(input,select,textarea){
+  border:0!important;
+  background:rgba(255,255,255,.14)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2)!important
+}
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+) :where(input,textarea)::placeholder{
+  color:rgba(255,255,255,.74)!important;
+  -webkit-text-fill-color:rgba(255,255,255,.74)!important
+}
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+) :where(button,.button,.btn,.icon-button,.pill-btn,a[class*="button"]){
+  border:0!important;
+  background:rgba(255,255,255,.14)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2)!important
+}
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+) :where(button,.button,.btn,.icon-button,.pill-btn) :where(i,svg){
+  color:#fff!important;
+  fill:currentColor!important;
+  stroke:currentColor!important
+}
+
+html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--tm-weather-card-background)!important;
+  box-shadow:var(--tm-weather-card-shadow)!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar :is(button,.planner-action){
+  width:38px!important;
+  min-width:38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  color:#fff!important;
+  box-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-action.primary{
+  width:auto!important;
+  padding:0 14px!important;
+  background:#137454!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .day-heading-actions :is(.day-add,.day-replace){
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .day-timeline:before{
+  right:7px!important;
+  width:3px!important;
+  background:linear-gradient(#16805c,rgba(255,255,255,.72))!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .day-timeline>:is(.planned-activity,.saved-place):before{
+  right:-25px!important;
+  top:20px!important;
+  box-sizing:content-box!important
+}
+
+html body.tm-new-design .ai-orb{
+  width:54px!important;
+  min-width:54px!important;
+  height:54px!important;
+  min-height:54px!important;
+  border:0!important;
+  border-radius:18px!important;
+  background:linear-gradient(145deg,#176f53,#0b4c3a)!important;
+  color:#fff!important;
+  box-shadow:0 13px 30px rgba(8,66,49,.34),inset 0 1px 0 rgba(255,255,255,.2)!important
+}
+html body.tm-new-design .ai-orb:after{
+  content:""!important;
+  display:none!important
+}
+html body.tm-new-design .ai-orb :is(i,svg){
+  color:#fff!important;
+  fill:currentColor!important
+}
+
+body.home-page.is-authenticated .home-sidebar{
+  border:0!important;
+  border-radius:0 0 18px 18px!important;
+  background:linear-gradient(180deg,rgba(8,42,33,.94),rgba(14,67,51,.9))!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.24)!important
+}
+body.home-page.is-authenticated .home-sidebar nav :is(a,button),
+body.home-page.is-authenticated .home-sidebar>.trip-logout,
+body.home-page.is-authenticated .home-sidebar-logo{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:rgba(255,255,255,.86)!important
+}
+body.home-page.is-authenticated .home-sidebar nav a.active{
+  color:#ffb070!important;
+  background:transparent!important;
+  box-shadow:inset 0 -2px 0 #ff9a4b!important
+}
+body.home-page.is-authenticated .trip-activity-toggle{
+  border:0!important;
+  background:rgba(9,48,37,.88)!important;
+  color:#fff!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.24)!important
+}
+body.home-page.is-authenticated .trip-activity-toggle.active{
+  background:#147653!important
+}
+body.home-page.is-authenticated .trip-edit-dates{
+  border:0!important;
+  background:#e96d2d!important;
+  color:#fff!important;
+  box-shadow:0 8px 22px rgba(73,27,8,.28)!important
+}
+body.home-page.is-authenticated .trip-date-state{
+  border:0!important;
+  background:rgba(9,48,37,.82)!important;
+  color:#fff!important
+}
+
+@media(min-width:1001px){
+  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about),
+  html body:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
+    color:#245c49!important;
+    -webkit-text-fill-color:#245c49!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav a.active{
+    color:#0f6b4d!important;
+    -webkit-text-fill-color:#0f6b4d!important
+  }
+}
+html body.tm-new-design #documents :is(
+  .vault-session,.vault-drop,.doc-row,.doc-category-file
+){
+  border:0!important;
+  border-radius:14px!important;
+  background:rgba(255,255,255,.12)!important;
+  color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2)!important
+}
+html body.tm-new-design #documents :is(
+  .vault-session,.vault-drop,.doc-row,.doc-category-file
+) :where(h1,h2,h3,h4,p,strong,span,small,i){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar button:is(
+  [data-open-trip-calendar],[data-new-activity]
+){
+  width:38px!important;
+  min-width:38px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:transparent!important;
+  -webkit-text-fill-color:transparent!important;
+  font-size:0!important;
+  box-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar button:is(
+  [data-open-trip-calendar],[data-new-activity]
+) i{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:18px!important
+}
+body.home-page.is-authenticated .home-sidebar>.trip-logout,
+body.home-page.is-authenticated .home-sidebar>.trip-logout :is(i,.tip){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+
+html body.tm-new-design[data-trip-view] main.content>section#documents :is(
+  .vault-session,.vault-drop,article.doc-row,.doc-category-file
+),
+html body.tm-new-design[data-trip-view] main.content>section#budget :is(
+  .expense,.summary-card,.budget-card,.receipt-card,.budget-hero
+),
+html body.tm-new-design[data-trip-view] main.content>section#transport :is(
+  .transport-card,.service-card,.transport-result,.route-card
+),
+html body.tm-new-design[data-trip-view] main.content>section#car-rental :is(
+  .service-card,.car-rental-card,.car-result
+),
+html body.tm-new-design[data-trip-view] main.content>section#getaways :is(
+  .service-card,.getaway-result,.getaway-card
+),
+html body.tm-new-design[data-trip-view] main.content>section#group :is(
+  .group-card,.group-chat,.group-members,.invite-card,.group-message
+),
+html body.tm-new-design[data-trip-view] main.content>section#memories :is(
+  .album-card,.album-panel,.memory-card,.memory-item,.trip-summary-card,.summary-card
+){
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--tm-weather-card-background)!important;
+  color:#fff!important;
+  box-shadow:var(--tm-weather-card-shadow)!important
+}
+html body.tm-new-design[data-trip-view] main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+) :is(
+  .vault-session,.vault-drop,.doc-row,.doc-category-file,.expense,.summary-card,
+  .budget-card,.receipt-card,.budget-hero,.transport-card,.service-card,.transport-result,
+  .route-card,.car-rental-card,.car-result,.getaway-result,.getaway-card,.group-card,
+  .group-chat,.group-members,.invite-card,.group-message,.album-card,.album-panel,
+  .memory-card,.memory-item,.trip-summary-card
+) :where(h1,h2,h3,h4,p,strong,span,small,label,i){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design[data-trip-view] main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+) :is(button,.button,.btn,.pill-btn){
+  border:0!important;
+  background:rgba(255,255,255,.14)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2)!important
+}
+html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar button[data-open-trip-calendar],
+html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar button[data-new-activity]{
+  box-sizing:border-box!important;
+  width:38px!important;
+  min-width:38px!important;
+  max-width:38px!important;
+  height:38px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar button:is(
+  [data-smart-build],[data-export-calendar]
+){
+  box-sizing:border-box!important;
+  width:auto!important;
+  min-width:max-content!important;
+  height:38px!important;
+  padding:0 10px!important;
+  border:0!important;
+  background:transparent!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:12px!important;
+  box-shadow:none!important
+}
+@media(max-width:1000px){
+  html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar{
+    align-items:start!important
+  }
+  html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar-actions{
+    width:100%!important;
+    display:flex!important;
+    flex-flow:row wrap!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:5px!important
+  }
+}
