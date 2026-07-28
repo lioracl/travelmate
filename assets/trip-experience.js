@@ -51,6 +51,12 @@
   function saveTripData() { if (!state.trip) return; state.trip.expenses = state.expenses; state.trip.memories = state.memories; state.trip.photoAlbumUrl = state.albumUrl; state.trip.currencyFee = state.fee; if (new URLSearchParams(location.search).get('id') && cloud && cloud.queueTripSave) cloud.queueTripSave(state.trip); }
 
   function setupCollapsibleSections() {
+    document.querySelectorAll('.tm-collapse-button').forEach(function (button) { button.remove(); });
+    document.querySelectorAll('.tm-collapsible,.tm-collapsed').forEach(function (section) {
+      section.classList.remove('tm-collapsible', 'tm-collapsed');
+      delete section.dataset.collapsibleReady;
+    });
+    return;
     document.querySelectorAll('.content > .section[id]').forEach(function (section) {
       if (section.classList.contains('hero') || section.dataset.collapsibleReady) return;
       var head = section.querySelector(':scope > .section-head'); if (!head) return;
