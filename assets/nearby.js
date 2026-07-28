@@ -112,6 +112,7 @@
 
   panels.forEach(function (panel) {
     var gpsButton = panel.querySelector('[data-nearby-search]'), mapButton = panel.querySelector('[data-nearby-map-button]'), mapShell = panel.querySelector('[data-nearby-map-shell]'), mapElement = panel.querySelector('[data-nearby-map]'), mapSearch = panel.querySelector('[data-nearby-map-search]'), mapHint = panel.querySelector('[data-nearby-map-hint]'), status = panel.querySelector('[data-nearby-status]'), results = panel.querySelector('[data-nearby-results]'), freeForm = enhanceSearchControls(panel), freeInput = freeForm.querySelector('[data-nearby-free-input]'), map, marker, selectedPoint, lastPoint, searchSequence = 0;
+    mapButton.classList.add('tm-master-button');
     function destinationPoint() { var lat = Number(panel.dataset.destinationLat), lon = Number(panel.dataset.destinationLon); return lat && lon ? { lat: lat, lon: lon } : null; }
 
     async function searchAt(lat, lon, accuracy) {
