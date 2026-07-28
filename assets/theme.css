@@ -557,3 +557,67 @@ html[data-theme="light"] body.tm-new-design .auto-place-preview-item.excluded{
   opacity:.58!important;
   background:#eef3f0!important
 }
+
+/* Keep the automatic planner solid and fully interactive on touch devices. */
+body.tm-new-design .auto-place-backdrop{
+  background:rgba(10,27,22,.78)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important
+}
+body.tm-new-design .auto-place-dialog,
+body.tm-new-design .auto-place-dialog-body,
+body.tm-new-design .auto-place-dialog form>section,
+body.tm-new-design .auto-place-preview,
+body.tm-new-design .auto-place-preview-day,
+body.tm-new-design .auto-place-preview-item,
+body.tm-new-design .auto-place-details,
+body.tm-new-design .auto-place-map{
+  opacity:1!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  color:#173a30!important
+}
+body.tm-new-design .auto-place-dialog,
+body.tm-new-design .auto-place-dialog form>section,
+body.tm-new-design .auto-place-preview-day,
+body.tm-new-design .auto-place-preview-item,
+body.tm-new-design .auto-place-details,
+body.tm-new-design .auto-place-map{
+  background:#fff!important
+}
+body.tm-new-design .auto-place-dialog-body,
+body.tm-new-design .auto-place-preview{
+  background:#f4f7f5!important
+}
+body.tm-new-design .auto-place-switches label{
+  position:relative;
+  z-index:1;
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent
+}
+body.tm-new-design .auto-place-switches label>span{
+  min-height:48px;
+  background:#fff!important;
+  border:1px solid #c8d8d0!important;
+  color:#29483d!important
+}
+body.tm-new-design .auto-place-switches input:checked+span{
+  background:#e7f5ed!important;
+  border-color:#237a5a!important;
+  color:#155c43!important;
+  box-shadow:0 0 0 2px rgba(35,122,90,.1)!important
+}
+body.tm-new-design .auto-place-switches input:focus-visible+span{
+  outline:3px solid rgba(35,122,90,.3)!important;
+  outline-offset:2px
+}
+html[data-theme="light"] body.tm-new-design .auto-place-preview-item.excluded,
+body.tm-new-design .auto-place-preview-item.excluded{
+  opacity:1!important;
+  background:#eef3f0!important;
+  border-color:#cbd8d2!important
+}
+body.tm-new-design .auto-place-preview-item.excluded .auto-place-preview-copy{
+  opacity:.62
+}

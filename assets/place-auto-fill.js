@@ -722,6 +722,15 @@
       '<div class="auto-place-preview" data-auto-place-preview></div></div><footer data-auto-place-preview-actions hidden><button type="button" data-auto-place-back>שינוי ההגדרות</button><button type="button" class="primary" data-auto-place-apply><i class="fa-solid fa-calendar-check"></i> מילוי הימים שסומנו</button></footer></div>';
     document.body.appendChild(dialog);
     dialog.querySelector('[data-auto-place-form]').addEventListener('submit', createPreview);
+    dialog.querySelectorAll('.auto-place-switches label').forEach(function (label) {
+      var input = label.querySelector('input[type="checkbox"]');
+      if (!input) return;
+      label.addEventListener('click', function (event) {
+        event.preventDefault();
+        input.checked = !input.checked;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
     dialog.querySelectorAll('[name="originMode"]').forEach(function (input) {
       input.addEventListener('change', function () {
         dialog.querySelector('[data-auto-origin-text]').hidden = input.form.elements.originMode.value !== 'custom';
