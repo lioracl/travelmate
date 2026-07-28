@@ -621,3 +621,81 @@ body.tm-new-design .auto-place-preview-item.excluded{
 body.tm-new-design .auto-place-preview-item.excluded .auto-place-preview-copy{
   opacity:.62
 }
+
+/* Weather card is the master card for every primary TravelMate surface. */
+:root{
+  --tm-weather-card-background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.035));
+  --tm-weather-card-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 10px 28px rgba(0,0,0,.06);
+  --tm-weather-card-text:#fff;
+  --tm-weather-card-radius:14px;
+}
+html body.tm-new-design[data-trip-view][class] main.content :is(
+  .weather-master-card,
+  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
+  .nearby,.nearby-panel,.summary-card,.auto-card,.auto-place-launch,
+  .service-card,.transport-card,.external-resources,.planned-activity,.saved-place,
+  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
+  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,
+  .forecast-day,.resource-link,.getaway-result,.currency-insight,
+  .network-usage-panel,.gps-consent-card,.message-place-card,.shared-place-card,
+  .invite-card,.weather-insight,.weather-live-day
+),
+html body.home-page.is-authenticated[class] main.content :is(
+  .module,.add-destination,.home-about,.trip-archive
+){
+  border:0!important;
+  border-radius:var(--tm-weather-card-radius)!important;
+  outline:0!important;
+  background:var(--tm-weather-card-background)!important;
+  color:var(--tm-weather-card-text)!important;
+  box-shadow:var(--tm-weather-card-shadow)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(135%)!important;
+  backdrop-filter:blur(18px) saturate(135%)!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.28)!important;
+}
+html body.tm-new-design[data-trip-view][class] main.content :is(
+  .weather-master-card,
+  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
+  .nearby,.nearby-panel,.summary-card,.auto-card,.auto-place-launch,
+  .service-card,.transport-card,.external-resources,.planned-activity,.saved-place,
+  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
+  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,
+  .forecast-day,.resource-link,.getaway-result,.currency-insight,
+  .network-usage-panel,.gps-consent-card,.message-place-card,.shared-place-card,
+  .invite-card,.weather-insight,.weather-live-day
+) :where(h1,h2,h3,h4,h5,h6,p,small,strong,span,label,time,i),
+html body.home-page.is-authenticated[class] main.content :is(
+  .module,.add-destination,.home-about,.trip-archive
+) :where(h1,h2,h3,h4,h5,h6,p,small,strong,span,label,time,i){
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html body.tm-new-design[data-trip-view][class] main.content :is(
+  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
+  .nearby,.summary-card,.auto-card,.auto-place-launch,.service-card,
+  .transport-card,.planned-activity,.saved-place,.group-card,.album-card,
+  .memory-card,.trip-summary-card,.trip-home-actions a,.day-tab,.day-item,
+  .forecast-day,.resource-link,.getaway-result
+):hover{
+  transform:none!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 30px rgba(0,0,0,.08)!important;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places .auto-place-launch{
+  border:0!important;
+  background:var(--tm-weather-card-background)!important;
+  box-shadow:var(--tm-weather-card-shadow)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(135%)!important;
+  backdrop-filter:blur(18px) saturate(135%)!important;
+}
+
+/* Structural wrappers remain transparent instead of becoming nested cards. */
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day,
+body.tm-new-design[data-trip-view="documents"] #documents,
+body.tm-new-design[data-trip-view="documents"] #documents .document-vault{
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  text-shadow:inherit!important;
+}
