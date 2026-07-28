@@ -1133,3 +1133,180 @@ html body.tm-new-design[data-trip-view="plan"] #plan .saved-place{
     padding:9px!important
   }
 }
+
+/* 1.29.0 — centered day badge and navigation that explains itself. */
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
+  align-self:start!important;
+  justify-self:center!important;
+  width:62px!important;
+  min-width:62px!important;
+  min-height:48px!important;
+  height:auto!important;
+  padding:10px 8px!important;
+  display:grid!important;
+  place-items:center!important;
+  text-align:center!important;
+  line-height:1.25!important;
+  border:1px solid rgba(20,101,75,.2)!important;
+  border-radius:14px!important;
+  background:var(--tm-readable-glass)!important;
+  color:var(--tm-readable-text)!important;
+  -webkit-text-fill-color:var(--tm-readable-text)!important;
+  box-shadow:var(--tm-readable-shadow)!important
+}
+
+@media(min-width:1001px){
+  body:not(.home-page) .workspace>.sidebar{
+    width:214px!important;
+    padding:16px 14px!important;
+    overflow:hidden!important;
+    border:1px solid var(--tm-readable-border)!important;
+    border-radius:22px!important;
+    background:var(--tm-readable-glass)!important;
+    color:var(--tm-readable-text)!important;
+    box-shadow:var(--tm-readable-shadow)!important;
+    -webkit-backdrop-filter:blur(22px) saturate(125%)!important;
+    backdrop-filter:blur(22px) saturate(125%)!important
+  }
+  body:not(.home-page) main.content{
+    margin-right:242px!important
+  }
+  html[dir="ltr"] body:not(.home-page) main.content{
+    margin-right:0!important;
+    margin-left:242px!important
+  }
+  body:not(.home-page) .workspace>.sidebar :where(.logo,.back,.destination-mini,a,button,.tip,strong,small,span){
+    color:var(--tm-readable-text)!important;
+    -webkit-text-fill-color:var(--tm-readable-text)!important;
+    text-shadow:none!important
+  }
+  body:not(.home-page) .workspace>.sidebar .logo{
+    width:100%!important;
+    min-height:48px!important;
+    justify-content:flex-start!important;
+    padding:0 8px!important
+  }
+  body:not(.home-page) .workspace>.sidebar .back,
+  body:not(.home-page) .workspace>.sidebar .destination-mini{
+    width:100%!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav{
+    width:100%!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding-inline:2px!important;
+    scrollbar-width:thin
+  }
+  body:not(.home-page) .workspace>.sidebar nav a,
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about,
+  body:not(.home-page) .workspace>.sidebar .sidebar-service{
+    width:100%!important;
+    min-height:46px!important;
+    padding:8px 11px!important;
+    display:grid!important;
+    grid-template-columns:28px minmax(0,1fr)!important;
+    align-items:center!important;
+    justify-content:stretch!important;
+    gap:10px!important;
+    border:1px solid transparent!important;
+    border-radius:13px!important;
+    background:transparent!important;
+    color:var(--tm-readable-text)!important;
+    text-align:right!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav :is(a,button)>i,
+  body:not(.home-page) .workspace>.sidebar .sidebar-service>i{
+    width:28px!important;
+    display:grid!important;
+    place-items:center!important;
+    color:#176f51!important;
+    -webkit-text-fill-color:#176f51!important;
+    -webkit-text-stroke:0!important
+  }
+  body:not(.home-page) .workspace>.sidebar .tip{
+    position:static!important;
+    inset:auto!important;
+    width:auto!important;
+    min-width:0!important;
+    padding:0!important;
+    display:block!important;
+    overflow:hidden!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transform:none!important;
+    white-space:nowrap!important;
+    text-overflow:ellipsis!important;
+    pointer-events:auto!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    font-size:13px!important;
+    font-weight:700!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a:is(:hover,:focus-visible),
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about:is(:hover,:focus-visible){
+    border-color:rgba(20,101,75,.2)!important;
+    background:rgba(209,235,222,.62)!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a.active,
+  body:not(.home-page) .workspace>.sidebar nav [aria-current="page"]{
+    border-color:#176f51!important;
+    background:linear-gradient(135deg,#237f60,#145941)!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a.active :where(i,.tip),
+  body:not(.home-page) .workspace>.sidebar nav [aria-current="page"] :where(i,.tip){
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important
+  }
+}
+
+@media(max-width:1000px){
+  body:not(.home-page) .workspace>.sidebar{
+    border:1px solid var(--tm-readable-border)!important;
+    background:var(--tm-readable-glass)!important;
+    color:var(--tm-readable-text)!important;
+    box-shadow:0 24px 70px rgba(6,42,31,.26)!important;
+    -webkit-backdrop-filter:blur(24px) saturate(125%)!important;
+    backdrop-filter:blur(24px) saturate(125%)!important
+  }
+  body:not(.home-page) .workspace>.sidebar :where(.logo,.destination-mini,a,button,.tip,strong,small,span){
+    color:var(--tm-readable-text)!important;
+    -webkit-text-fill-color:var(--tm-readable-text)!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a,
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about,
+  body:not(.home-page) .workspace>.sidebar .live-button,
+  body:not(.home-page) .workspace>.sidebar .sidebar-service{
+    border:1px solid transparent!important;
+    background:transparent!important;
+    color:var(--tm-readable-text)!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a:is(:hover,:focus-visible),
+  body:not(.home-page) .workspace>.sidebar nav a.active,
+  body:not(.home-page) .workspace>.sidebar nav [aria-current="page"],
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about:is(:hover,:focus-visible){
+    border-color:#176f51!important;
+    background:linear-gradient(135deg,#237f60,#145941)!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a.active :where(i,.tip),
+  body:not(.home-page) .workspace>.sidebar nav [aria-current="page"] :where(i,.tip){
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important
+  }
+  body:not(.home-page) .mobile-menu-button{
+    border:1px solid rgba(20,101,75,.34)!important;
+    background:var(--tm-readable-glass)!important;
+    color:#145941!important;
+    -webkit-text-fill-color:#145941!important;
+    box-shadow:var(--tm-readable-shadow)!important
+  }
+  body:not(.home-page) .mobile-menu-button i{
+    color:#145941!important;
+    -webkit-text-fill-color:#145941!important;
+    font-size:22px!important
+  }
+}
