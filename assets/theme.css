@@ -891,3 +891,245 @@ html body :where(button,.pill-btn,.mini-btn,.service-link):disabled{
   opacity:.55!important;
   cursor:not-allowed!important;
 }
+
+/* 1.28.9 — readable weather-glass system and resilient responsive layout. */
+:root{
+  --tm-readable-glass:linear-gradient(135deg,rgba(248,253,250,.92),rgba(226,241,234,.82));
+  --tm-readable-glass-hover:linear-gradient(135deg,rgba(255,255,255,.98),rgba(214,235,225,.92));
+  --tm-readable-border:rgba(20,101,75,.24);
+  --tm-readable-text:#173f32;
+  --tm-readable-muted:#557268;
+  --tm-readable-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 28px rgba(6,42,31,.12)
+}
+
+html body.tm-new-design[data-trip-view] main.content :is(
+  .weather-master-card,
+  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
+  .nearby,.nearby-panel,.summary-card,.auto-card,.auto-place-launch,
+  .service-card,.transport-card,.external-resources,.planned-activity,.saved-place,
+  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
+  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,
+  .forecast-day,.resource-link,.getaway-result,.currency-insight,
+  .network-usage-panel,.gps-consent-card,.message-place-card,.shared-place-card,
+  .invite-card,.weather-insight,.weather-live-day
+),
+html body.home-page.is-authenticated main.content :is(
+  .module,.add-destination,.home-about,.trip-archive
+){
+  border:1px solid var(--tm-readable-border)!important;
+  background:var(--tm-readable-glass)!important;
+  color:var(--tm-readable-text)!important;
+  box-shadow:var(--tm-readable-shadow)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(125%)!important;
+  backdrop-filter:blur(18px) saturate(125%)!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view] main.content :is(
+  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
+  .nearby,.nearby-panel,.summary-card,.auto-card,.auto-place-launch,
+  .service-card,.transport-card,.external-resources,.planned-activity,.saved-place,
+  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
+  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,
+  .forecast-day,.resource-link,.getaway-result,.currency-insight
+) :where(h1,h2,h3,h4,h5,h6,p,small,strong,span,label,time,i),
+html body.home-page.is-authenticated main.content :is(
+  .module,.add-destination,.home-about,.trip-archive
+) :where(h1,h2,h3,h4,h5,h6,p,small,strong,span,label,time,i){
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important;
+  text-shadow:none!important
+}
+
+html body.tm-new-design :where(
+  button:not(.weather-top-widget):not(.map-pin),
+  .pill-btn,.mini-btn,.planner-action,.service-link
+),
+html body.home-page :where(
+  button:not(.weather-top-widget):not(.trip-activity-toggle),
+  .pill-btn,.mini-btn
+){
+  border:1px solid var(--tm-readable-border)!important;
+  border-radius:14px!important;
+  background:var(--tm-readable-glass)!important;
+  color:var(--tm-readable-text)!important;
+  -webkit-text-fill-color:var(--tm-readable-text)!important;
+  box-shadow:var(--tm-readable-shadow)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(125%)!important;
+  backdrop-filter:blur(14px) saturate(125%)!important;
+  text-shadow:none!important
+}
+html body.tm-new-design :where(
+  button:not(.weather-top-widget):not(.map-pin),
+  .pill-btn,.mini-btn,.planner-action,.service-link
+):is(:hover,:focus-visible),
+html body.home-page :where(
+  button:not(.weather-top-widget):not(.trip-activity-toggle),
+  .pill-btn,.mini-btn
+):is(:hover,:focus-visible){
+  border-color:rgba(20,101,75,.42)!important;
+  background:var(--tm-readable-glass-hover)!important;
+  box-shadow:inset 0 1px 0 #fff,0 12px 30px rgba(6,42,31,.16)!important
+}
+html body :where(
+  button.primary,.primary,button[type="submit"],.create-trip,.auto-place-build,
+  .service-form button,.nearby-save button,.planner-action.primary
+){
+  border-color:#176f51!important;
+  background:linear-gradient(135deg,#1e8060,#125a43)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:none!important
+}
+html body :where(button.danger,.danger,.mini-btn.danger,[data-delete],[data-delete-saved-place]){
+  border-color:rgba(180,35,24,.28)!important;
+  background:linear-gradient(135deg,rgba(255,249,248,.96),rgba(255,229,226,.9))!important;
+  color:#a52b22!important;
+  -webkit-text-fill-color:#a52b22!important
+}
+
+html body.tm-new-design[data-trip-view="plan"] #plan{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:420px;
+  opacity:1!important;
+  visibility:visible!important;
+  overflow:visible!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .generated-days{
+  display:grid!important;
+  width:100%!important;
+  max-width:100%!important;
+  opacity:1!important;
+  visibility:visible!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
+  color:var(--tm-readable-text)!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .planned-activity,
+html body.tm-new-design[data-trip-view="plan"] #plan .saved-place{
+  background:var(--tm-readable-glass)!important;
+  border:1px solid var(--tm-readable-border)!important;
+  color:var(--tm-readable-text)!important;
+  box-shadow:var(--tm-readable-shadow)!important
+}
+
+@media(max-width:1000px){
+  html,body{
+    width:100%;
+    max-width:100%;
+    overflow-x:clip
+  }
+  body:not(.home-page) .workspace,
+  body:not(.home-page) main.content,
+  body:not(.home-page) main.content>section,
+  body:not(.home-page) .generated-days,
+  body:not(.home-page) .generated-day,
+  body:not(.home-page) .planned-activities,
+  body:not(.home-page) .planned-activity,
+  body:not(.home-page) .saved-place,
+  body:not(.home-page) .planner-toolbar,
+  body:not(.home-page) .planner-composer{
+    min-width:0!important;
+    max-width:100%!important
+  }
+  body:not(.home-page) main.content{
+    width:100%!important;
+    margin:0!important;
+    padding:12px!important;
+    overflow-x:hidden!important
+  }
+  body:not(.home-page) .mobile-header{
+    width:100%;
+    min-width:0;
+    background:var(--tm-readable-glass)!important;
+    border:1px solid var(--tm-readable-border)!important;
+    color:var(--tm-readable-text)!important;
+    box-shadow:var(--tm-readable-shadow)!important;
+    -webkit-backdrop-filter:blur(18px) saturate(125%)!important;
+    backdrop-filter:blur(18px) saturate(125%)!important
+  }
+  body:not(.home-page) :where(.mobile-menu-button,.mobile-back){
+    flex:0 0 46px;
+    width:46px!important;
+    height:46px!important;
+    background:linear-gradient(135deg,rgba(235,247,241,.98),rgba(207,231,219,.92))!important;
+    border:1px solid rgba(20,101,75,.3)!important;
+    color:#174f3d!important;
+    -webkit-text-fill-color:#174f3d!important
+  }
+  body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) #overview.custom-hero{
+    width:100%!important;
+    max-width:100%!important;
+    min-height:112px!important;
+    padding:12px 14px!important;
+    gap:8px!important;
+    overflow:hidden!important
+  }
+  body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) #overview.custom-hero>.hero-copy{
+    width:min(100%,calc(100% - 108px))!important;
+    min-width:0!important;
+    flex:1 1 auto!important
+  }
+  body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) #overview.custom-hero :where(h1,p,.hero-country-line){
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan{
+    padding:0!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+    padding:14px!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    width:100%!important;
+    gap:8px!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions button{
+    width:100%!important;
+    min-width:0!important;
+    min-height:44px!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
+    grid-template-columns:48px minmax(0,1fr)!important;
+    gap:8px!important;
+    padding:12px!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day>div{
+    min-width:0!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .planned-activity{
+    grid-template-columns:52px minmax(0,1fr)!important;
+    gap:8px!important;
+    padding:10px!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .activity-copy{
+    min-width:0!important;
+    overflow-wrap:anywhere
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons{
+    grid-column:1/-1!important;
+    width:100%!important;
+    justify-content:flex-end!important;
+    flex-wrap:wrap!important
+  }
+}
+
+@media(max-width:430px){
+  body:not(.home-page) main.content{padding:8px!important}
+  body:not(.home-page) .section:not(.hero){padding:12px!important}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions{
+    grid-template-columns:1fr!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
+    grid-template-columns:38px minmax(0,1fr)!important;
+    padding:9px!important
+  }
+}
