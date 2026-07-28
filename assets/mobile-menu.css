@@ -144,3 +144,30 @@
 @media(prefers-reduced-motion:reduce){
   body:not(.home-page) .workspace>.sidebar{transition:none}
 }
+
+/* Accessible mobile drawer: never place white labels or icons on white. */
+@media(max-width:1000px){
+  body:not(.home-page) .workspace>.sidebar{
+    background:linear-gradient(180deg,#123f33,#071f19)!important;
+    color:#fff!important
+  }
+  body:not(.home-page) .workspace>.sidebar :where(.logo,.destination-mini,a,button,.tip,strong,small,span){
+    color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a,
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about,
+  body:not(.home-page) .workspace>.sidebar .live-button,
+  body:not(.home-page) .workspace>.sidebar .sidebar-service{
+    background:rgba(255,255,255,.06)!important;color:#fff!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav a:hover,
+  body:not(.home-page) .workspace>.sidebar nav a.active,
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about:hover{
+    background:#fff!important;color:#124b39!important
+  }
+  body:not(.home-page) .workspace>.sidebar nav :is(a,button) i,
+  body:not(.home-page) .workspace>.sidebar .live-button i,
+  body:not(.home-page) .workspace>.sidebar .sidebar-service i{
+    color:currentColor!important;-webkit-text-fill-color:currentColor!important;-webkit-text-stroke:0!important
+  }
+}

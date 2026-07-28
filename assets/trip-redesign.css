@@ -423,3 +423,27 @@ body.tm-new-design[data-trip-view="documents"] #documents .document-vault{
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+/* Daily plan: the day wrapper is structural, so it does not need its own glass panel. */
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* Places: match the automatic-fill launcher to the trip weather glass card. */
+body.tm-new-design[data-trip-view="places"] #places .auto-place-launch{
+  border:1px solid rgba(255,255,255,.3)!important;
+  border-radius:14px!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.2))!important;
+  color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.52)!important;
+  backdrop-filter:blur(22px) saturate(145%)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(145%)!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.24);
+}
+body.tm-new-design[data-trip-view="places"] #places .auto-place-launch small{
+  color:inherit!important;
+}

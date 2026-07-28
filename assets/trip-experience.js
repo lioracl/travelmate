@@ -4,14 +4,48 @@
   window.__travelMateTripExperienceLoaded = true;
 
   var cloud = window.TravelMateCloud;
-  var state = { trip: null, rate: null, rates: {}, rateDate: '', fee: 2.5, expenses: [], memories: [], albumUrl: '' };
+  var state = { trip: null, rate: null, rates: {}, rateDate: '', fee: 2.5, expenses: [], memories: [], albumUrl: '', localCurrency: 'EUR' };
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
   function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch (error) { return fallback; } }
   function writeJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) {} }
   function tripId() { return String(state.trip && state.trip.id || new URLSearchParams(location.search).get('id') || location.pathname); }
   function storageKey(name) { return 'travelmate-experience:' + tripId() + ':' + name; }
   function money(value, currency) { return new Intl.NumberFormat('he-IL', { style: 'currency', currency: currency, maximumFractionDigits: 2 }).format(Number(value || 0)); }
+  function currencySymbol(currency) { var part = new Intl.NumberFormat('he-IL', { style: 'currency', currency: currency }).formatToParts(0).find(function (item) { return item.type === 'currency'; }); return part ? part.value : currency; }
   function clean(value) { return String(value || '').replace(/[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]/gu, '').trim(); }
+  function countryCurrency(country) {
+    var value = clean(country).toLowerCase();
+    var groups = {
+      ILS: ['ישראל', 'israel'],
+      CZK: ['צכיה', "צ'כיה", 'הרפובליקה הצכית', 'czechia', 'czech republic'],
+      JPY: ['יפן', 'japan'],
+      GBP: ['בריטניה', 'אנגליה', 'סקוטלנד', 'וויילס', 'united kingdom', 'uk', 'england', 'scotland', 'wales'],
+      CHF: ['שווייץ', 'שוויץ', 'switzerland'],
+      PLN: ['פולין', 'poland'],
+      HUF: ['הונגריה', 'hungary'],
+      TRY: ['טורקיה', 'turkey', 'türkiye'],
+      USD: ['ארצות הברית', 'ארה"ב', 'usa', 'united states'],
+      CAD: ['קנדה', 'canada'],
+      DKK: ['דנמרק', 'denmark'],
+      SEK: ['שוודיה', 'sweden'],
+      NOK: ['נורווגיה', 'norway'],
+      RON: ['רומניה', 'romania'],
+      ISK: ['איסלנד', 'iceland'],
+      AUD: ['אוסטרליה', 'australia'],
+      NZD: ['ניו זילנד', 'new zealand'],
+      CNY: ['סין', 'china'],
+      KRW: ['קוריאה הדרומית', 'דרום קוריאה', 'south korea'],
+      INR: ['הודו', 'india'],
+      THB: ['תאילנד', 'thailand'],
+      MXN: ['מקסיקו', 'mexico'],
+      BRL: ['ברזיל', 'brazil'],
+      ZAR: ['דרום אפריקה', 'south africa']
+    };
+    var code = Object.keys(groups).find(function (currency) { return groups[currency].some(function (name) { return value === name || value.indexOf(name) >= 0; }); });
+    return code || 'EUR';
+  }
+  function localFromEuros(euros) { return Number(euros || 0) * Number(state.localCurrency === 'EUR' ? 1 : state.rates[state.localCurrency] || 0); }
+  function localRateInIls() { var localRate = state.localCurrency === 'EUR' ? 1 : Number(state.rates[state.localCurrency] || 0); return localRate && state.rate ? state.rate / localRate : 0; }
   function inferBudget() { var explicit = Number(state.trip && state.trip.budget || String(document.querySelector('[data-budget]') && document.querySelector('[data-budget]').textContent || '').replace(/[^0-9.]/g, '') || 0); if (explicit) return explicit; var text = document.querySelector('.budget-card') && document.querySelector('.budget-card').textContent || document.getElementById('budget') && document.getElementById('budget').textContent || ''; var match = text.match(/מתוך\s*([\d,.]+)\s*€/); return match ? Number(match[1].replace(/,/g, '')) : 0; }
   function toast(message) { var old = document.querySelector('.trip-experience-toast'); if (old) old.remove(); var node = document.createElement('div'); node.className = 'trip-experience-toast'; node.textContent = message; document.body.appendChild(node); setTimeout(function () { node.remove(); }, 2800); }
   function saveTripData() { if (!state.trip) return; state.trip.expenses = state.expenses; state.trip.memories = state.memories; state.trip.photoAlbumUrl = state.albumUrl; state.trip.currencyFee = state.fee; if (new URLSearchParams(location.search).get('id') && cloud && cloud.queueTripSave) cloud.queueTripSave(state.trip); }
@@ -32,13 +66,15 @@
   window.addEventListener('hashchange', expandHashSection);
 
   async function loadRate() {
-    var cached = readJson('travelmate-eur-ils-rate', null);
+    var cacheKey = 'travelmate-eur-rates:' + state.localCurrency;
+    var cached = readJson(cacheKey, null);
     if (cached && Date.now() - Number(cached.savedAt || 0) < 43200000) { state.rates = cached.rates || { ILS: Number(cached.rate) }; state.rate = Number(state.rates.ILS); state.rateDate = cached.date || ''; renderCurrency(); }
     try {
-      var response = await fetch('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=ILS,USD,GBP', { headers: { Accept: 'application/json' } });
+      var symbols = ['ILS', 'USD', 'GBP', state.localCurrency].filter(function (item, index, list) { return item !== 'EUR' && list.indexOf(item) === index; }).join(',');
+      var response = await fetch('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=' + encodeURIComponent(symbols), { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error('rate-unavailable'); var data = await response.json();
       if (!data.rates || !Number(data.rates.ILS)) throw new Error('invalid-rate');
-      state.rates = data.rates; state.rate = Number(data.rates.ILS); state.rateDate = data.date || ''; writeJson('travelmate-eur-ils-rate', { rate: state.rate, rates: state.rates, date: state.rateDate, savedAt: Date.now() }); renderCurrency();
+      state.rates = data.rates; state.rate = Number(data.rates.ILS); state.rateDate = data.date || ''; writeJson(cacheKey, { rate: state.rate, rates: state.rates, date: state.rateDate, savedAt: Date.now() }); renderCurrency();
     } catch (error) { if (!state.rate) renderCurrency(true); }
   }
   function shekels(euros) { return Number(euros || 0) * Number(state.rate || 0) * (1 + state.fee / 100); }
@@ -51,6 +87,7 @@
         var match = euroNode.textContent.match(/[\d,.]+/);
         row.dataset.euroAmount = match ? String(Number(match[0].replace(/,/g, ''))) : '0';
       }
+      if (state.localCurrency !== 'EUR' && state.rates[state.localCurrency]) euroNode.textContent = money(localFromEuros(row.dataset.euroAmount), state.localCurrency);
       var insight = row.querySelector('[data-category-ils]');
       if (!insight) {
         insight = document.createElement('small');
@@ -61,12 +98,27 @@
       insight.textContent = state.rate ? 'כ־' + money(referenceShekels(row.dataset.euroAmount), 'ILS') + ' לפי השער היציג' : 'מעדכן סכום בשקלים…';
     });
   }
+  function renderLocalBudgetTotals() {
+    document.querySelectorAll('[data-budget]').forEach(function (node) {
+      if (!node.dataset.euroAmount) {
+        var raw = Number(String(node.textContent || '').replace(/[^0-9.]/g, ''));
+        node.dataset.euroAmount = String(raw || Number(state.trip && state.trip.budget || 0));
+      }
+      var localAmount = state.localCurrency === 'EUR' ? Number(node.dataset.euroAmount) : localFromEuros(node.dataset.euroAmount);
+      if (!localAmount && state.localCurrency !== 'EUR') return;
+      node.textContent = Math.round(localAmount).toLocaleString('he-IL');
+      var parent = node.parentElement;
+      if (parent && parent.firstChild && parent.firstChild.nodeType === 3) parent.firstChild.nodeValue = currencySymbol(state.localCurrency);
+    });
+  }
   function renderCurrency(failed) {
     document.querySelectorAll('[data-currency-insight]').forEach(function (host) {
       var amount = Number(host.dataset.euros || 0);
-      host.innerHTML = state.rate ? '<div><span>כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>שער ייחוס: €1 = ₪' + state.rate.toFixed(4) + ' · ' + escapeHtml(state.rateDate || 'עדכון אחרון') + ' · <a href="https://frankfurter.dev/" target="_blank" rel="noopener">נתוני ECB דרך Frankfurter</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן שער אירו–שקל…') + '</span><small>הסכום באירו נשאר המטבע הראשי</small></div>';
+      var localAmount = state.localCurrency === 'EUR' ? amount : localFromEuros(amount);
+      var localRate = localRateInIls();
+      host.innerHTML = state.rate && (state.localCurrency === 'EUR' || localAmount) ? '<div><span><b>' + money(localAmount, state.localCurrency) + '</b> · כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>המטבע המקומי: ' + state.localCurrency + ' · ' + (localRate ? money(1, state.localCurrency) + ' = ₪' + localRate.toFixed(4) + ' · ' : '') + escapeHtml(state.rateDate || 'עדכון אחרון') + ' · <a href="https://frankfurter.dev/" target="_blank" rel="noopener">נתוני ECB דרך Frankfurter</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן את שער המטבע המקומי…') + '</span><small>התקציב המקורי נשמר בבטחה עד לעדכון השער</small></div>';
       var button = host.querySelector('[data-fee-edit]'); if (button) button.onclick = editFee;
-    }); renderBudgetCategoryIls(); renderExpenseList();
+    }); renderLocalBudgetTotals(); renderBudgetCategoryIls(); renderExpenseList();
   }
   function editFee() { var value = prompt('מה עמלת ההמרה של הכרטיס שלך באחוזים?', String(state.fee)); if (value === null) return; var fee = Number(String(value).replace(',', '.')); if (!Number.isFinite(fee) || fee < 0 || fee > 20) return toast('יש להזין עמלה בין 0% ל־20%.'); state.fee = fee; writeJson(storageKey('currency-fee'), fee); saveTripData(); renderCurrency(); }
   function injectCurrencyCards() {
@@ -80,6 +132,14 @@
     var panel = document.createElement('div'); panel.className = 'expense-workspace'; panel.dataset.expenseWorkspace = '';
     panel.innerHTML = '<div class="expense-workspace-head"><div><small>מעקב מדויק</small><h2>הוצאות וקבלות</h2><p>צלם קבלה, בדוק את הפרטים ורק אז שמור את ההוצאה.</p></div><button type="button" data-expense-toggle><i class="fa-solid fa-plus"></i> הוצאה חדשה</button></div><form class="receipt-form" data-receipt-form hidden><label class="receipt-picker"><input name="receipt" type="file" accept="image/*" capture="environment"><i class="fa-solid fa-camera"></i><span><strong>צילום או בחירת קבלה</strong><small>התמונה משמשת לסריקה ואינה נשמרת אוטומטית</small></span></label><div class="receipt-preview" data-receipt-preview hidden></div><div class="receipt-grid"><label>סכום<input name="amount" type="number" min="0.01" step="0.01" required></label><label>מטבע<select name="currency"><option value="EUR">אירו (€)</option><option value="ILS">שקל (₪)</option><option value="USD">דולר ($)</option><option value="GBP">ליש״ט (£)</option></select></label><label>קטגוריה<select name="category"><option>אוכל</option><option>תחבורה</option><option>לינה</option><option>אטרקציות</option><option>קניות</option><option>אחר</option></select></label><label>תאריך<input name="date" type="date"></label><label class="wide">בית עסק / הערה<input name="note" maxlength="160" placeholder="לדוגמה: ארוחת ערב"></label></div><p class="receipt-scan-status" data-receipt-status></p><div class="receipt-actions"><button type="button" data-receipt-scan><i class="fa-solid fa-wand-magic-sparkles"></i> סריקה חכמה</button><button type="submit"><i class="fa-solid fa-check"></i> שמירת הוצאה</button></div></form><div class="expense-live-summary" data-expense-summary></div><div class="expense-records" data-expense-records></div>';
     section.appendChild(panel); var form = panel.querySelector('[data-receipt-form]');
+    var currencySelect = form.currency;
+    if (!currencySelect.querySelector('option[value="' + state.localCurrency + '"]')) {
+      var localOption = document.createElement('option');
+      localOption.value = state.localCurrency;
+      localOption.textContent = 'מטבע מקומי (' + state.localCurrency + ')';
+      currencySelect.prepend(localOption);
+    }
+    currencySelect.value = state.localCurrency;
     function toggleForm() { form.hidden = !form.hidden; if (!form.hidden) form.amount.focus(); }
     panel.querySelector('[data-expense-toggle]').onclick = toggleForm; var legacyButton = section.querySelector('.section-head .pill-btn'); if (legacyButton) legacyButton.onclick = toggleForm; form.date.value = new Date().toISOString().slice(0, 10);
     form.receipt.onchange = function () { previewReceipt(form.receipt.files[0], panel); }; panel.querySelector('[data-receipt-scan]').onclick = function () { scanReceipt(form, panel); };
@@ -103,7 +163,8 @@
   function expenseInEuros(expense) { if (expense.currency === 'EUR' || !expense.currency) return Number(expense.amount || 0); var rate = Number(state.rates[expense.currency] || 0); return rate ? Number(expense.amount || 0) / rate : 0; }
   function renderExpenseList() {
     var host = document.querySelector('[data-expense-records]'); var summary = document.querySelector('[data-expense-summary]'); if (!host || !summary) return; var total = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
-    summary.innerHTML = '<div><small>נרשם עד עכשיו</small><strong>' + money(total, 'EUR') + '</strong><span>' + (state.rate ? 'כ־' + money(shekels(total), 'ILS') + ' כולל עמלה' : 'ההמרה לשקלים מתעדכנת') + '</span></div><b>' + state.expenses.length + ' הוצאות</b>';
+    var localTotal = state.localCurrency === 'EUR' ? total : localFromEuros(total);
+    summary.innerHTML = '<div><small>נרשם עד עכשיו</small><strong>' + money(localTotal, state.localCurrency) + '</strong><span>' + (state.rate ? 'כ־' + money(shekels(total), 'ILS') + ' כולל עמלה' : 'ההמרה לשקלים מתעדכנת') + '</span></div><b>' + state.expenses.length + ' הוצאות</b>';
     host.innerHTML = state.expenses.length ? state.expenses.slice().reverse().map(function (expense) { return '<article><i class="fa-solid fa-receipt"></i><div><strong>' + escapeHtml(expense.note || expense.category) + '</strong><span>' + escapeHtml(expense.category) + ' · ' + escapeHtml(expense.date || '') + (expense.receiptName ? ' · צורפה קבלה' : '') + '</span></div><b>' + money(expense.amount, expense.currency || 'EUR') + '</b><button type="button" data-expense-delete="' + expense.id + '" aria-label="מחיקת הוצאה"><i class="fa-solid fa-trash"></i></button></article>'; }).join('') : '<div class="trip-experience-empty">עדיין לא נרשמו הוצאות בטיול.</div>';
     host.querySelectorAll('[data-expense-delete]').forEach(function (button) { button.onclick = function () { if (!confirm('למחוק את ההוצאה?')) return; state.expenses = state.expenses.filter(function (item) { return String(item.id) !== String(button.dataset.expenseDelete); }); writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); renderSummary(); }; });
   }
@@ -188,13 +249,21 @@
     host.querySelectorAll('[data-memory-attachment]').forEach(function (button) { button.onclick = function () { var memory = state.memories.find(function (item) { return String(item.id) === String(button.dataset.memoryId); }); if (memory && memory.attachments[Number(button.dataset.memoryAttachment)]) openMemoryAttachment(memory.attachments[Number(button.dataset.memoryAttachment)]); }; });
     host.querySelectorAll('[data-memory-delete]').forEach(function (button) { button.onclick = function () { if (confirm('למחוק את הרגע ואת הקבצים שצורפו אליו?')) removeMemory(button.dataset.memoryDelete); }; });
   }
-  function summaryText() { var trip = state.trip || {}; var total = state.expenses.reduce(function (sum, item) { return sum + expenseInEuros(item); }, 0); var lines = ['הטיול ל' + [trip.city, trip.country].filter(Boolean).join(', ') + (trip.start && trip.end ? ' התקיים בין ' + trip.start + ' ל־' + trip.end + '.' : '.')]; if (state.memories.length) lines.push('הרגעים שנשמרו: ' + state.memories.slice(-5).map(function (item) { return item.note; }).join(' · ') + '.'); if (state.expenses.length) lines.push('נרשמו ' + state.expenses.length + ' הוצאות בסכום משוער של ' + money(total, 'EUR') + (state.rate ? ' — כ־' + money(shekels(total), 'ILS') + ' כולל עמלת ההמרה שהוגדרה.' : '.')); if (state.albumUrl) lines.push('אלבום התמונות מחובר וזמין לפתיחה מהאפליקציה.'); if (!state.memories.length && !state.expenses.length) lines.push('ככל שתשמור זיכרונות והוצאות, הסיכום יהפוך עשיר ומדויק יותר.'); return lines.join('\n\n'); }
+  function summaryText() { var trip = state.trip || {}; var total = state.expenses.reduce(function (sum, item) { return sum + expenseInEuros(item); }, 0); var localTotal = state.localCurrency === 'EUR' ? total : localFromEuros(total); var lines = ['הטיול ל' + [trip.city, trip.country].filter(Boolean).join(', ') + (trip.start && trip.end ? ' התקיים בין ' + trip.start + ' ל־' + trip.end + '.' : '.')]; if (state.memories.length) lines.push('הרגעים שנשמרו: ' + state.memories.slice(-5).map(function (item) { return item.note; }).join(' · ') + '.'); if (state.expenses.length) lines.push('נרשמו ' + state.expenses.length + ' הוצאות בסכום משוער של ' + money(localTotal, state.localCurrency) + (state.rate ? ' — כ־' + money(shekels(total), 'ILS') + ' כולל עמלת ההמרה שהוגדרה.' : '.')); if (state.albumUrl) lines.push('אלבום התמונות מחובר וזמין לפתיחה מהאפליקציה.'); if (!state.memories.length && !state.expenses.length) lines.push('ככל שתשמור זיכרונות והוצאות, הסיכום יהפוך עשיר ומדויק יותר.'); return lines.join('\n\n'); }
   function renderSummary() { var host = document.querySelector('[data-trip-summary]'); if (host) host.textContent = summaryText(); }
   function buildSummaryPrompt() { return 'כתוב סיכום מסע מרגש אך אמיתי לטיול ב' + [state.trip.city, state.trip.country].filter(Boolean).join(', ') + '. השתמש רק בפרטים הבאים. זיכרונות: ' + state.memories.map(function (item) { return item.note; }).join(' | ') + '. הוצאות: ' + state.expenses.map(function (item) { return item.category + ' ' + item.amount + ' ' + (item.currency || 'EUR'); }).join(' | ') + '. כלול פתיחה קצרה, רגעים בולטים, נתון תקציבי וסיום אישי. אל תמציא מקומות או אירועים שלא סופקו.'; }
 
   async function init() {
     try { state.trip = window.travelMateTripReady ? await window.travelMateTripReady : null; } catch (error) {}
     if (!state.trip) { var heroTitle = clean(document.querySelector('.hero h1') && document.querySelector('.hero h1').textContent); var heroSubtitle = clean(document.querySelector('.hero .hero-copy p') && document.querySelector('.hero .hero-copy p').textContent); state.trip = { id: new URLSearchParams(location.search).get('id') || location.pathname, city: document.querySelector('[data-city]') && clean(document.querySelector('[data-city]').textContent) || heroSubtitle.split('·')[0].trim() || heroTitle || 'היעד', country: document.querySelector('[data-country]') && clean(document.querySelector('[data-country]').textContent) || heroTitle, budget: 0 }; }
+    state.localCurrency = countryCurrency(state.trip.country);
+    window.TravelMateCurrency = {
+      code: function () { return state.localCurrency; },
+      formatFromEuros: function (euros) {
+        var value = state.localCurrency === 'EUR' ? Number(euros || 0) : localFromEuros(euros);
+        return value ? money(value, state.localCurrency) : money(euros, 'EUR');
+      }
+    };
     state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readJson(storageKey('expenses'), []); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readJson(storageKey('memories'), []); state.albumUrl = state.trip.photoAlbumUrl || readJson(storageKey('album-url'), ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readJson(storageKey('currency-fee'), 2.5));
     injectCurrencyCards(); createBudgetTools(); createMemoriesSection(); setupCollapsibleSections(); loadRate();
   }
