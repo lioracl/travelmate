@@ -1122,6 +1122,204 @@ html body.tm-new-design[data-trip-view="plan"] #plan .saved-place{
   }
 }
 
+/* Final page contrast and always-visible mobile navigation. */
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
+) :where(h1,h2,h3,h4,strong,p,span,small,label){
+  color:#173f32!important;
+  -webkit-text-fill-color:#173f32!important;
+  text-shadow:none!important
+}
+html body.tm-new-design #documents .section-head :is(h1,p),
+html body.tm-new-design #budget .section-head :is(h1,p),
+html body.tm-new-design #transport .section-head :is(h1,p),
+html body.tm-new-design #car-rental .section-head :is(h1,p),
+html body.tm-new-design #getaways .section-head :is(h1,p),
+html body.tm-new-design #group .section-head :is(h1,p),
+html body.tm-new-design #memories .section-head :is(h1,p),
+html body.tm-new-design #destination-info :is(h1,h2,p){
+  color:#173f32!important;
+  -webkit-text-fill-color:#173f32!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view] #documents .section-head h1,
+html body.tm-new-design[data-trip-view] #documents .section-head p,
+html body.tm-new-design[data-trip-view] #budget .section-head h1,
+html body.tm-new-design[data-trip-view] #budget .section-head p,
+html body.tm-new-design[data-trip-view] #transport .section-head h1,
+html body.tm-new-design[data-trip-view] #transport .section-head p,
+html body.tm-new-design[data-trip-view] #car-rental .section-head h1,
+html body.tm-new-design[data-trip-view] #car-rental .section-head p,
+html body.tm-new-design[data-trip-view] #getaways .section-head h1,
+html body.tm-new-design[data-trip-view] #getaways .section-head p,
+html body.tm-new-design[data-trip-view] #group .section-head h1,
+html body.tm-new-design[data-trip-view] #group .section-head p,
+html body.tm-new-design[data-trip-view] #memories .section-head h1,
+html body.tm-new-design[data-trip-view] #memories .section-head p{
+  color:#173f32!important;
+  -webkit-text-fill-color:#173f32!important;
+  text-shadow:none!important
+}
+@media(max-width:1000px){
+  html body:not(.home-page) main.content{
+    padding-top:94px!important
+  }
+  html body:not(.home-page) .mobile-header{
+    position:fixed!important;
+    top:max(8px,env(safe-area-inset-top))!important;
+    right:8px!important;
+    left:8px!important;
+    width:auto!important;
+    z-index:1250!important
+  }
+  html body:not(.home-page) .network-usage-meter.in-trip{
+    top:calc(max(8px,env(safe-area-inset-top)) + 84px)!important
+  }
+}
+
+/* 1.29.2 — stable mobile header and weather-card pages. */
+body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
+){
+  padding:20px!important;
+  border:0!important;
+  border-radius:22px!important;
+  background:linear-gradient(135deg,rgba(250,253,251,.95),rgba(226,240,233,.88))!important;
+  color:#173f32!important;
+  box-shadow:0 14px 36px rgba(16,75,57,.14)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(125%)!important;
+  backdrop-filter:blur(20px) saturate(125%)!important
+}
+body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
+) :where(.section-head,.service-card,.transport-card,.group-card,.album-card,.memory-card,.trip-summary-card,.doc-row,.expense,.external-resources){
+  border-color:rgba(20,101,75,.16)!important;
+  background:rgba(255,255,255,.66)!important;
+  color:#173f32!important;
+  box-shadow:none!important
+}
+body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
+) :where(h1,h2,h3,h4,strong,p,span,small,label){
+  color:#173f32!important;
+  -webkit-text-fill-color:#173f32!important
+}
+body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
+) :where(button,.pill-btn,.service-link,a.resource-link){
+  border:1px solid rgba(20,101,75,.22)!important;
+  border-radius:13px!important;
+  background:rgba(249,253,251,.92)!important;
+  color:#176f51!important;
+  -webkit-text-fill-color:#176f51!important;
+  box-shadow:0 6px 15px rgba(20,89,65,.08)!important
+}
+body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
+) :where(button.primary,.service-form button,.service-link:not(.secondary)){
+  border-color:transparent!important;
+  background:linear-gradient(135deg,#237f60,#145941)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+
+body.home-page .cloud-account-backdrop .cloud-account-split{
+  border:0!important;
+  border-radius:24px!important;
+  background-image:linear-gradient(135deg,rgba(238,248,243,.97),rgba(209,234,221,.94)),url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1400&q=86')!important;
+  background-blend-mode:screen!important;
+  color:#173f32!important;
+  box-shadow:0 28px 80px rgba(12,62,46,.3)!important
+}
+body.home-page .cloud-account-split :where(.cloud-account-copy h2,.cloud-account-copy strong,.cloud-auth-field,.cloud-auth-intro strong){
+  color:#173f32!important;
+  -webkit-text-fill-color:#173f32!important
+}
+body.home-page .cloud-account-split :where(.cloud-account-copy small,.cloud-auth-intro span,.cloud-social-separator){
+  color:#55766a!important;
+  -webkit-text-fill-color:#55766a!important
+}
+body.home-page .cloud-account-split .cloud-auth-input input{
+  min-height:48px!important;
+  border:1px solid rgba(20,101,75,.25)!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  color:#173f32!important;
+  box-shadow:0 5px 14px rgba(20,89,65,.08)!important
+}
+body.home-page .cloud-account-split form .cloud-login-submit{
+  min-height:46px!important;
+  border-radius:13px!important;
+  background:linear-gradient(135deg,#237f60,#145941)!important;
+  color:#fff!important;
+  font-weight:800!important
+}
+body.home-page .cloud-account-split form .cloud-create-account{
+  min-height:42px!important;
+  padding:8px 14px!important;
+  border:1px solid rgba(20,101,75,.28)!important;
+  border-radius:13px!important;
+  background:rgba(255,255,255,.7)!important;
+  color:#145941!important;
+  -webkit-text-fill-color:#145941!important;
+  text-decoration:none!important
+}
+body.home-page .cloud-account-split .cloud-account-close{
+  border:1px solid rgba(20,101,75,.22)!important;
+  background:rgba(255,255,255,.78)!important;
+  color:#145941!important;
+  -webkit-text-fill-color:#145941!important
+}
+
+@media(max-width:1000px){
+  body:not(.home-page) .mobile-header{
+    position:sticky!important;
+    top:max(8px,env(safe-area-inset-top))!important;
+    z-index:1250!important;
+    min-height:64px!important;
+    margin-bottom:12px!important;
+    border:0!important;
+    border-radius:18px!important;
+    background:linear-gradient(135deg,rgba(250,253,251,.98),rgba(218,238,228,.96))!important;
+    box-shadow:0 10px 28px rgba(13,68,50,.2)!important
+  }
+  body:not(.home-page) .network-usage-meter.in-trip{
+    top:calc(max(8px,env(safe-area-inset-top)) + 72px)!important;
+    z-index:1200!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:10px!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
+    grid-column:1!important;
+    grid-row:1!important;
+    justify-self:center!important;
+    position:relative!important;
+    z-index:2!important;
+    margin:0 auto!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day>div{
+    grid-column:1!important;
+    grid-row:2!important;
+    width:100%!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .day-heading{
+    min-height:0!important;
+    padding:10px 2px!important;
+    text-align:center!important
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .day-heading>div{
+    width:100%!important
+  }
+  body.tm-new-design main.content>section:is(
+    #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
+  ){
+    padding:14px!important;
+    border-radius:18px!important
+  }
+}
+
 /* 1.29.1 — softer weather-card navigation, clearer plan actions and Nebo. */
 @media(min-width:1001px){
   body:not(.home-page) .workspace>.sidebar{
@@ -1512,5 +1710,74 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
   html body:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
     border:0!important;
     box-shadow:none!important
+  }
+}
+
+/* Final mobile layout authority for the plan header and day rail. */
+@media(max-width:1000px){
+  html body:not(.home-page) .mobile-header{
+    position:sticky!important;
+    top:max(8px,env(safe-area-inset-top))!important;
+    z-index:1250!important
+  }
+  html body:not(.home-page) .network-usage-meter.in-trip{
+    top:calc(max(8px,env(safe-area-inset-top)) + 84px)!important
+  }
+  html body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    gap:10px!important
+  }
+  html body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
+    grid-column:1!important;
+    grid-row:1!important;
+    justify-self:center!important;
+    margin:0 auto!important
+  }
+  html body.tm-new-design[data-trip-view="plan"] #plan .generated-day>div{
+    grid-column:1!important;
+    grid-row:2!important;
+    width:100%!important;
+    min-width:0!important
+  }
+  html body.tm-new-design[data-trip-view="plan"] #plan .day-heading{
+    width:100%!important;
+    min-height:0!important;
+    padding:12px 14px!important;
+    text-align:center!important;
+    border:1px solid rgba(20,101,75,.16)!important;
+    border-radius:16px!important;
+    background:linear-gradient(135deg,rgba(250,253,251,.94),rgba(226,240,233,.9))!important;
+    box-shadow:0 8px 20px rgba(20,89,65,.1)!important
+  }
+  html body.tm-new-design[data-trip-view="plan"] #plan .day-heading>div{
+    width:100%!important;
+    min-width:0!important
+  }
+}
+
+/* Final 1.29.2 contrast and fixed mobile header. */
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
+) :where(h1,h2,h3,h4,strong,p,span,small,label){
+  color:#173f32!important;
+  -webkit-text-fill-color:#173f32!important;
+  text-shadow:none!important
+}
+@media(max-width:1000px){
+  html body:not(.home-page) main.content{
+    padding-top:94px!important
+  }
+  html body:not(.home-page) .mobile-header{
+    position:fixed!important;
+    top:max(8px,env(safe-area-inset-top))!important;
+    right:8px!important;
+    left:8px!important;
+    width:auto!important;
+    z-index:1250!important
+  }
+  html body:not(.home-page) .network-usage-meter.in-trip{
+    top:calc(max(8px,env(safe-area-inset-top)) + 84px)!important
   }
 }
