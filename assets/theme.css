@@ -440,3 +440,25 @@ body.tm-new-design .content :where(input,textarea)::placeholder{
   color:rgba(38,48,45,.62)!important;
   -webkit-text-fill-color:rgba(38,48,45,.62)!important
 }
+
+/* Controls on light surfaces inherit a dark, readable icon color. */
+body.tm-new-design :where(
+  button,.btn,.action-button,.secondary,.outline,.auto-place-launch,
+  .saved-place-actions button,.planned-activity-actions button,.planner-toolbar button
+) :where(i,svg){
+  color:currentColor!important;
+  -webkit-text-fill-color:currentColor!important;
+  -webkit-text-stroke:0!important;
+  filter:none!important
+}
+body.tm-new-design :where(
+  .auto-place-dialog,.trip-date-editor,.modal,.document-preview-modal,
+  .saved-place-editor,.activity-editor
+) :where(h1,h2,h3,h4,p,small,strong,span,label,button){
+  color:#213d34!important;
+  -webkit-text-fill-color:#213d34!important;
+  text-shadow:none!important
+}
+body.tm-new-design :where(.auto-place-build,.primary,.create-trip,.trip-date-editor-save){
+  color:#fff!important;-webkit-text-fill-color:#fff!important
+}

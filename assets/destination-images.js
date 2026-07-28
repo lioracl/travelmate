@@ -54,8 +54,8 @@
     }).catch(function () { return city; });
   }
 
-  function commonsCityImage(city) {
-    var params = new URLSearchParams({ action: 'query', format: 'json', origin: '*', generator: 'search', gsrsearch: city + ' cityscape', gsrnamespace: '6', gsrlimit: '12', prop: 'imageinfo', iiprop: 'url|mime', iiurlwidth: '1400' });
+  function commonsCityImage(city, searchHint) {
+    var params = new URLSearchParams({ action: 'query', format: 'json', origin: '*', generator: 'search', gsrsearch: searchHint || city + ' cityscape', gsrnamespace: '6', gsrlimit: '12', prop: 'imageinfo', iiprop: 'url|mime', iiurlwidth: '1400' });
     return fetch('https://commons.wikimedia.org/w/api.php?' + params).then(function (response) { return response.ok ? response.json() : null; }).then(function (data) {
       var blocked = /map|flag|coat|logo|locator|route|diagram|icon|plan|seal|emblem/i;
       var pages = data && data.query && data.query.pages ? Object.values(data.query.pages) : [];
@@ -70,8 +70,9 @@
     var saved = cached(city, country);
     if (saved) return Promise.resolve(saved);
     if (pending.has(cacheKey)) return pending.get(cacheKey);
+    var featuredSearch = flagCode(country) === 'IL' ? 'Tel Aviv skyline Azrieli Towers' : '';
     var request = englishCityName(city).then(function (englishCity) {
-      return commonsCityImage(englishCity);
+      return commonsCityImage(englishCity, featuredSearch);
     }).then(function (url) {
       return url || wikipediaImage('he', city);
     }).then(function (url) {

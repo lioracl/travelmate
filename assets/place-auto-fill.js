@@ -4,14 +4,14 @@
   var featureScript = document.currentScript;
   var featureStyle = document.createElement('link');
   featureStyle.rel = 'stylesheet';
-  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260727-7';
+  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260728-1';
   document.head.appendChild(featureStyle);
   var smartStyle = document.createElement('link');
   smartStyle.rel = 'stylesheet';
-  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260727-7';
+  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260728-1';
   document.head.appendChild(smartStyle);
   var smartScript = document.createElement('script');
-  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260727-7';
+  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260728-1';
   document.head.appendChild(smartScript);
 
   var STORAGE_KEY = 'travelmate-trips';
@@ -643,7 +643,12 @@
       var label = button.querySelector('span');
       if (label) label.textContent = panel.hidden ? 'פרטים' : 'סגירה';
     });
-    dialog.addEventListener('click', function (event) { if (event.target === dialog) closeDialog(); });
+    /* Mobile browsers can retarget a tap on a native control to the backdrop
+       while the control is redrawn. Only the explicit close button closes the
+       planner so a preference change can never discard the current screen. */
+    dialog.querySelector('.auto-place-dialog').addEventListener('click', function (event) {
+      event.stopPropagation();
+    });
   }
 
   function openDialog() {

@@ -163,7 +163,7 @@
     shell.dataset.end = trip.end || '';
     shell.dataset.days = trip.days || '';
     if (!isStatic) shell.dataset.cloudTrip = String(trip.id);
-    shell.innerHTML = '<a class="trip-card" href="' + escapeText(href) + '" style="background-image:url(\'' + escapeText(background) + '\')"><span class="trip-overlay"></span><span class="trip-flag trip-country-flag" aria-label="דגל ' + escapeText(trip.country) + '">' + countryFlag(trip.country) + '</span><span class="trip-copy"><span class="trip-date-state' + (state.now ? ' now' : '') + '"><i class="fa-solid ' + state.icon + '"></i> ' + escapeText(state.label) + '</span><h2>' + escapeText(trip.country) + '</h2><p>' + escapeText(trip.city) + '</p><span class="tag">' + (trip.start ? formatDate(trip.start) + ' – ' + formatDate(trip.end) : '') + '</span> <span class="tag">' + escapeText(trip.days) + ' ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left"></i></strong></span></a><button class="trip-activity-toggle' + (state.active ? ' active' : '') + '" type="button" data-trip-activity aria-pressed="' + String(state.active) + '"><i class="fa-solid fa-circle"></i><span>' + (state.active ? 'פעיל' : 'לא פעיל') + '</span></button>';
+    shell.innerHTML = '<a class="trip-card" href="' + escapeText(href) + '" style="background-image:url(\'' + escapeText(background) + '\')"><span class="trip-overlay"></span><span class="trip-flag trip-country-flag" aria-label="דגל ' + escapeText(trip.country) + '">' + countryFlag(trip.country) + '</span><span class="trip-copy"><span class="trip-date-state' + (state.now ? ' now' : '') + '"><i class="fa-solid ' + state.icon + '"></i> ' + escapeText(state.label) + '</span><h2>' + escapeText(trip.country) + '</h2><p>' + escapeText(trip.city) + '</p><span class="tag">' + (trip.start ? formatDate(trip.start) + ' – ' + formatDate(trip.end) : '') + '</span> <span class="tag">' + escapeText(trip.days) + ' ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left"></i></strong></span></a>' + (!isStatic ? '<button class="trip-edit-dates" type="button" data-trip-edit-dates aria-label="עריכת תאריכי הטיול"><i class="fa-solid fa-calendar-pen"></i><span>עריכת תאריכים</span></button>' : '') + '<button class="trip-activity-toggle' + (state.active ? ' active' : '') + '" type="button" data-trip-activity aria-pressed="' + String(state.active) + '"><i class="fa-solid fa-circle"></i><span>' + (state.active ? 'פעיל' : 'לא פעיל') + '</span></button>';
     return shell;
   }
 
@@ -242,7 +242,51 @@
     if (archiveCount && empty) empty.remove();
   }
 
+  function editTripDates(trip) {
+    var backdrop = document.createElement('section');
+    backdrop.className = 'trip-date-editor-backdrop';
+    backdrop.innerHTML = '<form class="trip-date-editor" role="dialog" aria-modal="true" aria-labelledby="trip-date-editor-title"><button class="trip-date-editor-close" type="button" aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button><div><small>עדכון הטיול</small><h2 id="trip-date-editor-title">עריכת תאריכים</h2><p>' + escapeText(trip.city) + ', ' + escapeText(trip.country) + '</p></div><label><span>תאריך יציאה</span><input type="date" name="start" value="' + escapeText(trip.start) + '" required></label><label><span>תאריך חזרה</span><input type="date" name="end" value="' + escapeText(trip.end) + '" required></label><p class="trip-date-editor-error" role="alert"></p><button class="trip-date-editor-save" type="submit"><i class="fa-solid fa-calendar-check"></i> שמירת התאריכים</button></form>';
+    document.body.appendChild(backdrop);
+    document.body.classList.add('trip-date-editor-open');
+    var editor = backdrop.querySelector('.trip-date-editor');
+    function close() {
+      document.body.classList.remove('trip-date-editor-open');
+      backdrop.remove();
+    }
+    editor.querySelector('.trip-date-editor-close').addEventListener('click', close);
+    editor.addEventListener('click', function (event) { event.stopPropagation(); });
+    editor.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      var start = editor.elements.start.value;
+      var end = editor.elements.end.value;
+      var days = daysBetween(start, end);
+      var error = editor.querySelector('.trip-date-editor-error');
+      if (days < 1) { error.textContent = 'תאריך החזרה חייב להיות אחרי תאריך היציאה.'; return; }
+      if (days > 60) { error.textContent = 'אפשר להגדיר טיול של עד 60 ימים.'; return; }
+      trip.start = start;
+      trip.end = end;
+      trip.days = days;
+      cloud.upsertLocalTrip(trip);
+      renderTrips(Array.from(renderedTrips.values()));
+      close();
+      if (currentSession) {
+        try { await cloud.saveTrip(trip); }
+        catch (saveError) { console.error('Trip dates sync failed', saveError); }
+      }
+    });
+    editor.elements.start.focus();
+  }
+
   document.addEventListener('click', async function (event) {
+    var editDates = event.target.closest('[data-trip-edit-dates]');
+    if (editDates) {
+      event.preventDefault();
+      event.stopPropagation();
+      var editShell = editDates.closest('.trip-card-shell');
+      var editTrip = editShell && renderedTrips.get(String(editShell.dataset.tripId));
+      if (editTrip) editTripDates(editTrip);
+      return;
+    }
     var button = event.target.closest('[data-trip-activity]');
     if (!button) return;
     var shell = button.closest('.trip-card-shell');

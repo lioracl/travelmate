@@ -276,3 +276,23 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
     display:inline
   }
 }
+
+/* Trip card date editor and high-contrast dashboard actions. */
+.trip-edit-dates{position:absolute;z-index:6;top:72px;left:24px;min-height:38px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.76);border-radius:999px;background:rgba(255,255,255,.94);color:#174f3d;font:inherit;font-size:12px;font-weight:900;box-shadow:0 8px 22px rgba(8,35,27,.18);cursor:pointer}
+.trip-edit-dates i{color:#17694f!important;-webkit-text-stroke:0!important}
+.trip-date-editor-open{overflow:hidden}
+.trip-date-editor-backdrop{position:fixed;inset:0;z-index:2200;display:grid;place-items:center;padding:18px;background:rgba(5,20,16,.66);backdrop-filter:blur(10px)}
+.trip-date-editor{position:relative;width:min(480px,100%);padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:24px;background:#fff;color:#18392f;box-shadow:0 30px 90px rgba(0,0,0,.34)}
+.trip-date-editor>div,.trip-date-editor-error,.trip-date-editor-save{grid-column:1/-1}.trip-date-editor h2{margin:4px 0 2px}.trip-date-editor p{margin:0}.trip-date-editor>div small{color:#237a5a;font-weight:900}.trip-date-editor label{display:grid;gap:7px;font-weight:800}.trip-date-editor input{width:100%;min-height:48px;box-sizing:border-box;padding:0 12px;border:1px solid #bdd5ca;border-radius:13px;background:#fff;color:#18392f;font:inherit}
+.trip-date-editor-close{position:absolute;top:16px;left:16px;width:42px;height:42px;border:1px solid #d7e4de;border-radius:50%;background:#fff;color:#173e31;font-size:18px}.trip-date-editor-error{min-height:20px;color:#b42318}.trip-date-editor-save{min-height:50px;border:0;border-radius:14px;background:#176b50;color:#fff;font:inherit;font-weight:900}
+.home-page.is-authenticated .home-sidebar-logo i,.home-page.is-authenticated .home-sidebar nav i,.home-page.is-authenticated .home-sidebar>.trip-logout i{display:inline-block!important;color:currentColor!important;-webkit-text-stroke:0!important}
+@media(max-width:800px){
+  .trip-edit-dates{top:66px;left:18px}
+  .home-page.is-authenticated .home-sidebar{background:#0a2d23!important;color:#fff!important;box-shadow:0 8px 28px rgba(0,0,0,.24)}
+  .home-page.is-authenticated .home-sidebar nav :is(a,button),.home-page.is-authenticated .home-sidebar>.trip-logout,.home-page.is-authenticated .home-sidebar-logo{color:#fff!important}
+  .home-page.is-authenticated .home-sidebar nav a.active{color:#ffad70!important}
+}
+@media(max-width:520px){
+  .trip-date-editor{grid-template-columns:1fr;padding:22px 16px}.trip-date-editor label{grid-column:1/-1}
+  .trip-edit-dates span{display:none}.trip-edit-dates{width:40px;padding:0;justify-content:center}
+}
