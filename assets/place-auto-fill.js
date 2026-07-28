@@ -4,14 +4,14 @@
   var featureScript = document.currentScript;
   var featureStyle = document.createElement('link');
   featureStyle.rel = 'stylesheet';
-  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260728-1';
+  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260728-2';
   document.head.appendChild(featureStyle);
   var smartStyle = document.createElement('link');
   smartStyle.rel = 'stylesheet';
-  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260728-1';
+  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260728-2';
   document.head.appendChild(smartStyle);
   var smartScript = document.createElement('script');
-  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260728-1';
+  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260728-2';
   document.head.appendChild(smartScript);
 
   var STORAGE_KEY = 'travelmate-trips';
@@ -43,6 +43,33 @@
   };
   var dialog;
   var state = { trip: null, origin: null, candidates: [], proposal: [] };
+  var placeImageCache = {};
+  var representativeImages = {
+    attractions: [
+      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=82',
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=82'
+    ],
+    museums: [
+      'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=1200&q=82',
+      'https://images.unsplash.com/photo-1564399579883-451a5d44ec08?auto=format&fit=crop&w=1200&q=82'
+    ],
+    food: [
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=82',
+      'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1200&q=82'
+    ],
+    kosher: [
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=82',
+      'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1200&q=82'
+    ],
+    nature: [
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=82',
+      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=82'
+    ],
+    shopping: [
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=82',
+      'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=1200&q=82'
+    ]
+  };
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function (character) {
@@ -175,6 +202,114 @@
     return 'attractions';
   }
 
+  function commonsFileUrl(value) {
+    var file = String(value || '').replace(/^File:/i, '').trim();
+    if (!file || /^Category:/i.test(file)) return '';
+    return 'https://commons.wikimedia.org/wiki/Special:Redirect/file/' + encodeURIComponent(file) + '?width=1200';
+  }
+
+  function imageFromTags(tags) {
+    if (/^https?:\/\//i.test(tags.image || '')) return tags.image;
+    return commonsFileUrl(tags.wikimedia_commons);
+  }
+
+  async function wikipediaPlaceImage(reference) {
+    var parts = String(reference || '').split(':');
+    if (parts.length < 2) return '';
+    var language = parts.shift().replace(/[^a-z-]/gi, '') || 'en';
+    var title = parts.join(':');
+    var params = new URLSearchParams({
+      action: 'query', format: 'json', origin: '*', titles: title,
+      prop: 'pageimages', piprop: 'thumbnail', pithumbsize: '1200', redirects: '1'
+    });
+    try {
+      var response = await fetchWithTimeout('https://' + language + '.wikipedia.org/w/api.php?' + params, { headers: { Accept: 'application/json' } }, 9000);
+      var data = await response.json();
+      var pages = data && data.query && data.query.pages ? Object.values(data.query.pages) : [];
+      return pages[0] && pages[0].thumbnail ? pages[0].thumbnail.source : '';
+    } catch (error) { return ''; }
+  }
+
+  async function wikipediaSearchImage(place, language) {
+    var params = new URLSearchParams({
+      action: 'query', format: 'json', origin: '*', generator: 'search',
+      gsrsearch: place.name, gsrlimit: '4', prop: 'pageimages',
+      piprop: 'thumbnail', pithumbsize: '1200'
+    });
+    try {
+      var response = await fetchWithTimeout('https://' + language + '.wikipedia.org/w/api.php?' + params, { headers: { Accept: 'application/json' } }, 9000);
+      var data = await response.json();
+      var pages = data && data.query && data.query.pages ? Object.values(data.query.pages) : [];
+      var match = pages.find(function (page) { return page.thumbnail && page.thumbnail.source; });
+      return match ? match.thumbnail.source : '';
+    } catch (error) { return ''; }
+  }
+
+  async function wikidataPlaceImage(entity) {
+    if (!/^Q\d+$/i.test(String(entity || ''))) return '';
+    var params = new URLSearchParams({
+      action: 'wbgetclaims', format: 'json', origin: '*', entity: entity, property: 'P18'
+    });
+    try {
+      var response = await fetchWithTimeout('https://www.wikidata.org/w/api.php?' + params, { headers: { Accept: 'application/json' } }, 9000);
+      var data = await response.json();
+      var claim = data && data.claims && data.claims.P18 && data.claims.P18[0];
+      var file = claim && claim.mainsnak && claim.mainsnak.datavalue && claim.mainsnak.datavalue.value;
+      return commonsFileUrl(file);
+    } catch (error) { return ''; }
+  }
+
+  async function commonsPlaceImage(place) {
+    var params = new URLSearchParams({
+      action: 'query', format: 'json', origin: '*', generator: 'search',
+      gsrsearch: place.name, gsrnamespace: '6', gsrlimit: '8',
+      prop: 'imageinfo', iiprop: 'url|mime', iiurlwidth: '1200'
+    });
+    try {
+      var response = await fetchWithTimeout('https://commons.wikimedia.org/w/api.php?' + params, { headers: { Accept: 'application/json' } }, 9000);
+      var data = await response.json();
+      var blocked = /map|flag|logo|diagram|icon|plan|seal|coat of arms/i;
+      var pages = data && data.query && data.query.pages ? Object.values(data.query.pages) : [];
+      var match = pages.find(function (page) {
+        var info = page.imageinfo && page.imageinfo[0];
+        return info && /^image\/(jpeg|png|webp)$/i.test(info.mime || '') && !blocked.test(page.title || '');
+      });
+      return match && match.imageinfo[0] ? match.imageinfo[0].thumburl || match.imageinfo[0].url : '';
+    } catch (error) { return ''; }
+  }
+
+  function representativeImage(place) {
+    var list = representativeImages[place.categoryKey] || representativeImages.attractions;
+    var hash = Array.from(String(place.name || '')).reduce(function (sum, character) {
+      return (sum * 31 + character.charCodeAt(0)) >>> 0;
+    }, 7);
+    return list[hash % list.length];
+  }
+
+  async function resolvePlaceImage(place) {
+    if (place.image && place.imageResolutionVersion === 2) return place.image;
+    var cacheKey = [place.name, place.lat, place.lon].join('|').toLowerCase();
+    if (placeImageCache[cacheKey]) return placeImageCache[cacheKey];
+    var image = await wikipediaPlaceImage(place.wikipedia);
+    if (!image) image = await wikidataPlaceImage(place.wikidata);
+    if (!image) image = await commonsPlaceImage(place);
+    if (!image) image = await wikipediaSearchImage(place, 'en');
+    if (!image && state.trip && /צכ|czech/i.test(state.trip.country || '')) image = await wikipediaSearchImage(place, 'cs');
+    image = image || representativeImage(place);
+    placeImageCache[cacheKey] = image;
+    place.image = image;
+    place.imageResolutionVersion = 2;
+    return place.image;
+  }
+
+  async function enrichPlaceImages(places) {
+    var queue = (places || []).slice();
+    var workers = Array.from({ length: Math.min(4, queue.length) }, async function () {
+      while (queue.length) await resolvePlaceImage(queue.shift());
+    });
+    await Promise.all(workers);
+  }
+
   function normalizeCandidates(data, origin) {
     var seen = {};
     return (data.elements || []).map(function (item) {
@@ -217,6 +352,10 @@
         wheelchair: /yes|limited/i.test(tags.wheelchair || ''),
         familyFriendly: /playground|zoo|theme_park|park|garden/.test([tags.leisure, tags.tourism].filter(Boolean).join('|')) || /yes/i.test(tags.kids_area || tags.child_friendly || ''),
         indoor: /museum|gallery|shopping_centre/.test([tags.tourism, tags.shop].filter(Boolean).join('|')) || /indoor|yes/i.test(tags.indoor || ''),
+        image: imageFromTags(tags),
+        imageResolutionVersion: imageFromTags(tags) ? 2 : 0,
+        wikipedia: tags.wikipedia || '',
+        wikidata: tags.wikidata || '',
         officialUrl: /^https?:/i.test(website) ? website : '',
         ratingsUrl: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(name + ' ' + lat + ',' + lon),
         sourceUrl: 'https://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lon + '#map=17/' + lat + '/' + lon
@@ -480,6 +619,8 @@
       state.candidates = normalizeCandidates(data, state.origin);
       state.proposal = buildProposal(state.candidates, settings, state.trip);
       state.settings = settings;
+      status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מתאים תמונה אמיתית לכל מקום…';
+      await enrichPlaceImages(state.proposal);
       renderPreview();
       var previewBody = dialog.querySelector('.auto-place-dialog-body');
       if (previewBody) previewBody.scrollTop = 0;
@@ -493,7 +634,7 @@
     }
   }
 
-  function applyProposal() {
+  async function applyProposal() {
     var selected = state.proposal.filter(function (place) {
       return place.selected !== false;
     });
@@ -503,6 +644,7 @@
     }
     var fresh = currentTrip();
     if (!fresh) return;
+    await enrichPlaceImages(selected);
     fresh.savedPlaces = fresh.savedPlaces || [];
     if (!state.settings.keepExisting) {
       var selectedDates = state.settings.dates;
@@ -534,7 +676,7 @@
     });
   }
 
-  function replacePreviewDay(date) {
+  async function replacePreviewDay(date) {
     var used = {};
     state.proposal.forEach(function (place) { used[String(place.name).toLowerCase()] = true; });
     var alternatives = state.candidates.filter(function (place) { return !used[String(place.name).toLowerCase()]; });
@@ -557,6 +699,7 @@
         selected: true
       });
     });
+    await enrichPlaceImages(state.proposal.filter(function (place) { return place.date === date; }));
     renderPreview();
   }
 
@@ -692,6 +835,7 @@
       (trip.savedPlaces || []).forEach(function (item) { used[String(item.name).toLowerCase()] = true; });
       var replacement = candidates.find(function (candidate) { return !used[String(candidate.name).toLowerCase()]; });
       if (!replacement) throw new Error('לא נמצא מקום חלופי באזור. נסה להגדיל את המרחק במילוי האוטומטי.');
+      await resolvePlaceImage(replacement);
       Object.assign(place, replacement, {
         id: placeId,
         date: place.date,
@@ -737,6 +881,7 @@
       (trip.savedPlaces || []).forEach(function (item) { used[String(item.name).toLowerCase()] = true; });
       var replacement = normalizeCandidates(data, origin).find(function (candidate) { return !used[String(candidate.name).toLowerCase()]; });
       if (!replacement) throw new Error('לא נמצאה פעילות חלופית מתאימה באזור.');
+      await resolvePlaceImage(replacement);
       Object.assign(activity, {
         title: replacement.name,
         category: replacement.category,
@@ -746,6 +891,7 @@
         officialUrl: replacement.officialUrl,
         ratingsUrl: replacement.ratingsUrl,
         sourceUrl: replacement.sourceUrl,
+        image: replacement.image,
         done: false
       });
       saveTrip(trip);
@@ -787,6 +933,20 @@
     var heading = places.querySelector('.section-head');
     if (heading) heading.insertAdjacentElement('afterend', button); else places.prepend(button);
     button.addEventListener('click', openDialog);
+    enrichExistingPlaceImages();
+  }
+
+  async function enrichExistingPlaceImages() {
+    var trip = currentTrip();
+    if (!trip || !trip.savedPlaces) return;
+    state.trip = trip;
+    var missing = trip.savedPlaces.filter(function (place) {
+      return place && place.name && place.autoGenerated && place.imageResolutionVersion !== 2;
+    });
+    if (!missing.length) return;
+    missing.forEach(function (place) { place.image = ''; });
+    await enrichPlaceImages(missing);
+    if (missing.some(function (place) { return place.image; })) saveTrip(trip);
   }
 
   window.TravelMateAutoPlaces = { open: openDialog, replace: replacementFor, replaceActivity: replacementForActivity, replaceDay: replacementForDay };

@@ -278,8 +278,8 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 }
 
 /* Trip card date editor and high-contrast dashboard actions. */
-.trip-edit-dates{position:absolute;z-index:6;top:72px;left:24px;min-height:38px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.76);border-radius:999px;background:rgba(255,255,255,.94);color:#174f3d;font:inherit;font-size:12px;font-weight:900;box-shadow:0 8px 22px rgba(8,35,27,.18);cursor:pointer}
-.trip-edit-dates i{color:#17694f!important;-webkit-text-stroke:0!important}
+.trip-edit-dates{position:absolute;z-index:6;top:72px;left:24px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;gap:7px;border:2px solid #fff;border-radius:999px;background:#f0783c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font:inherit;font-size:12px;font-weight:900;box-shadow:0 9px 24px rgba(73,27,8,.3);cursor:pointer}
+.trip-edit-dates i,.trip-edit-dates span{color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:0!important}
 .trip-date-editor-open{overflow:hidden}
 .trip-date-editor-backdrop{position:fixed;inset:0;z-index:2200;display:grid;place-items:center;padding:18px;background:rgba(5,20,16,.66);backdrop-filter:blur(10px)}
 .trip-date-editor{position:relative;width:min(480px,100%);padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:24px;background:#fff;color:#18392f;box-shadow:0 30px 90px rgba(0,0,0,.34)}
@@ -294,5 +294,5 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 }
 @media(max-width:520px){
   .trip-date-editor{grid-template-columns:1fr;padding:22px 16px}.trip-date-editor label{grid-column:1/-1}
-  .trip-edit-dates span{display:none}.trip-edit-dates{width:40px;padding:0;justify-content:center}
+  .trip-edit-dates{min-width:116px;padding:0 12px;justify-content:center;font-size:11px}
 }

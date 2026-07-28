@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var CACHE_KEY = 'travelmate-destination-images-v4';
+  var CACHE_KEY = 'travelmate-destination-images-v5';
   var FALLBACK = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=82';
   var PRAGUE_IMAGE = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Prague%20castle%20panorama.jpg?width=2200';
   var pending = new Map();
