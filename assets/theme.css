@@ -1122,6 +1122,205 @@ html body.tm-new-design[data-trip-view="plan"] #plan .saved-place{
   }
 }
 
+/* 1.29.5 — navigation clarity, readable notices and consistent weather-glass headings */
+@media(min-width:1001px){
+  html body:not(.home-page) .workspace>.sidebar,
+  html body:not(.home-page) .workspace>.sidebar nav{
+    scrollbar-width:none!important
+  }
+  html body:not(.home-page) .workspace>.sidebar::-webkit-scrollbar,
+  html body:not(.home-page) .workspace>.sidebar nav::-webkit-scrollbar{
+    width:0!important;
+    height:0!important;
+    display:none!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about){
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about) .tip{
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav a.active{
+    border-radius:12px!important;
+    background:rgba(18,119,84,.13)!important;
+    color:#075e43!important;
+    box-shadow:inset -4px 0 0 #0b7a55!important
+  }
+  html body:not(.home-page) .workspace>.sidebar nav a.active :is(i,.tip){
+    color:#075e43!important;
+    -webkit-text-fill-color:#075e43!important;
+    font-weight:950!important
+  }
+}
+
+html body.tm-new-design[data-trip-view] main.content>section.section>.section-head.section-head,
+html body.tm-new-design[data-trip-view] main.content>section.section>.section-head.section-head>div{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design[data-trip-view] main.content>section.section>.section-head.section-head>div>h1,
+html body.tm-new-design[data-trip-view] main.content>section.section>.section-head.section-head>div>p{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 1px 12px rgba(0,0,0,.22)!important
+}
+html body.tm-new-design[data-trip-view] main.content section.section[id].section[id] > div.section-head.section-head > div > :is(h1,p){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+
+html body.tm-new-design[data-trip-view] main.content>section>.section-head{
+  box-sizing:border-box!important;
+  width:100%!important;
+  margin:0 0 16px!important;
+  padding:16px 18px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--tm-weather-card-background)!important;
+  color:#fff!important;
+  box-shadow:var(--tm-weather-card-shadow)!important;
+  backdrop-filter:blur(18px) saturate(125%)!important
+}
+html body.tm-new-design[data-trip-view] main.content>section>.section-head :where(h1,h2,p,span,small,i){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design[data-trip-view] main.content>section>.section-head :is(button,a,.pill-btn,.trip-action-back){
+  min-height:40px!important;
+  border:0!important;
+  border-radius:11px!important;
+  background:rgba(255,255,255,.18)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28)!important
+}
+
+html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
+  padding:0 0 12px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions{
+  align-items:center!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar :is(button,.planner-action){
+  align-self:center!important;
+  border:0!important;
+  background:rgba(8,66,49,.82)!important;
+  color:#fff!important;
+  box-shadow:0 7px 18px rgba(8,66,49,.18)!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar button:is(
+  [data-open-trip-calendar],[data-new-activity]
+){
+  background:rgba(8,66,49,.82)!important
+}
+
+/* Semantic banners keep their own readable palette instead of inheriting white text. */
+html body.tm-new-design #documents .vault-unlock small{
+  border:0!important;
+  background:#fff0e6!important;
+  color:#713b16!important;
+  -webkit-text-fill-color:#713b16!important;
+  box-shadow:inset 4px 0 0 #dc7b35!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content section#documents .document-vault .vault-unlock>small,
+html body.tm-new-design[data-trip-view="documents"] main.content section#documents .document-vault .vault-unlock>small *{
+  color:#713b16!important;
+  -webkit-text-fill-color:#713b16!important;
+  text-shadow:none!important
+}
+html body.tm-new-design #documents .vault-unlock small :where(i,strong,span){
+  color:#713b16!important;
+  -webkit-text-fill-color:#713b16!important
+}
+html body.tm-new-design #documents .vault-status:not(:empty){
+  padding:11px 13px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:#e8f5ef!important;
+  color:#14583f!important;
+  -webkit-text-fill-color:#14583f!important;
+  font-weight:800!important
+}
+html body.tm-new-design #documents .vault-status.error:not(:empty){
+  background:#ffe9ec!important;
+  color:#8f2532!important;
+  -webkit-text-fill-color:#8f2532!important;
+  box-shadow:inset 4px 0 0 #cf5262!important
+}
+
+html body.tm-new-design #memories .memory-file-picker{
+  border:0!important;
+  background:#e9f5ef!important;
+  color:#175d45!important;
+  -webkit-text-fill-color:#175d45!important;
+  box-shadow:inset 0 0 0 1px rgba(23,93,69,.16)!important
+}
+html body.tm-new-design #memories .memory-file-picker :where(span,small,strong,i){
+  color:#175d45!important;
+  -webkit-text-fill-color:#175d45!important
+}
+html body.tm-new-design[data-trip-view="memories"] main.content section#memories .memory-card form label.memory-file-picker,
+html body.tm-new-design[data-trip-view="memories"] main.content section#memories .memory-card form label.memory-file-picker *{
+  color:#175d45!important;
+  -webkit-text-fill-color:#175d45!important;
+  text-shadow:none!important
+}
+html body.tm-new-design #memories .album-actions a{
+  border:0!important;
+  background:#e9f5ef!important;
+  color:#175d45!important;
+  -webkit-text-fill-color:#175d45!important;
+  box-shadow:none!important
+}
+html body.tm-new-design #memories .trip-summary-text{
+  border:0!important;
+  background:rgba(7,49,38,.58)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+
+/* A stable, soft color identity for every chat participant. */
+html body.tm-new-design #group .group-message:not(.mine){
+  --sender-bg:#eef7f2;
+  --sender-ink:#24664f;
+  background:var(--sender-bg)!important;
+  color:#18362c!important;
+  -webkit-text-fill-color:#18362c!important
+}
+html body.tm-new-design #group .group-message.sender-tone-1:not(.mine){--sender-bg:#edf3fb;--sender-ink:#3e628d}
+html body.tm-new-design #group .group-message.sender-tone-2:not(.mine){--sender-bg:#fff1ea;--sender-ink:#925337}
+html body.tm-new-design #group .group-message.sender-tone-3:not(.mine){--sender-bg:#f3effb;--sender-ink:#67508c}
+html body.tm-new-design #group .group-message.sender-tone-4:not(.mine){--sender-bg:#fff8df;--sender-ink:#806723}
+html body.tm-new-design #group .group-message.sender-tone-5:not(.mine){--sender-bg:#eaf6f7;--sender-ink:#267078}
+html body.tm-new-design #group .group-message:not(.mine) :where(p,strong,small,time){
+  color:#18362c!important;
+  -webkit-text-fill-color:#18362c!important
+}
+html body.tm-new-design #group .group-message:not(.mine) .message-sender{
+  color:var(--sender-ink)!important;
+  -webkit-text-fill-color:var(--sender-ink)!important
+}
+
+@media(max-width:1000px){
+  html body.tm-new-design[data-trip-view] main.content>section>.section-head{
+    padding:14px!important
+  }
+}
+
 /* Final page contrast and always-visible mobile navigation. */
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
@@ -2389,4 +2588,86 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolb
     justify-content:flex-start!important;
     gap:5px!important
   }
+}
+
+/* Keep critical contrast overrides last in the cascade. */
+@media(min-width:1001px){
+  html body:not(.home-page) .workspace>.sidebar nav .tip{
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important
+  }
+  html body:not(.home-page) .workspace>.sidebar,
+  html body:not(.home-page) .workspace>.sidebar nav{
+    scrollbar-width:none!important
+  }
+  html body:not(.home-page) .workspace>.sidebar::-webkit-scrollbar,
+  html body:not(.home-page) .workspace>.sidebar nav::-webkit-scrollbar{display:none!important}
+}
+html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head{
+  border:0!important;
+  border-radius:14px!important;
+  background:var(--tm-weather-card-background)!important;
+  box-shadow:var(--tm-weather-card-shadow)!important
+}
+html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head :is(h1,p){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 1px 12px rgba(0,0,0,.22)!important
+}
+html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar{
+  padding:0 0 12px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important
+}
+html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar button{
+  align-self:center!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .document-vault .vault-unlock>small,
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .document-vault .vault-unlock>small *{
+  background:#fff0e6!important;
+  color:#713b16!important;
+  -webkit-text-fill-color:#713b16!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-status.error:not(:empty){
+  background:#ffe9ec!important;
+  color:#8f2532!important;
+  -webkit-text-fill-color:#8f2532!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="memories"] main.content #memories label.memory-file-picker{
+  background:#e9f5ef!important;
+  color:#175d45!important;
+  -webkit-text-fill-color:#175d45!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="memories"] main.content #memories label.memory-file-picker *{
+  color:#175d45!important;
+  -webkit-text-fill-color:#175d45!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="memories"] main.content #memories .album-actions a{
+  background:#e9f5ef!important;
+  color:#175d45!important;
+  -webkit-text-fill-color:#175d45!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="group"] main.content #group .group-message:not(.mine){
+  background:var(--sender-bg,#eef7f2)!important;
+  color:#18362c!important;
+  -webkit-text-fill-color:#18362c!important
+}
+html body.tm-new-design[data-trip-view="group"] main.content #group .group-message:not(.mine) :is(p,strong,small,time){
+  color:#18362c!important;
+  -webkit-text-fill-color:#18362c!important
+}
+html body.tm-new-design[data-trip-view="group"] main.content #group .group-message:not(.mine) .message-sender{
+  color:var(--sender-ink,#24664f)!important;
+  -webkit-text-fill-color:var(--sender-ink,#24664f)!important
 }

@@ -136,7 +136,12 @@
   function messageNode(message) {
     var mine = state.session && String(message.sender_user_id) === String(state.session.user.id);
     var article = document.createElement('article');
-    article.className = 'group-message' + (mine ? ' mine' : '');
+    var senderKey = String(message.sender_user_id || 'guest');
+    var senderHash = 0;
+    for (var senderIndex = 0; senderIndex < senderKey.length; senderIndex += 1) {
+      senderHash = ((senderHash << 5) - senderHash + senderKey.charCodeAt(senderIndex)) | 0;
+    }
+    article.className = 'group-message sender-tone-' + (Math.abs(senderHash) % 6) + (mine ? ' mine' : '');
     article.dataset.messageId = message.id;
     var time = new Intl.DateTimeFormat('he-IL', { hour: '2-digit', minute: '2-digit' }).format(new Date(message.created_at));
     var place = decodePlaceMessage(message.body);
