@@ -721,6 +721,10 @@ html body .collaboration-signed-out>i{
 }
 
 /* Places header search: one compact row aligned left in the trip header. */
+html body.tm-new-design[data-trip-view]:not([data-trip-view="overview"])[class] main.content #overview.custom-hero{
+  min-height:72px!important;
+  padding-block:8px!important;
+}
 html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search{
   order:3;
   width:min(420px,42%);
@@ -799,7 +803,29 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #places :wh
   background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.11))!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 24px rgba(0,0,0,.12)!important;
 }
+html body.tm-new-design[data-trip-view="places"][class] main.content #places .nearby-controls{
+  grid-template-columns:minmax(160px,1.1fr) minmax(110px,.65fr) auto auto auto!important;
+  gap:10px!important;
+  align-items:end!important;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places .nearby-controls>button{
+  min-height:46px!important;
+  padding-inline:12px!important;
+  white-space:nowrap;
+  font-size:13px!important;
+}
+@media(max-width:1100px){
+  html body.tm-new-design[data-trip-view="places"][class] main.content #places .nearby-controls{
+    grid-template-columns:1fr 1fr!important;
+  }
+  html body.tm-new-design[data-trip-view="places"][class] main.content #places .nearby-controls>button{
+    width:100%;
+  }
+}
 @media(max-width:850px){
+  html body.tm-new-design[data-trip-view]:not([data-trip-view="overview"])[class] main.content #overview.custom-hero{
+    min-height:124px!important;
+  }
   html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search{
     order:4;
     width:100%;
