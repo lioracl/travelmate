@@ -4,14 +4,14 @@
   var featureScript = document.currentScript;
   var featureStyle = document.createElement('link');
   featureStyle.rel = 'stylesheet';
-  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260728-2';
+  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260728-3';
   document.head.appendChild(featureStyle);
   var smartStyle = document.createElement('link');
   smartStyle.rel = 'stylesheet';
-  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260728-2';
+  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260728-3';
   document.head.appendChild(smartStyle);
   var smartScript = document.createElement('script');
-  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260728-2';
+  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260728-3';
   document.head.appendChild(smartScript);
 
   var STORAGE_KEY = 'travelmate-trips';
@@ -569,10 +569,12 @@
           var index = state.proposal.indexOf(place);
           var rating = place.rating ? '<span class="auto-place-rating"><i class="fa-solid fa-star"></i>' + place.rating.toFixed(1) + '</span>' : '<span class="auto-place-rating muted">ללא דירוג זמין</span>';
           var daySelect = dates.map(function (item) { return '<option value="' + escapeHtml(item.value) + '"' + (item.value === place.date ? ' selected' : '') + '>' + escapeHtml(item.label) + '</option>'; }).join('');
+          var costLabel = window.TravelMateCurrency && window.TravelMateCurrency.formatFromEuros ? window.TravelMateCurrency.formatFromEuros(place.costEstimate || 0) : '€' + (place.costEstimate || 0);
           return '<article class="auto-place-preview-item' + (place.selected === false ? ' excluded' : '') + '" data-auto-preview-index="' + index + '"><button type="button" class="auto-place-choice" data-auto-place-toggle="' + index + '" aria-pressed="' + (place.selected === false ? 'false' : 'true') + '" aria-label="בחירת המקום"><span><i class="fa-solid fa-check"></i></span></button>' +
-            '<span class="auto-place-preview-time"><input type="time" value="' + escapeHtml(place.time) + '" data-auto-place-time="' + index + '" aria-label="שעת הפעילות"></span><span><strong>' + escapeHtml(place.name) +
+            '<img class="auto-place-preview-image" src="' + escapeHtml(place.image || '') + '" alt="" loading="lazy" onerror="this.hidden=true">' +
+            '<span class="auto-place-preview-time"><input type="time" value="' + escapeHtml(place.time) + '" data-auto-place-time="' + index + '" aria-label="שעת הפעילות"></span><span class="auto-place-preview-copy"><strong>' + escapeHtml(place.name) +
             '</strong><small>' + escapeHtml(place.category) + ' · ' + (place.distance < 1000 ? Math.round(place.distance) + ' מ׳' : (place.distance / 1000).toFixed(1) + ' ק״מ') +
-            '</small><span class="auto-place-meta">' + rating + '<span><i class="fa-solid fa-person-walking"></i> כ־' + (place.travelFromPreviousMinutes || 5) + ' דק׳ מהתחנה הקודמת</span><span><i class="fa-solid fa-coins"></i> כ־€' + (place.costEstimate || 0) + '</span>' + (place.officialUrl ? '<span><i class="fa-solid fa-globe"></i> אתר רשמי</span>' : '') + (place.openingHours ? '<span><i class="fa-regular fa-clock"></i> שעות זמינות</span>' : '') + '</span></span>' +
+            '</small><span class="auto-place-meta">' + rating + '<span><i class="fa-solid fa-person-walking"></i> כ־' + (place.travelFromPreviousMinutes || 5) + ' דק׳ מהתחנה הקודמת</span><span><i class="fa-solid fa-coins"></i> כ־' + escapeHtml(costLabel) + '</span>' + (place.officialUrl ? '<span><i class="fa-solid fa-globe"></i> אתר רשמי</span>' : '') + (place.openingHours ? '<span><i class="fa-regular fa-clock"></i> שעות זמינות</span>' : '') + '</span></span>' +
             '<button type="button" class="auto-place-details-button" data-auto-place-details="' + index + '" aria-expanded="false"><i class="fa-solid fa-circle-info"></i><span>פרטים</span></button><label class="auto-place-day-select"><span>העבר ליום אחר</span><select data-auto-place-date="' + index + '" aria-label="העברת המקום ליום אחר">' + daySelect + '</select></label>' +
             '<div class="auto-place-details" data-auto-place-details-panel="' + index + '" hidden><p>' + escapeHtml(place.description) + '</p><dl>' +
             (place.address ? '<div><dt>כתובת</dt><dd>' + escapeHtml(place.address) + '</dd></div>' : '') +
