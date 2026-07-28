@@ -105,7 +105,9 @@
     form.className = 'nearby-free-search';
     form.setAttribute('data-nearby-free-form', '');
     form.innerHTML = '<label><span>חיפוש חופשי</span><input type="search" data-nearby-free-input placeholder="לדוגמה: מוזיאונים, בית כנסת או בית מרקחת" autocomplete="off"></label><button type="submit"><i class="fa-solid fa-magnifying-glass"></i> חיפוש באזור היעד</button>';
-    panel.querySelector('.nearby-controls').insertAdjacentElement('beforebegin', form);
+    form.querySelector('button').setAttribute('aria-label', 'חיפוש באזור היעד');
+    var sectionHeader = panel.closest('#places') && panel.closest('#places').querySelector('.section-head');
+    (sectionHeader || panel).appendChild(form);
     return form;
   }
 

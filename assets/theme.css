@@ -699,3 +699,110 @@ body.tm-new-design[data-trip-view="documents"] #documents .document-vault{
   backdrop-filter:none!important;
   text-shadow:inherit!important;
 }
+
+/* Icons stay unboxed across the product. */
+html body :where(
+  .icon,.mark,.forecast-icon,.weather-top-icon,.day-dot,.avatar-small,
+  .memory-icon,.message-place-pin,.transport-result-icon,.invite-hero-icon,
+  [class$="-icon"],[class*="-icon "]
+),
+html body .auto-place-launch>i:first-child,
+html body .auto-place-dialog h3>span,
+html body .auto-place-origins i,
+html body .auto-place-keep i,
+html body .transport-title>span,
+html body .fare-row>i,
+html body .collaboration-signed-out>i{
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+/* Places header search: one compact search row, without an extra card surface. */
+html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head{
+  align-items:center!important;
+  flex-wrap:wrap;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search{
+  width:min(520px,100%);
+  margin:0 0 0 auto!important;
+  padding:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 46px!important;
+  gap:8px!important;
+  align-items:center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search label{
+  display:block!important;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search label>span{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  overflow:hidden!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search input{
+  width:100%!important;
+  min-height:46px!important;
+  border:1px solid rgba(255,255,255,.26)!important;
+  border-radius:14px!important;
+  background:rgba(8,25,20,.24)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(130%)!important;
+  backdrop-filter:blur(14px) saturate(130%)!important;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search input::placeholder{
+  color:rgba(255,255,255,.7)!important;
+  -webkit-text-fill-color:rgba(255,255,255,.7)!important;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search button{
+  width:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  padding:0!important;
+  font-size:0!important;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search button i{
+  margin:0!important;
+  font-size:16px!important;
+}
+
+/* Weather-card buttons: compact glass controls with a clear hover/focus state. */
+html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
+  .nearby-search,.nearby-map-button,[data-nearby-map-search],.nearby-free-search button
+){
+  border:1px solid rgba(255,255,255,.28)!important;
+  border-radius:14px!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.07))!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 8px 20px rgba(0,0,0,.08)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(135%)!important;
+  backdrop-filter:blur(14px) saturate(135%)!important;
+  text-shadow:0 1px 8px rgba(0,0,0,.28)!important;
+}
+html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
+  .nearby-search,.nearby-map-button,[data-nearby-map-search],.nearby-free-search button
+):is(:hover,:focus-visible){
+  border-color:rgba(255,255,255,.48)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.11))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 24px rgba(0,0,0,.12)!important;
+}
+@media(max-width:850px){
+  html body.tm-new-design[data-trip-view="places"][class] main.content #places>.section-head .nearby-free-search{
+    width:100%;
+    margin:8px 0 0!important;
+  }
+}
