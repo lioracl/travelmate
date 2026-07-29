@@ -497,7 +497,7 @@
     return Uint8Array.from(binary, function (character) { return character.charCodeAt(0); });
   }
   function sanitizeFileName(value) { return String(value || 'document').normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 90) || 'document'; }
-  function categoryForTitle(value) { value = String(value || ''); if (/טיס/.test(value)) return 'טיסות'; if (/מלון|לינה/.test(value)) return 'לינה'; if (/ביטוח|דרכון|אשר/.test(value)) return 'ביטוח'; if (/רכב|רכבת|JR|תחבורה/.test(value)) return 'תחבורה'; if (/כרטיס/.test(value)) return 'כרטיסים'; return value || 'אחר'; }
+  function categoryForTitle(value) { value = String(value || ''); if (/טיס/.test(value)) return 'טיסות'; if (/מלון|לינה/.test(value)) return 'לינה'; if (/דרכון|אשר/.test(value)) return 'דרכון ואשרות'; if (/ביטוח/.test(value)) return 'ביטוח'; if (/רכב|רכבת|JR|תחבורה/.test(value)) return 'תחבורה'; if (/כרטיס/.test(value)) return 'כרטיסים'; if (/נוספים/.test(value)) return 'אחר'; return value || 'אחר'; }
   function formatSize(bytes) { bytes = Number(bytes || 0); if (bytes < 1024) return bytes + ' B'; if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / 1048576).toFixed(1) + ' MB'; }
   function iconFor(type) { type = type || ''; if (type.includes('pdf')) return 'fa-file-pdf'; if (type.includes('image')) return 'fa-file-image'; if (type.includes('word')) return 'fa-file-word'; if (type.includes('sheet') || type.includes('excel')) return 'fa-file-excel'; return 'fa-file-lines'; }
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }

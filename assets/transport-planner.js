@@ -68,7 +68,7 @@
     var section = document.createElement('section');
     section.id = 'transport';
     section.className = 'section transport-section';
-    section.innerHTML = '<div class="section-head"><div><span class="mark"><i class="fa-solid fa-train-subway"></i></span><p>מסלול, מפעילים ותעריפים במקום אחד</p><h1>תחבורה ציבורית ומחירים</h1></div></div>' +
+    section.innerHTML = '<div class="section-head"><div><p>מסלול, מפעילים ותעריפים במקום אחד</p><h1>תחבורה ציבורית ומחירים</h1></div></div>' +
       '<div class="transport-layout"><article class="transport-card transport-search-card"><div class="transport-title"><span><i class="fa-solid fa-route"></i></span><div><h2>איך מגיעים?</h2><p>חיפוש מעודכן לפי נקודת יציאה, יעד ותאריך.</p></div></div>' +
       '<form class="transport-form" data-transport-form><label>מאיפה?<input name="origin" value="' + escapeHtml(city) + ' מרכז העיר" placeholder="מלון, תחנה או כתובת" required></label><label>לאן?<input name="destination" placeholder="אטרקציה, תחנה או עיר" required></label><label>תאריך נסיעה<input name="date" type="date" value="' + escapeHtml(trip.start || '') + '"></label><label>שעה<input name="time" type="time" value="09:00"></label><label>מה להציג?<select name="mode"><option value="all">כל האפשרויות</option><option value="public">מטרו ואוטובוסים</option><option value="rail">רכבות</option><option value="taxi">מוניות</option></select></label><button type="submit"><i class="fa-solid fa-magnifying-glass"></i> חיפוש מסלול ומחיר</button></form>' +
       '<div class="transport-results" data-transport-results><div class="transport-empty"><i class="fa-solid fa-location-arrow"></i><strong>מלא יעד ולחץ על חיפוש</strong><span>נפתח לך מסלול חי והשוואת מחירים בשירותים אמינים.</span></div></div></article>' +

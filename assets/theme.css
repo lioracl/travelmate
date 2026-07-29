@@ -3069,3 +3069,14 @@ html body.tm-new-design #transport p.transport-note{
   color:#fff!important;
   -webkit-text-fill-color:#fff!important
 }
+
+/* Stable trip rendering and clear transport controls */
+html body.tm-new-design:not(.home-page)::before{display:none!important;content:none!important;animation:none!important}
+html body.tm-new-design .sidebar nav .sidebar-about{order:999!important}
+html body.tm-new-design main.content #transport :is(.transport-card,.transport-result,.transport-empty,.fare-row){color:#173f32!important;-webkit-text-fill-color:#173f32!important}
+html body.tm-new-design main.content #transport :is(.transport-card,.transport-result){background:linear-gradient(145deg,rgba(248,252,250,.98),rgba(228,240,234,.96))!important;border-color:#9fc8b6!important}
+html body.tm-new-design main.content #transport :is(input,select){background:#fff!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important;border-color:#9fc8b6!important}
+html body.tm-new-design main.content #transport :is(.transport-title p,.transport-empty span,.transport-result small,.fare-row p,.transport-results-head span){color:#46695b!important;-webkit-text-fill-color:#46695b!important}
+html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport .transport-card.transport-card,
+html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport .transport-result.transport-result{background:linear-gradient(145deg,rgba(248,252,250,.98),rgba(228,240,234,.96))!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important;border-color:#9fc8b6!important}
+html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport p.transport-note.transport-note{background:linear-gradient(135deg,#315d4d,#21493b)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
