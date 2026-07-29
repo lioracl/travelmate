@@ -35,6 +35,14 @@
   function officialSearch(city, country) {
     return 'https://www.google.com/search?q=' + encodeURIComponent('official public transport fares ' + city + ' ' + country);
   }
+  function fareSources(city, country) {
+    var key = (city + ' ' + country).toLowerCase();
+    if (/פראג|prague|צכ|czech/.test(key)) return { public: 'https://pid.cz/en/tickets-and-fare/', rail: 'https://www.cd.cz/en/', taxi: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('official taxi ' + city) };
+    if (/רומא|rome|איטל|italy/.test(key)) return { public: 'https://www.atac.roma.it/en/tickets-and-passes', rail: 'https://www.trenitalia.com/en.html', taxi: 'https://romamobilita.it/en/moving-rome/taxi' };
+    if (/טוקיו|tokyo|יפן|japan/.test(key)) return { public: 'https://www.tokyometro.jp/en/ticket/index.html', rail: 'https://www.japanrailpass.net/en/', taxi: 'https://www.gotokyo.org/en/plan/getting-around/taxis/' };
+    if (/תל אביב|tel aviv|ישראל|israel/.test(key)) return { public: 'https://pti.org.il/', rail: 'https://www.rail.co.il/', taxi: 'https://www.gov.il/he/departments/topics/taxis/govil-landing-page' };
+    return { public: officialSearch(city, country), rail: 'https://www.openstreetmap.org/search?query=' + encodeURIComponent('train station ' + city + ' ' + country), taxi: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('taxi ' + city + ' ' + country) };
+  }
   function addNavigation() {
     var nav = document.querySelector('.sidebar nav');
     if (nav && !nav.querySelector('[href="#transport"]')) {
@@ -56,6 +64,7 @@
     if (document.getElementById('transport')) return document.getElementById('transport');
     var city = trip.city || trip.destination || trip.country || '';
     var country = trip.country || '';
+    var sources = fareSources(city, country);
     var section = document.createElement('section');
     section.id = 'transport';
     section.className = 'section transport-section';
@@ -64,9 +73,9 @@
       '<form class="transport-form" data-transport-form><label>מאיפה?<input name="origin" value="' + escapeHtml(city) + ' מרכז העיר" placeholder="מלון, תחנה או כתובת" required></label><label>לאן?<input name="destination" placeholder="אטרקציה, תחנה או עיר" required></label><label>תאריך נסיעה<input name="date" type="date" value="' + escapeHtml(trip.start || '') + '"></label><label>שעה<input name="time" type="time" value="09:00"></label><label>מה להציג?<select name="mode"><option value="all">כל האפשרויות</option><option value="public">מטרו ואוטובוסים</option><option value="rail">רכבות</option><option value="taxi">מוניות</option></select></label><button type="submit"><i class="fa-solid fa-magnifying-glass"></i> חיפוש מסלול ומחיר</button></form>' +
       '<div class="transport-results" data-transport-results><div class="transport-empty"><i class="fa-solid fa-location-arrow"></i><strong>מלא יעד ולחץ על חיפוש</strong><span>נפתח לך מסלול חי והשוואת מחירים בשירותים אמינים.</span></div></div></article>' +
       '<aside class="transport-card fare-guide"><div class="transport-title"><span><i class="fa-solid fa-ticket"></i></span><div><h2>מדריך מחירים</h2><p>' + escapeHtml(city + (country ? ', ' + country : '')) + '</p></div></div>' +
-      '<div class="fare-row"><i class="fa-solid fa-bus-simple"></i><div><strong>מטרו ואוטובוסים</strong><p>בדוק כרטיס בודד, תוקף לפי זמן, אזורי תעריף וכרטיס יומי. לרוב כרטיס יומי משתלם אחרי כמה נסיעות.</p></div></div>' +
-      '<div class="fare-row"><i class="fa-solid fa-train"></i><div><strong>רכבות</strong><p>מחיר יכול להשתנות לפי שעה, סוג רכבת, גמישות ומועד ההזמנה. בדוק גם החזר ושינוי.</p></div></div>' +
-      '<div class="fare-row"><i class="fa-solid fa-taxi"></i><div><strong>מוניות</strong><p>השווה מונה, מחיר קבוע משדה התעופה ומחיר דינמי באפליקציה לפני האישור.</p></div></div>' +
+      '<a class="fare-row" href="' + escapeHtml(sources.public) + '" target="_blank" rel="noopener"><i class="fa-solid fa-bus-simple"></i><div><strong>מטרו ואוטובוסים <i class="fa-solid fa-arrow-up-right-from-square"></i></strong><p>כרטיסים, אזורי תעריף וכרטיס יומי במקור הרשמי או הפתוח המתאים ליעד.</p></div></a>' +
+      '<a class="fare-row" href="' + escapeHtml(sources.rail) + '" target="_blank" rel="noopener"><i class="fa-solid fa-train"></i><div><strong>רכבות <i class="fa-solid fa-arrow-up-right-from-square"></i></strong><p>לוחות זמנים, סוגי רכבות ומחירים אצל מפעיל הרכבות של היעד.</p></div></a>' +
+      '<a class="fare-row" href="' + escapeHtml(sources.taxi) + '" target="_blank" rel="noopener"><i class="fa-solid fa-taxi"></i><div><strong>מוניות <i class="fa-solid fa-arrow-up-right-from-square"></i></strong><p>תעריפים, כללי נסיעה ושירותי מוניות מורשים באזור.</p></div></a>' +
       '<a class="official-fares" href="' + escapeHtml(officialSearch(city, country)) + '" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-building-columns"></i><span><strong>איתור אתר התחבורה הרשמי</strong><small>למחירים, כרטיסים והנחות עדכניים</small></span></a>' +
       '<p class="transport-note"><i class="fa-solid fa-circle-info"></i> המחיר הסופי נקבע אצל המפעיל. TravelMate מציג קישורים והשוואות ואינו מוכר כרטיסים.</p></aside></div>';
     var main = document.querySelector('main.content');

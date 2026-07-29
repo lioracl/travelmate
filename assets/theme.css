@@ -2995,3 +2995,50 @@ body.tm-new-design .schedule-conflict-note{
   font-size:10px!important;
   font-weight:800!important
 }
+/* 1.31 — stable weather-card headers and no animated visual rail. */
+html body.tm-new-design .ai-orb-ring,
+html body.tm-new-design .network-usage-meter::before,
+html body.tm-new-design .network-usage-meter::after{animation:none!important}
+html body.tm-new-design main.content{caret-color:transparent}
+html body.tm-new-design main.content :is(input,textarea,[contenteditable="true"]){caret-color:auto}
+html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head{background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(225,240,232,.94))!important;border-color:rgba(64,127,98,.3)!important;color:#173f32!important}
+html body.tm-new-design main.content :is(#budget,#transport,#car-rental,#getaways) :is(.expense-workspace,.budget-columns-editor,.receipt-form,.expense-live-summary,.transport-card,.service-card,.getaway-result){
+  background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(229,241,235,.93))!important;
+  border-color:rgba(72,130,103,.28)!important;
+  color:#173f32!important;
+  -webkit-text-fill-color:#173f32!important
+}
+html body.tm-new-design main.content :is(#budget,#transport,#car-rental,#getaways) :is(.expense-workspace,.budget-columns-editor,.receipt-form,.expense-live-summary,.transport-card,.service-card,.getaway-result) :is(h1,h2,h3,strong,b,label,span,p,small){
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important;
+  text-shadow:none!important
+}
+html body.tm-new-design main.content #budget :is(.expense-workspace-head>button,.receipt-actions button,[data-budget-column-add]){
+  background:#1f7658!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design main.content #budget .expense-workspace-head>button[data-expense-toggle],
+html body.tm-new-design main.content #budget button[data-budget-column-add]{
+  width:auto!important;
+  min-width:170px!important;
+  min-height:44px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  padding:10px 16px!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:#1f7658!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  opacity:1!important;
+  font-size:13px!important;
+  font-weight:900!important
+}
+html body.tm-new-design main.content #budget :is(input,select){
+  background:#fff!important;
+  color:#173f32!important;
+  -webkit-text-fill-color:#173f32!important
+}
