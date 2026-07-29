@@ -3042,3 +3042,30 @@ html body.tm-new-design main.content #budget :is(input,select){
   color:#173f32!important;
   -webkit-text-fill-color:#173f32!important
 }
+html body.tm-new-design main.content #transport .official-fares{
+  background:linear-gradient(135deg,#126c51,#185f67)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  border:1px solid rgba(255,255,255,.25)!important
+}
+html body.tm-new-design main.content #transport .official-fares *{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design main.content #transport .transport-note{
+  padding:12px 14px!important;
+  border:1px solid #b9d8ca!important;
+  border-radius:14px!important;
+  background:linear-gradient(135deg,#315d4d,#21493b)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design main.content #transport .transport-note *{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design #transport p.transport-note{
+  background:linear-gradient(135deg,#315d4d,#21493b)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}

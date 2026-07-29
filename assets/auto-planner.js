@@ -31,3 +31,63 @@ toolbar.querySelector('[data-smart-build]').addEventListener('click',function(){
 function start(){Promise.resolve(window.travelMateTripReady).then(init).catch(function(error){console.error('TravelMate planner startup failed',error)})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
+
+(function installCalendarActivityDetails(){
+  if(!/\/trip\//.test(location.pathname.replace(/\\/g,'/')))return;
+  var openPastDays={};
+  function tripData(){
+    var id=new URLSearchParams(location.search).get('id');
+    try{return(JSON.parse(localStorage.getItem('travelmate-trips')||'[]')).find(function(item){return item.id===id})}catch(error){return null}
+  }
+  function escapeHtml(value){return String(value||'').replace(/[&<>"']/g,function(char){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]})}
+  function safeUrl(value){try{var url=new URL(String(value||''),location.href);return/^https?:$/.test(url.protocol)?url.href:''}catch(error){return''}}
+  function eventRecord(row,trip){
+    var list=row.dataset.kind==='place'?(trip.savedPlaces||[]):(trip.activities||[]);
+    return list.find(function(item){return String(item.id)===String(row.dataset.id)})
+  }
+  function destination(record,trip){
+    if(record&&Number.isFinite(Number(record.lat))&&Number.isFinite(Number(record.lon)))return Number(record.lat)+','+Number(record.lon);
+    return[record&&(record.name||record.title),trip.city,trip.country].filter(Boolean).join(', ');
+  }
+  function enhanceCalendar(){
+    var modal=document.querySelector('.trip-calendar-backdrop:not([hidden])'),trip=tripData();
+    if(!modal||!trip)return;
+    modal.querySelectorAll('[data-calendar-event]').forEach(function(row){
+      if(row.dataset.fullDetails==='true')return;
+      var record=eventRecord(row,trip);if(!record)return;
+      row.dataset.fullDetails='true';
+      var actions=row.querySelector('.trip-calendar-event-actions');
+      var expand=document.createElement('button');expand.type='button';expand.dataset.calendarExpand='';expand.title='\u05db\u05dc \u05d4\u05e4\u05e8\u05d8\u05d9\u05dd';expand.innerHTML='<i class="fa-solid fa-chevron-down"></i>';
+      actions.insertBefore(expand,actions.firstChild);
+      var target=destination(record,trip),maps='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(target),shareText='\ud83d\udccd '+(record.name||record.title||'\u05de\u05e7\u05d5\u05dd')+'\n'+[record.address,trip.city,trip.country].filter(Boolean).join(', ')+'\n'+maps;
+      var official=safeUrl(record.website||record.officialUrl),ratings=safeUrl(record.ratingsUrl||record.googleMapsUrl);
+      var details=document.createElement('div');details.className='trip-calendar-event-details';
+      details.innerHTML=(record.image?'<img src="'+escapeHtml(record.image)+'" alt="">':'')+'<div class="trip-calendar-event-info">'+
+        (record.address?'<p><i class="fa-solid fa-location-dot"></i> '+escapeHtml(record.address)+'</p>':'')+
+        (record.description||record.note?'<p>'+escapeHtml(record.description||record.note)+'</p>':'')+
+        '<nav><a href="'+maps+'" target="_blank" rel="noopener"><i class="fa-solid fa-route"></i> \u05d0\u05d9\u05da \u05de\u05d2\u05d9\u05e2\u05d9\u05dd</a>'+
+        '<a href="https://wa.me/?text='+encodeURIComponent(shareText)+'" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> \u05e9\u05d9\u05ea\u05d5\u05e3 \u05de\u05e7\u05d5\u05dd</a>'+
+        (official?'<a href="'+escapeHtml(official)+'" target="_blank" rel="noopener"><i class="fa-solid fa-globe"></i> \u05d0\u05ea\u05e8 \u05e8\u05e9\u05de\u05d9</a>':'')+
+        (ratings?'<a href="'+escapeHtml(ratings)+'" target="_blank" rel="noopener"><i class="fa-solid fa-star"></i> \u05e6\u05d9\u05d5\u05e0\u05d9\u05dd</a>':'')+
+        '<button type="button" data-calendar-edit-proxy><i class="fa-solid fa-pen"></i> \u05e2\u05e8\u05d9\u05db\u05d4 \u05de\u05dc\u05d0\u05d4</button></nav></div>';
+      row.appendChild(details)
+    })
+  }
+  function enhancePastDays(){
+    var container=document.querySelector('[data-generated-days]'),trip=tripData();if(!container||!trip)return;
+    var cards=[].slice.call(container.querySelectorAll('.generated-day')),start=new Date(trip.start+'T12:00:00'),today=new Date();today.setHours(0,0,0,0),past=[];
+    cards.forEach(function(card,index){var date=new Date(start.getTime()+index*86400000),value=date.toISOString().slice(0,10),isPast=date<today;card.classList.toggle('past-trip-day',isPast);card.classList.toggle('past-trip-day-open',!!openPastDays[value]);card.dataset.tripDate=value;if(isPast)past.push({date:value,index:index,card:card})});
+    var strip=container.parentNode.querySelector('[data-past-days-strip]');
+    if(!strip){strip=document.createElement('section');strip.className='past-days-strip';strip.dataset.pastDaysStrip='';container.parentNode.insertBefore(strip,container)}
+    strip.hidden=!past.length;
+    strip.innerHTML=past.length?'<span><i class="fa-solid fa-clock-rotate-left"></i> \u05d9\u05de\u05d9\u05dd \u05e9\u05e2\u05d1\u05e8\u05d5</span><div>'+past.map(function(day){return'<button type="button" data-open-past-day="'+day.date+'" class="'+(openPastDays[day.date]?'active':'')+'">\u05d9\u05d5\u05dd '+(day.index+1)+' <small>'+new Intl.DateTimeFormat('he-IL',{day:'numeric',month:'short'}).format(new Date(day.date+'T12:00:00'))+'</small></button>'}).join('')+'</div>':'';
+    strip.onclick=function(event){var button=event.target.closest('[data-open-past-day]');if(!button)return;openPastDays[button.dataset.openPastDay]=!openPastDays[button.dataset.openPastDay];enhancePastDays();if(openPastDays[button.dataset.openPastDay]){var card=container.querySelector('[data-trip-date="'+button.dataset.openPastDay+'"]');card&&card.scrollIntoView({behavior:'smooth',block:'start'})}}
+  }
+  document.addEventListener('click',function(event){
+    var expand=event.target.closest('[data-calendar-expand]');if(expand){var row=expand.closest('[data-calendar-event]');row.classList.toggle('expanded');expand.querySelector('i').className=row.classList.contains('expanded')?'fa-solid fa-chevron-up':'fa-solid fa-chevron-down';return}
+    var proxy=event.target.closest('[data-calendar-edit-proxy]');if(proxy){var row=proxy.closest('[data-calendar-event]'),edit=row&&row.querySelector('[data-calendar-edit]');edit&&edit.click()}
+  });
+  var observer=new MutationObserver(function(){requestAnimationFrame(function(){enhanceCalendar();enhancePastDays()})});
+  function start(){observer.observe(document.body,{childList:true,subtree:true});enhanceCalendar();enhancePastDays();document.addEventListener('travelmate:planner-rendered',enhancePastDays)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start()
+})();
