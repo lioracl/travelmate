@@ -2,8 +2,8 @@
   'use strict';
 
   var release = {
-  version: '1.33.0',
-    label: 'מסמכים ונבו נגישים וברורים',
+  version: '1.34.0',
+    label: 'תקציב היררכי וממשק יציב',
     date: '30 ביולי 2026',
     highlights: [
       '\u05e0\u05d5\u05e1\u05e4\u05d5 \u05e1\u05d5\u05d2\u05d9 \u05de\u05e1\u05de\u05db\u05d9\u05dd \u05dc\u05ea\u05d7\u05d1\u05d5\u05e8\u05d4, \u05db\u05e8\u05d8\u05d9\u05e1\u05d9\u05dd, \u05d3\u05e8\u05db\u05d5\u05e0\u05d9\u05dd, \u05d0\u05e9\u05e8\u05d5\u05ea \u05d5\u05e7\u05d1\u05e6\u05d9\u05dd \u05e0\u05d5\u05e1\u05e4\u05d9\u05dd',
@@ -169,10 +169,22 @@
       'אזורים מתקפלים לניווט ברור יותר בטלפון'
     ]
   };
+  release.categories = [
+    { title: 'תקציב והוצאות', icon: 'fa-wallet', items: ['עריכה מלאה של קטגוריות ותתי־סעיפים, כולל רכבת, אוטובוס, מטרו ומוניות', 'סריקת קבלות ושיוך ההוצאה ישירות לסעיף המתאים'] },
+    { title: 'מסמכים ונבו', icon: 'fa-folder-open', items: ['העלאת מסמכים לפי סוג ושמירה מוצפנת של קבצים אישיים', 'שאלות ותשובות מנבו נשמרות בנפרד מהכספת ונגישות תמיד'] },
+    { title: 'תכנון ותחבורה', icon: 'fa-route', items: ['תכנון יומי, מקומות, ניווט ותחבורה לפי יעד הטיול', 'כותרות ואייקונים כפולים נוקו וניגודיות המסכים שופרה'] },
+    { title: 'ממשק ויציבות', icon: 'fa-wand-magic-sparkles', items: ['שכבות הטשטוש שגרמו לפס מהבהב הוסרו מאזורי התוכן', 'התצוגה הותאמה למסכי מחשב וטלפון ללא לבן על לבן'] }
+  ];
   window.TravelMateRelease = release;
 
+  function releaseGroupsHtml() {
+    return release.categories.map(function (group) {
+      return '<li class="about-release-category"><div><i class="fa-solid ' + group.icon + '"></i><strong>' + group.title + '</strong></div><ul>' + group.items.map(function (item) { return '<li><i class="fa-solid fa-circle-check"></i><span>' + item + '</span></li>'; }).join('') + '</ul></li>';
+    }).join('');
+  }
+
   function modalHtml() {
-    return '<section class="about-backdrop" data-about-modal aria-hidden="true"><div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"><header><div class="about-brand"><span><i class="fa-solid fa-route"></i></span><div><small>TravelMate</small><h2 id="about-title">אודות האפליקציה</h2></div></div><button class="about-close" type="button" data-about-close aria-label="סגירת אודות"><i class="fa-solid fa-xmark"></i></button></header><div class="about-content"><div class="about-version"><span>גרסה</span><strong>' + release.version + '</strong><small>' + release.label + ' · ' + release.date + '</small></div><section><h3>הטיול שלך, במקום אחד</h3><p>TravelMate מרכזת את תכנון הטיול, המסלול, המקומות, התחבורה, המסמכים, התקציב והשיחה הקבוצתית בחוויה אחת שמסתנכרנת בין המכשירים.</p></section><section><h3>מה כלול בגרסה הזו?</h3><ul>' + release.highlights.map(function (item) { return '<li><i class="fa-solid fa-circle-check"></i><span>' + item + '</span></li>'; }).join('') + '</ul></section><section class="about-rights"><h3><i class="fa-solid fa-copyright"></i> בעלות וזכויות שימוש</h3><p>© 2026 TravelMate. כל הזכויות שמורות לבעלי האפליקציה: <strong>ליאור אחלאו</strong> ו־<strong>נטלי ציינ׳י</strong>.</p><p>אין להעתיק, לשכפל, להפיץ, לפרסם, לשנות, למסחר או לעשות שימוש בקוד, בעיצוב, בתוכן, במאגרי המידע או במותג ללא אישור מראש ובכתב מבעלי האפליקציה. השימוש באפליקציה מותר בהתאם להרשאה ולתנאים שניתנו על ידי הבעלים.</p><p class="about-third-party">שמות, סמלים ושירותים של ספקים חיצוניים המופיעים באפליקציה שייכים לבעליהם, והשימוש בהם כפוף לתנאים של אותם ספקים.</p></section><section class="about-versioning"><h3>איך מספר הגרסה מתעדכן?</h3><div><span><b>1.0.1</b> תיקון נקודתי</span><span><b>1.1</b> פיצ׳ר או שיפור משמעותי</span><span><b>2.0</b> שינוי עמוק באפליקציה</span></div></section></div><footer><span><i class="fa-solid fa-shield-halved"></i> נבנה כדי לשמור את הטיול פרטי, נגיש ומסודר.</span><button type="button" data-about-close>סגירה</button></footer></div></section>';
+    return '<section class="about-backdrop" data-about-modal aria-hidden="true"><div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"><header><div class="about-brand"><span><i class="fa-solid fa-route"></i></span><div><small>TravelMate</small><h2 id="about-title">אודות האפליקציה</h2></div></div><button class="about-close" type="button" data-about-close aria-label="סגירת אודות"><i class="fa-solid fa-xmark"></i></button></header><div class="about-content"><div class="about-version"><span>גרסה</span><strong>' + release.version + '</strong><small>' + release.label + ' · ' + release.date + '</small></div><section><h3>הטיול שלך, במקום אחד</h3><p>TravelMate מרכזת את תכנון הטיול, המסלול, המקומות, התחבורה, המסמכים, התקציב והשיחה הקבוצתית בחוויה אחת שמסתנכרנת בין המכשירים.</p></section><section><h3>מה כלול בגרסה הזו?</h3><ul>' + releaseGroupsHtml() + '</ul></section><section class="about-rights"><h3><i class="fa-solid fa-copyright"></i> בעלות וזכויות שימוש</h3><p>© 2026 TravelMate. כל הזכויות שמורות לבעלי האפליקציה: <strong>ליאור אחלאו</strong> ו־<strong>נטלי ציינ׳י</strong>.</p><p>אין להעתיק, לשכפל, להפיץ, לפרסם, לשנות, למסחר או לעשות שימוש בקוד, בעיצוב, בתוכן, במאגרי המידע או במותג ללא אישור מראש ובכתב מבעלי האפליקציה. השימוש באפליקציה מותר בהתאם להרשאה ולתנאים שניתנו על ידי הבעלים.</p><p class="about-third-party">שמות, סמלים ושירותים של ספקים חיצוניים המופיעים באפליקציה שייכים לבעליהם, והשימוש בהם כפוף לתנאים של אותם ספקים.</p></section><section class="about-versioning"><h3>איך מספר הגרסה מתעדכן?</h3><div><span><b>1.0.1</b> תיקון נקודתי</span><span><b>1.1</b> פיצ׳ר או שיפור משמעותי</span><span><b>2.0</b> שינוי עמוק באפליקציה</span></div></section></div><footer><span><i class="fa-solid fa-shield-halved"></i> נבנה כדי לשמור את הטיול פרטי, נגיש ומסודר.</span><button type="button" data-about-close>סגירה</button></footer></div></section>';
   }
   function openAbout() {
     var modal = document.querySelector('[data-about-modal]');

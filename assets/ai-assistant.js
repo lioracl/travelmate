@@ -185,8 +185,8 @@
       archive = document.createElement('article');
       archive.className = 'ai-notes-archive';
       archive.dataset.aiNotesArchive = '';
-      var head = documents.querySelector(':scope > .section-head');
-      if (head) head.insertAdjacentElement('afterend', archive); else documents.prepend(archive);
+      var host = documents.querySelector('.doc-list') || documents;
+      host.parentNode.insertBefore(archive, host.nextSibling);
     }
     var trips = readTrips();
     var trip = trips.find(function (item) { return item.id === tripContext.id; });

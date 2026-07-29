@@ -3080,3 +3080,27 @@ html body.tm-new-design main.content #transport :is(.transport-title p,.transpor
 html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport .transport-card.transport-card,
 html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport .transport-result.transport-result{background:linear-gradient(145deg,rgba(248,252,250,.98),rgba(228,240,234,.96))!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important;border-color:#9fc8b6!important}
 html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport p.transport-note.transport-note{background:linear-gradient(135deg,#315d4d,#21493b)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+
+/* Avoid GPU backdrop-filter tile seams that appeared as a flashing vertical band. */
+html body.tm-new-design main.content :is(section,.section-head,.service-card,.transport-card,.expense-workspace,.budget-columns-editor,.budget-category-editor,.document-vault,.ai-notes-archive,.doc-row,.about-dialog){backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body.tm-new-design main.content>section:not(.hero){background:rgba(224,236,230,.96)!important}
+html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#getaways)>.section-head .mark{display:none!important}
+html body.tm-new-design main.content #transport .transport-empty{background:#edf7f2!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important;border-color:#8fc2ab!important}
+html body.tm-new-design main.content #transport .transport-empty *{color:#315d4d!important;-webkit-text-fill-color:#315d4d!important}
+html body.tm-new-design main.content #documents .ai-notes-archive{background:linear-gradient(145deg,#edf8f2,#fff)!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important}
+html body.tm-new-design main.content #documents .ai-notes-archive :is(h3,p,strong,small,summary,.ai-note-toggle){color:#173f32!important;-webkit-text-fill-color:#173f32!important}
+html body.tm-new-design main.content #documents .ai-notes-archive .ai-note-answer{color:#304c41!important;-webkit-text-fill-color:#304c41!important;background:#f8fcfa!important}
+
+/*
+ * Nested backdrop filters were being composited into separate GPU tiles on
+ * long pages, creating the intermittent vertical strip seen in the screenshots.
+ * The translucent palette remains, but the trip workspace uses stable layers.
+ */
+html body.tm-new-design main.content,
+html body.tm-new-design main.content *,
+html body.tm-new-design .about-backdrop,
+html body.tm-new-design .about-backdrop *{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important
+}
+html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
