@@ -793,9 +793,7 @@
     dialog.addEventListener('click', function (event) {
       var externalLink = event.target.closest('.auto-place-detail-links a,.auto-place-map a');
       if (externalLink) {
-        event.preventDefault();
         event.stopPropagation();
-        window.open(externalLink.href, '_blank', 'noopener');
         return;
       }
       var toggle = event.target.closest('[data-auto-place-toggle]');
@@ -824,12 +822,6 @@
       button.setAttribute('aria-expanded', String(!panel.hidden));
       var label = button.querySelector('span');
       if (label) label.textContent = panel.hidden ? 'פרטים' : 'סגירה';
-    });
-    /* Mobile browsers can retarget a tap on a native control to the backdrop
-       while the control is redrawn. Only the explicit close button closes the
-       planner so a preference change can never discard the current screen. */
-    dialog.querySelector('.auto-place-dialog').addEventListener('click', function (event) {
-      event.stopPropagation();
     });
   }
 

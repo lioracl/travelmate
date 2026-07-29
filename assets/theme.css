@@ -2928,7 +2928,7 @@ html body.tm-new-design[data-trip-view="group"] main.content #group .group-messa
   background:#176b50!important
 }
 
-/* 1.30.0 - full day editing, gentle overlap notices and reliable auto-fill controls. */
+/* 1.30.1 - full day editing, gentle overlap notices and reliable auto-fill controls. */
 body.tm-new-design .auto-place-choice{
   position:relative!important;
   z-index:2!important;
