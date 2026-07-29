@@ -2927,3 +2927,71 @@ html body.tm-new-design[data-trip-view="group"] main.content #group .group-messa
   border-inline-start:5px solid #0d4938!important;
   background:#176b50!important
 }
+
+/* 1.30.0 - full day editing, gentle overlap notices and reliable auto-fill controls. */
+body.tm-new-design .auto-place-choice{
+  position:relative!important;
+  z-index:2!important;
+  pointer-events:auto!important
+}
+body.tm-new-design .auto-place-choice[aria-pressed="false"]{
+  background:#fff!important;
+  border:2px solid #9fb8ad!important
+}
+body.tm-new-design .auto-place-choice[aria-pressed="false"] i{
+  opacity:0!important;
+  visibility:hidden!important
+}
+body.tm-new-design .auto-place-choice[aria-pressed="true"]{
+  background:#237a5a!important;
+  border-color:#237a5a!important;
+  color:#fff!important
+}
+body.tm-new-design .auto-place-detail-links,
+body.tm-new-design .auto-place-map a{
+  position:relative!important;
+  z-index:3!important;
+  pointer-events:auto!important
+}
+body.tm-new-design .auto-place-detail-links a{
+  background:#e5f3eb!important;
+  border:1px solid #84bda2!important;
+  color:#155a3f!important;
+  -webkit-text-fill-color:#155a3f!important;
+  text-decoration:none!important
+}
+body.tm-new-design .saved-place-editor .saved-place-day-field{
+  min-width:180px!important
+}
+body.tm-new-design .saved-place-editor .saved-place-day-field select{
+  width:100%!important;
+  min-height:42px!important;
+  border:1px solid #9fc4b2!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  color:#173f32!important;
+  font:inherit!important
+}
+body.tm-new-design .day-timeline :is(.planned-activity,.saved-place).soft-conflict{
+  border-color:rgba(201,132,47,.46)!important;
+  background:linear-gradient(135deg,rgba(255,251,242,.96),rgba(255,255,255,.9))!important;
+  box-shadow:inset 4px 0 0 rgba(201,132,47,.62),0 8px 22px rgba(92,65,29,.08)!important
+}
+body.tm-new-design .day-timeline .planned-activity.conflict{
+  border-color:rgba(201,132,47,.46)!important;
+  background:linear-gradient(135deg,rgba(255,251,242,.96),rgba(255,255,255,.9))!important
+}
+body.tm-new-design .schedule-conflict-note{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  width:max-content!important;
+  margin-top:5px!important;
+  padding:3px 8px!important;
+  border-radius:999px!important;
+  background:#fff4df!important;
+  color:#8a5a16!important;
+  -webkit-text-fill-color:#8a5a16!important;
+  font-size:10px!important;
+  font-weight:800!important
+}

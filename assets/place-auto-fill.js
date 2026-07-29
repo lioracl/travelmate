@@ -547,6 +547,27 @@
     } catch (error) { return []; }
   }
 
+  async function findProposalWithRetries(settings, status) {
+    var lastError = null;
+    var result = { candidates: [], proposal: [], attempts: 0 };
+    for (var attempt = 1; attempt <= 3; attempt++) {
+      result.attempts = attempt;
+      var expandedRadius = Math.round(Number(settings.radius) * (1 + (attempt - 1) * 0.5));
+      status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מחפש מקומות — ניסיון ' + attempt + ' מתוך 3' +
+        (attempt > 1 ? ' · מרחיב את אזור החיפוש' : '') + '…';
+      try {
+        var data = await overpass(queryFor(settings.categories, expandedRadius, state.origin, settings.freeTerm));
+        result.candidates = normalizeCandidates(data, state.origin);
+        result.proposal = buildProposal(result.candidates, settings, state.trip);
+        if (result.proposal.length) return result;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    if (lastError && !result.candidates.length) throw lastError;
+    return result;
+  }
+
   function renderPreview() {
     var preview = dialog.querySelector('[data-auto-place-preview]');
     var actions = dialog.querySelector('[data-auto-place-preview-actions]');
@@ -617,9 +638,9 @@
     try {
       state.origin = await resolveOrigin(settings, state.trip);
       state.rainyDates = settings.weatherAware ? await weatherFor(state.origin, settings.dates) : [];
-      var data = await overpass(queryFor(settings.categories, settings.radius, state.origin, settings.freeTerm));
-      state.candidates = normalizeCandidates(data, state.origin);
-      state.proposal = buildProposal(state.candidates, settings, state.trip);
+      var searchResult = await findProposalWithRetries(settings, status);
+      state.candidates = searchResult.candidates;
+      state.proposal = searchResult.proposal;
       state.settings = settings;
       status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מתאים תמונה אמיתית לכל מקום…';
       await enrichPlaceImages(state.proposal);
@@ -770,6 +791,13 @@
         'היום והשעה עודכנו בהצעה.' : 'השעה שבחרת הייתה תפוסה, לכן הפעילות הועברה אוטומטית לחלון הפנוי הקרוב: ' + safeTime + '.';
     });
     dialog.addEventListener('click', function (event) {
+      var externalLink = event.target.closest('.auto-place-detail-links a,.auto-place-map a');
+      if (externalLink) {
+        event.preventDefault();
+        event.stopPropagation();
+        window.open(externalLink.href, '_blank', 'noopener');
+        return;
+      }
       var toggle = event.target.closest('[data-auto-place-toggle]');
       if (toggle) {
         event.preventDefault();
