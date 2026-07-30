@@ -3456,3 +3456,160 @@ html body.tm-new-design[data-trip-view][data-trip-view] main.content section.tri
   text-shadow:0 1px 2px rgba(0,0,0,.28)!important;
   opacity:1!important
 }
+
+/* Keep pale controls readable inside the dark weather-card glass. */
+html body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
+  .google-rating-link,.saved-calendar-link,.schedule-conflict-note,
+  .activity-links a:not(.primary),.planned-activity a:not(.primary)
+){
+  color:#174f3c!important;
+  -webkit-text-fill-color:#174f3c!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
+  .google-rating-link,.saved-calendar-link,.schedule-conflict-note,
+  .activity-links a:not(.primary),.planned-activity a:not(.primary)
+) *{
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="plan"] main.content #plan .schedule-conflict-note{
+  background:#fff4df!important;
+  border-color:#e8c98d!important;
+  color:#7a4a0d!important;
+  -webkit-text-fill-color:#7a4a0d!important
+}
+
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-badge,
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-status:not(.error),
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-archive>header>b,
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-note-toggle{
+  background:#e7f4ed!important;
+  border-color:#add3c1!important;
+  color:#17664e!important;
+  -webkit-text-fill-color:#17664e!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-unlock>small{
+  background:#fff0e6!important;
+  border-color:#efb37f!important;
+  color:#6f3e19!important;
+  -webkit-text-fill-color:#6f3e19!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-unlock>small *{
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list details{
+  background:rgba(20,48,39,.88)!important;
+  border-color:rgba(255,255,255,.25)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list summary,
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-note-answer,
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer{
+  background:transparent!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list :is(summary,.ai-note-answer) :is(strong,small,span){
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list summary small{
+  color:rgba(255,255,255,.76)!important;
+  -webkit-text-fill-color:rgba(255,255,255,.76)!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button{
+  background:rgba(255,255,255,.95)!important;
+  border-color:rgba(255,255,255,.55)!important;
+  color:#17664e!important;
+  -webkit-text-fill-color:#17664e!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button *{
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important
+}
+
+html body.tm-new-design[data-trip-view="group"] main.content #group :is(.collaboration-live,.group-privacy){
+  background:#edf8f3!important;
+  border-color:#b9d9ca!important;
+  color:#205d48!important;
+  -webkit-text-fill-color:#205d48!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="group"] main.content #group :is(.collaboration-live,.group-privacy) *{
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important
+}
+
+/* Beat legacy plan-card selectors that carry duplicated IDs. */
+html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan :is(
+  .planned-activity.planned-activity,.saved-place.saved-place
+) :is(.google-rating-link.google-rating-link,.saved-calendar-link.saved-calendar-link,a[href].google-rating-link,a[href].saved-calendar-link),
+html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan .schedule-conflict-note.schedule-conflict-note{
+  color:#174f3c!important;
+  -webkit-text-fill-color:#174f3c!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan :is(
+  .planned-activity.planned-activity,.saved-place.saved-place
+) :is(.google-rating-link.google-rating-link,.saved-calendar-link.saved-calendar-link) *{
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan .schedule-conflict-note.schedule-conflict-note{
+  background:#fff4df!important;
+  border-color:#e8c98d!important;
+  color:#7a4a0d!important;
+  -webkit-text-fill-color:#7a4a0d!important
+}
+
+html body.tm-new-design[data-trip-view="documents"][data-trip-view] main.content section#documents#documents :is(
+  .vault-badge.vault-badge,.vault-status.vault-status:not(.error),
+  .ai-notes-archive.ai-notes-archive>header>b,.ai-note-toggle.ai-note-toggle
+){
+  background:#e7f4ed!important;
+  border-color:#add3c1!important;
+  color:#17664e!important;
+  -webkit-text-fill-color:#17664e!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="documents"][data-trip-view] main.content section#documents#documents .vault-unlock.vault-unlock>small{
+  background:#fff0e6!important;
+  border-color:#efb37f!important;
+  color:#6f3e19!important;
+  -webkit-text-fill-color:#6f3e19!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="documents"][data-trip-view] main.content section#documents#documents :is(
+  .vault-badge,.vault-status:not(.error),.vault-unlock>small,
+  .ai-notes-archive>header>b,.ai-note-toggle
+) *{
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important;
+  text-shadow:none!important
+}
+
+html body.tm-new-design[data-trip-view="memories"][data-trip-view] main.content section#memories#memories :is(
+  .memory-file-picker.memory-file-picker,a[href]
+){
+  background:rgba(255,255,255,.95)!important;
+  border-color:rgba(255,255,255,.55)!important;
+  color:#174f3c!important;
+  -webkit-text-fill-color:#174f3c!important;
+  text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="memories"][data-trip-view] main.content section#memories#memories :is(
+  .memory-file-picker.memory-file-picker,a[href]
+) *{
+  color:inherit!important;
+  -webkit-text-fill-color:inherit!important;
+  text-shadow:none!important
+}
