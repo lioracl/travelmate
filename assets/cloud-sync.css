@@ -40,3 +40,185 @@ html body.home-page .cloud-account-split form .cloud-login-submit{min-height:44p
 html body.home-page .cloud-account-split form .cloud-create-account{color:#fff!important;-webkit-text-fill-color:#fff!important}
 html body.home-page .cloud-account-split .cloud-account-close{background:#fff!important;border-color:#d4e8df!important;color:#0d5d47!important;-webkit-text-fill-color:#0d5d47!important}
 @media(max-width:760px){html body.home-page .cloud-account-backdrop .cloud-account-split{background-image:linear-gradient(rgba(4,45,34,.92),rgba(3,32,25,.96)),url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=82')!important}html body.home-page .cloud-account-split .cloud-account-session{grid-column:1;width:calc(100% - 40px)}}
+
+/* 2026-07-31 reference restoration: photographic split account screen. */
+html body.home-page .cloud-account-backdrop{
+  padding:28px;
+  background:rgba(4,10,9,.86);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px)
+}
+html body.home-page .cloud-account-backdrop .cloud-account-split{
+  direction:rtl;
+  width:min(1200px,calc(100vw - 56px));
+  min-height:min(714px,calc(100dvh - 56px));
+  max-height:calc(100dvh - 56px);
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto 1fr;
+  gap:0;
+  padding:62px 0 48px;
+  overflow:auto;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:18px;
+  color:#fff;
+  background-color:#111;
+  background-image:
+    linear-gradient(90deg,rgba(3,8,7,.04) 0 50%,rgba(3,8,7,.9) 50% 100%),
+    url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1800&q=90')!important;
+  background-position:center!important;
+  background-size:cover!important;
+  box-shadow:0 32px 90px rgba(0,0,0,.58)
+}
+html body.home-page .cloud-account-backdrop .cloud-account-split:before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:0;
+  right:0;
+  bottom:0;
+  width:50%;
+  pointer-events:none;
+  background:rgba(0,0,0,.72)
+}
+html body.home-page .cloud-account-backdrop .cloud-account-split .cloud-account-copy,
+html body.home-page .cloud-account-backdrop .cloud-account-split form,
+html body.home-page .cloud-account-backdrop .cloud-account-split .cloud-account-session{
+  position:relative;
+  z-index:1;
+  grid-column:1;
+  width:min(470px,calc(100% - 70px));
+  justify-self:center;
+  padding-inline:0!important
+}
+html body.home-page .cloud-account-backdrop .cloud-account-split .cloud-account-copy{
+  align-self:end;
+  gap:12px
+}
+html body.home-page .cloud-account-split .cloud-account-copy h2{
+  margin:0;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:clamp(48px,5vw,64px);
+  font-weight:300;
+  line-height:1
+}
+html body.home-page .cloud-account-split .cloud-account-copy small{
+  color:rgba(255,255,255,.74)!important;
+  -webkit-text-fill-color:rgba(255,255,255,.74)!important;
+  font-size:16px;
+  text-shadow:0 1px 3px rgba(0,0,0,.7)
+}
+html body.home-page .cloud-account-backdrop .cloud-account-split form{
+  align-self:start;
+  gap:12px;
+  padding-top:26px!important
+}
+html body.home-page .cloud-account-split .cloud-account-session{
+  align-self:center;
+  gap:12px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none
+}
+html body.home-page .cloud-account-split .cloud-account-session span{
+  padding:0 0 10px;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:16px;
+  font-weight:500;
+  line-height:1.5;
+  text-align:right
+}
+html body.home-page .cloud-account-split .cloud-account-session button,
+html body.home-page .cloud-account-split form button{
+  width:100%;
+  min-height:58px!important;
+  padding:0 20px;
+  border-radius:0!important;
+  font-size:17px;
+  font-weight:700!important
+}
+html body.home-page .cloud-account-split .cloud-account-session [data-cloud-sync-now],
+html body.home-page .cloud-account-split form .cloud-login-submit{
+  margin:0;
+  border:1px solid #f2574b!important;
+  background:#f2574b!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.home-page .cloud-account-split .cloud-account-session button.secondary,
+html body.home-page .cloud-account-split form button.secondary{
+  border:1px solid rgba(255,255,255,.48)!important;
+  background:rgba(255,255,255,.035)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important
+}
+html body.home-page .cloud-account-split .cloud-account-session [data-cloud-signout]{
+  border-color:rgba(255,255,255,.48)!important;
+  background:rgba(255,255,255,.035)!important
+}
+html body.home-page .cloud-account-split .cloud-account-close{
+  top:20px;
+  left:20px;
+  width:50px;
+  height:50px!important;
+  border:1px solid rgba(255,255,255,.42)!important;
+  border-radius:50%!important;
+  background:rgba(12,20,18,.68)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px)
+}
+html body.home-page .cloud-account-split .cloud-auth-field,
+html body.home-page .cloud-account-split .cloud-auth-field>span:first-child{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.home-page .cloud-account-split .cloud-auth-input input{
+  min-height:50px;
+  border:1px solid rgba(255,255,255,.5)!important;
+  border-radius:0!important;
+  background:rgba(255,255,255,.96)!important;
+  color:#142d25!important;
+  -webkit-text-fill-color:#142d25!important
+}
+html body.home-page .cloud-account-split form .cloud-create-account{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+@media(max-width:760px){
+  html body.home-page .cloud-account-backdrop{padding:10px}
+  html body.home-page .cloud-account-backdrop .cloud-account-split{
+    width:100%;
+    min-height:calc(100dvh - 20px);
+    max-height:calc(100dvh - 20px);
+    grid-template-columns:1fr;
+    padding:72px 0 30px;
+    border-radius:18px;
+    background-image:
+      linear-gradient(rgba(3,13,10,.76),rgba(3,13,10,.92)),
+      url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=86')!important;
+    background-position:center!important;
+    background-size:cover!important
+  }
+  html body.home-page .cloud-account-backdrop .cloud-account-split:before{
+    width:100%;
+    background:rgba(0,0,0,.36)
+  }
+  html body.home-page .cloud-account-backdrop .cloud-account-split .cloud-account-copy,
+  html body.home-page .cloud-account-backdrop .cloud-account-split form,
+  html body.home-page .cloud-account-backdrop .cloud-account-split .cloud-account-session{
+    grid-column:1;
+    width:calc(100% - 44px)
+  }
+  html body.home-page .cloud-account-split .cloud-account-copy h2{font-size:44px}
+  html body.home-page .cloud-account-split .cloud-account-session button,
+  html body.home-page .cloud-account-split form button{min-height:52px!important}
+}
