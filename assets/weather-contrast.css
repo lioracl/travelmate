@@ -138,8 +138,8 @@ html body .weather-top-icon small{
   color:inherit!important;
   -webkit-text-fill-color:currentColor!important
 }
-/* 1.35.6 — keep the compact forecast card and make its edge easier to see. */
+/* 1.35.7 — keep the compact forecast card and strengthen its edge slightly. */
 html body.tm-new-design[data-trip-view="overview"] .hero .weather-top-widget{
-  border:2px solid rgba(23,107,78,.56)!important;
-  box-shadow:0 10px 26px rgba(0,43,31,.13),inset 0 1px 0 rgba(255,255,255,.68)!important
+  border:2px solid rgba(18,96,69,.72)!important;
+  box-shadow:0 11px 28px rgba(0,43,31,.17),inset 0 1px 0 rgba(255,255,255,.72)!important
 }
