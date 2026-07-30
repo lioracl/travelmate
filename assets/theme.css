@@ -3739,8 +3739,8 @@ html body.tm-new-design[data-trip-view="memories"][data-trip-view] main.content 
   -webkit-text-fill-color:inherit!important;
   text-shadow:none!important
 }
-/* 1.35.7 — a calm card with a stronger, still restrained edge. */
+/* 1.35.8 — a calm card with an unmistakable edge. */
 html body.tm-new-design[data-trip-view="places"] main.content #places .auto-place-launch{
-  border:2px solid rgba(18,96,69,.72)!important;
-  box-shadow:0 11px 28px rgba(0,43,31,.16),inset 0 1px 0 rgba(255,255,255,.68)!important
+  border:3px solid #0d7653!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.46),0 12px 30px rgba(0,43,31,.2),inset 0 1px 0 rgba(255,255,255,.72)!important
 }
