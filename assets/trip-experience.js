@@ -137,7 +137,22 @@
     var section = document.getElementById('budget'); if (!section || section.querySelector('[data-expense-workspace]')) return;
     var panel = document.createElement('div'); panel.className = 'expense-workspace'; panel.dataset.expenseWorkspace = '';
     panel.innerHTML = '<div class="expense-workspace-head"><div><small>מעקב מדויק</small><h2>הוצאות וקבלות</h2><p>צלם קבלה, סרוק אותה, בחר קטגוריה והוסף אותה ישירות לתקציב.</p></div><button type="button" data-expense-toggle><i class="fa-solid fa-camera"></i> צילום קבלה / הוצאה</button></div><div class="budget-columns-editor"><div><strong>עמודות התקציב</strong><small>אפשר לשנות שם וסכום, למחוק או להוסיף קטגוריה.</small></div><div data-budget-columns></div><button type="button" data-budget-column-add><i class="fa-solid fa-plus"></i> קטגוריה חדשה</button></div><form class="receipt-form" data-receipt-form hidden><label class="receipt-picker"><input name="receipt" type="file" accept="image/*,application/pdf" capture="environment"><i class="fa-solid fa-camera"></i><span><strong>צילום, סריקה או בחירת קבלה</strong><small>התמונה נשמרת עם ההוצאה ומופיעה לצפייה מאוחרת.</small></span></label><div class="receipt-preview" data-receipt-preview hidden></div><div class="receipt-grid"><label>כמה שולם?<input name="amount" type="number" min="0.01" step="0.01" required></label><label>מטבע<select name="currency"><option value="EUR">אירו (€)</option><option value="ILS">שקל (₪)</option><option value="USD">דולר ($)</option><option value="GBP">ליש״ט (£)</option></select></label><label>קטגוריה<select name="category" data-expense-category></select></label><label>תאריך<input name="date" type="date"></label><label class="wide">מה נקנה / בית עסק<input name="note" maxlength="160" required placeholder="לדוגמה: ארוחת ערב במסעדה"></label></div><p class="receipt-scan-status" data-receipt-status></p><div class="receipt-actions"><button type="button" data-receipt-scan><i class="fa-solid fa-wand-magic-sparkles"></i> סריקה חכמה</button><button type="submit"><i class="fa-solid fa-wallet"></i> הוסף לתקציב בקטגוריה</button></div></form><div class="expense-live-summary" data-expense-summary></div><div class="expense-records" data-expense-records></div>';
-    section.appendChild(panel); var form = panel.querySelector('[data-receipt-form]');
+    section.appendChild(panel);
+    var charts = document.createElement('section');
+    charts.className = 'budget-charts';
+    charts.dataset.budgetCharts = '';
+    charts.innerHTML = '<header><div><small>\u05de\u05e1\u05d5\u05e0\u05db\u05e8\u05df \u05e2\u05dd \u05d4\u05d4\u05d5\u05e6\u05d0\u05d5\u05ea</small><h3>\u05ea\u05e7\u05e6\u05d9\u05d1 \u05de\u05ea\u05d5\u05db\u05e0\u05df \u05de\u05d5\u05dc \u05d1\u05d9\u05e6\u05d5\u05e2</h3><p>\u05db\u05dc \u05e7\u05d1\u05dc\u05d4 \u05e9\u05ea\u05d5\u05e1\u05e3 \u05ea\u05e2\u05d3\u05db\u05df \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9\u05ea \u05d0\u05ea \u05d4\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05d5\u05d0\u05ea \u05d4\u05d2\u05e8\u05e3.</p></div><button type="button" data-budget-chart-edit><i class="fa-solid fa-sliders"></i> \u05e2\u05e8\u05d9\u05db\u05ea \u05d4\u05d2\u05e8\u05e3</button></header><div class="budget-chart-summary" data-budget-chart-summary></div><div class="budget-chart-bars" data-budget-chart-bars></div>';
+    panel.querySelector('.budget-columns-editor').insertAdjacentElement('afterend', charts);
+    charts.querySelector('[data-budget-chart-edit]').onclick = function () {
+      charts.classList.toggle('editing');
+      var editor = panel.querySelector('.budget-columns-editor');
+      if (editor) {
+        editor.hidden = !charts.classList.contains('editing');
+        if (!editor.hidden) editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    };
+    panel.querySelector('.budget-columns-editor').hidden = true;
+    var form = panel.querySelector('[data-receipt-form]');
     var currencySelect = form.currency;
     if (!currencySelect.querySelector('option[value="' + state.localCurrency + '"]')) {
       var localOption = document.createElement('option');
@@ -152,6 +167,7 @@
     panel.querySelector('[data-budget-column-add]').onclick = function () { state.budgetCategories.push({ id: Date.now(), name: 'קטגוריה חדשה', amount: 0 }); persistBudgetColumns(); };
     form.onsubmit = async function (event) { event.preventDefault(); var file = form.receipt.files[0]; var receiptData = file && file.type.indexOf('image/') === 0 ? await compressedReceipt(file) : ''; state.expenses.push({ id: Date.now(), amount: Number(form.amount.value), currency: form.currency.value, category: form.category.value, date: form.date.value, note: form.note.value.trim(), receiptName: file ? file.name : '', receiptData: receiptData }); writeJson(storageKey('expenses'), state.expenses); saveTripData(); form.reset(); form.date.value = new Date().toISOString().slice(0, 10); form.hidden = true; panel.querySelector('[data-receipt-preview]').hidden = true; panel.querySelector('[data-receipt-status]').textContent = ''; renderExpenseList(); renderBudgetColumns(); renderSummary(); toast('ההוצאה נוספה לקטגוריית ' + state.expenses[state.expenses.length - 1].category + '.'); };
     renderExpenseList();
+    renderBudgetCharts();
   }
   function defaultBudgetCategories() {
     var budget = inferBudget();
@@ -166,7 +182,50 @@
       return { id: 'default-' + index, name: item.name, amount: total, subcategories: item.children.map(function (name, childIndex) { return { id: 'sub-' + index + '-' + childIndex, name: name, amount: Math.round(total / item.children.length) }; }) };
     });
   }
-  function persistBudgetColumns() { writeJson(storageKey('budget-categories'), state.budgetCategories); saveTripData(); renderBudgetColumns(); renderExpenseList(); }
+  function persistBudgetColumns() { writeJson(storageKey('budget-categories'), state.budgetCategories); writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderBudgetColumns(); renderExpenseList(); renderBudgetCharts(); }
+  function expenseCategoryParts(value) {
+    var parts = String(value || '').split('/').map(function (part) { return part.trim(); }).filter(Boolean);
+    return { category: parts[0] || '\u05d0\u05d7\u05e8', subcategory: parts[1] || '' };
+  }
+  function budgetExpenseTotals() {
+    var totals = {};
+    state.expenses.forEach(function (expense) {
+      var parts = expenseCategoryParts(expense.category);
+      var euros = expenseInEuros(expense);
+      totals[parts.category] = totals[parts.category] || { total: 0, subcategories: {} };
+      totals[parts.category].total += euros;
+      if (parts.subcategory) totals[parts.category].subcategories[parts.subcategory] = (totals[parts.category].subcategories[parts.subcategory] || 0) + euros;
+    });
+    return totals;
+  }
+  function renderBudgetCharts() {
+    var bars = document.querySelector('[data-budget-chart-bars]');
+    var summary = document.querySelector('[data-budget-chart-summary]');
+    if (!bars || !summary) return;
+    var totals = budgetExpenseTotals();
+    var palette = ['#2f9a72', '#e29b52', '#6688c8', '#b16fa5', '#d46b64', '#6f9ca8', '#8a7bc2'];
+    var totalPlanned = state.budgetCategories.reduce(function (sum, item) { return sum + Number(item.amount || 0); }, 0);
+    var totalSpent = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
+    var totalSpentLocal = state.localCurrency === 'EUR' ? totalSpent : localFromEuros(totalSpent);
+    var totalPlannedLocal = state.localCurrency === 'EUR' ? totalPlanned : localFromEuros(totalPlanned);
+    summary.innerHTML = '<div><span>\u05de\u05ea\u05d5\u05db\u05e0\u05df</span><strong>' + money(totalPlannedLocal, state.localCurrency) + '</strong></div><div><span>\u05d1\u05d5\u05e6\u05e2</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>\u05e0\u05d5\u05ea\u05e8</span><strong>' + money(Math.max(0, totalPlannedLocal - totalSpentLocal), state.localCurrency) + '</strong></div>';
+    bars.innerHTML = state.budgetCategories.map(function (item, index) {
+      var expenseTotal = totals[item.name] ? totals[item.name].total : 0;
+      var planned = Math.max(0, Number(item.amount || 0));
+      var percent = planned ? Math.min(100, Math.round(expenseTotal / planned * 100)) : expenseTotal ? 100 : 0;
+      var color = item.color || palette[index % palette.length];
+      item.color = color;
+      var spentLocal = state.localCurrency === 'EUR' ? expenseTotal : localFromEuros(expenseTotal);
+      var plannedLocal = state.localCurrency === 'EUR' ? planned : localFromEuros(planned);
+      return '<article class="budget-chart-row"><div class="budget-chart-label"><span class="budget-chart-dot" style="--chart-color:' + escapeHtml(color) + '"></span><strong>' + escapeHtml(item.name) + '</strong><small>' + money(spentLocal, state.localCurrency) + ' \u05de\u05ea\u05d5\u05da ' + money(plannedLocal, state.localCurrency) + '</small></div><div class="budget-chart-track"><i style="width:' + percent + '%;--chart-color:' + escapeHtml(color) + '"></i></div><b>' + percent + '%</b><label class="budget-chart-color" title="\u05e6\u05d1\u05e2 \u05d4\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4"><input type="color" value="' + escapeHtml(color) + '" data-budget-chart-color="' + escapeHtml(item.id) + '"><span>\u05e6\u05d1\u05e2</span></label></article>';
+    }).join('');
+    bars.querySelectorAll('[data-budget-chart-color]').forEach(function (input) {
+      input.onchange = function () {
+        var item = state.budgetCategories.find(function (entry) { return String(entry.id) === input.dataset.budgetChartColor; });
+        if (item) { item.color = input.value; persistBudgetColumns(); }
+      };
+    });
+  }
   function renderBudgetColumns() {
     var host = document.querySelector('[data-budget-columns]'); var select = document.querySelector('[data-expense-category]'); if (!host) return;
     state.budgetCategories.forEach(function (item) {
@@ -176,16 +235,18 @@
     });
     host.innerHTML = state.budgetCategories.map(function (item) {
       var children = item.subcategories.map(function (sub) { return '<div class="budget-subcategory-row"><i class="fa-solid fa-turn-up"></i><input data-budget-sub-name="' + escapeHtml(item.id) + '" data-sub-id="' + escapeHtml(sub.id) + '" value="' + escapeHtml(sub.name) + '" aria-label="שם תת קטגוריה"><label><span>' + escapeHtml(state.localCurrency) + '</span><input data-budget-sub-amount="' + escapeHtml(item.id) + '" data-sub-id="' + escapeHtml(sub.id) + '" type="number" min="0" step="1" value="' + Number(sub.amount || 0) + '" aria-label="סכום תת קטגוריה"></label><button type="button" data-budget-sub-delete="' + escapeHtml(item.id) + '" data-sub-id="' + escapeHtml(sub.id) + '" aria-label="מחיקת תת קטגוריה"><i class="fa-solid fa-xmark"></i></button></div>'; }).join('');
-      return '<section class="budget-category-editor"><div class="budget-column-row"><input data-budget-name="' + escapeHtml(item.id) + '" value="' + escapeHtml(item.name) + '" aria-label="שם קטגוריה"><label><span>' + escapeHtml(state.localCurrency) + '</span><input data-budget-amount="' + escapeHtml(item.id) + '" type="number" min="0" step="1" value="' + Number(item.amount || 0) + '" aria-label="סכום מתוכנן"></label><button type="button" data-budget-delete="' + escapeHtml(item.id) + '" aria-label="מחיקת קטגוריה"><i class="fa-solid fa-trash"></i></button></div><div class="budget-subcategories">' + children + '</div><button class="budget-add-subcategory" type="button" data-budget-sub-add="' + escapeHtml(item.id) + '"><i class="fa-solid fa-plus"></i> הוספת תת־סעיף</button></section>';
+      var totals = budgetExpenseTotals(); var spent = totals[item.name] ? totals[item.name].total : 0; var spentLocal = state.localCurrency === 'EUR' ? spent : localFromEuros(spent);
+      return '<details class="budget-category-editor"><summary><span><i class="fa-solid fa-chevron-down"></i><strong>' + escapeHtml(item.name) + '</strong></span><small>' + item.subcategories.length + ' \u05ea\u05ea\u05d9\u05be\u05e1\u05e2\u05d9\u05e4\u05d9\u05dd</small><b>' + money(spentLocal, state.localCurrency) + ' \u05d4\u05d5\u05e6\u05d0\u05d5</b></summary><div class="budget-category-body"><div class="budget-column-row"><input data-budget-name="' + escapeHtml(item.id) + '" value="' + escapeHtml(item.name) + '" aria-label="\u05e9\u05dd \u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4"><label><span>' + escapeHtml(state.localCurrency) + '</span><input data-budget-amount="' + escapeHtml(item.id) + '" type="number" min="0" step="1" value="' + Number(item.amount || 0) + '" aria-label="\u05e1\u05db\u05d5\u05dd \u05de\u05ea\u05d5\u05db\u05e0\u05df"></label><button type="button" data-budget-delete="' + escapeHtml(item.id) + '" aria-label="\u05de\u05d7\u05d9\u05e7\u05ea \u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4"><i class="fa-solid fa-trash"></i></button></div><div class="budget-subcategories">' + children + '</div><button class="budget-add-subcategory" type="button" data-budget-sub-add="' + escapeHtml(item.id) + '"><i class="fa-solid fa-plus"></i> \u05d4\u05d5\u05e1\u05e4\u05ea \u05ea\u05ea\u05be\u05e1\u05e2\u05d9\u05e3</button></div></details>';
     }).join('');
     if (select) { var selected = select.value; select.innerHTML = state.budgetCategories.map(function (item) { return '<optgroup label="' + escapeHtml(item.name) + '"><option>' + escapeHtml(item.name) + '</option>' + item.subcategories.map(function (sub) { return '<option value="' + escapeHtml(item.name + ' / ' + sub.name) + '">' + escapeHtml(sub.name) + '</option>'; }).join('') + '</optgroup>'; }).join('') + '<option>אחר</option>'; if ([].slice.call(select.options).some(function (option) { return option.value === selected; })) select.value = selected; }
-    host.querySelectorAll('[data-budget-name]').forEach(function (input) { input.onchange = function () { var item = state.budgetCategories.find(function (entry) { return String(entry.id) === input.dataset.budgetName; }); if (item && input.value.trim()) { item.name = input.value.trim(); persistBudgetColumns(); } }; });
+    host.querySelectorAll('[data-budget-name]').forEach(function (input) { input.onchange = function () { var item = state.budgetCategories.find(function (entry) { return String(entry.id) === input.dataset.budgetName; }); if (item && input.value.trim()) { var oldName = item.name; var newName = input.value.trim(); state.expenses.forEach(function (expense) { var parts = expenseCategoryParts(expense.category); if (parts.category === oldName) expense.category = newName + (parts.subcategory ? ' / ' + parts.subcategory : ''); }); item.name = newName; persistBudgetColumns(); } }; });
     host.querySelectorAll('[data-budget-amount]').forEach(function (input) { input.onchange = function () { var item = state.budgetCategories.find(function (entry) { return String(entry.id) === input.dataset.budgetAmount; }); if (item) { item.amount = Math.max(0, Number(input.value || 0)); persistBudgetColumns(); } }; });
-    host.querySelectorAll('[data-budget-delete]').forEach(function (button) { button.onclick = function () { if (state.budgetCategories.length <= 1) return toast('יש להשאיר לפחות קטגוריה אחת.'); state.budgetCategories = state.budgetCategories.filter(function (entry) { return String(entry.id) !== button.dataset.budgetDelete; }); persistBudgetColumns(); }; });
+    host.querySelectorAll('[data-budget-delete]').forEach(function (button) { button.onclick = function () { if (state.budgetCategories.length <= 1) return toast('יש להשאיר לפחות קטגוריה אחת.'); var removed = state.budgetCategories.find(function (entry) { return String(entry.id) === button.dataset.budgetDelete; }); if (removed) state.expenses.forEach(function (expense) { if (expenseCategoryParts(expense.category).category === removed.name) expense.category = 'אחר'; }); state.budgetCategories = state.budgetCategories.filter(function (entry) { return String(entry.id) !== button.dataset.budgetDelete; }); persistBudgetColumns(); }; });
     host.querySelectorAll('[data-budget-sub-add]').forEach(function (button) { button.onclick = function () { var item = state.budgetCategories.find(function (entry) { return String(entry.id) === button.dataset.budgetSubAdd; }); if (!item) return; item.subcategories.push({ id: 'sub-' + Date.now(), name: 'תת־סעיף חדש', amount: 0 }); persistBudgetColumns(); }; });
-    host.querySelectorAll('[data-budget-sub-name]').forEach(function (input) { input.onchange = function () { var item = state.budgetCategories.find(function (entry) { return String(entry.id) === input.dataset.budgetSubName; }); var sub = item && item.subcategories.find(function (entry) { return String(entry.id) === input.dataset.subId; }); if (sub && input.value.trim()) { sub.name = input.value.trim(); persistBudgetColumns(); } }; });
+    host.querySelectorAll('[data-budget-sub-name]').forEach(function (input) { input.onchange = function () { var item = state.budgetCategories.find(function (entry) { return String(entry.id) === input.dataset.budgetSubName; }); var sub = item && item.subcategories.find(function (entry) { return String(entry.id) === input.dataset.subId; }); if (sub && input.value.trim()) { var oldName = sub.name; var newName = input.value.trim(); state.expenses.forEach(function (expense) { var parts = expenseCategoryParts(expense.category); if (parts.category === item.name && parts.subcategory === oldName) expense.category = item.name + ' / ' + newName; }); sub.name = newName; persistBudgetColumns(); } }; });
     host.querySelectorAll('[data-budget-sub-amount]').forEach(function (input) { input.onchange = function () { var item = state.budgetCategories.find(function (entry) { return String(entry.id) === input.dataset.budgetSubAmount; }); var sub = item && item.subcategories.find(function (entry) { return String(entry.id) === input.dataset.subId; }); if (sub) { sub.amount = Math.max(0, Number(input.value || 0)); item.amount = item.subcategories.reduce(function (sum, entry) { return sum + Number(entry.amount || 0); }, 0); persistBudgetColumns(); } }; });
-    host.querySelectorAll('[data-budget-sub-delete]').forEach(function (button) { button.onclick = function () { var item = state.budgetCategories.find(function (entry) { return String(entry.id) === button.dataset.budgetSubDelete; }); if (!item) return; item.subcategories = item.subcategories.filter(function (entry) { return String(entry.id) !== button.dataset.subId; }); if (item.subcategories.length) item.amount = item.subcategories.reduce(function (sum, entry) { return sum + Number(entry.amount || 0); }, 0); persistBudgetColumns(); }; });
+    host.querySelectorAll('[data-budget-sub-delete]').forEach(function (button) { button.onclick = function () { var item = state.budgetCategories.find(function (entry) { return String(entry.id) === button.dataset.budgetSubDelete; }); if (!item) return; var removed = item.subcategories.find(function (entry) { return String(entry.id) === button.dataset.subId; }); if (removed) state.expenses.forEach(function (expense) { var parts = expenseCategoryParts(expense.category); if (parts.category === item.name && parts.subcategory === removed.name) expense.category = item.name; }); item.subcategories = item.subcategories.filter(function (entry) { return String(entry.id) !== button.dataset.subId; }); if (item.subcategories.length) item.amount = item.subcategories.reduce(function (sum, entry) { return sum + Number(entry.amount || 0); }, 0); persistBudgetColumns(); }; });
+    renderBudgetCharts();
   }
   function compressedReceipt(file) { return new Promise(function (resolve) { var reader = new FileReader(); reader.onload = function () { var image = new Image(); image.onload = function () { var scale = Math.min(1, 1200 / Math.max(image.width, image.height)); var canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(image.width * scale)); canvas.height = Math.max(1, Math.round(image.height * scale)); canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height); resolve(canvas.toDataURL('image/jpeg', .72)); }; image.onerror = function () { resolve(''); }; image.src = reader.result; }; reader.onerror = function () { resolve(''); }; reader.readAsDataURL(file); }); }
   function previewReceipt(file, panel) { var preview = panel.querySelector('[data-receipt-preview]'); if (!file) { preview.hidden = true; return; } var url = URL.createObjectURL(file); preview.hidden = false; preview.innerHTML = '<img src="' + url + '" alt="תצוגה מקדימה של הקבלה"><span>' + escapeHtml(file.name) + '</span>'; }
@@ -210,6 +271,7 @@
     host.innerHTML = state.expenses.length ? state.expenses.slice().reverse().map(function (expense) { return '<article><i class="fa-solid fa-receipt"></i><div><strong>' + escapeHtml(expense.note || expense.category) + '</strong><span>' + escapeHtml(expense.category) + ' · ' + escapeHtml(expense.date || '') + (expense.receiptName ? ' · צורפה קבלה' : '') + '</span></div><b>' + money(expense.amount, expense.currency || 'EUR') + '</b><span class="expense-row-actions">' + (expense.receiptData ? '<button type="button" data-expense-receipt="' + expense.id + '" aria-label="צפייה בקבלה"><i class="fa-solid fa-eye"></i></button>' : '') + '<button type="button" data-expense-delete="' + expense.id + '" aria-label="מחיקת הוצאה"><i class="fa-solid fa-trash"></i></button></span></article>'; }).join('') : '<div class="trip-experience-empty">עדיין לא נרשמו הוצאות בטיול.</div>';
     host.querySelectorAll('[data-expense-receipt]').forEach(function (button) { button.onclick = function () { var item = state.expenses.find(function (expense) { return String(expense.id) === button.dataset.expenseReceipt; }); if (!item || !item.receiptData) return; var win = window.open(); if (win) win.document.write('<title>קבלה</title><img src="' + item.receiptData + '" style="max-width:100%;height:auto;display:block;margin:auto">'); }; });
     host.querySelectorAll('[data-expense-delete]').forEach(function (button) { button.onclick = function () { if (!confirm('למחוק את ההוצאה?')) return; state.expenses = state.expenses.filter(function (item) { return String(item.id) !== String(button.dataset.expenseDelete); }); writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); renderSummary(); }; });
+    renderBudgetCharts();
   }
 
   function createMemoriesSection() {

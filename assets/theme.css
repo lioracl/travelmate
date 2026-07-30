@@ -3013,6 +3013,26 @@ html body.tm-new-design main.content :is(#budget,#transport,#car-rental,#getaway
   -webkit-text-fill-color:currentColor!important;
   text-shadow:none!important
 }
+
+/* 1.35 — the receipt editor is part of the budget weather surface, not a white inset page. */
+html body.tm-new-design[data-trip-view][data-trip-view] main.content section#budget#budget .expense-workspace.expense-workspace .receipt-form.receipt-form{
+  background:rgba(8,36,29,.78)!important;
+  background-color:rgba(8,36,29,.78)!important;
+  border:1px solid rgba(255,255,255,.26)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design[data-trip-view][data-trip-view] main.content section#budget#budget .expense-workspace .receipt-picker.receipt-picker{
+  background:rgba(255,255,255,.1)!important;
+  border-color:rgba(255,255,255,.3)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important
+}
+html body.tm-new-design[data-trip-view][data-trip-view] main.content section#budget#budget .expense-workspace .receipt-grid :is(input,select){
+  background:#fff!important;
+  color:#173f32!important;
+  -webkit-text-fill-color:#173f32!important
+}
 html body.tm-new-design main.content #budget :is(.expense-workspace-head>button,.receipt-actions button,[data-budget-column-add]){
   background:#1f7658!important;
   color:#fff!important;
