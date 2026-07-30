@@ -960,7 +960,7 @@
     button.type = 'button';
     button.className = 'auto-place-launch';
     button.dataset.autoPlaceOpen = '';
-    button.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i><span><b>מתחילים כאן</b><strong>מילוי ימים אוטומטי</strong><small>בחר סוגי מקומות, מרחק וכמות פעילויות ליום</small></span><i class="fa-solid fa-arrow-left"></i>';
+    button.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i><span><strong>מילוי ימים אוטומטי</strong><small>בחר סוגי מקומות, מרחק וכמות פעילויות ליום</small></span><i class="fa-solid fa-arrow-left"></i>';
     var heading = places.querySelector('.section-head');
     if (heading) heading.insertAdjacentElement('afterend', button); else places.prepend(button);
     button.addEventListener('click', openDialog);
