@@ -25,27 +25,79 @@ html body #modal-weather-live :is(
   -webkit-text-fill-color:#d5eee4!important;
   opacity:1!important
 }
-html body #modal-weather-live :is(.weather-insight,.weather-live-day){
-  background:rgba(255,255,255,.13)!important;
-  border:1px solid rgba(255,255,255,.32)!important;
+html body #modal-weather-live .weather-insight{
+  background:rgba(255,255,255,.1)!important;
+  border:1px solid rgba(255,255,255,.22)!important;
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.14)!important
+  box-shadow:none!important
 }
+html body #modal-weather-live .weather-live-grid{
+  gap:0!important;
+  margin:16px 18px!important;
+  padding:0 14px!important;
+  border:1px solid rgba(255,255,255,.2)!important;
+  border-radius:20px!important;
+  background:rgba(255,255,255,.055)!important
+}
+html body #modal-weather-live .weather-live-day{
+  background:transparent!important;
+  border:0!important;
+  border-bottom:1px solid rgba(255,255,255,.16)!important;
+  border-radius:0!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:none!important;
+  padding:15px 2px!important
+}
+html body #modal-weather-live .weather-live-day:last-child{border-bottom:0!important}
 html body #modal-weather-live .weather-live-day.today{
-  background:rgba(54,135,101,.3)!important;
-  border-color:rgba(150,226,194,.58)!important
+  background:linear-gradient(90deg,rgba(64,153,115,.18),transparent)!important;
+  border-color:rgba(255,255,255,.16)!important
 }
-html body #modal-weather-live :is(.weather-insight>i,.weather-live-day-icon){
+html body #modal-weather-live .weather-insight>i{
   background:#eef8f3!important;
   color:#176b4e!important;
   -webkit-text-fill-color:#176b4e!important
 }
+html body #modal-weather-live .weather-live-day-icon{
+  width:52px!important;
+  height:52px!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  place-content:center!important;
+  gap:1px!important;
+  border:1px solid rgba(255,255,255,.24)!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.1)!important;
+  color:#d9f3e8!important;
+  -webkit-text-fill-color:#d9f3e8!important;
+  text-align:center!important
+}
+html body #modal-weather-live .weather-live-day-icon i{font-size:16px!important}
+html body #modal-weather-live .weather-live-day-icon small{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  line-height:1!important
+}
+html body #modal-weather-live .weather-live-metrics{
+  gap:14px!important
+}
 html body #modal-weather-live .weather-live-metrics b{
-  background:rgba(255,255,255,.94)!important;
-  color:#183b30!important;
-  -webkit-text-fill-color:#183b30!important;
+  position:relative!important;
+  padding:0!important;
+  background:transparent!important;
+  color:#e7f5ef!important;
+  -webkit-text-fill-color:#e7f5ef!important;
   text-shadow:none!important
+}
+html body #modal-weather-live .weather-live-metrics b+b:before{
+  content:"•";
+  position:absolute;
+  inset-inline-start:-9px;
+  color:rgba(255,255,255,.38)
 }
 html body #modal-weather-live .weather-live-actions button:not(.primary),
 html body #modal-weather-live .modal-close{
@@ -58,14 +110,31 @@ html body #modal-weather-live .modal-close{
     grid-auto-flow:row!important;
     grid-auto-columns:auto!important;
     grid-template-columns:1fr!important;
-    overflow-x:hidden!important
+    overflow-x:hidden!important;
+    margin:14px 12px!important;
+    padding:0 12px!important
   }
   html body #modal-weather-live .weather-live-day{
     width:100%!important;
-    grid-template-columns:42px minmax(0,1fr)!important
+    grid-template-columns:52px minmax(0,1fr)!important
   }
   html body #modal-weather-live .weather-live-metrics{
     grid-column:1/-1!important;
     justify-content:flex-start!important
   }
+}
+
+html body .weather-top-icon{
+  position:relative!important;
+  grid-template-rows:1fr auto!important;
+  gap:0!important
+}
+html body .weather-top-icon small{
+  display:block!important;
+  margin-top:-3px!important;
+  font-size:9px!important;
+  font-weight:950!important;
+  line-height:1!important;
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important
 }
