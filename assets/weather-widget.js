@@ -81,7 +81,7 @@
 
     var button = document.createElement('button');
     button.type = 'button'; button.className = 'weather-top-widget weather-master-card'; button.dataset.cardStyle = 'weather'; button.setAttribute('aria-haspopup', 'dialog'); button.setAttribute('aria-expanded', 'false');
-    button.innerHTML = '<span class="weather-top-icon">' + weatherSvg('fa-cloud-sun') + '</span><span class="weather-top-copy"><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><i class="fa-solid fa-chevron-down weather-top-chevron"></i>';
+    button.innerHTML = '<span class="weather-top-icon">' + weatherSvg('fa-cloud-sun') + '</span><span class="weather-top-copy"><b>לחצו לתחזית המלאה</b><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><i class="fa-solid fa-chevron-down weather-top-chevron"></i>';
     var content = document.querySelector('.content'); var hero = content && content.querySelector('.hero');
     if (!content || !hero) return null;
     hero.appendChild(button);
