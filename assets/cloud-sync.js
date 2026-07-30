@@ -64,10 +64,42 @@
     }
   }
 
+  function tripIdentity(trip, fallbackOwnerId) {
+    var ownerId = String(trip && trip.ownerId || fallbackOwnerId || '');
+    return ownerId + ':' + String(trip && trip.id || '');
+  }
+
+  function newestTrip(left, right) {
+    var leftTime = Date.parse(left && left.cloudUpdatedAt || left && left.updatedAt || 0) || 0;
+    var rightTime = Date.parse(right && right.cloudUpdatedAt || right && right.updatedAt || 0) || 0;
+    return rightTime > leftTime ? right : left;
+  }
+
+  function mergeTripLists(lists, fallbackOwnerId) {
+    var merged = new Map();
+    (lists || []).forEach(function (list) {
+      (Array.isArray(list) ? list : []).forEach(function (trip) {
+        if (!trip || trip.id == null) return;
+        var key = tripIdentity(trip, fallbackOwnerId);
+        merged.set(key, merged.has(key) ? newestTrip(merged.get(key), trip) : trip);
+      });
+    });
+    return Array.from(merged.values());
+  }
+
   function activateUserStorage(userId) {
     userId = userId ? String(userId) : '';
     var activeUser = localStorage.getItem(ACTIVE_USER_KEY) || '';
-    if (activeUser === userId) return;
+    if (activeUser === userId) {
+      if (userId) {
+        var activeSnapshotKey = USER_STORAGE_PREFIX + userId;
+        var currentActiveTrips = getLocalTrips();
+        var recoveredActiveTrips = mergeTripLists([currentActiveTrips, readTripList(activeSnapshotKey)], userId);
+        localStorage.setItem(activeSnapshotKey, JSON.stringify(recoveredActiveTrips));
+        if (JSON.stringify(recoveredActiveTrips) !== JSON.stringify(currentActiveTrips)) setLocalTrips(recoveredActiveTrips);
+      }
+      return;
+    }
 
     var currentTrips = getLocalTrips();
     if (activeUser) localStorage.setItem(USER_STORAGE_PREFIX + activeUser, JSON.stringify(currentTrips));
@@ -80,7 +112,11 @@
 
     var userStorageKey = USER_STORAGE_PREFIX + userId;
     var hasUserSnapshot = localStorage.getItem(userStorageKey) !== null;
-    var userTrips = hasUserSnapshot ? readTripList(userStorageKey) : (activeUser ? [] : currentTrips);
+    var snapshotTrips = hasUserSnapshot ? readTripList(userStorageKey) : [];
+    var recoverableTrips = activeUser ? [] : currentTrips.filter(function (trip) {
+      return !trip.ownerId || String(trip.ownerId) === userId;
+    });
+    var userTrips = mergeTripLists([snapshotTrips, recoverableTrips], userId);
     localStorage.setItem(ACTIVE_USER_KEY, userId);
     localStorage.setItem(userStorageKey, JSON.stringify(userTrips));
     setLocalTrips(userTrips);
@@ -88,7 +124,11 @@
 
   function upsertLocalTrip(trip) {
     var trips = getLocalTrips();
-    var index = trips.findIndex(function (item) { return String(item.id) === String(trip.id); });
+    var index = trips.findIndex(function (item) {
+      if (String(item.id) !== String(trip.id)) return false;
+      if (!item.ownerId || !trip.ownerId) return true;
+      return String(item.ownerId) === String(trip.ownerId);
+    });
     if (index === -1) trips.push(trip);
     else trips[index] = trip;
     setLocalTrips(trips);
@@ -170,7 +210,7 @@
   }
 
   function queueTripSave(trip, delay) {
-    var id = String(trip.id);
+    var id = tripIdentity(trip);
     clearTimeout(saveTimers.get(id));
     saveTimers.set(id, setTimeout(function () {
       saveTimers.delete(id);
@@ -183,7 +223,10 @@
 
   async function getTrip(id, expectedOwnerId) {
     var session = await getSession();
-    var local = getLocalTrips().find(function (trip) { return String(trip.id) === String(id); });
+    var local = getLocalTrips().find(function (trip) {
+      return String(trip.id) === String(id) &&
+        (!expectedOwnerId || !trip.ownerId || String(trip.ownerId) === String(expectedOwnerId));
+    });
     if (!session || !session.user) return local || null;
     var client = await getClient();
     var query = client.from('travel_trips').select('*').eq('id', String(id));
@@ -301,13 +344,15 @@
     var localTrips = getLocalTrips();
     if (!session || !session.user) return localTrips;
     var cloudTrips = await listCloudTrips();
-    var localById = new Map(localTrips.map(function (trip) { return [String(trip.id), trip]; }));
-    var cloudById = new Map(cloudTrips.map(function (trip) { return [String(trip.id), trip]; }));
+    localTrips = mergeTripLists([localTrips], session.user.id);
+    cloudTrips = mergeTripLists([cloudTrips], session.user.id);
+    var cloudById = new Map(cloudTrips.map(function (trip) { return [tripIdentity(trip, session.user.id), trip]; }));
     var merged = [];
 
     for (var localIndex = 0; localIndex < localTrips.length; localIndex += 1) {
       var local = localTrips[localIndex];
-      var cloud = cloudById.get(String(local.id));
+      var identity = tripIdentity(local, session.user.id);
+      var cloud = cloudById.get(identity);
       if (!cloud) {
         if (local.ownerId && String(local.ownerId) !== String(session.user.id)) continue;
         await saveTrip(local);
@@ -318,7 +363,7 @@
       } else {
         merged.push(cloud);
       }
-      cloudById.delete(String(local.id));
+      cloudById.delete(identity);
     }
     cloudById.forEach(function (trip) { merged.push(trip); });
     merged.sort(function (a, b) { return String(a.start).localeCompare(String(b.start)); });
