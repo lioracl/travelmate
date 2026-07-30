@@ -223,23 +223,38 @@
 
   async function getTrip(id, expectedOwnerId) {
     var session = await getSession();
-    var local = getLocalTrips().find(function (trip) {
-      return String(trip.id) === String(id) &&
-        (!expectedOwnerId || !trip.ownerId || String(trip.ownerId) === String(expectedOwnerId));
+    var localMatches = getLocalTrips().filter(function (trip) {
+      return String(trip.id) === String(id);
     });
+    var local = localMatches.find(function (trip) {
+      return expectedOwnerId && trip.ownerId && String(trip.ownerId) === String(expectedOwnerId);
+    }) || localMatches.find(function (trip) {
+      return !trip.ownerId;
+    }) || localMatches[0];
     if (!session || !session.user) return local || null;
     var client = await getClient();
-    var query = client.from('travel_trips').select('*').eq('id', String(id));
-    var ownerId = expectedOwnerId || (local && local.ownerId);
-    if (ownerId) query = query.eq('user_id', String(ownerId));
-    var result = await query.maybeSingle();
+    var result = await client.from('travel_trips').select('*')
+      .eq('id', String(id))
+      .order('updated_at', { ascending: false })
+      .limit(10);
     if (result.error) throw result.error;
-    if (!result.data) {
+    var rows = result.data || [];
+    var ownerId = expectedOwnerId || (local && local.ownerId);
+    var row = rows.find(function (item) {
+      return ownerId && String(item.user_id) === String(ownerId);
+    }) || rows.find(function (item) {
+      return String(item.user_id) === String(session.user.id);
+    }) || rows[0];
+    if (!row) {
       if (local && local.ownerId && String(local.ownerId) !== String(session.user.id)) return null;
       if (local) await saveTrip(local);
       return local || null;
     }
-    var cloud = fromRow(result.data);
+    var cloud = fromRow(row);
+    if (local && !local.ownerId) {
+      local.ownerId = cloud.ownerId;
+      upsertLocalTrip(local);
+    }
     if (!local || Date.parse(cloud.cloudUpdatedAt || 0) >= Date.parse(local.cloudUpdatedAt || 0)) {
       upsertLocalTrip(cloud);
       return cloud;
