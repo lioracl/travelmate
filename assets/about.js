@@ -2,7 +2,7 @@
   'use strict';
 
   var release = {
-  version: '1.36.0',
+  version: '1.36.1',
     label: 'מעבר מהיר וטעינה חכמה בין מסכים',
     date: '1 באוגוסט 2026',
     highlights: [
