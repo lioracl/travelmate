@@ -4,7 +4,7 @@
   window.__travelMateTripExperienceLoaded = true;
 
   var cloud = window.TravelMateCloud;
-  var state = { trip: null, rate: null, rates: {}, rateDate: '', fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR' };
+  var state = { trip: null, rate: null, rates: {}, ilsRates: { ILS: 1 }, rateDate: '', rateSource: '', fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR' };
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
   function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch (error) { return fallback; } }
   function writeJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) {} }
@@ -46,7 +46,7 @@
   }
   function localFromEuros(euros) { return Number(euros || 0) * Number(state.localCurrency === 'EUR' ? 1 : state.rates[state.localCurrency] || 0); }
   function localRateInIls() { var localRate = state.localCurrency === 'EUR' ? 1 : Number(state.rates[state.localCurrency] || 0); return localRate && state.rate ? state.rate / localRate : 0; }
-  function inferBudget() { var explicit = Number(state.trip && state.trip.budget || String(document.querySelector('[data-budget]') && document.querySelector('[data-budget]').textContent || '').replace(/[^0-9.]/g, '') || 0); if (explicit) return explicit; var text = document.querySelector('.budget-card') && document.querySelector('.budget-card').textContent || document.getElementById('budget') && document.getElementById('budget').textContent || ''; var match = text.match(/מתוך\s*([\d,.]+)\s*€/); return match ? Number(match[1].replace(/,/g, '')) : 0; }
+  function inferBudget() { var explicit = Number(state.trip && state.trip.budget || String(document.querySelector('[data-budget]') && document.querySelector('[data-budget]').textContent || '').replace(/[^0-9.]/g, '') || 0); if (explicit) return explicit; var text = document.querySelector('.budget-card') && document.querySelector('.budget-card').textContent || document.getElementById('budget') && document.getElementById('budget').textContent || ''; var match = text.match(/מתוך\s*([\d,.]+)\s*€/i) || text.match(/([\d,.]+)\s*€/); return match ? Number(match[1].replace(/,/g, '')) : 0; }
   function toast(message) { var old = document.querySelector('.trip-experience-toast'); if (old) old.remove(); var node = document.createElement('div'); node.className = 'trip-experience-toast'; node.textContent = message; document.body.appendChild(node); setTimeout(function () { node.remove(); }, 2800); }
   function saveTripData() { if (!state.trip) return; state.trip.expenses = state.expenses; state.trip.budgetCategories = state.budgetCategories; state.trip.memories = state.memories; state.trip.photoAlbumUrl = state.albumUrl; state.trip.currencyFee = state.fee; if (new URLSearchParams(location.search).get('id') && cloud && cloud.queueTripSave) cloud.queueTripSave(state.trip); }
 
@@ -74,15 +74,25 @@
   async function loadRate() {
     var cacheKey = 'travelmate-eur-rates:' + state.localCurrency;
     var cached = readJson(cacheKey, null);
-    if (cached && Date.now() - Number(cached.savedAt || 0) < 43200000) { state.rates = cached.rates || { ILS: Number(cached.rate) }; state.rate = Number(state.rates.ILS); state.rateDate = cached.date || ''; renderCurrency(); }
+    if (cached && Date.now() - Number(cached.savedAt || 0) < 43200000) { state.rates = cached.rates || { ILS: Number(cached.rate) }; state.ilsRates = cached.ilsRates || state.ilsRates; state.rate = Number(cached.rate || state.rates.ILS); state.rateDate = cached.date || ''; state.rateSource = cached.source || 'ECB דרך Frankfurter'; renderCurrency(); renderCurrencyConverter(); }
     try {
-      var symbols = ['ILS', 'USD', 'GBP', state.localCurrency].filter(function (item, index, list) { return item !== 'EUR' && list.indexOf(item) === index; }).join(',');
+      var boiResponse = await fetch('https://boi.org.il/PublicApi/GetExchangeRates', { headers: { Accept: 'application/json' } });
+      if (boiResponse.ok) {
+        var boiData = await boiResponse.json();
+        (boiData.exchangeRates || []).forEach(function (item) { var unit = Number(item.unit || 1); if (item.key && Number(item.currentExchangeRate)) state.ilsRates[item.key] = Number(item.currentExchangeRate) / unit; });
+        if (state.ilsRates.EUR) { state.rate = state.ilsRates.EUR; state.rateDate = ((boiData.exchangeRates || [])[0] || {}).lastUpdate || ''; state.rateSource = 'בנק ישראל'; }
+      }
+      var symbols = ['ILS','USD','GBP','JPY','CHF','CZK','PLN','HUF','RON','CAD','AUD','NZD','DKK','SEK','NOK','TRY','CNY','KRW','INR','THB','MXN','BRL','ZAR',state.localCurrency].filter(function (item, index, list) { return item !== 'EUR' && list.indexOf(item) === index; }).join(',');
       var response = await fetch('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=' + encodeURIComponent(symbols), { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error('rate-unavailable'); var data = await response.json();
       if (!data.rates || !Number(data.rates.ILS)) throw new Error('invalid-rate');
-      state.rates = data.rates; state.rate = Number(data.rates.ILS); state.rateDate = data.date || ''; writeJson(cacheKey, { rate: state.rate, rates: state.rates, date: state.rateDate, savedAt: Date.now() }); renderCurrency();
+      state.rates = data.rates; if (!state.rate) { state.rate = Number(data.rates.ILS); state.rateDate = data.date || ''; state.rateSource = 'ECB דרך Frankfurter'; }
+      Object.keys(data.rates).forEach(function (code) { if (!state.ilsRates[code] && Number(data.rates[code])) state.ilsRates[code] = state.rate / Number(data.rates[code]); });
+      writeJson(cacheKey, { rate: state.rate, rates: state.rates, ilsRates: state.ilsRates, source: state.rateSource, date: state.rateDate, savedAt: Date.now() }); renderCurrency(); renderCurrencyConverter();
     } catch (error) { if (!state.rate) renderCurrency(true); }
   }
+  function currencyRateInIls(code) { if (code === 'ILS') return 1; if (state.ilsRates[code]) return Number(state.ilsRates[code]); if (code === 'EUR') return Number(state.rate || 0); return state.rate && state.rates[code] ? Number(state.rate) / Number(state.rates[code]) : 0; }
+  function convertCurrency(amount, from, to) { var fromRate = currencyRateInIls(from); var toRate = currencyRateInIls(to); return fromRate && toRate ? Number(amount || 0) * fromRate / toRate : 0; }
   function shekels(euros) { return Number(euros || 0) * Number(state.rate || 0) * (1 + state.fee / 100); }
   function referenceShekels(euros) { return Number(euros || 0) * Number(state.rate || 0); }
   function renderBudgetCategoryIls() {
@@ -124,17 +134,46 @@
       var localRate = localRateInIls();
       host.innerHTML = state.rate && (state.localCurrency === 'EUR' || localAmount) ? '<div><span><b>' + money(localAmount, state.localCurrency) + '</b> · כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>המטבע המקומי: ' + state.localCurrency + ' · ' + (localRate ? money(1, state.localCurrency) + ' = ₪' + localRate.toFixed(4) + ' · ' : '') + escapeHtml(state.rateDate || 'עדכון אחרון') + ' · <a href="https://frankfurter.dev/" target="_blank" rel="noopener">נתוני ECB דרך Frankfurter</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן את שער המטבע המקומי…') + '</span><small>התקציב המקורי נשמר בבטחה עד לעדכון השער</small></div>';
       var button = host.querySelector('[data-fee-edit]'); if (button) button.onclick = editFee;
-    }); renderLocalBudgetTotals(); renderBudgetCategoryIls(); renderExpenseList();
+    }); renderLocalBudgetTotals(); updateTotalBudgetEditor(); renderBudgetCategoryIls(); renderExpenseList();
   }
   function editFee() { var value = prompt('מה עמלת ההמרה של הכרטיס שלך באחוזים?', String(state.fee)); if (value === null) return; var fee = Number(String(value).replace(',', '.')); if (!Number.isFinite(fee) || fee < 0 || fee > 20) return toast('יש להזין עמלה בין 0% ל־20%.'); state.fee = fee; writeJson(storageKey('currency-fee'), fee); saveTripData(); renderCurrency(); }
   function injectCurrencyCards() {
     var budget = inferBudget(); state.trip.budget = state.trip.budget || budget;
     document.querySelectorAll('.budget-card').forEach(function (card) { if (card.querySelector('[data-currency-insight]')) return; var cardText = card.textContent || ''; var amountMatch = cardText.match(/€\s*([\d,.]+)/) || cardText.match(/([\d,.]+)\s*€/); var cardAmount = amountMatch ? Number(amountMatch[1].replace(/,/g, '')) : budget; var host = document.createElement('div'); host.className = 'currency-insight compact'; host.dataset.currencyInsight = ''; host.dataset.euros = String(cardAmount); card.appendChild(host); });
-    var section = document.getElementById('budget'); if (section && !section.querySelector(':scope > [data-currency-insight]')) { var host = document.createElement('div'); host.className = 'currency-insight'; host.dataset.currencyInsight = ''; host.dataset.euros = String(budget); var head = section.querySelector('.section-head'); if (head) head.insertAdjacentElement('afterend', host); else section.prepend(host); } renderCurrency();
+    var section = document.getElementById('budget'); if (section && !section.querySelector(':scope > [data-currency-insight]')) { var host = document.createElement('div'); host.className = 'currency-insight'; host.dataset.currencyInsight = ''; host.dataset.euros = String(budget); var head = section.querySelector('.section-head'); if (head) head.insertAdjacentElement('afterend', host); else section.prepend(host); } renderCurrency(); createTotalBudgetEditor(); createCurrencyConverter();
+  }
+
+  function createTotalBudgetEditor() {
+    var section = document.getElementById('budget'); var hero = section && section.querySelector('.budget-hero');
+    if (!hero || hero.querySelector('[data-total-budget-form]')) return;
+    var form = document.createElement('form'); form.className = 'total-budget-editor'; form.dataset.totalBudgetForm = '';
+    form.innerHTML = '<label><span>עריכת התקציב הכולל</span><div><b>' + escapeHtml(state.localCurrency) + '</b><input name="total" type="number" min="0" step="1" inputmode="decimal" required><button type="submit"><i class="fa-solid fa-check"></i> שמירה</button></div><small>התקציב הוא מסגרת בלבד. הגרפים יישארו ריקים עד שתזין הוצאה בפועל.</small></label>';
+    var euros = Number(state.trip.budget || inferBudget()); form.total.value = Math.round(state.localCurrency === 'EUR' ? euros : localFromEuros(euros)); hero.appendChild(form);
+    form.onsubmit = function (event) { event.preventDefault(); var localValue = Math.max(0, Number(form.total.value || 0)); var euroValue = state.localCurrency === 'EUR' ? localValue : (Number(state.rates[state.localCurrency] || 0) ? localValue / Number(state.rates[state.localCurrency]) : localValue); state.trip.budget = euroValue; document.querySelectorAll('[data-budget]').forEach(function (node) { node.dataset.euroAmount = String(euroValue); }); document.querySelectorAll('[data-currency-insight]').forEach(function (node) { node.dataset.euros = String(euroValue); }); saveTripData(); renderLocalBudgetTotals(); renderCurrency(); renderBudgetCharts(); toast('התקציב הכולל נשמר.'); };
+  }
+  function updateTotalBudgetEditor() { var form = document.querySelector('[data-total-budget-form]'); if (!form || document.activeElement === form.total) return; var euros = Number(state.trip && state.trip.budget || 0); var value = state.localCurrency === 'EUR' ? euros : localFromEuros(euros); if (value || !form.total.value) form.total.value = Math.round(value || euros); }
+
+  function createCurrencyConverter() {
+    var section = document.getElementById('budget'); if (!section || section.querySelector('[data-currency-converter]')) return;
+    var card = document.createElement('section'); card.className = 'currency-converter'; card.dataset.currencyConverter = '';
+    var codes = [state.localCurrency,'ILS','USD','EUR','GBP','JPY','CHF','CZK','PLN','HUF','RON','CAD','AUD'].filter(function (code,index,list) { return list.indexOf(code) === index; });
+    var options = codes.map(function (code) { return '<option value="' + code + '">' + code + ' · ' + currencySymbol(code) + '</option>'; }).join('');
+    card.innerHTML = '<header><div><small>שערים עדכניים</small><h2>מחשבון המרת מטבעות</h2><p>המרה דו־כיוונית בין המטבע המקומי, שקל, דולר, אירו ומטבעות נפוצים.</p></div><i class="fa-solid fa-arrow-right-arrow-left"></i></header><div class="currency-converter-grid"><label><span>סכום</span><input data-converter-amount type="number" min="0" step="0.01" inputmode="decimal" value="100"></label><label><span>ממטבע</span><select data-converter-from>' + options + '</select></label><button type="button" data-converter-swap aria-label="החלפת המטבעות"><i class="fa-solid fa-right-left"></i></button><label><span>למטבע</span><select data-converter-to>' + options + '</select></label></div><div class="currency-converter-result" data-converter-result>מעדכן שערים…</div><footer><span data-converter-source>מקור השערים: בנק ישראל, בהשלמת ECB</span><a href="https://www.boi.org.il/roles/markets/exchangerates/" target="_blank" rel="noopener">לשערים היציגים של בנק ישראל</a></footer>';
+    var workspace = section.querySelector('[data-expense-workspace]'); if (workspace) workspace.insertAdjacentElement('beforebegin', card); else section.appendChild(card);
+    card.querySelector('[data-converter-from]').value = state.localCurrency; card.querySelector('[data-converter-to]').value = state.localCurrency === 'ILS' ? 'EUR' : 'ILS';
+    card.addEventListener('input', renderCurrencyConverter); card.addEventListener('change', renderCurrencyConverter);
+    card.querySelector('[data-converter-swap]').onclick = function () { var from = card.querySelector('[data-converter-from]'); var to = card.querySelector('[data-converter-to]'); var old = from.value; from.value = to.value; to.value = old; renderCurrencyConverter(); };
+  }
+  function renderCurrencyConverter() {
+    var card = document.querySelector('[data-currency-converter]'); if (!card) return;
+    var amount = Number(card.querySelector('[data-converter-amount]').value || 0); var from = card.querySelector('[data-converter-from]').value; var to = card.querySelector('[data-converter-to]').value; var converted = convertCurrency(amount, from, to); var result = card.querySelector('[data-converter-result]');
+    result.innerHTML = converted ? '<small>' + money(amount, from) + ' שווה בקירוב</small><strong>' + money(converted, to) + '</strong><span>לפי שער יציג, לפני עמלת חברת האשראי</span>' : '<span>מעדכן את שערי המטבע…</span>';
+    var source = card.querySelector('[data-converter-source]'); if (source) source.textContent = 'מקור: ' + (state.rateSource || 'בנק ישראל, בהשלמת ECB') + (state.rateDate ? ' · ' + String(state.rateDate).slice(0,10) : '');
   }
 
   function createBudgetTools() {
     var section = document.getElementById('budget'); if (!section || section.querySelector('[data-expense-workspace]')) return;
+    var legacyExpenses = section.querySelector('[data-expenses],.expense-list'); if (legacyExpenses) legacyExpenses.hidden = true;
     var panel = document.createElement('div'); panel.className = 'expense-workspace'; panel.dataset.expenseWorkspace = '';
     panel.innerHTML = '<div class="expense-workspace-head"><div><small>מעקב מדויק</small><h2>הוצאות וקבלות</h2><p>צלם קבלה, סרוק אותה, בחר קטגוריה והוסף אותה ישירות לתקציב.</p></div><button type="button" data-expense-toggle><i class="fa-solid fa-camera"></i> צילום קבלה / הוצאה</button></div><div class="budget-columns-editor"><div><strong>עמודות התקציב</strong><small>אפשר לשנות שם וסכום, למחוק או להוסיף קטגוריה.</small></div><div data-budget-columns></div><button type="button" data-budget-column-add><i class="fa-solid fa-plus"></i> קטגוריה חדשה</button></div><form class="receipt-form" data-receipt-form hidden><label class="receipt-picker"><input name="receipt" type="file" accept="image/*,application/pdf" capture="environment"><i class="fa-solid fa-camera"></i><span><strong>צילום, סריקה או בחירת קבלה</strong><small>התמונה נשמרת עם ההוצאה ומופיעה לצפייה מאוחרת.</small></span></label><div class="receipt-preview" data-receipt-preview hidden></div><div class="receipt-grid"><label>כמה שולם?<input name="amount" type="number" min="0.01" step="0.01" required></label><label>מטבע<select name="currency"><option value="EUR">אירו (€)</option><option value="ILS">שקל (₪)</option><option value="USD">דולר ($)</option><option value="GBP">ליש״ט (£)</option></select></label><label>קטגוריה<select name="category" data-expense-category></select></label><label>תאריך<input name="date" type="date"></label><label class="wide">מה נקנה / בית עסק<input name="note" maxlength="160" required placeholder="לדוגמה: ארוחת ערב במסעדה"></label></div><p class="receipt-scan-status" data-receipt-status></p><div class="receipt-actions"><button type="button" data-receipt-scan><i class="fa-solid fa-wand-magic-sparkles"></i> סריקה חכמה</button><button type="submit"><i class="fa-solid fa-wallet"></i> הוסף לתקציב בקטגוריה</button></div></form><div class="expense-live-summary" data-expense-summary></div><div class="expense-records" data-expense-records></div>';
     section.appendChild(panel);
@@ -204,12 +243,15 @@
     if (!bars || !summary) return;
     var totals = budgetExpenseTotals();
     var palette = ['#2f9a72', '#e29b52', '#6688c8', '#b16fa5', '#d46b64', '#6f9ca8', '#8a7bc2'];
-    var totalPlanned = state.budgetCategories.reduce(function (sum, item) { return sum + Number(item.amount || 0); }, 0);
+    var totalPlanned = Number(state.trip && state.trip.budget || 0);
     var totalSpent = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
     var totalSpentLocal = state.localCurrency === 'EUR' ? totalSpent : localFromEuros(totalSpent);
     var totalPlannedLocal = state.localCurrency === 'EUR' ? totalPlanned : localFromEuros(totalPlanned);
     summary.innerHTML = '<div><span>\u05de\u05ea\u05d5\u05db\u05e0\u05df</span><strong>' + money(totalPlannedLocal, state.localCurrency) + '</strong></div><div><span>\u05d1\u05d5\u05e6\u05e2</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>\u05e0\u05d5\u05ea\u05e8</span><strong>' + money(Math.max(0, totalPlannedLocal - totalSpentLocal), state.localCurrency) + '</strong></div>';
-    bars.innerHTML = state.budgetCategories.map(function (item, index) {
+    var ring = document.querySelector('#budget .budget-ring'); if (ring) ring.textContent = totalPlanned ? Math.min(100, Math.round(totalSpent / totalPlanned * 100)) + '%' : '0%';
+    var heroCopy = document.querySelector('#budget .budget-hero>div:first-child'); if (heroCopy) heroCopy.innerHTML = '<span>נרשם עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong><p>' + (totalPlanned ? 'נותרו ' + money(Math.max(0,totalPlannedLocal-totalSpentLocal),state.localCurrency) + ' מתוך ' + money(totalPlannedLocal,state.localCurrency) : 'הגדר תקציב כולל כדי לעקוב אחר היתרה') + '</p>';
+    var activeCategories = state.budgetCategories.filter(function (item) { return state.expenses.some(function (expense) { return expenseCategoryParts(expense.category).category === item.name; }); });
+    bars.innerHTML = activeCategories.length ? activeCategories.map(function (item, index) {
       var expenseTotal = totals[item.name] ? totals[item.name].total : 0;
       var planned = Math.max(0, Number(item.amount || 0));
       var percent = planned ? Math.min(100, Math.round(expenseTotal / planned * 100)) : expenseTotal ? 100 : 0;
@@ -218,7 +260,7 @@
       var spentLocal = state.localCurrency === 'EUR' ? expenseTotal : localFromEuros(expenseTotal);
       var plannedLocal = state.localCurrency === 'EUR' ? planned : localFromEuros(planned);
       return '<article class="budget-chart-row"><div class="budget-chart-label"><span class="budget-chart-dot" style="--chart-color:' + escapeHtml(color) + '"></span><strong>' + escapeHtml(item.name) + '</strong><small>' + money(spentLocal, state.localCurrency) + ' \u05de\u05ea\u05d5\u05da ' + money(plannedLocal, state.localCurrency) + '</small></div><div class="budget-chart-track"><i style="width:' + percent + '%;--chart-color:' + escapeHtml(color) + '"></i></div><b>' + percent + '%</b><label class="budget-chart-color" title="\u05e6\u05d1\u05e2 \u05d4\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4"><input type="color" value="' + escapeHtml(color) + '" data-budget-chart-color="' + escapeHtml(item.id) + '"><span>\u05e6\u05d1\u05e2</span></label></article>';
-    }).join('');
+    }).join('') : '<div class="budget-chart-empty"><i class="fa-solid fa-chart-pie"></i><strong>הגרף עדיין ריק</strong><span>לאחר הוספת הוצאה או קבלה, הקטגוריה המתאימה תופיע כאן אוטומטית.</span></div>';
     bars.querySelectorAll('[data-budget-chart-color]').forEach(function (input) {
       input.onchange = function () {
         var item = state.budgetCategories.find(function (entry) { return String(entry.id) === input.dataset.budgetChartColor; });

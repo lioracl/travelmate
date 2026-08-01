@@ -1,6 +1,6 @@
 var appScript=document.currentScript;
 (function(){
-  var version='20260801-4',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
+  var version='20260801-5',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
   var features={
     places:{styles:['place-planner.css','place-auto-fill.css','place-directions.css','place-sharing.css'],scripts:['place-auto-fill.js','place-directions.js','place-sharing.js']},
     plan:{styles:['auto-planner.css','place-auto-fill.css','place-directions.css'],scripts:['auto-planner.js','place-auto-fill.js','place-directions.js']},
