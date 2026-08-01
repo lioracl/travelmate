@@ -370,7 +370,17 @@
       }
     };
     state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readJson(storageKey('expenses'), []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) && state.trip.budgetCategories.length ? state.trip.budgetCategories : readJson(storageKey('budget-categories'), null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readJson(storageKey('memories'), []); state.albumUrl = state.trip.photoAlbumUrl || readJson(storageKey('album-url'), ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readJson(storageKey('currency-fee'), 2.5));
-    injectCurrencyCards(); createBudgetTools(); createMemoriesSection(); setupCollapsibleSections(); loadRate();
+    injectCurrencyCards(); createBudgetTools(); createMemoriesSection(); setupCollapsibleSections();
+    var rateLoaded = false;
+    function loadRateWhenNeeded(view) {
+      if (rateLoaded || view !== 'budget') return;
+      rateLoaded = true;
+      loadRate();
+    }
+    loadRateWhenNeeded(document.body.dataset.tripView || new URLSearchParams(location.search).get('view') || 'overview');
+    window.addEventListener('travelmate:viewchange', function (event) {
+      loadRateWhenNeeded(event.detail && event.detail.view);
+    });
   }
   init();
 })();

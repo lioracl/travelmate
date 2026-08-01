@@ -97,10 +97,41 @@
     document.body.dataset.tripView = currentView;
   }
 
+  function activateView(view, pushHistory) {
+    if (!view || !document.getElementById(view)) view = 'overview';
+    currentView = view;
+    if (pushHistory) {
+      var nextUrl = pageUrl(view);
+      if (nextUrl !== window.location.href) history.pushState({ travelMateView: view }, '', nextUrl);
+    }
+    syncTripPages();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.dispatchEvent(new CustomEvent('travelmate:viewchange', { detail: { view: view } }));
+  }
+
+  function viewFromLink(link) {
+    try {
+      var url = new URL(link.href, window.location.href);
+      if (url.origin !== window.location.origin || url.pathname !== window.location.pathname) return '';
+      return url.searchParams.get('view') || url.hash.slice(1);
+    } catch (error) { return ''; }
+  }
+
   document.querySelectorAll('.trip-home-actions a[href^="#"]').forEach(function (link) {
     link.href = pageUrl(link.getAttribute('href').slice(1));
   });
   syncTripPages();
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest('.sidebar nav a, .trip-home-actions a');
+    if (!link || event.defaultPrevented || (event.button != null && event.button !== 0) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    var view = viewFromLink(link);
+    if (!view) return;
+    event.preventDefault();
+    activateView(view, true);
+  });
+  window.addEventListener('popstate', function () {
+    activateView(new URLSearchParams(window.location.search).get('view') || 'overview', false);
+  });
   new MutationObserver(syncTripPages).observe(sidebar, { childList: true, subtree: true });
   if (content) new MutationObserver(syncTripPages).observe(content, { childList: true });
 

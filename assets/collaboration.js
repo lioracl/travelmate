@@ -3,7 +3,7 @@
 
   if (!window.travelMateTripReady || !window.TravelMateCloud) return;
   var cloud = window.TravelMateCloud;
-  var state = { trip: null, session: null, members: [], messages: [], unsubscribe: null };
+  var state = { trip: null, session: null, members: [], messages: [], unsubscribe: null, activated: false, activating: false };
   var ui;
   var PLACE_MESSAGE_PREFIX = '[[TM_PLACE_V1]]';
 
@@ -358,29 +358,43 @@
     });
   }
 
-  async function initialize() {
-    state.trip = await window.travelMateTripReady;
-    if (!state.trip) return;
-    ui = createInterface();
-    bindEvents();
-    state.session = await cloud.getSession();
-    if (!state.session) {
-      ui.signedOut.hidden = false;
-      return;
-    }
-    state.trip.ownerId = state.trip.ownerId || state.session.user.id;
-    ui.content.hidden = false;
+  async function activateCollaboration() {
+    if (state.activated || state.activating) return;
+    state.activating = true;
     try {
+      state.session = await cloud.getSession();
+      if (!state.session) {
+        ui.signedOut.hidden = false;
+        return;
+      }
+      state.trip.ownerId = state.trip.ownerId || state.session.user.id;
+      ui.content.hidden = false;
       await Promise.all([loadMembers(), loadMessages()]);
       await startRealtime();
+      state.activated = true;
       ui.chatStatus.textContent = 'מחובר בזמן אמת';
     } catch (error) {
       console.error('TravelMate collaboration failed', error);
       ui.chatStatus.textContent = 'נדרשת הפעלת השיתוף ב־Supabase';
       toast('השיתוף יופעל לאחר עדכון מסד הנתונים');
-    }
+    } finally { state.activating = false; }
+  }
+
+  function isGroupView() {
+    return (document.body.dataset.tripView || new URLSearchParams(location.search).get('view') || 'overview') === 'group';
+  }
+
+  async function initialize() {
+    state.trip = await window.travelMateTripReady;
+    if (!state.trip) return;
+    ui = createInterface();
+    bindEvents();
+    if (isGroupView()) activateCollaboration();
   }
 
   initialize();
+  window.addEventListener('travelmate:viewchange', function (event) {
+    if (event.detail && event.detail.view === 'group') activateCollaboration();
+  });
   addEventListener('beforeunload', function () { if (state.unsubscribe) state.unsubscribe(); });
 })();
