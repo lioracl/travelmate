@@ -86,7 +86,10 @@
     function restart() {
       clearInterval(timer);
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        timer = setInterval(function () { showSlide(activeIndex + 1); }, 3800);
+        timer = setInterval(function () {
+          if (document.hidden || document.body.classList.contains('is-authenticated')) return;
+          showSlide(activeIndex + 1);
+        }, 3800);
       }
     }
     var previousButton = carousel.querySelector('[data-carousel-previous]');
@@ -153,6 +156,17 @@
     return archive;
   }
 
+  function openArchiveFromNavigation(event) {
+    if (event) event.preventDefault();
+    var archive = ensureArchive();
+    if (!archive) return;
+    var toggle = archive.querySelector('[data-archive-toggle]');
+    var archiveList = archive.querySelector('[data-archive-list]');
+    toggle.setAttribute('aria-expanded', 'true');
+    archiveList.hidden = false;
+    archive.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function cardShell(trip, isStatic, href, background) {
     var state = dateState(trip);
     var shell = document.createElement('article');
@@ -163,7 +177,7 @@
     shell.dataset.end = trip.end || '';
     shell.dataset.days = trip.days || '';
     if (!isStatic) shell.dataset.cloudTrip = String(trip.id);
-    shell.innerHTML = '<a class="trip-card" href="' + escapeText(href) + '" style="background-image:url(\'' + escapeText(background) + '\')"><span class="trip-overlay"></span><span class="trip-flag trip-country-flag" aria-label="דגל ' + escapeText(trip.country) + '">' + countryFlag(trip.country) + '</span><span class="trip-copy"><span class="trip-date-state' + (state.now ? ' now' : '') + '"><i class="fa-solid ' + state.icon + '"></i> ' + escapeText(state.label) + '</span><h2>' + escapeText(trip.country) + '</h2><p>' + escapeText(trip.city) + '</p><span class="tag">' + (trip.start ? formatDate(trip.start) + ' – ' + formatDate(trip.end) : '') + '</span> <span class="tag">' + escapeText(trip.days) + ' ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left"></i></strong></span></a>' + (!isStatic ? '<button class="trip-edit-dates" type="button" data-trip-edit-dates aria-label="עריכת תאריכי הטיול"><i class="fa-solid fa-calendar-pen"></i><span>עריכת תאריכים</span></button>' : '') + '<button class="trip-activity-toggle' + (state.active ? ' active' : '') + '" type="button" data-trip-activity aria-pressed="' + String(state.active) + '"><i class="fa-solid fa-circle"></i><span>' + (state.active ? 'פעיל' : 'לא פעיל') + '</span></button>';
+    shell.innerHTML = '<a class="trip-card" href="' + escapeText(href) + '" style="background-image:url(\'' + escapeText(background) + '\')"><span class="trip-overlay"></span><span class="trip-flag trip-country-flag" aria-label="דגל ' + escapeText(trip.country) + '">' + countryFlag(trip.country) + '</span><span class="trip-copy"><span class="trip-date-state' + (state.now ? ' now' : '') + '"><i class="fa-solid ' + state.icon + '"></i> ' + escapeText(state.label) + '</span><h2>' + escapeText(trip.country) + '</h2><p>' + escapeText(trip.city) + '</p><span class="tag">' + (trip.start ? formatDate(trip.start) + ' – ' + formatDate(trip.end) : '') + '</span> <span class="tag">' + escapeText(trip.days) + ' ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left"></i></strong></span></a>' + (!isStatic ? '<button class="trip-edit-dates" type="button" data-trip-edit-dates aria-label="עריכת תאריכי הטיול"><i class="fa-solid fa-calendar-pen"></i><span>עריכת תאריכים</span></button>' : '') + '<button class="trip-activity-toggle' + (state.active ? ' active' : '') + '" type="button" data-trip-activity aria-pressed="' + String(state.active) + '"><i class="fa-solid fa-circle"></i><span>' + escapeText(state.active ? 'פעיל' : state.label) + '</span></button>';
     return shell;
   }
 
@@ -573,6 +587,9 @@
 
   prepareStaticTrips();
   organizeStaticTrips();
+  document.querySelectorAll('a[href="#trip-archive"]').forEach(function (link) {
+    link.addEventListener('click', openArchiveFromNavigation);
+  });
 
   if (!cloud) {
     setMessage('חיבור הענן אינו זמין כרגע. הטיולים נשמרים במכשיר בלבד.', true);
