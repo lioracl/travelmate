@@ -4,8 +4,29 @@
   var tripId = new URLSearchParams(location.search).get('id');
   var cloud = window.TravelMateCloud;
 
-  window.travelMateTripReady = (async function () {
+  function localTrip() {
     var trip = null;
+    if (cloud && cloud.getLocalTrips) {
+      trip = cloud.getLocalTrips().find(function (item) { return String(item.id) === String(tripId); }) || null;
+    }
+    if (!trip) {
+      try {
+        trip = JSON.parse(localStorage.getItem('travelmate-trips') || '[]').find(function (item) { return String(item.id) === String(tripId); }) || null;
+      } catch (error) {}
+    }
+    return trip;
+  }
+
+  function signature(trip) {
+    try { return JSON.stringify(trip); } catch (error) { return ''; }
+  }
+
+  var immediateTrip = localTrip();
+  var immediateSignature = signature(immediateTrip);
+  if (immediateTrip) renderTrip(immediateTrip);
+
+  window.travelMateTripReady = (async function () {
+    var trip = immediateTrip;
     if (cloud && tripId) {
       try {
         var invitedOwnerId = null;
@@ -22,23 +43,20 @@
             window.dispatchEvent(new CustomEvent('travelmate:invite-accepted'));
           }
         }
-        trip = await cloud.getTrip(tripId, invitedOwnerId);
+        var cloudTrip = await cloud.getTrip(tripId, invitedOwnerId);
+        if (cloudTrip) trip = cloudTrip;
       }
       catch (error) {
         console.error('TravelMate cloud trip load failed', error);
-        trip = cloud.getLocalTrips().find(function (item) { return String(item.id) === String(tripId); }) || null;
+        trip = trip || localTrip();
       }
     }
-    if (!trip) {
-      try {
-        trip = JSON.parse(localStorage.getItem('travelmate-trips') || '[]').find(function (item) { return String(item.id) === String(tripId); }) || null;
-      } catch (error) {}
-    }
+    if (!trip) trip = localTrip();
     if (!trip) {
       location.replace('../../index.html');
       return null;
     }
-    renderTrip(trip);
+    if (!immediateTrip || signature(trip) !== immediateSignature) renderTrip(trip);
     return trip;
   })();
 
