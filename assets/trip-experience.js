@@ -140,7 +140,7 @@
   function injectCurrencyCards() {
     var budget = inferBudget(); state.trip.budget = state.trip.budget || budget;
     document.querySelectorAll('.budget-card').forEach(function (card) { if (card.querySelector('[data-currency-insight]')) return; var cardText = card.textContent || ''; var amountMatch = cardText.match(/€\s*([\d,.]+)/) || cardText.match(/([\d,.]+)\s*€/); var cardAmount = amountMatch ? Number(amountMatch[1].replace(/,/g, '')) : budget; var host = document.createElement('div'); host.className = 'currency-insight compact'; host.dataset.currencyInsight = ''; host.dataset.euros = String(cardAmount); card.appendChild(host); });
-    var section = document.getElementById('budget'); if (section && !section.querySelector(':scope > [data-currency-insight]')) { var host = document.createElement('div'); host.className = 'currency-insight'; host.dataset.currencyInsight = ''; host.dataset.euros = String(budget); var head = section.querySelector('.section-head'); if (head) head.insertAdjacentElement('afterend', host); else section.prepend(host); } renderCurrency(); createTotalBudgetEditor(); createCurrencyConverter();
+    var section = document.getElementById('budget'); if (section && !section.querySelector(':scope > [data-currency-insight]')) { var host = document.createElement('div'); host.className = 'currency-insight'; host.dataset.currencyInsight = ''; host.dataset.euros = String(budget); var head = section.querySelector('.section-head'); if (head) head.insertAdjacentElement('afterend', host); else section.prepend(host); } renderCurrency(); createTotalBudgetEditor();
   }
 
   function createTotalBudgetEditor() {
@@ -159,7 +159,7 @@
     var codes = [state.localCurrency,'ILS','USD','EUR','GBP','JPY','CHF','CZK','PLN','HUF','RON','CAD','AUD'].filter(function (code,index,list) { return list.indexOf(code) === index; });
     var options = codes.map(function (code) { return '<option value="' + code + '">' + code + ' · ' + currencySymbol(code) + '</option>'; }).join('');
     card.innerHTML = '<header><div><small>שערים עדכניים</small><h2>מחשבון המרת מטבעות</h2><p>המרה דו־כיוונית בין המטבע המקומי, שקל, דולר, אירו ומטבעות נפוצים.</p></div><i class="fa-solid fa-arrow-right-arrow-left"></i></header><div class="currency-converter-grid"><label><span>סכום</span><input data-converter-amount type="number" min="0" step="0.01" inputmode="decimal" value="100"></label><label><span>ממטבע</span><select data-converter-from>' + options + '</select></label><button type="button" data-converter-swap aria-label="החלפת המטבעות"><i class="fa-solid fa-right-left"></i></button><label><span>למטבע</span><select data-converter-to>' + options + '</select></label></div><div class="currency-converter-result" data-converter-result>מעדכן שערים…</div><footer><span data-converter-source>מקור השערים: בנק ישראל, בהשלמת ECB</span><a href="https://www.boi.org.il/roles/markets/exchangerates/" target="_blank" rel="noopener">לשערים היציגים של בנק ישראל</a></footer>';
-    var workspace = section.querySelector('[data-expense-workspace]'); if (workspace) workspace.insertAdjacentElement('beforebegin', card); else section.appendChild(card);
+    section.appendChild(card);
     card.querySelector('[data-converter-from]').value = state.localCurrency; card.querySelector('[data-converter-to]').value = state.localCurrency === 'ILS' ? 'EUR' : 'ILS';
     card.addEventListener('input', renderCurrencyConverter); card.addEventListener('change', renderCurrencyConverter);
     card.querySelector('[data-converter-swap]').onclick = function () { var from = card.querySelector('[data-converter-from]'); var to = card.querySelector('[data-converter-to]'); var old = from.value; from.value = to.value; to.value = old; renderCurrencyConverter(); };
@@ -181,7 +181,7 @@
     charts.className = 'budget-charts';
     charts.dataset.budgetCharts = '';
     charts.innerHTML = '<header><div><small>\u05de\u05e1\u05d5\u05e0\u05db\u05e8\u05df \u05e2\u05dd \u05d4\u05d4\u05d5\u05e6\u05d0\u05d5\u05ea</small><h3>\u05ea\u05e7\u05e6\u05d9\u05d1 \u05de\u05ea\u05d5\u05db\u05e0\u05df \u05de\u05d5\u05dc \u05d1\u05d9\u05e6\u05d5\u05e2</h3><p>\u05db\u05dc \u05e7\u05d1\u05dc\u05d4 \u05e9\u05ea\u05d5\u05e1\u05e3 \u05ea\u05e2\u05d3\u05db\u05df \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9\u05ea \u05d0\u05ea \u05d4\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05d5\u05d0\u05ea \u05d4\u05d2\u05e8\u05e3.</p></div><button type="button" data-budget-chart-edit><i class="fa-solid fa-sliders"></i> \u05e2\u05e8\u05d9\u05db\u05ea \u05d4\u05d2\u05e8\u05e3</button></header><div class="budget-chart-summary" data-budget-chart-summary></div><div class="budget-chart-bars" data-budget-chart-bars></div>';
-    panel.querySelector('.budget-columns-editor').insertAdjacentElement('afterend', charts);
+    panel.insertAdjacentElement('afterend', charts);
     charts.querySelector('[data-budget-chart-edit]').onclick = function () {
       charts.classList.toggle('editing');
       var editor = panel.querySelector('.budget-columns-editor');
@@ -412,7 +412,7 @@
       }
     };
     state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readJson(storageKey('expenses'), []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) && state.trip.budgetCategories.length ? state.trip.budgetCategories : readJson(storageKey('budget-categories'), null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readJson(storageKey('memories'), []); state.albumUrl = state.trip.photoAlbumUrl || readJson(storageKey('album-url'), ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readJson(storageKey('currency-fee'), 2.5));
-    injectCurrencyCards(); createBudgetTools(); createMemoriesSection(); setupCollapsibleSections();
+    injectCurrencyCards(); createBudgetTools(); createCurrencyConverter(); createMemoriesSection(); setupCollapsibleSections();
     var rateLoaded = false;
     function loadRateWhenNeeded(view) {
       if (rateLoaded || view !== 'budget') return;

@@ -1,9 +1,9 @@
 var appScript=document.currentScript;
 (function(){
-  var version='20260801-5',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
+  var version='20260802-1',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
   var features={
     places:{styles:['place-planner.css','place-auto-fill.css','place-directions.css','place-sharing.css'],scripts:['place-auto-fill.js','place-directions.js','place-sharing.js']},
-    plan:{styles:['auto-planner.css','place-auto-fill.css','place-directions.css'],scripts:['auto-planner.js','place-auto-fill.js','place-directions.js']},
+    plan:{styles:['auto-planner.css','place-planner.css','place-auto-fill.css','place-directions.css'],scripts:['auto-planner.js','place-auto-fill.js','place-directions.js']},
     documents:{styles:['document-vault.css'],scripts:[]},
     budget:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
     memories:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
@@ -29,8 +29,8 @@ var appScript=document.currentScript;
   function activeView(){return document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview'}
   Promise.all(baseStyles.map(loadStyle)).then(function(){return ['language.js','navigation-memory.js','trip-redesign.js','theme.js','weather-widget.js'].reduce(function(chain,file){return chain.then(function(){return loadScript(file)})},Promise.resolve())}).then(function(){return loadFeature(activeView())});
   window.addEventListener('travelmate:viewchange',function(event){loadFeature(event.detail&&event.detail.view)});
-  function warmRemaining(){var styles=['ai-assistant.css','smart-hub.css','travel-services.css','trip-experience.css','transport-planner.css','collaboration.css','chat-place-sharing.css','place-directions.css','about.css'];return Promise.all(styles.map(loadStyle)).then(function(){return ['ai-assistant.js','smart-hub.js','travel-services.js','trip-experience.js','transport-planner.js','collaboration.js','about.js'].reduce(function(chain,file){return chain.then(function(){return loadScript(file)})},Promise.resolve())})}
-  if(typeof window.requestIdleCallback==='function')window.requestIdleCallback(warmRemaining,{timeout:2500});else setTimeout(warmRemaining,1200);
+  document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
+  document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
   window.TravelMateFeatures={load:loadFeature};
 })();
 function closeModal(){document.querySelectorAll('.modal-backdrop.open').forEach(function(modal){modal.classList.remove('open')})}

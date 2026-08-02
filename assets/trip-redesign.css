@@ -447,3 +447,6 @@ body.tm-new-design[data-trip-view="places"] #places .auto-place-launch{
 body.tm-new-design[data-trip-view="places"] #places .auto-place-launch small{
   color:inherit!important;
 }
+/* Critical plan media sizing: prevents full-size images before feature CSS arrives. */
+#plan .saved-place-image,#plan .planned-activity img,#plan .activity-image{display:block;width:96px;height:96px;max-width:96px;max-height:96px;object-fit:cover;border-radius:12px;background:#dfeee6}
+@media(max-width:650px){#plan .saved-place-image,#plan .planned-activity img,#plan .activity-image{width:78px;height:78px;max-width:78px;max-height:78px}}
