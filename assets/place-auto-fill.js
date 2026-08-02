@@ -4,7 +4,7 @@
   var featureScript = document.currentScript;
   var featureStyle = document.createElement('link');
   featureStyle.rel = 'stylesheet';
-  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260728-3';
+  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260803-1';
   document.head.appendChild(featureStyle);
   var smartStyle = document.createElement('link');
   smartStyle.rel = 'stylesheet';
@@ -25,7 +25,8 @@
     food: 'מסעדות ובתי קפה',
     kosher: 'מסעדות ובתי קפה כשרים',
     nature: 'טבע ופארקים',
-    shopping: 'קניות'
+    shopping: 'קניות',
+    hotels: 'מלונות ולינה'
   };
   var categoryQueries = {
     attractions: ['nwr["tourism"~"attraction|viewpoint|zoo|theme_park"]{around};'],
@@ -39,7 +40,8 @@
       'nwr["leisure"~"park|garden|nature_reserve"]{around};',
       'nwr["natural"~"beach|peak|wood"]{around};'
     ],
-    shopping: ['nwr["shop"]{around};']
+    shopping: ['nwr["shop"]{around};'],
+    hotels: ['nwr["tourism"~"hotel|hostel|guest_house|apartment|motel|chalet"]{around};']
   };
   var dialog;
   var state = { trip: null, origin: null, candidates: [], proposal: [] };
@@ -68,6 +70,10 @@
     shopping: [
       'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=82',
       'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=1200&q=82'
+    ],
+    hotels: [
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=82',
+      'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1200&q=82'
     ]
   };
 
@@ -194,6 +200,7 @@
   }
 
   function categoryFor(tags) {
+    if (tags.tourism && /hotel|hostel|guest_house|apartment|motel|chalet/.test(tags.tourism)) return 'hotels';
     if (/yes|only/i.test(tags['diet:kosher'] || '') || /kosher/i.test(tags.cuisine || '')) return 'kosher';
     if (tags.tourism && /museum|gallery/.test(tags.tourism)) return 'museums';
     if (tags.amenity && /restaurant|cafe|fast_food/.test(tags.amenity)) return 'food';
@@ -333,7 +340,7 @@
       if (!Number.isFinite(rating) || rating < 1 || rating > 5) rating = 0;
       var informationScore = [website, address, tags.opening_hours, tags.phone || tags['contact:phone'], tags.wikipedia, tags.wikidata].filter(Boolean).length;
       var fee = String(tags.fee || '').toLowerCase();
-      var costEstimate = fee === 'no' ? 0 : (category === 'food' || category === 'kosher' ? 25 : category === 'shopping' ? 35 : 15);
+      var costEstimate = fee === 'no' ? 0 : (category === 'hotels' ? 0 : category === 'food' || category === 'kosher' ? 25 : category === 'shopping' ? 35 : 15);
       return {
         name: name,
         categoryKey: category,
@@ -385,6 +392,8 @@
       familyFriendly: form.elements.familyFriendly.checked,
       wheelchair: form.elements.wheelchair.checked,
       preferFree: form.elements.preferFree.checked,
+      checkin: form.elements.checkin ? form.elements.checkin.value : '',
+      checkout: form.elements.checkout ? form.elements.checkout.value : '',
       smartTimes: form.elements.smartTimes.checked,
       dates: [].slice.call(form.querySelectorAll('[name="date"]:checked')).map(function (input) { return input.value; }),
       keepExisting: form.elements.keepExisting.checked
@@ -393,6 +402,23 @@
     if (settings.pace === 'balanced') { settings.perDay = 3; }
     if (settings.pace === 'intensive') { settings.perDay = 5; settings.duration = Math.min(settings.duration, 90); settings.gap = Math.min(settings.gap, 30); }
     return settings;
+  }
+
+  function lodgingSearchUrl(provider, place) {
+    var settings = state.settings || {};
+    var destination = [place && place.name, state.trip && state.trip.city, state.trip && state.trip.country].filter(Boolean).join(', ');
+    if (provider === 'booking') {
+      var booking = new URLSearchParams({ ss: destination, checkin: settings.checkin || '', checkout: settings.checkout || '', group_adults: '2', no_rooms: '1' });
+      return 'https://www.booking.com/searchresults.html?' + booking.toString();
+    }
+    var airbnb = new URLSearchParams({ query: destination, checkin: settings.checkin || '', checkout: settings.checkout || '', date_picker_type: 'calendar' });
+    airbnb.append('refinement_paths[]', '/homes');
+    return 'https://www.airbnb.com/s/homes?' + airbnb.toString();
+  }
+
+  function lodgingHeaderHtml() {
+    if (!state.settings || state.settings.categories.indexOf('hotels') < 0) return '';
+    return '<section class="auto-place-lodging-providers"><div><i class="fa-solid fa-bed"></i><span><strong>השוואת לינה לתאריכים שבחרת</strong><small>' + escapeHtml(state.settings.checkin) + ' — ' + escapeHtml(state.settings.checkout) + '</small></span></div><nav><a target="_blank" rel="noopener" href="' + escapeHtml(lodgingSearchUrl('booking')) + '"><i class="fa-solid fa-hotel"></i> חיפוש ב־Booking</a><a target="_blank" rel="noopener" href="' + escapeHtml(lodgingSearchUrl('airbnb')) + '"><i class="fa-solid fa-house"></i> חיפוש ב־Airbnb</a></nav><p>המחירים והזמינות נבדקים באתר הספק. תוצאות מקומיות מוצגות למטה כדי שתוכל להשוות ולבחור.</p></section>';
   }
 
   async function resolveOrigin(settings, trip) {
@@ -423,6 +449,7 @@
       else if (place.categoryKey === 'shopping') target = Math.max(minimum, 16 * 60);
       else if (place.categoryKey === 'museums') target = Math.max(minimum, 10 * 60);
       else if (place.categoryKey === 'nature') target = Math.max(minimum, 9 * 60);
+      else if (place.categoryKey === 'hotels') target = Math.max(minimum, 15 * 60);
     }
     return String(Math.floor(target / 60)).padStart(2, '0') + ':' + String(target % 60).padStart(2, '0');
   }
@@ -572,7 +599,7 @@
     var preview = dialog.querySelector('[data-auto-place-preview]');
     var actions = dialog.querySelector('[data-auto-place-preview-actions]');
     if (!state.proposal.length) {
-      preview.innerHTML = '<div class="auto-place-empty"><i class="fa-solid fa-map-location-dot"></i><strong>לא נמצאו מספיק מקומות מתאימים</strong><span>נסה להגדיל את המרחק או לבחור סוגי מקום נוספים.</span></div>';
+      preview.innerHTML = lodgingHeaderHtml() + '<div class="auto-place-empty"><i class="fa-solid fa-map-location-dot"></i><strong>לא נמצאו מספיק מקומות מתאימים</strong><span>נסה להגדיל את המרחק או לבחור סוגי מקום נוספים. לחיפוש מלונות אפשר להמשיך ישירות לספקים שמעל.</span></div>';
       actions.hidden = true;
       return;
     }
@@ -581,7 +608,7 @@
       (groups[place.date] = groups[place.date] || []).push(place);
     });
     var dates = dateOptions(state.trip);
-    preview.innerHTML = state.settings.dates.map(function (date) {
+    preview.innerHTML = lodgingHeaderHtml() + state.settings.dates.map(function (date) {
       var label = (dates.find(function (item) { return item.value === date; }) || {}).label || date;
       var dayPlaces = groups[date] || [];
       return '<section class="auto-place-preview-day" data-auto-preview-date="' + escapeHtml(date) + '"><header><strong>' + escapeHtml(label) + '</strong><span data-auto-day-count>' + dayPlaces.length + ' פעילויות</span><button type="button" data-auto-replace-day="' + escapeHtml(date) + '"><i class="fa-solid fa-rotate"></i> החלף את הפעילויות ביום</button></header>' +
@@ -604,6 +631,7 @@
             '</dl><div class="auto-place-detail-links">' +
             '<a href="' + escapeHtml(place.ratingsUrl) + '" target="_blank" rel="noopener"><i class="fa-solid fa-star"></i> דירוגים ב־Google</a>' +
             (place.officialUrl ? '<a href="' + escapeHtml(place.officialUrl) + '" target="_blank" rel="noopener"><i class="fa-solid fa-globe"></i> אתר המקום</a>' : '') +
+            (place.categoryKey === 'hotels' ? '<a href="' + escapeHtml(lodgingSearchUrl('booking', place)) + '" target="_blank" rel="noopener"><i class="fa-solid fa-hotel"></i> Booking לתאריכים</a><a href="' + escapeHtml(lodgingSearchUrl('airbnb', place)) + '" target="_blank" rel="noopener"><i class="fa-solid fa-house"></i> Airbnb לתאריכים</a>' : '') +
             '<a href="' + escapeHtml(place.sourceUrl) + '" target="_blank" rel="noopener"><i class="fa-solid fa-map"></i> מפה</a></div></div></article>';
         }).join('') + '</section>';
     }).join('');
@@ -631,6 +659,10 @@
     }
     if (!settings.categories.length && !settings.freeTerm) {
       status.textContent = 'יש לבחור לפחות סוג מקום אחד או לכתוב חיפוש חופשי.';
+      return;
+    }
+    if (settings.categories.indexOf('hotels') >= 0 && (!settings.checkin || !settings.checkout || settings.checkout <= settings.checkin)) {
+      status.textContent = 'לחיפוש מלונות יש לבחור תאריך כניסה ותאריך יציאה מאוחר יותר.';
       return;
     }
     status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מאתר מקומות ובונה מסלול מוצע…';
@@ -727,6 +759,11 @@
   }
 
   function buildDialog(trip) {
+    var tripDates = dateOptions(trip);
+    var defaultCheckin = tripDates.length ? tripDates[0].value : '';
+    var defaultCheckoutDate = tripDates.length ? new Date(tripDates[tripDates.length - 1].value + 'T12:00:00') : new Date();
+    defaultCheckoutDate.setDate(defaultCheckoutDate.getDate() + 1);
+    var defaultCheckout = defaultCheckoutDate.toISOString().slice(0, 10);
     dialog = document.createElement('section');
     dialog.className = 'auto-place-backdrop';
     dialog.hidden = true;
@@ -734,7 +771,7 @@
       '<header><div><small>תכנון בלי הוספה ידנית</small><h2 id="auto-place-title">מילוי ימים אוטומטי</h2><p>בחר מה לחפש, מאיפה מתחילים וכמה פעילויות יהיו בכל יום.</p></div><button type="button" data-auto-place-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header>' +
       '<div class="auto-place-dialog-body"><form data-auto-place-form><section><h3><span>1</span> מה מעניין אותך?</h3><div class="auto-place-categories">' +
       Object.keys(categoryLabels).map(function (key) { return '<label><input type="checkbox" name="category" value="' + key + '"' + (key === 'attractions' || key === 'museums' ? ' checked' : '') + '><span><i class="fa-solid fa-check"></i>' + categoryLabels[key] + '</span></label>'; }).join('') +
-      '</div><label class="auto-place-field wide"><span>חיפוש חופשי נוסף</span><input name="freeTerm" type="search" placeholder="לדוגמה: בתי כנסת, שווקים או פארקי שעשועים"></label></section>' +
+      '</div><div class="auto-place-stay-dates" data-auto-stay-dates hidden><div><i class="fa-solid fa-bed"></i><span><strong>תאריכי השהייה</strong><small>התאריכים יעברו אוטומטית לחיפוש ב־Booking וב־Airbnb</small></span></div><div class="auto-place-grid"><label class="auto-place-field"><span>כניסה</span><input name="checkin" type="date" value="' + escapeHtml(defaultCheckin) + '"></label><label class="auto-place-field"><span>יציאה</span><input name="checkout" type="date" value="' + escapeHtml(defaultCheckout) + '"></label></div></div><label class="auto-place-field wide"><span>חיפוש חופשי נוסף</span><input name="freeTerm" type="search" placeholder="לדוגמה: בתי כנסת, שווקים או פארקי שעשועים"></label></section>' +
       '<section><h3><span>2</span> נקודת מוצא ומרחק</h3><div class="auto-place-origins"><label><input type="radio" name="originMode" value="destination" checked><span><i class="fa-solid fa-city"></i><strong>מרכז היעד</strong><small>' + escapeHtml(trip.city) + '</small></span></label><label><input type="radio" name="originMode" value="gps"><span><i class="fa-solid fa-location-crosshairs"></i><strong>המיקום שלי</strong><small>GPS בזמן השימוש</small></span></label><label><input type="radio" name="originMode" value="custom"><span><i class="fa-solid fa-hotel"></i><strong>כתובת או מלון</strong><small>נקודת מוצא קבועה</small></span></label></div>' +
       '<label class="auto-place-field wide" data-auto-origin-text hidden><span>שם המלון, כתובת או מקום</span><input name="originText" placeholder="לדוגמה: Hotel Central, Prague"></label><div class="auto-place-grid"><label class="auto-place-field"><span>מרחק מרבי</span><select name="radius"><option value="1000">1 ק״מ</option><option value="3000" selected>3 ק״מ</option><option value="5000">5 ק״מ</option><option value="10000">10 ק״מ</option><option value="20000">20 ק״מ</option></select></label><label class="auto-place-field"><span>פעילויות בכל יום</span><select name="perDay"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label></div></section>' +
       '<section><h3><span>3</span> איך לבחור את המקומות?</h3><div class="auto-place-grid"><label class="auto-place-field"><span>סדר עדיפות</span><select name="sortBy"><option value="recommended" selected>מומלצים — דירוג, מידע ומרחק</option><option value="rating">דירוג גבוה קודם</option><option value="distance">הכי קרוב קודם</option><option value="information">הכי הרבה מידע קודם</option><option value="random">גיוון והפתעה</option></select></label><label class="auto-place-field"><span>דירוג מינימלי, כשקיים במקור</span><select name="minimumRating"><option value="0" selected>ללא סינון</option><option value="3.5">3.5 ומעלה</option><option value="4">4.0 ומעלה</option><option value="4.5">4.5 ומעלה</option></select></label><label class="auto-place-field"><span>קצב הטיול</span><select name="pace"><option value="relaxed">רגוע — 2 פעילויות</option><option value="balanced" selected>מאוזן — 3 פעילויות</option><option value="intensive">עמוס — 5 פעילויות</option><option value="custom">לפי הבחירה שלי</option></select></label><label class="auto-place-field"><span>תקציב יומי משוער לאדם</span><select name="dailyBudget"><option value="0" selected>ללא מגבלה</option><option value="25">עד €25</option><option value="50">עד €50</option><option value="100">עד €100</option><option value="200">עד €200</option></select></label></div><div class="auto-place-switches"><label><input type="checkbox" name="requireWebsite"><span><i class="fa-solid fa-globe"></i><b>רק עם אתר רשמי</b></span></label><label><input type="checkbox" name="requireHours"><span><i class="fa-regular fa-clock"></i><b>רק עם שעות פתיחה</b></span></label><label><input type="checkbox" name="weatherAware" checked><span><i class="fa-solid fa-cloud-sun"></i><b>התאמה למזג האוויר</b></span></label><label><input type="checkbox" name="familyFriendly"><span><i class="fa-solid fa-children"></i><b>מתאים למשפחה</b></span></label><label><input type="checkbox" name="wheelchair"><span><i class="fa-solid fa-wheelchair"></i><b>נגיש לכיסא גלגלים</b></span></label><label><input type="checkbox" name="preferFree"><span><i class="fa-solid fa-piggy-bank"></i><b>העדף מקומות חינמיים</b></span></label></div><p class="auto-place-note"><i class="fa-solid fa-circle-info"></i> המסלול יסודר אוטומטית לפי קרבה וזמן מעבר. דירוג ומאפייני נגישות מוצגים רק כאשר מקור המקומות מספק אותם.</p></section>' +
@@ -743,6 +780,12 @@
       '<div class="auto-place-preview" data-auto-place-preview></div></div><footer data-auto-place-preview-actions hidden><button type="button" data-auto-place-back>שינוי ההגדרות</button><button type="button" class="primary" data-auto-place-apply><i class="fa-solid fa-calendar-check"></i> מילוי הימים שסומנו</button></footer></div>';
     document.body.appendChild(dialog);
     dialog.querySelector('[data-auto-place-form]').addEventListener('submit', createPreview);
+    function updateStayDatesVisibility() {
+      var hotelInput = dialog.querySelector('[name="category"][value="hotels"]');
+      dialog.querySelector('[data-auto-stay-dates]').hidden = !hotelInput.checked;
+    }
+    dialog.querySelectorAll('[name="category"]').forEach(function (input) { input.addEventListener('change', updateStayDatesVisibility); });
+    updateStayDatesVisibility();
     dialog.querySelectorAll('.auto-place-switches label').forEach(function (label) {
       var input = label.querySelector('input[type="checkbox"]');
       if (!input) return;

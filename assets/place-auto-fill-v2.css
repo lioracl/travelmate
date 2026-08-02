@@ -45,3 +45,11 @@
   position:absolute!important;inset:0 auto auto 0!important;width:1px!important;height:1px!important;
   margin:0!important;opacity:0!important;pointer-events:none!important
 }
+
+.auto-place-stay-dates{margin-top:14px;padding:14px;border:1px solid #78b798;border-radius:16px;background:linear-gradient(135deg,#edf9f3,#fff);color:#234f3f}
+.auto-place-stay-dates[hidden]{display:none!important}.auto-place-stay-dates>div:first-child{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.auto-place-stay-dates>div:first-child>i{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:#237a5a;color:#fff}.auto-place-stay-dates strong,.auto-place-stay-dates small{display:block}.auto-place-stay-dates small{margin-top:2px;color:#63776e;font-size:11px}
+.auto-place-lodging-providers{margin:0 0 14px;padding:15px;border:1px solid #65aa88;border-radius:17px;background:linear-gradient(135deg,#effaf4,#fff);box-shadow:0 12px 28px rgba(24,91,66,.1);color:#214e3d}
+.auto-place-lodging-providers>div{display:flex;align-items:center;gap:10px}.auto-place-lodging-providers>div>i{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#1e7657;color:#fff}.auto-place-lodging-providers strong,.auto-place-lodging-providers small{display:block}.auto-place-lodging-providers small{margin-top:3px;color:#60786d}
+.auto-place-lodging-providers nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.auto-place-lodging-providers a{padding:10px 13px;display:inline-flex;align-items:center;gap:7px;border:1px solid #a9cdbd;border-radius:11px;background:#fff;color:#176047;font-weight:900;text-decoration:none}.auto-place-lodging-providers p{margin:10px 0 0;color:#687b72;font-size:11px;line-height:1.5}
+@media(max-width:680px){.auto-place-lodging-providers nav{display:grid}.auto-place-lodging-providers a{justify-content:center}}
