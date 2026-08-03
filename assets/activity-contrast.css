@@ -1,0 +1,30 @@
+/* 1.40.2 — readable saved-place actions over dark activity cards. */
+html body.tm-new-design[data-trip-view="plan"] #plan .saved-place .saved-place-links :is(a,button){
+  border:1px solid rgba(148,211,183,.72)!important;
+  background:#eef8f3!important;
+  color:#104f3b!important;
+  -webkit-text-fill-color:#104f3b!important;
+  text-shadow:none!important;
+  box-shadow:0 3px 10px rgba(2,31,22,.18)!important;
+  opacity:1!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .saved-place .saved-place-links :is(a,button) :is(i,span){
+  color:#176f51!important;
+  -webkit-text-fill-color:#176f51!important;
+  opacity:1!important
+}
+html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan#plan article.saved-place .saved-place-content .saved-place-links>a[href]{
+  color:#104f3b!important;
+  -webkit-text-fill-color:#104f3b!important
+}
+html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan#plan article.saved-place .saved-place-content .saved-place-links>a[href] :is(i,span){
+  color:#176f51!important;
+  -webkit-text-fill-color:#176f51!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .saved-place .saved-place-links :is(button:disabled,[aria-disabled="true"],a:not([href])){
+  border-color:rgba(147,168,158,.72)!important;
+  background:#e2ebe6!important;
+  color:#526b60!important;
+  -webkit-text-fill-color:#526b60!important;
+  opacity:.82!important
+}
