@@ -447,6 +447,23 @@ body.tm-new-design[data-trip-view="places"] #places .auto-place-launch{
 body.tm-new-design[data-trip-view="places"] #places .auto-place-launch small{
   color:inherit!important;
 }
+/* 1.39 — readable weather-style glass across every non-hero trip screen. */
+body.tm-new-design .content>section:not(.hero),
+body.tm-new-design :where(.expense-workspace,.budget-charts,.currency-converter,.transport-card,.fare-guide,.travel-service-card,.external-resources,.group-card,.album-card,.memory-card,.trip-summary-card,.document-vault-panel){
+  border:1px solid rgba(181,232,211,.42)!important;
+  background:linear-gradient(145deg,rgba(8,48,37,.84),rgba(18,74,56,.72))!important;
+  color:#f4fff9!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 18px 48px rgba(0,24,18,.18)!important;
+  backdrop-filter:blur(22px) saturate(130%)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(130%)!important;
+}
+body.tm-new-design .content>section:not(.hero) :where(h1,h2,h3,h4,strong,b),
+body.tm-new-design :where(.expense-workspace,.budget-charts,.transport-card,.fare-guide,.travel-service-card,.external-resources,.group-card,.album-card,.memory-card,.trip-summary-card) :where(h1,h2,h3,h4,strong,b){color:#f7fffb!important;-webkit-text-fill-color:#f7fffb!important;text-shadow:none!important}
+body.tm-new-design .content>section:not(.hero) :where(p,small,span,label),
+body.tm-new-design :where(.expense-workspace,.budget-charts,.transport-card,.fare-guide,.travel-service-card,.external-resources,.group-card,.album-card,.memory-card,.trip-summary-card) :where(p,small,span,label){color:rgba(238,255,248,.82)!important;-webkit-text-fill-color:rgba(238,255,248,.82)!important}
+body.tm-new-design .content>section:not(.hero) :where(input,select,textarea){border-color:rgba(188,226,211,.62)!important;background:rgba(248,255,252,.94)!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important}
+body.tm-new-design .content>section:not(.hero) :where(a,button){text-shadow:none}
+
 /* Critical plan media sizing: prevents full-size images before feature CSS arrives. */
 #plan .saved-place-image,#plan .planned-activity img,#plan .activity-image{display:block;width:96px;height:96px;max-width:96px;max-height:96px;object-fit:cover;border-radius:12px;background:#dfeee6}
 @media(max-width:650px){#plan .saved-place-image,#plan .planned-activity img,#plan .activity-image{width:78px;height:78px;max-width:78px;max-height:78px}}

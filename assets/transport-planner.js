@@ -13,6 +13,23 @@
     var route = heroText ? heroText.textContent.split('·')[0].trim() : country;
     return { city: route.split(/,| ו/)[0].trim() || country, country: country, start: '' };
   }
+  function itineraryPlaces(trip) {
+    var names = [];
+    function add(value) { var name = String(value || '').trim(); if (name && name.length > 1 && names.indexOf(name) === -1) names.push(name); }
+    function scan(value, depth) {
+      if (!value || depth > 5) return;
+      if (Array.isArray(value)) { value.forEach(function (item) { scan(item, depth + 1); }); return; }
+      if (typeof value !== 'object') return;
+      add(value.name || value.title || value.placeName || value.destinationName);
+      ['activities','items','places','schedule','days','plan','itinerary'].forEach(function (key) { if (value[key]) scan(value[key], depth + 1); });
+    }
+    scan(trip, 0);
+    try {
+      var localTrips = JSON.parse(localStorage.getItem('travelmate-trips') || '[]');
+      scan(localTrips.find(function (item) { return String(item.id) === String(trip.id || ''); }), 0);
+    } catch (error) {}
+    return names.slice(0, 80);
+  }
   async function getTrip() {
     if (window.travelMateTripReady) {
       try { return await window.travelMateTripReady; } catch (error) {}
@@ -65,12 +82,13 @@
     var city = trip.city || trip.destination || trip.country || '';
     var country = trip.country || '';
     var sources = fareSources(city, country);
+    var placeOptions = itineraryPlaces(trip).map(function (name) { return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>'; }).join('');
     var section = document.createElement('section');
     section.id = 'transport';
     section.className = 'section transport-section';
     section.innerHTML = '<div class="section-head"><div><p>מסלול, מפעילים ותעריפים במקום אחד</p><h1>תחבורה ציבורית ומחירים</h1></div></div>' +
       '<div class="transport-layout"><article class="transport-card transport-search-card"><div class="transport-title"><span><i class="fa-solid fa-route"></i></span><div><h2>איך מגיעים?</h2><p>חיפוש מעודכן לפי נקודת יציאה, יעד ותאריך.</p></div></div>' +
-      '<form class="transport-form" data-transport-form><label>מאיפה?<input name="origin" value="' + escapeHtml(city) + ' מרכז העיר" placeholder="מלון, תחנה או כתובת" required></label><label>לאן?<input name="destination" placeholder="אטרקציה, תחנה או עיר" required></label><label>תאריך נסיעה<input name="date" type="date" value="' + escapeHtml(trip.start || '') + '"></label><label>שעה<input name="time" type="time" value="09:00"></label><label>מה להציג?<select name="mode"><option value="all">כל האפשרויות</option><option value="public">מטרו ואוטובוסים</option><option value="rail">רכבות</option><option value="taxi">מוניות</option></select></label><button type="submit"><i class="fa-solid fa-magnifying-glass"></i> חיפוש מסלול ומחיר</button></form>' +
+      '<form class="transport-form" data-transport-form><label>מאיפה?<input name="origin" value="' + escapeHtml(city) + ' מרכז העיר" placeholder="מלון, תחנה או כתובת" required></label><div class="transport-destination-fields"><label>לאן? חיפוש חופשי<input name="destination" placeholder="אטרקציה, תחנה או כתובת"></label><label>או בחירה מהתוכנית<select name="savedDestination"><option value="">בחר מקום ששמרת…</option>' + placeOptions + '</select></label></div><label>תאריך נסיעה<input name="date" type="date" value="' + escapeHtml(trip.start || '') + '"></label><label>שעה<input name="time" type="time" value="09:00"></label><label>מה להציג?<select name="mode"><option value="all">כל האפשרויות</option><option value="public">מטרו ואוטובוסים</option><option value="rail">רכבות</option><option value="taxi">מוניות</option></select></label><button type="submit"><i class="fa-solid fa-magnifying-glass"></i> חיפוש מסלול ומחיר</button></form>' +
       '<div class="transport-results" data-transport-results><div class="transport-empty"><i class="fa-solid fa-location-arrow"></i><strong>מלא יעד ולחץ על חיפוש</strong><span>נפתח לך מסלול חי והשוואת מחירים בשירותים אמינים.</span></div></div></article>' +
       '<aside class="transport-card fare-guide"><div class="transport-title"><span><i class="fa-solid fa-ticket"></i></span><div><h2>מדריך מחירים</h2><p>' + escapeHtml(city + (country ? ', ' + country : '')) + '</p></div></div>' +
       '<a class="fare-row" href="' + escapeHtml(sources.public) + '" target="_blank" rel="noopener"><i class="fa-solid fa-bus-simple"></i><div><strong>מטרו ואוטובוסים <i class="fa-solid fa-arrow-up-right-from-square"></i></strong><p>כרטיסים, אזורי תעריף וכרטיס יומי במקור הרשמי או הפתוח המתאים ליעד.</p></div></a>' +
@@ -86,11 +104,16 @@
   function wire(section, trip) {
     var form = section.querySelector('[data-transport-form]');
     var results = section.querySelector('[data-transport-results]');
+    var destinationInput = form.elements.destination;
+    var savedDestination = form.elements.savedDestination;
+    savedDestination.onchange = function () { if (savedDestination.value) destinationInput.value = savedDestination.value; };
+    destinationInput.oninput = function () { if (savedDestination.value && destinationInput.value !== savedDestination.value) savedDestination.value = ''; destinationInput.setCustomValidity(''); };
     form.addEventListener('submit', function (event) {
       event.preventDefault();
       var data = new FormData(form);
       var origin = String(data.get('origin') || '').trim();
-      var destination = String(data.get('destination') || '').trim();
+      var destination = String(data.get('destination') || data.get('savedDestination') || '').trim();
+      if (!destination) { destinationInput.setCustomValidity('יש להזין יעד או לבחור מקום מהתוכנית.'); destinationInput.reportValidity(); return; }
       var context = [trip.city, trip.country].filter(Boolean).join(', ');
       if (context && origin.indexOf(trip.country || '---') === -1) origin += ', ' + context;
       if (context && destination.indexOf(trip.country || '---') === -1) destination += ', ' + context;
