@@ -1,9 +1,10 @@
 (function () {
   'use strict';
 
-  var CACHE_KEY = 'travelmate-destination-images-v5';
+  var CACHE_KEY = 'travelmate-destination-images-v6';
   var FALLBACK = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=82';
   var PRAGUE_IMAGE = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Prague%20castle%20panorama.jpg?width=2200';
+  var HAIFA_IMAGE = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Haifa%20Bahai%20Gardens%20-%20landscape.jpg?width=2200';
   var pending = new Map();
 
   function normalize(value) {
@@ -66,11 +67,14 @@
 
   function resolve(city, country) {
     if (/^(פראג|prague)$/i.test(String(city || '').trim())) return Promise.resolve(PRAGUE_IMAGE);
+    if (/^(חיפה|haifa)$/i.test(String(city || '').trim())) return Promise.resolve(HAIFA_IMAGE);
     var cacheKey = key(city, country);
     var saved = cached(city, country);
     if (saved) return Promise.resolve(saved);
     if (pending.has(cacheKey)) return pending.get(cacheKey);
-    var featuredSearch = flagCode(country) === 'IL' ? 'Tel Aviv skyline Azrieli Towers' : '';
+    var normalizedCity = normalize(city);
+    var featuredSearch = /^(חיפה|haifa)$/.test(normalizedCity) ? 'Haifa Bahai Gardens panoramic cityscape' :
+      (flagCode(country) === 'IL' && /^(תל אביב|tel aviv|tel-aviv)$/.test(normalizedCity) ? 'Tel Aviv skyline Azrieli Towers' : '');
     var request = englishCityName(city).then(function (englishCity) {
       return commonsCityImage(englishCity, featuredSearch);
     }).then(function (url) {

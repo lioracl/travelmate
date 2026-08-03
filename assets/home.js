@@ -177,7 +177,7 @@
     shell.dataset.end = trip.end || '';
     shell.dataset.days = trip.days || '';
     if (!isStatic) shell.dataset.cloudTrip = String(trip.id);
-    shell.innerHTML = '<a class="trip-card" href="' + escapeText(href) + '" style="background-image:url(\'' + escapeText(background) + '\')"><span class="trip-overlay"></span><span class="trip-flag trip-country-flag" aria-label="דגל ' + escapeText(trip.country) + '">' + countryFlag(trip.country) + '</span><span class="trip-copy"><span class="trip-date-state' + (state.now ? ' now' : '') + '"><i class="fa-solid ' + state.icon + '"></i> ' + escapeText(state.label) + '</span><h2>' + escapeText(trip.country) + '</h2><p>' + escapeText(trip.city) + '</p><span class="tag">' + (trip.start ? formatDate(trip.start) + ' – ' + formatDate(trip.end) : '') + '</span> <span class="tag">' + escapeText(trip.days) + ' ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left"></i></strong></span></a>' + (!isStatic ? '<button class="trip-edit-dates" type="button" data-trip-edit-dates aria-label="עריכת תאריכי הטיול"><i class="fa-solid fa-calendar-pen"></i><span>עריכת תאריכים</span></button>' : '') + '<button class="trip-activity-toggle' + (state.active ? ' active' : '') + '" type="button" data-trip-activity aria-pressed="' + String(state.active) + '"><i class="fa-solid fa-circle"></i><span>' + escapeText(state.active ? 'פעיל' : state.label) + '</span></button>';
+    shell.innerHTML = '<a class="trip-card" href="' + escapeText(href) + '" style="background-image:url(\'' + escapeText(background) + '\')"><span class="trip-overlay"></span><span class="trip-flag trip-country-flag" aria-label="דגל ' + escapeText(trip.country) + '">' + countryFlag(trip.country) + '</span><span class="trip-copy"><span class="trip-date-state' + (state.now ? ' now' : '') + '"><i class="fa-solid ' + state.icon + '"></i> ' + escapeText(state.label) + '</span><h2>' + escapeText(trip.country) + '</h2><p>' + escapeText(trip.city) + '</p><span class="tag">' + (trip.start ? formatDate(trip.start) + ' – ' + formatDate(trip.end) : '') + '</span> <span class="tag">' + escapeText(trip.days) + ' ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left"></i></strong></span></a>' + (!isStatic ? '<button class="trip-edit-dates" type="button" data-trip-edit-dates aria-label="עריכת תאריכי הטיול"><i class="fa-solid fa-calendar-pen"></i><span>עריכת תאריכים</span></button><button class="trip-delete" type="button" data-trip-delete aria-label="מחיקת הטיול"><i class="fa-solid fa-trash-can"></i><span>מחיקה</span></button>' : '') + '<button class="trip-activity-toggle' + (state.active ? ' active' : '') + '" type="button" data-trip-activity aria-pressed="' + String(state.active) + '"><i class="fa-solid fa-circle"></i><span>' + escapeText(state.active ? 'פעיל' : state.label) + '</span></button>';
     return shell;
   }
 
@@ -292,6 +292,24 @@
   }
 
   document.addEventListener('click', async function (event) {
+    var deleteButton = event.target.closest('[data-trip-delete]');
+    if (deleteButton) {
+      event.preventDefault(); event.stopPropagation();
+      var deleteShell = deleteButton.closest('.trip-card-shell');
+      var tripToDelete = deleteShell && renderedTrips.get(String(deleteShell.dataset.tripId));
+      if (!tripToDelete || !window.confirm('למחוק את הטיול ל' + tripToDelete.city + ', ' + tripToDelete.country + '?\nהפעולה תמחק את הטיול מהחשבון ולא ניתן לבטל אותה.')) return;
+      deleteButton.disabled = true;
+      try {
+        if (currentSession) await cloud.deleteTrip(tripToDelete);
+        else cloud.removeLocalTrip(tripToDelete.id, tripToDelete.ownerId);
+        renderedTrips.delete(String(tripToDelete.id));
+        renderTrips(Array.from(renderedTrips.values()));
+      } catch (error) {
+        console.error('Trip deletion failed', error); deleteButton.disabled = false;
+        window.alert('לא הצלחנו למחוק את הטיול. בדוק את החיבור ונסה שוב.');
+      }
+      return;
+    }
     var editDates = event.target.closest('[data-trip-edit-dates]');
     if (editDates) {
       event.preventDefault();

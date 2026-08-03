@@ -135,6 +135,19 @@
     return trip;
   }
 
+  function removeLocalTrip(tripId, ownerId) {
+    var id = String(tripId);
+    var owner = ownerId == null ? '' : String(ownerId);
+    var trips = getLocalTrips().filter(function (trip) {
+      if (String(trip.id) !== id) return true;
+      return owner && String(trip.ownerId || '') !== owner;
+    });
+    setLocalTrips(trips);
+    var activeUser = localStorage.getItem(ACTIVE_USER_KEY);
+    if (activeUser) localStorage.setItem(USER_STORAGE_PREFIX + activeUser, JSON.stringify(trips));
+    return trips;
+  }
+
   function toRow(trip, userId, timestamp) {
     var payload = Object.assign({}, trip, { cloudUpdatedAt: timestamp });
     return {
@@ -207,6 +220,20 @@
     if (String(row.user_id) !== String(session.user.id) && !result.data) throw new Error('TRIP_EDIT_FORBIDDEN');
     window.dispatchEvent(new CustomEvent('travelmate:trip-synced', { detail: { id: trip.id, timestamp: timestamp } }));
     return { saved: true, timestamp: timestamp };
+  }
+
+  async function deleteTrip(trip) {
+    var client = await getClient();
+    var session = await getSession();
+    if (!session || !session.user) return { deleted: false, reason: 'SIGNED_OUT' };
+    var ownerId = String(trip && trip.ownerId || session.user.id);
+    if (ownerId !== String(session.user.id)) throw new Error('TRIP_DELETE_FORBIDDEN');
+    var result = await client.from('travel_trips').delete()
+      .eq('user_id', ownerId).eq('id', String(trip.id)).select('id').maybeSingle();
+    if (result.error) throw result.error;
+    removeLocalTrip(trip.id, ownerId);
+    window.dispatchEvent(new CustomEvent('travelmate:trip-deleted', { detail: { id: trip.id, ownerId: ownerId } }));
+    return { deleted: true };
   }
 
   function queueTripSave(trip, delay) {
@@ -448,6 +475,7 @@
     getLocalTrips: getLocalTrips,
     setLocalTrips: setLocalTrips,
     upsertLocalTrip: upsertLocalTrip,
+    removeLocalTrip: removeLocalTrip,
     getTrip: getTrip,
     acceptTripInvite: acceptTripInvite,
     createTripInvite: createTripInvite,
@@ -458,6 +486,7 @@
     sendTripMessage: sendTripMessage,
     subscribeToSharedTrip: subscribeToSharedTrip,
     saveTrip: saveTrip,
+    deleteTrip: deleteTrip,
     queueTripSave: queueTripSave,
     syncLocalTrips: syncLocalTrips,
     signIn: signIn,
