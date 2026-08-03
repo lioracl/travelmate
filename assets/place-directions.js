@@ -450,10 +450,9 @@
   };
   document.addEventListener('travelmate:navigate-place', function (event) { openModal(cleanPlace(event.detail)); });
   document.addEventListener('travelmate:share-place', function (event) { openShareModal(cleanPlace(event.detail)); });
-  var tripWhatsAppButton = document.querySelector('[data-trip-share-whatsapp]');
-  if (tripWhatsAppButton) {
+  document.querySelectorAll('[data-trip-share-whatsapp]').forEach(function (tripWhatsAppButton) {
     tripWhatsAppButton.addEventListener('click', function () { openShareModal(tripDestinationPlace()); });
-  }
+  });
 
   enhanceResults(document);
   showSharedPlaceCard();
