@@ -267,7 +267,16 @@
       compactMeter.querySelector('.budget-meter-track i').style.width = usedPercent + '%';
       compactMeter.setAttribute('aria-label', 'נוצלו ' + usedPercent + ' אחוזים מהתקציב');
     }
-    var ring = document.querySelector('#budget .budget-ring'); if (ring) ring.textContent = totalPlanned ? Math.min(100, Math.round(totalSpent / totalPlanned * 100)) + '%' : '0%';
+    var legacyRing = document.querySelector('#budget .budget-ring');
+    if (legacyRing) {
+      legacyRing.outerHTML = '<div class="budget-hero-meter" data-budget-hero-meter aria-label="ניצול התקציב"><div><strong>0%</strong><small>נוצל</small></div><span><i></i></span></div>';
+    }
+    var heroMeter = document.querySelector('[data-budget-hero-meter]');
+    if (heroMeter) {
+      heroMeter.querySelector('strong').textContent = usedPercent + '%';
+      heroMeter.querySelector('i').style.width = usedPercent + '%';
+      heroMeter.setAttribute('aria-label', 'נוצלו ' + usedPercent + ' אחוזים מהתקציב');
+    }
     var heroCopy = document.querySelector('#budget .budget-hero>div:first-child'); if (heroCopy) heroCopy.innerHTML = '<span>נרשם עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong><p>' + (totalPlanned ? 'נותרו ' + money(Math.max(0,totalPlannedLocal-totalSpentLocal),state.localCurrency) + ' מתוך ' + money(totalPlannedLocal,state.localCurrency) : 'הגדר תקציב כולל כדי לעקוב אחר היתרה') + '</p>';
     var activeCategories = state.budgetCategories.filter(function (item) { return state.expenses.some(function (expense) { return expenseCategoryParts(expense.category).category === item.name; }); });
     bars.innerHTML = activeCategories.length ? activeCategories.map(function (item, index) {
