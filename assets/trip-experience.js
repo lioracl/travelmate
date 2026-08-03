@@ -192,7 +192,7 @@
     var charts = document.createElement('section');
     charts.className = 'budget-charts';
     charts.dataset.budgetCharts = '';
-    charts.innerHTML = '<header><div><small>תמונת מצב קצרה</small><h3>מתוכנן לעומת ביצוע</h3><p>הגרף מתעדכן אוטומטית מכל הוצאה שנשמרת.</p></div><button type="button" data-budget-chart-edit><i class="fa-solid fa-sliders"></i> עריכת תקציב</button></header><div class="budget-compact-visual"><div class="budget-chart-ring" data-budget-chart-ring><strong>0%</strong><span>נוצל</span></div><div class="budget-chart-summary" data-budget-chart-summary></div></div><div class="budget-chart-bars" data-budget-chart-bars></div>';
+    charts.innerHTML = '<header><div><small>תמונת מצב קצרה</small><h3>מתוכנן לעומת ביצוע</h3><p>הגרף מתעדכן אוטומטית מכל הוצאה שנשמרת.</p></div><button type="button" data-budget-chart-edit><i class="fa-solid fa-sliders"></i> עריכת תקציב</button></header><div class="budget-compact-visual"><div class="budget-chart-meter" data-budget-chart-meter><div><strong>0%</strong><span>נוצל</span></div><span class="budget-meter-track"><i></i></span></div><div class="budget-chart-summary" data-budget-chart-summary></div></div><div class="budget-chart-bars" data-budget-chart-bars></div>';
     panel.insertAdjacentElement('afterend', charts);
     charts.querySelector('[data-budget-chart-edit]').onclick = function () {
       charts.classList.toggle('editing');
@@ -261,8 +261,12 @@
     var totalPlannedLocal = state.localCurrency === 'EUR' ? totalPlanned : localFromEuros(totalPlanned);
     var usedPercent = totalPlanned ? Math.min(100, Math.round(totalSpent / totalPlanned * 100)) : 0;
     summary.innerHTML = '<div><span>\u05de\u05ea\u05d5\u05db\u05e0\u05df</span><strong>' + money(totalPlannedLocal, state.localCurrency) + '</strong></div><div><span>\u05d1\u05d5\u05e6\u05e2</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>\u05e0\u05d5\u05ea\u05e8</span><strong>' + money(Math.max(0, totalPlannedLocal - totalSpentLocal), state.localCurrency) + '</strong></div>';
-    var compactRing = document.querySelector('[data-budget-chart-ring]');
-    if (compactRing) { compactRing.style.setProperty('--budget-used', usedPercent + '%'); compactRing.innerHTML = '<strong>' + usedPercent + '%</strong><span>נוצל</span>'; }
+    var compactMeter = document.querySelector('[data-budget-chart-meter]');
+    if (compactMeter) {
+      compactMeter.querySelector('strong').textContent = usedPercent + '%';
+      compactMeter.querySelector('.budget-meter-track i').style.width = usedPercent + '%';
+      compactMeter.setAttribute('aria-label', 'נוצלו ' + usedPercent + ' אחוזים מהתקציב');
+    }
     var ring = document.querySelector('#budget .budget-ring'); if (ring) ring.textContent = totalPlanned ? Math.min(100, Math.round(totalSpent / totalPlanned * 100)) + '%' : '0%';
     var heroCopy = document.querySelector('#budget .budget-hero>div:first-child'); if (heroCopy) heroCopy.innerHTML = '<span>נרשם עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong><p>' + (totalPlanned ? 'נותרו ' + money(Math.max(0,totalPlannedLocal-totalSpentLocal),state.localCurrency) + ' מתוך ' + money(totalPlannedLocal,state.localCurrency) : 'הגדר תקציב כולל כדי לעקוב אחר היתרה') + '</p>';
     var activeCategories = state.budgetCategories.filter(function (item) { return state.expenses.some(function (expense) { return expenseCategoryParts(expense.category).category === item.name; }); });

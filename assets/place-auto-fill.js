@@ -44,7 +44,7 @@
     hotels: ['nwr["tourism"~"hotel|hostel|guest_house|apartment|motel|chalet"]{around};']
   };
   var dialog;
-  var state = { trip: null, origin: null, candidates: [], proposal: [] };
+  var state = { trip: null, origin: null, candidates: [], proposal: [], replacementTarget: null };
   var placeImageCache = {};
   var representativeImages = {
     attractions: [
@@ -478,6 +478,7 @@
   function buildProposal(candidates, settings, trip) {
     var existingNames = {};
     (trip.savedPlaces || []).forEach(function (place) { existingNames[String(place.name).toLowerCase()] = true; });
+    (trip.activities || []).forEach(function (activity) { existingNames[String(activity.title || '').toLowerCase()] = true; });
     var available = candidates.filter(function (place) {
       if (existingNames[String(place.name).toLowerCase()]) return false;
       if (settings.minimumRating && (!place.rating || place.rating < settings.minimumRating)) return false;
@@ -700,6 +701,32 @@
     var fresh = currentTrip();
     if (!fresh) return;
     await enrichPlaceImages(selected);
+    if (state.replacementTarget && state.replacementTarget.type === 'activity') {
+      var activity = (fresh.activities || []).find(function (item) { return String(item.id) === String(state.replacementTarget.id); });
+      if (!activity) return;
+      var replacement = selected[0];
+      Object.assign(activity, {
+        title: replacement.name,
+        category: replacement.category,
+        description: replacement.description,
+        lat: replacement.lat,
+        lon: replacement.lon,
+        officialUrl: replacement.officialUrl,
+        ratingsUrl: replacement.ratingsUrl,
+        sourceUrl: replacement.sourceUrl,
+        image: replacement.image,
+        date: state.replacementTarget.date,
+        time: state.replacementTarget.time,
+        duration: state.replacementTarget.duration,
+        done: false,
+        canceled: false
+      });
+      saveTrip(fresh);
+      document.dispatchEvent(new CustomEvent('travelmate:activities-updated'));
+      closeDialog();
+      if (window.showDayToast) window.showDayToast('הפעילות הוחלפה מתוך חיפוש המקומות המלא.');
+      return;
+    }
     fresh.savedPlaces = fresh.savedPlaces || [];
     if (!state.settings.keepExisting) {
       var selectedDates = state.settings.dates;
@@ -872,16 +899,53 @@
     state.trip = currentTrip();
     if (!state.trip) return;
     if (!dialog) buildDialog(state.trip);
+    state.replacementTarget = null;
     state.candidates = [];
     state.proposal = [];
-    dialog.querySelector('[data-auto-place-form]').hidden = false;
+    var form = dialog.querySelector('[data-auto-place-form]');
+    form.hidden = false;
+    form.querySelectorAll('[name="category"]').forEach(function (input) { input.checked = input.value === 'attractions' || input.value === 'museums'; });
+    form.querySelectorAll('[name="date"]').forEach(function (input) { input.checked = true; });
+    form.elements.pace.value = 'balanced';
     dialog.querySelector('[data-auto-place-preview]').innerHTML = '';
     dialog.querySelector('[data-auto-place-preview-actions]').hidden = true;
     dialog.querySelector('[data-auto-place-status]').textContent = 'התוכנית תוצג לבדיקה לפני שהיא נשמרת.';
+    dialog.querySelector('#auto-place-title').textContent = 'מילוי ימים אוטומטי';
+    dialog.querySelector('[data-auto-place-apply]').innerHTML = '<i class="fa-solid fa-calendar-check"></i> מילוי הימים שסומנו';
     dialog.hidden = false;
     document.body.classList.add('auto-place-open');
     var dialogBody = dialog.querySelector('.auto-place-dialog-body');
     if (dialogBody) dialogBody.scrollTop = 0;
+    dialog.querySelector('[data-auto-place-close]').focus();
+  }
+
+  function openActivityReplacement(activityId) {
+    var trip = currentTrip();
+    var activity = trip && (trip.activities || []).find(function (item) { return String(item.id) === String(activityId); });
+    if (!activity) return;
+    state.trip = trip;
+    if (!dialog) buildDialog(trip);
+    state.replacementTarget = { type: 'activity', id: activity.id, date: activity.date, time: activity.time || '09:30', duration: Number(activity.duration || 90) };
+    state.candidates = [];
+    state.proposal = [];
+    var form = dialog.querySelector('[data-auto-place-form]');
+    form.hidden = false;
+    form.querySelectorAll('[name="category"]').forEach(function (input) { input.checked = input.value === activityCategory(activity.category); });
+    form.querySelectorAll('[name="date"]').forEach(function (input) { input.checked = input.value === activity.date; });
+    form.elements.perDay.value = '1';
+    form.elements.pace.value = 'custom';
+    form.elements.startTime.value = activity.time || '09:30';
+    var requestedDuration = String(activity.duration || 90);
+    form.elements.duration.value = [].some.call(form.elements.duration.options, function (option) { return option.value === requestedDuration; }) ? requestedDuration : '90';
+    form.elements.keepExisting.checked = true;
+    form.elements.freeTerm.value = '';
+    dialog.querySelector('#auto-place-title').textContent = 'החלפת פעילות באמצעות חיפוש מקומות';
+    dialog.querySelector('[data-auto-place-status]').textContent = 'בחר סוג מקום והעדפות. היום והשעה של הפעילות יישמרו.';
+    dialog.querySelector('[data-auto-place-preview]').innerHTML = '';
+    dialog.querySelector('[data-auto-place-preview-actions]').hidden = true;
+    dialog.querySelector('[data-auto-place-apply]').innerHTML = '<i class="fa-solid fa-rotate"></i> החלף בפעילות שסומנה';
+    dialog.hidden = false;
+    document.body.classList.add('auto-place-open');
     dialog.querySelector('[data-auto-place-close]').focus();
   }
 
@@ -1023,7 +1087,7 @@
     if (missing.some(function (place) { return place.image; })) saveTrip(trip);
   }
 
-  window.TravelMateAutoPlaces = { open: openDialog, replace: replacementFor, replaceActivity: replacementForActivity, replaceDay: replacementForDay };
+  window.TravelMateAutoPlaces = { open: openDialog, replace: replacementFor, replaceActivity: openActivityReplacement, replaceActivityQuick: replacementForActivity, replaceDay: replacementForDay };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
   document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && dialog && !dialog.hidden) closeDialog(); });

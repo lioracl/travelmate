@@ -13,6 +13,12 @@
     var route = heroText ? heroText.textContent.split('·')[0].trim() : country;
     return { city: route.split(/,| ו/)[0].trim() || country, country: country, start: '' };
   }
+  function latestTrip(trip) {
+    try {
+      var localTrips = JSON.parse(localStorage.getItem('travelmate-trips') || '[]');
+      return localTrips.find(function (item) { return String(item.id) === String(trip.id || ''); }) || trip;
+    } catch (error) { return trip; }
+  }
   function itineraryPlaces(trip) {
     var names = [];
     function add(value) { var name = String(value || '').trim(); if (name && name.length > 1 && names.indexOf(name) === -1) names.push(name); }
@@ -21,14 +27,21 @@
       if (Array.isArray(value)) { value.forEach(function (item) { scan(item, depth + 1); }); return; }
       if (typeof value !== 'object') return;
       add(value.name || value.title || value.placeName || value.destinationName);
-      ['activities','items','places','schedule','days','plan','itinerary'].forEach(function (key) { if (value[key]) scan(value[key], depth + 1); });
+      ['activities','savedPlaces','items','places','schedule','days','plan','itinerary','proposal','autoPlan'].forEach(function (key) { if (value[key]) scan(value[key], depth + 1); });
     }
-    scan(trip, 0);
-    try {
-      var localTrips = JSON.parse(localStorage.getItem('travelmate-trips') || '[]');
-      scan(localTrips.find(function (item) { return String(item.id) === String(trip.id || ''); }), 0);
-    } catch (error) {}
+    scan(latestTrip(trip), 0);
+    document.querySelectorAll('.planned-activity .activity-copy strong,.saved-place h3,.auto-place-preview-item strong').forEach(function (node) { add(node.textContent); });
     return names.slice(0, 80);
+  }
+  async function resolveDestination(query, trip) {
+    var context = [query, trip.city, trip.country].filter(Boolean).join(', ');
+    try {
+      var response = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(context), { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error('search failed');
+      var results = await response.json();
+      if (!results[0]) return context;
+      return results[0].display_name || (results[0].lat + ',' + results[0].lon);
+    } catch (error) { return context; }
   }
   async function getTrip() {
     if (window.travelMateTripReady) {
@@ -106,14 +119,30 @@
     var results = section.querySelector('[data-transport-results]');
     var destinationInput = form.elements.destination;
     var savedDestination = form.elements.savedDestination;
+    function refreshDestinations() {
+      var selected = savedDestination.value;
+      var places = itineraryPlaces(latestTrip(trip));
+      savedDestination.innerHTML = '<option value="">בחר מקום מהתוכנית…</option>' + places.map(function (name) { return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>'; }).join('');
+      if (places.indexOf(selected) >= 0) savedDestination.value = selected;
+    }
+    refreshDestinations();
+    ['travelmate:planner-rendered','travelmate:places-updated','travelmate:activities-updated','travelmate:trip-synced'].forEach(function (eventName) {
+      document.addEventListener(eventName, refreshDestinations);
+    });
     savedDestination.onchange = function () { if (savedDestination.value) destinationInput.value = savedDestination.value; };
     destinationInput.oninput = function () { if (savedDestination.value && destinationInput.value !== savedDestination.value) savedDestination.value = ''; destinationInput.setCustomValidity(''); };
-    form.addEventListener('submit', function (event) {
+    form.addEventListener('submit', async function (event) {
       event.preventDefault();
       var data = new FormData(form);
       var origin = String(data.get('origin') || '').trim();
       var destination = String(data.get('destination') || data.get('savedDestination') || '').trim();
       if (!destination) { destinationInput.setCustomValidity('יש להזין יעד או לבחור מקום מהתוכנית.'); destinationInput.reportValidity(); return; }
+      var submitButton = form.querySelector('button[type="submit"]');
+      var originalButton = submitButton.innerHTML;
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> מאתר את היעד…';
+      destination = await resolveDestination(destination, latestTrip(trip));
+      trip = latestTrip(trip);
       var context = [trip.city, trip.country].filter(Boolean).join(', ');
       if (context && origin.indexOf(trip.country || '---') === -1) origin += ', ' + context;
       if (context && destination.indexOf(trip.country || '---') === -1) destination += ', ' + context;
@@ -124,6 +153,8 @@
       if (mode === 'all' || mode === 'rail') items.push(link('https://www.omio.com/', 'fa-ticket', 'השוואת כרטיסי רכבת ואוטובוס', 'בדיקת זמינות ומחיר לתאריך שבחרת', 'Omio'));
       if (mode === 'all' || mode === 'taxi') items.push(link(uber(origin, destination), 'fa-taxi', 'מונית ומחיר נסיעה', 'קבלת הצעת מחיר זמינה לפני הזמנה', 'Uber'));
       results.innerHTML = '<div class="transport-results-head"><strong>אפשרויות מ־' + escapeHtml(origin) + ' אל ' + escapeHtml(destination) + '</strong><span>' + escapeHtml(String(data.get('date') || 'היום')) + ' · ' + escapeHtml(String(data.get('time') || '')) + '</span></div>' + items.join('');
+      submitButton.disabled = false;
+      submitButton.innerHTML = originalButton;
     });
   }
   async function init() {

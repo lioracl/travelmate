@@ -3745,6 +3745,28 @@ html body.tm-new-design[data-trip-view="places"] main.content #places .auto-plac
   box-shadow:0 0 0 1px rgba(255,255,255,.46),0 12px 30px rgba(0,43,31,.2),inset 0 1px 0 rgba(255,255,255,.72)!important
 }
 
+/* 1.39.1 — action labels stay readable over dark glass and photo backgrounds. */
+html body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button{
+  border-color:rgba(148,211,183,.68)!important;
+  background:#eef8f3!important;
+  color:#104f3b!important;
+  -webkit-text-fill-color:#104f3b!important;
+  box-shadow:0 4px 12px rgba(3,29,22,.2)!important;
+  opacity:1!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button :is(i,span),
+html body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button::after{
+  color:#104f3b!important;
+  -webkit-text-fill-color:#104f3b!important;
+  opacity:1!important
+}
+html body.tm-new-design[data-trip-view="plan"] #plan :is([data-delete],[data-delete-saved-place]){
+  border-color:rgba(215,117,104,.68)!important;
+  background:#fff0ed!important;
+  color:#8f241c!important;
+  -webkit-text-fill-color:#8f241c!important
+}
+
 /* 1.37.5 — crisp glass edges and a deliberately destructive planner action. */
 html body.tm-new-design main.content :is(
   .section-head,.planner-toolbar,.generated-day,.planned-activity,.saved-place,
