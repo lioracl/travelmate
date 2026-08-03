@@ -54,8 +54,36 @@
 #budget .currency-converter,#budget .currency-converter :is(h1,h2,h3,strong,b,label){color:#173f32!important;-webkit-text-fill-color:#173f32!important;text-shadow:none!important}#budget .currency-converter :is(p,small,span){color:#526d64!important;-webkit-text-fill-color:#526d64!important}#budget .currency-converter .currency-converter-result,#budget .currency-converter .currency-converter-result strong{color:#fff!important;-webkit-text-fill-color:#fff!important}#budget .currency-converter .currency-converter-result :is(small,span){color:rgba(255,255,255,.8)!important;-webkit-text-fill-color:rgba(255,255,255,.8)!important}
 @media(max-width:760px){.total-budget-editor{min-width:100%;margin-top:15px}.currency-converter-grid{grid-template-columns:1fr 1fr}.currency-converter-grid>label:first-child{grid-column:1/-1}.currency-converter-grid>button{grid-column:1/-1;justify-self:center;transform:rotate(90deg)}.currency-converter>footer{align-items:flex-start;flex-direction:column}.currency-converter-result{align-items:center;flex-direction:column}.budget-hero{align-items:stretch!important;flex-direction:column!important}}
 
-/* 1.39 — compact planned-versus-actual budget without individual expense rows. */
-#budget .expense-records,#budget [data-expense-records],#budget [data-expenses]{display:none!important}
+/* 1.39.3 — saved receipts stay accessible without restoring the legacy budget rows. */
+#budget [data-expenses]{display:none!important}
+#budget .expense-records{display:grid!important;gap:10px;margin-top:14px}
+#budget .expense-records>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 2px;color:#fff}
+#budget .expense-records>header small,#budget .expense-records>header strong{display:block}
+#budget .expense-records>header small{color:rgba(255,255,255,.7);margin-bottom:2px}
+#budget .expense-records>header>b{min-width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(255,255,255,.1)}
+#budget .expense-record{overflow:hidden;border:1px solid rgba(255,255,255,.3);border-radius:16px;background:rgba(5,35,29,.42);color:#fff;box-shadow:0 10px 24px rgba(0,0,0,.12)}
+#budget .expense-record summary{display:grid;grid-template-columns:44px minmax(0,1fr) auto 20px;align-items:center;gap:11px;padding:13px;cursor:pointer;list-style:none}
+#budget .expense-record summary::-webkit-details-marker{display:none}
+#budget .expense-record-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:rgba(235,249,243,.94);color:#126148;font-size:18px}
+#budget .expense-record-title strong,#budget .expense-record-title small{display:block}
+#budget .expense-record-title small{margin-top:3px;color:rgba(255,255,255,.72)}
+#budget .expense-record summary>b{white-space:nowrap;font-size:17px}
+#budget .expense-record-chevron{transition:transform .2s;color:rgba(255,255,255,.65)}
+#budget .expense-record[open] .expense-record-chevron{transform:rotate(180deg)}
+#budget .expense-record-body{padding:0 13px 14px;border-top:1px solid rgba(255,255,255,.14)}
+#budget .expense-record-body dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+#budget .expense-record-body dl>div{padding:10px;border-radius:12px;background:rgba(255,255,255,.09)}
+#budget .expense-record-body dl>.wide{grid-column:1/-1}
+#budget .expense-record-body dt{font-size:11px;color:rgba(255,255,255,.65)}
+#budget .expense-record-body dd{margin:4px 0 0;font-weight:800;overflow-wrap:anywhere}
+#budget .expense-record-actions{display:flex;gap:8px;flex-wrap:wrap}
+#budget .expense-record-actions button{min-height:40px;border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:8px 12px;background:rgba(239,250,246,.94);color:#125c46;font:inherit;font-weight:800}
+#budget .expense-record-actions button.danger{margin-inline-start:auto;background:rgba(255,238,236,.96);color:#a12d28!important}
+#budget .expense-receipt-warning{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:rgba(255,190,95,.14);color:#ffe4b5}
+#budget .expense-record-empty{display:grid;place-items:center;gap:5px;min-height:120px;padding:18px;border:1px dashed rgba(255,255,255,.32);border-radius:16px;background:rgba(5,35,29,.26);color:#fff;text-align:center}
+#budget .expense-record-empty i{font-size:24px;color:#8ed4bb}
+#budget .expense-record-empty span{color:rgba(255,255,255,.7)}
+@media(max-width:620px){#budget .expense-record summary{grid-template-columns:42px minmax(0,1fr) 18px}#budget .expense-record summary>b{grid-column:2;grid-row:2}#budget .expense-record-chevron{grid-column:3;grid-row:1/3}#budget .expense-record-body dl{grid-template-columns:1fr 1fr}#budget .expense-record-actions button{flex:1 1 140px}#budget .expense-record-actions button.danger{margin-inline-start:0}}
 #budget .expense-live-summary{margin:14px 0 0;border:1px solid rgba(255,255,255,.25)!important;background:rgba(255,255,255,.1)!important;color:#fff!important}
 #budget .budget-charts{max-width:820px;margin-inline:auto;padding:16px 18px}
 #budget .budget-charts>header p{font-size:12px}
