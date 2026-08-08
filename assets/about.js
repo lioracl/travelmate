@@ -2,7 +2,7 @@
   'use strict';
 
   var release = {
-  version: '1.41.0',
+  version: '1.41.1',
     label: 'ניהול טיולים והחלפה חכמה',
     date: '4 באוגוסט 2026',
     highlights: [
