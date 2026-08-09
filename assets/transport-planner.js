@@ -120,6 +120,17 @@
     main.insertBefore(section, anchor || null);
     return section;
   }
+  function mergeCarRental(section) {
+    var carRental = document.getElementById('car-rental');
+    if (!carRental || carRental.closest('.transport-car-panel')) return;
+    var panel = document.createElement('details');
+    panel.className = 'transport-car-panel';
+    panel.innerHTML = '<summary><span class="transport-car-icon"><i class="fa-solid fa-car-side"></i></span><span><strong>השכרת רכב</strong><small>חיפוש רכב, רישיון, ביטוח, אגרות וחניה</small></span><i class="fa-solid fa-chevron-down transport-car-chevron"></i></summary>';
+    panel.appendChild(carRental);
+    section.appendChild(panel);
+    carRental.hidden = false;
+    carRental.classList.add('transport-car-rental');
+  }
   function wire(section, trip) {
     var form = section.querySelector('[data-transport-form]');
     var results = section.querySelector('[data-transport-results]');
@@ -168,6 +179,7 @@
     if (!trip) return;
     addNavigation();
     var section = createSection(trip);
+    mergeCarRental(section);
     wire(section, trip);
   }
   init();

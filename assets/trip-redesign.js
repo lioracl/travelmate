@@ -56,6 +56,7 @@
   var content = document.querySelector('.content');
   var viewParams = new URLSearchParams(window.location.search);
   var currentView = viewParams.get('view') || 'overview';
+  if (currentView === 'car-rental') currentView = 'transport';
   var overviewClasses = ['trip-overview-summary', 'trip-home-actions'];
 
   function pageUrl(view) {
@@ -98,6 +99,7 @@
   }
 
   function activateView(view, pushHistory) {
+    if (view === 'car-rental') view = 'transport';
     if (!view || !document.getElementById(view)) view = 'overview';
     currentView = view;
     if (pushHistory) {
