@@ -75,9 +75,15 @@
   }
   function addNavigation() {
     var nav = document.querySelector('.sidebar nav');
-    if (nav && !nav.querySelector('[href="#transport"]')) {
+    var hasTransport = nav && [].slice.call(nav.querySelectorAll('a')).some(function (link) {
+      try { var url = new URL(link.href, location.href); return link.dataset.view === 'transport' || url.hash === '#transport' || url.searchParams.get('view') === 'transport'; }
+      catch (error) { return false; }
+    });
+    if (nav && !hasTransport) {
       var item = document.createElement('a');
       item.href = '#transport';
+      item.dataset.view = 'transport';
+      item.className = 'sidebar-service';
       item.innerHTML = '<i class="fa-solid fa-train-subway"></i><span class="tip">תחבורה ומחירים</span>';
       nav.appendChild(item);
     }

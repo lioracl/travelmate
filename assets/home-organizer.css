@@ -525,3 +525,13 @@ html body.home-page.is-authenticated .trip-card-shell .trip-delete{
 }
 html body.home-page.is-authenticated .trip-card-shell .trip-delete :is(i,span){color:#7c211c!important;-webkit-text-fill-color:#7c211c!important;opacity:1!important;font-weight:900!important}
 html body.home-page.is-authenticated .trip-card-shell .trip-delete:hover{background:linear-gradient(135deg,#ffd4cf,#ffb7af)!important;border-color:#b84037!important}
+
+html body.home-page.is-authenticated [data-archive-list] .trip-activity-toggle,
+html body.home-page.is-authenticated [data-archive-list] .trip-date-state{
+  border:1px solid #e1a49d!important;
+  background:rgba(255,235,232,.94)!important;
+  color:#702a24!important;
+  -webkit-text-fill-color:#702a24!important
+}
+html body.home-page.is-authenticated [data-archive-list] .trip-activity-toggle :is(i,span),
+html body.home-page.is-authenticated [data-archive-list] .trip-date-state :is(i,span){color:#702a24!important;-webkit-text-fill-color:#702a24!important}

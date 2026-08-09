@@ -208,8 +208,9 @@
     document.querySelectorAll('[data-cloud-trip]').forEach(function (node) { node.remove(); });
     var archiveList = ensureArchive().querySelector('[data-archive-list]');
     renderedTrips = new Map(trips.map(function (trip) { return [String(trip.id), trip]; }));
-    removeShadowedStaticTrips(trips);
-    trips.forEach(function (trip) {
+    var canonicalTrips = Array.from(renderedTrips.values());
+    removeShadowedStaticTrips(canonicalTrips);
+    canonicalTrips.forEach(function (trip) {
       var active = dateState(trip).active;
       (active ? list : archiveList).insertBefore(tripCard(trip), active ? addButton : null);
     });
