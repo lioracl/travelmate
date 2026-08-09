@@ -119,6 +119,10 @@
       launch.style.right = 'auto';
       launch.style.bottom = 'auto';
     }
+    window.addEventListener('resize', function () {
+      var rect = launch.getBoundingClientRect();
+      placeLaunch(rect.left, rect.top);
+    });
     try {
       var savedLaunchPosition = JSON.parse(localStorage.getItem('travelmate-smart-hub-position-v3') || 'null');
       if (savedLaunchPosition && Number.isFinite(savedLaunchPosition.left) && Number.isFinite(savedLaunchPosition.top)) placeLaunch(savedLaunchPosition.left, savedLaunchPosition.top);

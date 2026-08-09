@@ -90,14 +90,21 @@
       var symbols = ['ILS','USD','GBP','JPY','CHF','CZK','PLN','HUF','RON','CAD','AUD','NZD','DKK','SEK','NOK','TRY','CNY','KRW','INR','THB','MXN','BRL','ZAR',state.localCurrency].filter(function (item, index, list) { return item !== 'EUR' && list.indexOf(item) === index; }).join(',');
       var data;
       try {
-        data = await fetchRateJson('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=' + encodeURIComponent(symbols), 6000);
+        data = await fetchRateJson('https://api.frankfurter.app/latest?from=EUR&to=' + encodeURIComponent(symbols), 6500);
         if (!data.rates || !Number(data.rates.ILS)) throw new Error('invalid-frankfurter-rate');
         state.rateSource = 'ECB דרך Frankfurter'; state.rateSourceUrl = 'https://frankfurter.dev/';
       } catch (primaryError) {
-        var fallback = await fetchRateJson('https://open.er-api.com/v6/latest/EUR', 6000);
-        if (!fallback.rates || !Number(fallback.rates.ILS)) throw primaryError;
-        data = { rates: fallback.rates, date: fallback.time_last_update_utc || '' };
-        state.rateSource = 'ExchangeRate-API'; state.rateSourceUrl = 'https://www.exchangerate-api.com/docs/free';
+        try {
+          var fallback = await fetchRateJson('https://open.er-api.com/v6/latest/EUR', 6500);
+          if (!fallback.rates || !Number(fallback.rates.ILS)) throw primaryError;
+          data = { rates: fallback.rates, date: fallback.time_last_update_utc || '' };
+          state.rateSource = 'ExchangeRate-API'; state.rateSourceUrl = 'https://www.exchangerate-api.com/docs/free';
+        } catch (fallbackError) {
+          var lastFallback = await fetchRateJson('https://api.exchangerate-api.com/v4/latest/EUR', 6500);
+          if (!lastFallback.rates || !Number(lastFallback.rates.ILS)) throw fallbackError;
+          data = { rates: lastFallback.rates, date: lastFallback.date || '' };
+          state.rateSource = 'ExchangeRate-API'; state.rateSourceUrl = 'https://www.exchangerate-api.com/';
+        }
       }
       state.rates = data.rates; state.rate = Number(data.rates.ILS); state.rateDate = data.date || '';
       Object.keys(data.rates).forEach(function (code) { if (Number(data.rates[code])) state.ilsRates[code] = state.rate / Number(data.rates[code]); });
@@ -106,6 +113,10 @@
   }
   function currencyRateInIls(code) { if (code === 'ILS') return 1; if (state.ilsRates[code]) return Number(state.ilsRates[code]); if (code === 'EUR') return Number(state.rate || 0); return state.rate && state.rates[code] ? Number(state.rate) / Number(state.rates[code]) : 0; }
   function convertCurrency(amount, from, to) { var fromRate = currencyRateInIls(from); var toRate = currencyRateInIls(to); return fromRate && toRate ? Number(amount || 0) * fromRate / toRate : 0; }
+  function secondaryMoneyFromEuros(euros) {
+    var converted = convertCurrency(Number(euros || 0), 'EUR', state.secondaryCurrency);
+    return converted && state.secondaryCurrency !== state.localCurrency ? '<small class="budget-secondary-amount">≈ ' + money(converted, state.secondaryCurrency) + '</small>' : '';
+  }
   function shekels(euros) { return Number(euros || 0) * Number(state.rate || 0) * (1 + state.fee / 100); }
   function referenceShekels(euros) { return Number(euros || 0) * Number(state.rate || 0); }
   function renderBudgetCategoryIls() {
@@ -276,6 +287,16 @@
     var totalPlannedLocal = state.localCurrency === 'EUR' ? totalPlanned : localFromEuros(totalPlanned);
     var usedPercent = totalPlanned ? Math.min(100, Math.round(totalSpent / totalPlanned * 100)) : 0;
     summary.innerHTML = '<div><span>\u05de\u05ea\u05d5\u05db\u05e0\u05df</span><strong>' + money(totalPlannedLocal, state.localCurrency) + '</strong></div><div><span>\u05d1\u05d5\u05e6\u05e2</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>\u05e0\u05d5\u05ea\u05e8</span><strong>' + money(Math.max(0, totalPlannedLocal - totalSpentLocal), state.localCurrency) + '</strong></div>';
+    [totalPlanned, totalSpent, Math.max(0, totalPlanned - totalSpent)].forEach(function (euros, index) {
+      var card = summary.children[index];
+      if (card) card.insertAdjacentHTML('beforeend', secondaryMoneyFromEuros(euros));
+    });
+    var chartHeader = summary.closest('.budget-charts') && summary.closest('.budget-charts').querySelector('header');
+    if (chartHeader && !chartHeader.querySelector('[data-budget-secondary-picker]')) {
+      chartHeader.insertAdjacentHTML('beforeend', '<label class="budget-secondary-picker"><span>מטבע משני</span><select data-budget-secondary-picker><option value="ILS">ILS</option><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></label>');
+      chartHeader.querySelector('[data-budget-secondary-picker]').value = state.secondaryCurrency;
+      chartHeader.querySelector('[data-budget-secondary-picker]').onchange = function (event) { state.secondaryCurrency = event.target.value; writeJson(storageKey('secondary-currency'), state.secondaryCurrency); saveTripData(); renderExpenseList(); renderBudgetColumns(); };
+    }
     var compactMeter = document.querySelector('[data-budget-chart-meter]');
     if (compactMeter) {
       compactMeter.querySelector('strong').textContent = usedPercent + '%';
@@ -354,6 +375,9 @@
     var summary = document.querySelector('[data-expense-summary]'); if (!summary) return; var total = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
     var localTotal = state.localCurrency === 'EUR' ? total : localFromEuros(total);
     summary.innerHTML = '<div><small>נרשם עד עכשיו</small><strong>' + money(localTotal, state.localCurrency) + '</strong><span>' + (state.rate ? 'כ־' + money(shekels(total), 'ILS') + ' כולל עמלה' : 'ההמרה לשקלים מתעדכנת') + '</span></div><b>' + state.expenses.length + ' הוצאות</b>';
+    var summaryConversion = summary.querySelector('span');
+    var secondaryTotal = convertCurrency(total, 'EUR', state.secondaryCurrency);
+    if (summaryConversion) summaryConversion.textContent = secondaryTotal ? 'כ־' + money(secondaryTotal, state.secondaryCurrency) + ' לפי שער עדכני' : 'שערי המטבע מתעדכנים…';
     var records = document.querySelector('[data-expense-records]');
     if (records) {
       var codes = [state.secondaryCurrency, 'ILS', 'EUR', 'USD', 'GBP', state.localCurrency].filter(function (code, index, list) { return code && list.indexOf(code) === index; });
@@ -480,16 +504,7 @@
     };
     state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readJson(storageKey('expenses'), []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) && state.trip.budgetCategories.length ? state.trip.budgetCategories : readJson(storageKey('budget-categories'), null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readJson(storageKey('memories'), []); state.albumUrl = state.trip.photoAlbumUrl || readJson(storageKey('album-url'), ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readJson(storageKey('currency-fee'), 2.5));
     injectCurrencyCards(); createBudgetTools(); createCurrencyConverter(); createMemoriesSection(); setupCollapsibleSections();
-    var rateLoaded = false;
-    function loadRateWhenNeeded(view) {
-      if (rateLoaded || view !== 'budget') return;
-      rateLoaded = true;
-      loadRate();
-    }
-    loadRateWhenNeeded(document.body.dataset.tripView || new URLSearchParams(location.search).get('view') || 'overview');
-    window.addEventListener('travelmate:viewchange', function (event) {
-      loadRateWhenNeeded(event.detail && event.detail.view);
-    });
+    loadRate();
   }
   init();
 })();

@@ -17,10 +17,10 @@
   .smart-hub-launch[style]{
     position:fixed!important;
     z-index:1400!important;
-    top:calc(env(safe-area-inset-top,0px) + 14px)!important;
-    right:auto!important;
-    left:74px!important;
-    bottom:auto!important;
+    top:calc(env(safe-area-inset-top,0px) + 14px);
+    right:auto;
+    left:74px;
+    bottom:auto;
     width:42px!important;
     height:42px!important;
     min-height:42px!important;
@@ -32,8 +32,8 @@
     box-shadow:0 6px 18px rgba(5,35,26,.18)!important;
     backdrop-filter:blur(14px)!important;
     -webkit-backdrop-filter:blur(14px)!important;
-    cursor:pointer;
-    touch-action:manipulation;
+    cursor:grab;
+    touch-action:none;
   }
   .smart-hub-launch i{
     color:#176b4e!important;
