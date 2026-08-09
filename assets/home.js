@@ -189,11 +189,26 @@
     return shell;
   }
 
+  function tripIdentity(trip) {
+    function clean(value) { return String(value || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+    return [clean(trip.country), clean(trip.city), clean(trip.start), clean(trip.end)].join('|');
+  }
+
+  function removeShadowedStaticTrips(trips) {
+    var cloudIds = new Set(trips.map(function (trip) { return String(trip.id); }));
+    var cloudIdentities = new Set(trips.map(tripIdentity));
+    document.querySelectorAll('[data-trip-kind="static"]').forEach(function (shell) {
+      var staticTrip = staticTripFromShell(shell);
+      if (cloudIds.has(String(staticTrip.id)) || cloudIdentities.has(tripIdentity(staticTrip))) shell.remove();
+    });
+  }
+
   function renderTrips(trips) {
     if (!list) return;
     document.querySelectorAll('[data-cloud-trip]').forEach(function (node) { node.remove(); });
     var archiveList = ensureArchive().querySelector('[data-archive-list]');
     renderedTrips = new Map(trips.map(function (trip) { return [String(trip.id), trip]; }));
+    removeShadowedStaticTrips(trips);
     trips.forEach(function (trip) {
       var active = dateState(trip).active;
       (active ? list : archiveList).insertBefore(tripCard(trip), active ? addButton : null);
@@ -245,8 +260,8 @@
     if (!list) return;
     var archive = ensureArchive();
     var archiveList = archive.querySelector('[data-archive-list]');
-    var activeCount = list.querySelectorAll('.trip-card-shell').length;
-    var archiveCount = archiveList.querySelectorAll('.trip-card-shell').length;
+    var activeCount = list.querySelectorAll(':scope > .trip-card-shell').length;
+    var archiveCount = archiveList.querySelectorAll(':scope > .trip-card-shell').length;
     document.querySelector('[data-active-count]').textContent = String(activeCount);
     archive.querySelector('[data-archive-count]').textContent = String(archiveCount);
     var empty = archiveList.querySelector('.trip-archive-empty');
