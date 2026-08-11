@@ -3891,16 +3891,20 @@ html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,
     max-width:none!important;
     margin:0!important;
     transform:none!important;
-    border:2px solid rgba(91,163,134,.9)!important;
-    background:linear-gradient(145deg,rgba(244,252,248,.97),rgba(220,239,230,.96))!important;
-    color:#0b4e39!important;
-    -webkit-text-fill-color:#0b4e39!important;
-    box-shadow:0 10px 24px rgba(0,40,29,.22)!important
+    border:2px solid rgba(255,255,255,.62)!important;
+    background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.1))!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+    -webkit-backdrop-filter:blur(20px) saturate(145%)!important;
+    backdrop-filter:blur(20px) saturate(145%)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.58),0 10px 26px rgba(0,31,23,.24)!important;
+    text-shadow:0 1px 8px rgba(0,34,25,.54)!important
   }
   html body.tm-new-design[data-trip-view="overview"] main.content #overview.custom-hero .weather-top-widget *{
     color:inherit!important;
     -webkit-text-fill-color:inherit!important;
-    opacity:1!important
+    opacity:1!important;
+    text-shadow:0 1px 8px rgba(0,34,25,.54)!important
   }
   html body.tm-new-design .sidebar .destination-mini{
     border:2px solid rgba(77,151,120,.82)!important;
