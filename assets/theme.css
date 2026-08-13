@@ -4214,10 +4214,191 @@ html body.home-page.is-authenticated main.content :is(
   ){border-width:2px!important}
 }
 
-/* 1.44.0 final place-picker edge — intentionally after the unified card authority. */
+/* 1.44.1 — stable mobile budget layout and a weather-card place picker. */
 html body.tm-new-design main.content #places .nearby-panel.place-planner{
-  border:2px solid rgba(92,218,168,.92)!important;
-  box-shadow:0 0 0 5px rgba(156,239,205,.13),0 22px 55px rgba(0,24,18,.28),inset 0 1px 0 rgba(255,255,255,.18)!important
+  border:1.5px solid var(--tm-weather-unified-border)!important;
+  background:var(--tm-weather-unified-bg)!important;
+  box-shadow:var(--tm-weather-unified-shadow)!important
+}
+html body.tm-new-design main.content #places .nearby-panel.place-planner .nearby-controls{
+  border:1px solid rgba(224,255,243,.42)!important;
+  background:rgba(5,38,30,.28)!important
+}
+
+html body.tm-new-design main.content #budget,
+html body.tm-new-design main.content #budget *{
+  box-sizing:border-box
+}
+html body.tm-new-design main.content #budget{
+  min-width:0;
+  max-width:100%;
+  overflow-x:clip
+}
+html body.tm-new-design main.content #budget :is(
+  .budget-hero,.budget-hero>*,.budget-limit-mode,.total-budget-editor,
+  .expense-workspace,.expense-records,.budget-charts,.currency-converter
+){
+  min-width:0;
+  max-width:100%
+}
+html body.tm-new-design main.content #budget .budget-hero{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(170px,250px) minmax(280px,430px)!important;
+  align-items:center!important;
+  gap:14px!important;
+  width:100%!important;
+  padding:18px!important;
+  overflow:hidden
+}
+html body.tm-new-design main.content #budget .budget-hero>div:first-child,
+html body.tm-new-design main.content #budget .budget-hero-meter,
+html body.tm-new-design main.content #budget .total-budget-editor{
+  width:100%!important;
+  margin:0!important
+}
+html body.tm-new-design main.content #budget .budget-hero>div:first-child>strong{
+  overflow-wrap:anywhere
+}
+
+html body.tm-new-design main.content #budget .budget-limit-mode{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+  margin:0 0 12px!important
+}
+html body.tm-new-design main.content #budget .budget-limit-mode legend{
+  width:100%;
+  margin:0 0 5px!important;
+  color:rgba(244,255,250,.82)!important;
+  -webkit-text-fill-color:rgba(244,255,250,.82)!important
+}
+html body.tm-new-design main.content #budget .budget-limit-mode label{
+  position:relative!important;
+  display:block!important;
+  min-width:0!important;
+  margin:0!important
+}
+html body.tm-new-design main.content #budget .budget-limit-mode input[type="radio"]{
+  position:absolute!important;
+  inset:0!important;
+  width:1px!important;
+  min-width:1px!important;
+  height:1px!important;
+  min-height:1px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  opacity:0!important;
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  pointer-events:none!important
+}
+html body.tm-new-design main.content #budget .budget-limit-mode label>span{
+  display:grid!important;
+  grid-template-columns:30px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:2px 8px!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:60px!important;
+  padding:9px 10px!important;
+  border:1px solid rgba(224,255,243,.48)!important;
+  border-radius:14px!important;
+  background:rgba(255,255,255,.09)!important;
+  color:#f7fffb!important;
+  -webkit-text-fill-color:#f7fffb!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13)!important
+}
+html body.tm-new-design main.content #budget .budget-limit-mode label>span i{
+  grid-row:1/3!important;
+  color:#f2c975!important;
+  -webkit-text-fill-color:#f2c975!important
+}
+html body.tm-new-design main.content #budget .budget-limit-mode label>span :is(b,small){
+  min-width:0;
+  overflow-wrap:anywhere
+}
+html body.tm-new-design main.content #budget .budget-limit-mode label>span small{
+  color:rgba(231,248,240,.78)!important;
+  -webkit-text-fill-color:rgba(231,248,240,.78)!important
+}
+html body.tm-new-design main.content #budget .budget-limit-mode input:checked+span{
+  border-color:#f2cf86!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.11))!important;
+  box-shadow:0 0 0 2px rgba(242,201,117,.17),inset 0 1px 0 rgba(255,255,255,.22)!important
+}
+html body.tm-new-design main.content #budget .total-budget-editor>label>div{
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:8px!important;
+  width:100%!important
+}
+html body.tm-new-design main.content #budget .total-budget-editor input{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important
+}
+html body.tm-new-design main.content #budget .total-budget-editor button{
+  white-space:nowrap!important
+}
+html body.tm-new-design main.content #budget :is(.budget-chart-meter,.budget-hero-meter).is-unlimited .budget-meter-track,
+html body.tm-new-design main.content #budget .budget-hero-meter.is-unlimited>span{
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 8px,rgba(255,255,255,.07) 8px 15px)!important
+}
+
+@media(max-width:1000px){
+  html body.tm-new-design main.content #budget .budget-hero{
+    grid-template-columns:minmax(0,1fr) minmax(170px,230px)!important
+  }
+  html body.tm-new-design main.content #budget .total-budget-editor{
+    grid-column:1/-1
+  }
+}
+@media(max-width:650px){
+  html body.tm-new-design main.content #budget{
+    width:100%!important;
+    margin-inline:0!important;
+    padding-inline:12px!important
+  }
+  html body.tm-new-design main.content #budget .budget-hero{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:11px!important;
+    padding:13px!important;
+    border-radius:18px!important
+  }
+  html body.tm-new-design main.content #budget .budget-limit-mode{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important
+  }
+  html body.tm-new-design main.content #budget .budget-limit-mode label>span{
+    grid-template-columns:24px minmax(0,1fr)!important;
+    min-height:66px!important;
+    padding:8px!important
+  }
+  html body.tm-new-design main.content #budget .budget-limit-mode label>span small{
+    font-size:.66rem!important;
+    line-height:1.28!important
+  }
+  html body.tm-new-design main.content #budget .total-budget-editor>label>div{
+    grid-template-columns:auto minmax(0,1fr)!important
+  }
+  html body.tm-new-design main.content #budget .total-budget-editor button{
+    grid-column:1/-1!important;
+    width:100%!important
+  }
+  html body.tm-new-design main.content #budget :is(
+    .expense-workspace,.expense-records,.budget-charts,.currency-converter
+  ){
+    width:100%!important;
+    margin-inline:0!important;
+    padding-inline:13px!important
+  }
+  html body.tm-new-design main.content #places .nearby-panel.place-planner{
+    margin-inline:0!important;
+    border:1.5px solid var(--tm-weather-unified-border)!important;
+    box-shadow:var(--tm-weather-unified-shadow)!important
+  }
 }
 
 /* 1.43.0 — one clear weather-glass language across the application. */
@@ -4407,4 +4588,52 @@ html body.home-page.is-authenticated main.content :is(
     .auto-place-preview-item,.weather-live-day,.auto-place-dialog,.trip-calendar-dialog,
     .place-directions-dialog,.place-share-dialog,.invite-dialog,.weather-live-modal
   ){border-width:2px!important}
+}
+
+/* 1.44.1 final authority — budget controls stay inside the mobile viewport. */
+html body.tm-new-design main.content #places .nearby-panel.place-planner{
+  border:1.5px solid var(--tm-weather-unified-border)!important;
+  background:var(--tm-weather-unified-bg)!important;
+  box-shadow:var(--tm-weather-unified-shadow)!important
+}
+html body.tm-new-design main.content #budget .budget-limit-mode input[type="radio"]{
+  position:absolute!important;
+  width:1px!important;
+  min-width:1px!important;
+  height:1px!important;
+  min-height:1px!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  opacity:0!important;
+  appearance:none!important;
+  -webkit-appearance:none!important
+}
+@media(max-width:650px){
+  html body.tm-new-design main.content #budget,
+  html body.tm-new-design main.content #budget :is(
+    .budget-hero,.total-budget-editor,.expense-workspace,.expense-records,
+    .budget-charts,.currency-converter
+  ){
+    min-width:0!important;
+    max-width:100%!important;
+    width:100%!important
+  }
+  html body.tm-new-design main.content #budget .budget-hero{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    overflow:hidden!important
+  }
+  html body.tm-new-design main.content #budget .budget-limit-mode{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important
+  }
+  html body.tm-new-design main.content #budget .total-budget-editor>label>div{
+    display:grid!important;
+    grid-template-columns:auto minmax(0,1fr)!important
+  }
+  html body.tm-new-design main.content #budget .total-budget-editor button{
+    grid-column:1/-1!important;
+    width:100%!important
+  }
 }
