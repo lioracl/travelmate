@@ -3928,6 +3928,89 @@ html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,
   }
 }
 
+/* 1.44.0 — clearly frame the complete place picker and support an accumulating budget. */
+html body.tm-new-design #places .nearby-panel.place-planner{
+  position:relative;
+  padding:clamp(18px,2.5vw,30px)!important;
+  border:2px solid rgba(92,218,168,.92)!important;
+  border-radius:24px!important;
+  background:linear-gradient(145deg,rgba(10,46,37,.96),rgba(19,63,51,.9))!important;
+  box-shadow:0 0 0 5px rgba(156,239,205,.13),0 22px 55px rgba(0,24,18,.28),inset 0 1px 0 rgba(255,255,255,.18)!important
+}
+html body.tm-new-design #places .nearby-panel.place-planner .place-planner-intro{
+  margin:-2px -2px 20px;
+  padding:4px 4px 18px;
+  border-bottom:1px solid rgba(192,242,219,.38)
+}
+html body.tm-new-design #places .nearby-panel.place-planner .nearby-controls{
+  padding:clamp(14px,2vw,20px)!important;
+  border:1px solid rgba(191,242,219,.54)!important;
+  border-radius:18px!important;
+  background:rgba(5,38,30,.52)!important
+}
+html body.tm-new-design #places .nearby-panel.place-planner .nearby-map-shell,
+html body.tm-new-design #places .nearby-panel.place-planner .nearby-status{
+  border-color:rgba(191,242,219,.48)!important
+}
+.budget-limit-mode{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin:0 0 14px;
+  padding:0;
+  border:0
+}
+.budget-limit-mode legend{
+  grid-column:1/-1;
+  margin-bottom:7px;
+  color:#dff8ed;
+  font-size:.8rem;
+  font-weight:900
+}
+.budget-limit-mode label{display:block;cursor:pointer}
+.budget-limit-mode input{position:absolute;opacity:0;pointer-events:none}
+.budget-limit-mode label>span{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  align-items:center;
+  gap:3px 10px;
+  min-height:68px;
+  padding:12px 14px;
+  border:1.5px solid rgba(205,242,226,.42);
+  border-radius:16px;
+  background:rgba(245,255,250,.1);
+  color:#ecfff6;
+  transition:border-color .18s ease,background .18s ease,transform .18s ease
+}
+.budget-limit-mode label>span i{grid-row:1/3;font-size:1.15rem;color:#79e0b6}
+.budget-limit-mode label>span b{font-size:.92rem}
+.budget-limit-mode label>span small{font-size:.72rem;color:#c4e2d5!important}
+.budget-limit-mode input:checked+span{
+  border-color:#81e9bc;
+  background:rgba(43,151,111,.3);
+  box-shadow:0 0 0 3px rgba(99,226,174,.13),inset 0 1px 0 rgba(255,255,255,.16)
+}
+.budget-limit-mode label:hover>span{transform:translateY(-1px);border-color:#81e9bc}
+.total-budget-editor.is-unlimited>label>div{opacity:.48}
+.total-budget-editor.is-unlimited input{cursor:not-allowed}
+.budget-chart-meter.is-unlimited>div strong{font-size:clamp(.82rem,2vw,1.05rem)}
+.budget-chart-meter.is-unlimited .budget-meter-track i,
+.budget-hero-meter.is-unlimited>span i{
+  background:linear-gradient(90deg,#55d49f,#e7b85f)!important
+}
+.is-unlimited-budget{display:inline-flex;align-items:center;gap:6px}
+@media(max-width:650px){
+  html body.tm-new-design #places .nearby-panel.place-planner{
+    margin-inline:6px!important;
+    padding:17px 13px!important;
+    border-width:2px!important;
+    border-radius:20px!important;
+    box-shadow:0 0 0 4px rgba(156,239,205,.14),0 17px 38px rgba(0,24,18,.3)!important
+  }
+  .budget-limit-mode{grid-template-columns:1fr}
+  .budget-limit-mode label>span{min-height:62px}
+}
+
 /* 1.43.1 — exhaustive weather-card surface and interaction audit. */
 :root{
   --tm-weather-unified-bg:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.085));
@@ -4129,6 +4212,12 @@ html body.home-page.is-authenticated main.content :is(
     .transport-card,.service-card,.getaway-result,.group-card,.album-card,.memory-card,
     .auto-place-preview-item,.weather-live-day
   ){border-width:2px!important}
+}
+
+/* 1.44.0 final place-picker edge — intentionally after the unified card authority. */
+html body.tm-new-design main.content #places .nearby-panel.place-planner{
+  border:2px solid rgba(92,218,168,.92)!important;
+  box-shadow:0 0 0 5px rgba(156,239,205,.13),0 22px 55px rgba(0,24,18,.28),inset 0 1px 0 rgba(255,255,255,.18)!important
 }
 
 /* 1.43.0 — one clear weather-glass language across the application. */
