@@ -1,13 +1,22 @@
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS'
-};
+const allowedOrigins = new Set([
+  'https://lioracl.github.io',
+  'http://127.0.0.1:8000',
+  'http://localhost:8000'
+]);
+function corsHeaders(origin = 'https://lioracl.github.io') {
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin'
+  };
+}
 
-function json(body, status = 200) {
+function json(body, status = 200, origin = 'https://lioracl.github.io') {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json; charset=utf-8' }
+    headers: { ...corsHeaders(origin), 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
   });
 }
 
@@ -86,24 +95,28 @@ function receiptJson(text) {
 }
 
 Deno.serve(async (request) => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-  if (request.method !== 'POST') return json({ error: 'METHOD_NOT_ALLOWED' }, 405);
+  const origin = request.headers.get('Origin') || '';
+  if (origin && !allowedOrigins.has(origin)) return new Response(JSON.stringify({ error: 'ORIGIN_NOT_ALLOWED' }), { status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+  const responseOrigin = origin || 'https://lioracl.github.io';
+  const respond = (body, status = 200) => json(body, status, responseOrigin);
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(responseOrigin) });
+  if (request.method !== 'POST') return respond({ error: 'METHOD_NOT_ALLOWED' }, 405);
   const authorization = request.headers.get('Authorization');
-  if (!authorization) return json({ error: 'AUTH_REQUIRED' }, 401);
+  if (!authorization) return respond({ error: 'AUTH_REQUIRED' }, 401);
 
   const apiKey = Deno.env.get('GEMINI_API_KEY');
-  if (!apiKey) return json({ error: 'AI_NOT_CONFIGURED' }, 503);
+  if (!apiKey) return respond({ error: 'AI_NOT_CONFIGURED' }, 503);
 
   try {
     const body = await request.json();
     const messages = safeMessages(body.messages);
     const receipt = safeReceipt(body.receipt);
     const context = safeContext(body.context);
-    if (!receipt && (!messages.length || messages[messages.length - 1].role !== 'user')) return json({ error: 'INVALID_MESSAGES' }, 400);
+    if (!receipt && (!messages.length || messages[messages.length - 1].role !== 'user')) return respond({ error: 'INVALID_MESSAGES' }, 400);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
-    if (!supabaseUrl || !supabaseAnonKey) return json({ error: 'SUPABASE_ENV_MISSING' }, 500);
+    if (!supabaseUrl || !supabaseAnonKey) return respond({ error: 'SUPABASE_ENV_MISSING' }, 500);
     const usageResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/consume_travel_ai_request`, {
       method: 'POST',
       headers: {
@@ -113,9 +126,9 @@ Deno.serve(async (request) => {
       },
       body: '{}'
     });
-    if (!usageResponse.ok) return json({ error: 'USAGE_CHECK_FAILED' }, usageResponse.status === 401 ? 401 : 503);
+    if (!usageResponse.ok) return respond({ error: 'USAGE_CHECK_FAILED' }, usageResponse.status === 401 ? 401 : 503);
     const usage = await usageResponse.json();
-    if (!usage.allowed) return json({ error: 'DAILY_LIMIT_REACHED', remaining: 0 }, 429);
+    if (!usage.allowed) return respond({ error: 'DAILY_LIMIT_REACHED', remaining: 0 }, 429);
 
     const instructions = [
       'You are Nevo, the friendly personal AI assistant inside the TravelMate travel application.',
@@ -140,10 +153,10 @@ Deno.serve(async (request) => {
           generationConfig: { temperature: 0, maxOutputTokens: 300, responseMimeType: 'application/json' }
         })
       });
-      if (!receiptResponse.ok) return json({ error: 'RECEIPT_SCAN_FAILED' }, receiptResponse.status === 429 ? 429 : 502);
+      if (!receiptResponse.ok) return respond({ error: 'RECEIPT_SCAN_FAILED' }, receiptResponse.status === 429 ? 429 : 502);
       const receiptResult = await receiptResponse.json();
       const receiptText = receiptResult?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('') || '';
-      return json({ receipt: receiptJson(receiptText), provider: 'gemini', remaining: usage.remaining });
+      return respond({ receipt: receiptJson(receiptText), provider: 'gemini', remaining: usage.remaining });
     }
 
     const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
@@ -162,14 +175,14 @@ Deno.serve(async (request) => {
       let providerCode = '';
       try { providerCode = JSON.parse(providerText)?.error?.status || ''; } catch (error) {}
       console.error('Gemini request failed', geminiResponse.status, providerText);
-      return json({ error: 'AI_PROVIDER_ERROR', providerStatus: geminiResponse.status, providerCode }, geminiResponse.status === 429 ? 429 : 502);
+      return respond({ error: 'AI_PROVIDER_ERROR', providerStatus: geminiResponse.status, providerCode }, geminiResponse.status === 429 ? 429 : 502);
     }
     const response = await geminiResponse.json();
     const answer = outputText(response);
-    if (!answer) return json({ error: 'EMPTY_AI_RESPONSE' }, 502);
-    return json({ answer, model, provider: 'gemini', remaining: usage.remaining });
+    if (!answer) return respond({ error: 'EMPTY_AI_RESPONSE' }, 502);
+    return respond({ answer, model, provider: 'gemini', remaining: usage.remaining });
   } catch (error) {
     console.error('Travel assistant error', error instanceof Error ? error.message : String(error));
-    return json({ error: 'ASSISTANT_FAILED' }, 500);
+    return respond({ error: 'ASSISTANT_FAILED' }, 500);
   }
 });

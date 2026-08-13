@@ -50,7 +50,54 @@
   function localRateInIls() { var localRate = state.localCurrency === 'EUR' ? 1 : Number(state.rates[state.localCurrency] || 0); return localRate && state.rate ? state.rate / localRate : 0; }
   function inferBudget() { var explicit = Number(state.trip && state.trip.budget || String(document.querySelector('[data-budget]') && document.querySelector('[data-budget]').textContent || '').replace(/[^0-9.]/g, '') || 0); if (explicit) return explicit; var text = document.querySelector('.budget-card') && document.querySelector('.budget-card').textContent || document.getElementById('budget') && document.getElementById('budget').textContent || ''; var match = text.match(/מתוך\s*([\d,.]+)\s*€/i) || text.match(/([\d,.]+)\s*€/); return match ? Number(match[1].replace(/,/g, '')) : 0; }
   function toast(message) { var old = document.querySelector('.trip-experience-toast'); if (old) old.remove(); var node = document.createElement('div'); node.className = 'trip-experience-toast'; node.textContent = message; document.body.appendChild(node); setTimeout(function () { node.remove(); }, 2800); }
-  function saveTripData() { if (!state.trip) return; state.trip.expenses = state.expenses; state.trip.budgetCategories = state.budgetCategories; state.trip.memories = state.memories; state.trip.photoAlbumUrl = state.albumUrl; state.trip.currencyFee = state.fee; state.trip.secondaryCurrency = state.secondaryCurrency; state.trip.budgetUnlimited = state.budgetUnlimited; writeJson(storageKey('budget-unlimited'), state.budgetUnlimited); if (new URLSearchParams(location.search).get('id') && cloud && cloud.queueTripSave) cloud.queueTripSave(state.trip); }
+  function safeExpenses() { return state.expenses.map(function (expense) { var copy = Object.assign({}, expense); delete copy.receiptData; return copy; }); }
+  function saveTripData() { if (!state.trip) return; state.trip.expenses = safeExpenses(); state.trip.budgetCategories = state.budgetCategories; state.trip.memories = state.memories; state.trip.photoAlbumUrl = state.albumUrl; state.trip.currencyFee = state.fee; state.trip.secondaryCurrency = state.secondaryCurrency; state.trip.budgetUnlimited = state.budgetUnlimited; writeJson(storageKey('budget-unlimited'), state.budgetUnlimited); if (new URLSearchParams(location.search).get('id') && cloud && cloud.queueTripSave) cloud.queueTripSave(state.trip); }
+
+  function receiptPath(expenseId, fileName, userId) {
+    var extension = String(fileName || '').split('.').pop().replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 8) || 'bin';
+    return userId + '/receipts/' + encodeURIComponent(tripId()).replace(/%/g, '_') + '/' + String(expenseId) + '-' + Date.now() + '.' + extension;
+  }
+  async function storePrivateReceipt(file, expenseId) {
+    if (!file || !cloud) return null;
+    var client = await cloud.getClient();
+    var session = await cloud.getSession();
+    if (!session || !session.user) throw new Error('RECEIPT_SIGN_IN_REQUIRED');
+    var path = receiptPath(expenseId, file.name, session.user.id);
+    var result = await client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').upload(path, file, { cacheControl: '3600', upsert: false, contentType: 'application/octet-stream' });
+    if (result.error) throw result.error;
+    return path;
+  }
+  async function receiptBlob(expense) {
+    if (expense && expense.receiptPath && cloud) {
+      var client = await cloud.getClient();
+      var result = await client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').download(expense.receiptPath);
+      if (result.error) throw result.error;
+      return result.data;
+    }
+    if (expense && expense.receiptData) return fetch(expense.receiptData).then(function (response) { return response.blob(); });
+    return null;
+  }
+  async function removePrivateReceipt(expense) {
+    if (!expense || !expense.receiptPath || !cloud) return;
+    var client = await cloud.getClient();
+    var result = await client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').remove([expense.receiptPath]);
+    if (result.error) throw result.error;
+  }
+  async function migrateInlineReceipts() {
+    var changed = false;
+    for (var index = 0; index < state.expenses.length; index += 1) {
+      var expense = state.expenses[index];
+      if (!expense.receiptData || expense.receiptPath) continue;
+      try {
+        var blob = await fetch(expense.receiptData).then(function (response) { return response.blob(); });
+        var file = new File([blob], expense.receiptName || ('receipt-' + expense.id), { type: expense.receiptType || blob.type || 'application/octet-stream' });
+        expense.receiptPath = await storePrivateReceipt(file, expense.id);
+        delete expense.receiptData;
+        changed = true;
+      } catch (error) { console.warn('TravelMate receipt migration deferred', error); }
+    }
+    if (changed) { writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); }
+  }
 
   function setupCollapsibleSections() {
     document.querySelectorAll('.tm-collapse-button').forEach(function (button) { button.remove(); });
@@ -255,9 +302,22 @@
       var file = selectedReceiptFile(form); var status = panel.querySelector('[data-receipt-status]'); var editing = expenseById(form.dataset.editingId);
       if (file && file.size > 5 * 1024 * 1024) { status.textContent = 'כדי לשמור את הקבלה בענן יש לבחור קובץ עד 5MB.'; return; }
       status.textContent = file ? 'שומר את הקבלה…' : '';
-      var receiptData = file ? await storedReceipt(file) : editing && editing.receiptData || '';
-      if (file && !receiptData) { status.textContent = 'לא הצלחנו לשמור את הקובץ. נסה צילום או PDF אחר.'; return; }
-      var saved = { id: editing ? editing.id : Date.now(), amount: Number(form.amount.value), currency: form.currency.value, category: form.category.value, date: form.date.value, note: form.note.value.trim(), receiptName: file ? file.name : editing && editing.receiptName || '', receiptType: file ? file.type : editing && editing.receiptType || '', receiptSize: file ? file.size : editing && editing.receiptSize || 0, receiptData: receiptData };
+      var expenseId = editing ? editing.id : Date.now();
+      var receiptPathValue = editing && editing.receiptPath || '';
+      var legacyReceiptData = editing && editing.receiptData || '';
+      if (file) {
+        try {
+          var oldReceipt = editing && editing.receiptPath ? { receiptPath: editing.receiptPath } : null;
+          receiptPathValue = await storePrivateReceipt(file, expenseId);
+          legacyReceiptData = '';
+          if (oldReceipt) removePrivateReceipt(oldReceipt).catch(function () {});
+        } catch (receiptError) {
+          status.textContent = receiptError && receiptError.message === 'RECEIPT_SIGN_IN_REQUIRED' ? 'כדי לשמור קבלה פרטית יש להתחבר לחשבון. פרטי ההוצאה לא נשמרו עדיין.' : 'לא הצלחנו לשמור את הקבלה באחסון הפרטי. בדוק את החיבור ונסה שוב.';
+          return;
+        }
+      }
+      var saved = { id: expenseId, amount: Number(form.amount.value), currency: form.currency.value, category: form.category.value, date: form.date.value, note: form.note.value.trim(), receiptName: file ? file.name : editing && editing.receiptName || '', receiptType: file ? file.type : editing && editing.receiptType || '', receiptSize: file ? file.size : editing && editing.receiptSize || 0, receiptPath: receiptPathValue };
+      if (legacyReceiptData && !receiptPathValue) saved.receiptData = legacyReceiptData;
       if (editing) state.expenses[state.expenses.indexOf(editing)] = saved; else state.expenses.push(saved);
       writeJson(storageKey('expenses'), state.expenses); saveTripData(); form.reset(); delete form.dataset.editingId; form.date.value = localDateValue(); form.hidden = true; panel.querySelector('[data-receipt-preview]').hidden = true; status.textContent = ''; renderExpenseList(); renderBudgetColumns(); renderSummary(); toast(editing ? 'ההוצאה עודכנה.' : 'ההוצאה והקבלה נוספו לקטגוריית ' + saved.category + '.');
     };
@@ -411,7 +471,7 @@
       var categoryHtml = Object.keys(grouped).map(function (category) {
         var items = grouped[category].slice().reverse(); var categoryTotal = items.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0); var categoryLocal = state.localCurrency === 'EUR' ? categoryTotal : localFromEuros(categoryTotal);
         var rows = items.map(function (expense) {
-          var hasReceipt = Boolean(expense.receiptData); var parts = expenseCategoryParts(expense.category); var receiptLabel = expense.receiptName || 'ללא קבלה מצורפת'; var secondary = convertCurrency(Number(expense.amount || 0), expense.currency || 'EUR', state.secondaryCurrency);
+          var hasReceipt = Boolean(expense.receiptPath || expense.receiptData); var parts = expenseCategoryParts(expense.category); var receiptLabel = expense.receiptName || 'ללא קבלה מצורפת'; var secondary = convertCurrency(Number(expense.amount || 0), expense.currency || 'EUR', state.secondaryCurrency);
           var secondaryText = secondary && state.secondaryCurrency !== (expense.currency || 'EUR') ? '<small class="expense-secondary">כ־' + money(secondary, state.secondaryCurrency) + '</small>' : '';
           return '<details class="expense-record" data-expense-id="' + escapeHtml(expense.id) + '"><summary><span class="expense-record-icon"><i class="fa-solid ' + (hasReceipt ? 'fa-receipt' : 'fa-wallet') + '"></i></span><span class="expense-record-title"><strong>' + escapeHtml(expense.note || 'הוצאה') + '</strong><small>' + escapeHtml(parts.subcategory || parts.category) + ' · ' + escapeHtml(expense.date || 'ללא תאריך') + '</small></span><span class="expense-record-price"><b>' + money(expense.amount, expense.currency || 'EUR') + '</b>' + secondaryText + '</span><i class="fa-solid fa-chevron-down expense-record-chevron"></i></summary><div class="expense-record-body"><dl><div><dt>מחיר כולל</dt><dd>' + money(expense.amount, expense.currency || 'EUR') + secondaryText + '</dd></div><div><dt>מטבע</dt><dd>' + escapeHtml(expense.currency || 'EUR') + '</dd></div><div><dt>קטגוריה</dt><dd>' + escapeHtml(expense.category || 'אחר') + '</dd></div><div><dt>תאריך</dt><dd>' + escapeHtml(expense.date || 'לא הוזן') + '</dd></div><div class="wide"><dt>קובץ קבלה</dt><dd>' + escapeHtml(receiptLabel) + '</dd></div></dl>' + (!hasReceipt && expense.receiptName ? '<p class="expense-receipt-warning">שם הקובץ הישן נשמר, אך תוכן הקבלה לא נשמר בעבר. יש לצרף אותה מחדש כדי לצפות או להוריד.</p>' : '') + '<div class="expense-record-actions"><button type="button" data-expense-edit="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-pen"></i> עריכת הוצאה</button>' + (hasReceipt ? '<button type="button" data-expense-view="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-eye"></i> צפייה בקבלה</button><button type="button" data-expense-download="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-download"></i> הורדת קבלה</button>' : '') + '<button type="button" class="danger" data-expense-delete="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-trash"></i> מחיקת הוצאה</button></div></div></details>';
         }).join('');
@@ -427,10 +487,10 @@
     renderBudgetCharts();
   }
   function expenseById(id) { return state.expenses.find(function (expense) { return String(expense.id) === String(id); }); }
-  function openExpenseReceipt(id) { var expense = expenseById(id); if (!expense || !expense.receiptData) return toast('קובץ הקבלה אינו זמין.'); var link = document.createElement('a'); link.href = expense.receiptData; link.target = '_blank'; link.rel = 'noopener'; document.body.appendChild(link); link.click(); link.remove(); }
-  function downloadExpenseReceipt(id) { var expense = expenseById(id); if (!expense || !expense.receiptData) return toast('קובץ הקבלה אינו זמין.'); var link = document.createElement('a'); link.href = expense.receiptData; link.download = expense.receiptName || ('receipt-' + expense.id + (String(expense.receiptType).indexOf('pdf') >= 0 ? '.pdf' : '.jpg')); document.body.appendChild(link); link.click(); link.remove(); }
+  async function openExpenseReceipt(id) { var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); var url = URL.createObjectURL(blob); var link = document.createElement('a'); link.href = url; link.target = '_blank'; link.rel = 'noopener'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 60000); } catch (error) { toast('לא הצלחנו לפתוח את הקבלה הפרטית. ודא שהחשבון מחובר.'); } }
+  async function downloadExpenseReceipt(id) { var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); var url = URL.createObjectURL(blob); var link = document.createElement('a'); link.href = url; link.download = expense.receiptName || ('receipt-' + expense.id + (String(expense.receiptType).indexOf('pdf') >= 0 ? '.pdf' : '.jpg')); document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url); } catch (error) { toast('לא הצלחנו להוריד את הקבלה הפרטית.'); } }
   function editExpense(id) { var expense = expenseById(id); var form = document.querySelector('[data-receipt-form]'); if (!expense || !form) return; form.dataset.editingId = String(expense.id); form.amount.value = expense.amount || ''; form.currency.value = expense.currency || state.localCurrency; form.category.value = expense.category || 'אחר'; form.date.value = expense.date || localDateValue(); form.note.value = expense.note || ''; form.hidden = false; var status = document.querySelector('[data-receipt-status]'); if (status) status.textContent = expense.receiptName ? 'הקבלה הקיימת תישמר, אלא אם תצלם או תעלה קובץ חדש.' : 'ערוך את הפרטים ושמור את ההוצאה.'; form.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  function deleteExpense(id) { var expense = expenseById(id); if (!expense || !window.confirm('למחוק את ההוצאה ואת הקבלה המצורפת?')) return; state.expenses = state.expenses.filter(function (item) { return String(item.id) !== String(id); }); writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); renderBudgetColumns(); renderSummary(); toast('ההוצאה והקבלה נמחקו.'); }
+  async function deleteExpense(id) { var expense = expenseById(id); if (!expense || !window.confirm('למחוק את ההוצאה ואת הקבלה המצורפת?')) return; try { await removePrivateReceipt(expense); } catch (error) { return toast('מחיקת הקבלה מהאחסון הפרטי נכשלה. נסה שוב.'); } state.expenses = state.expenses.filter(function (item) { return String(item.id) !== String(id); }); writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); renderBudgetColumns(); renderSummary(); toast('ההוצאה והקבלה נמחקו.'); }
 
   function createMemoriesSection() {
     var content = document.querySelector('.content'); if (!content || document.getElementById('memories')) return; var section = document.createElement('section'); section.id = 'memories'; section.className = 'section trip-memories';
@@ -532,6 +592,7 @@
     state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readJson(storageKey('expenses'), []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) && state.trip.budgetCategories.length ? state.trip.budgetCategories : readJson(storageKey('budget-categories'), null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readJson(storageKey('memories'), []); state.albumUrl = state.trip.photoAlbumUrl || readJson(storageKey('album-url'), ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readJson(storageKey('currency-fee'), 2.5));
     injectCurrencyCards(); createBudgetTools(); createCurrencyConverter(); createMemoriesSection(); setupCollapsibleSections();
     loadRate();
+    migrateInlineReceipts();
   }
   init();
 })();

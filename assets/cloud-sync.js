@@ -413,16 +413,27 @@
     return merged;
   }
 
+  function captchaToken() {
+    return window.TravelMateSecurity && typeof window.TravelMateSecurity.getCaptchaToken === 'function'
+      ? window.TravelMateSecurity.getCaptchaToken() : undefined;
+  }
+
   async function signIn(email, password) {
     var client = await getClient();
-    var result = await client.auth.signInWithPassword({ email: email, password: password });
+    var token = captchaToken();
+    var credentials = { email: email, password: password };
+    if (token) credentials.options = { captchaToken: token };
+    var result = await client.auth.signInWithPassword(credentials);
     if (result.data && result.data.session && result.data.session.user) activateUserStorage(result.data.session.user.id);
     return result;
   }
 
   async function signUp(email, password, redirectTo) {
     var client = await getClient();
-    var result = await client.auth.signUp({ email: email, password: password, options: { emailRedirectTo: redirectTo } });
+    var options = { emailRedirectTo: redirectTo };
+    var token = captchaToken();
+    if (token) options.captchaToken = token;
+    var result = await client.auth.signUp({ email: email, password: password, options: options });
     if (result.data && result.data.session && result.data.session.user) activateUserStorage(result.data.session.user.id);
     return result;
   }
@@ -434,7 +445,10 @@
 
   async function resetPassword(email, redirectTo) {
     var client = await getClient();
-    return client.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+    var options = { redirectTo: redirectTo };
+    var token = captchaToken();
+    if (token) options.captchaToken = token;
+    return client.auth.resetPasswordForEmail(email, options);
   }
 
   async function updatePassword(password) {
@@ -450,13 +464,49 @@
     return base.href;
   }
 
-  async function signOut() {
+  async function signOut(scope) {
     var client = await getClient();
     saveTimers.forEach(function (timer) { clearTimeout(timer); });
     saveTimers.clear();
-    var result = await client.auth.signOut();
+    var result = await client.auth.signOut({ scope: scope === 'global' ? 'global' : 'local' });
     if (!result.error) activateUserStorage(null);
     return result;
+  }
+
+  async function listMfaFactors() {
+    var client = await getClient();
+    return client.auth.mfa.listFactors();
+  }
+
+  async function enrollTotp() {
+    var client = await getClient();
+    return client.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'TravelMate' });
+  }
+
+  async function challengeAndVerifyTotp(factorId, code) {
+    var client = await getClient();
+    return client.auth.mfa.challengeAndVerify({ factorId: factorId, code: String(code || '').replace(/\D/g, '') });
+  }
+
+  async function unenrollMfa(factorId) {
+    var client = await getClient();
+    return client.auth.mfa.unenroll({ factorId: factorId });
+  }
+
+  async function getAssuranceLevel() {
+    var client = await getClient();
+    return client.auth.mfa.getAuthenticatorAssuranceLevel();
+  }
+
+  function clearDeviceData() {
+    var keys = [];
+    for (var index = 0; index < localStorage.length; index += 1) {
+      var key = localStorage.key(index);
+      if (key && key.indexOf('travelmate-') === 0) keys.push(key);
+    }
+    keys.forEach(function (key) { localStorage.removeItem(key); });
+    sessionStorage.removeItem('travelmate-pending-invite');
+    return keys.length;
   }
 
   async function onAuthChange(callback) {
@@ -496,6 +546,12 @@
     updatePassword: updatePassword,
     authRedirectUrl: authRedirectUrl,
     signOut: signOut,
+    listMfaFactors: listMfaFactors,
+    enrollTotp: enrollTotp,
+    challengeAndVerifyTotp: challengeAndVerifyTotp,
+    unenrollMfa: unenrollMfa,
+    getAssuranceLevel: getAssuranceLevel,
+    clearDeviceData: clearDeviceData,
     onAuthChange: onAuthChange
   };
 })();
