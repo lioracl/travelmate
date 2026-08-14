@@ -32,6 +32,27 @@
   var passwordChangeMode = false;
   var renderedTrips = new Map();
   var staticActivityKey = 'travelmate-static-trip-activity';
+  var pendingShortcut = new URLSearchParams(location.search).get('shortcut') || '';
+
+  function handlePwaShortcut(trips) {
+    if (!pendingShortcut) return;
+    var shortcut = pendingShortcut;
+    pendingShortcut = '';
+    history.replaceState(null, '', location.pathname + location.hash);
+    if (shortcut === 'new') {
+      var newTripButton = document.querySelector('[data-modal="destination"]');
+      if (newTripButton) newTripButton.click();
+      return;
+    }
+    var available = Array.isArray(trips) ? trips.slice() : [];
+    var now = new Date().toISOString().slice(0, 10);
+    var trip = available.find(function (item) { return item.start <= now && item.end >= now; }) ||
+      available.find(function (item) { return item.end >= now; }) || available[0];
+    if (!trip) return setMessage('כדי להשתמש בקיצור יש ליצור או לסנכרן טיול תחילה.', true);
+    var views = { today: 'plan', places: 'places', documents: 'documents' };
+    var view = views[shortcut] || 'overview';
+    location.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id) + '&view=' + view + '#' + view;
+  }
 
   (function initHomeCarousel() {
     var carousel = document.querySelector('[data-home-carousel]');
@@ -215,6 +236,7 @@
       (active ? list : archiveList).insertBefore(tripCard(trip), active ? addButton : null);
     });
     updateCounts();
+    handlePwaShortcut(canonicalTrips);
   }
 
   function prepareStaticTrips() {

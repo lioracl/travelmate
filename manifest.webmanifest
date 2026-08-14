@@ -9,5 +9,11 @@
   "theme_color": "#292524",
   "lang": "he",
   "dir": "rtl",
-  "icons": [{"src":"./assets/app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons": [{"src":"./assets/app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}],
+  "shortcuts": [
+    {"name":"התוכנית של היום","short_name":"היום","description":"פתיחת התוכנית היומית בטיול הפעיל","url":"./index.html?shortcut=today","icons":[{"src":"./assets/app-icon.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"חיפוש מקומות","short_name":"מקומות","description":"חיפוש ושמירת מקומות בטיול הפעיל","url":"./index.html?shortcut=places","icons":[{"src":"./assets/app-icon.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"מסמכי הטיול","short_name":"מסמכים","description":"פתיחת מסמכי הטיול הפעיל","url":"./index.html?shortcut=documents","icons":[{"src":"./assets/app-icon.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"טיול חדש","short_name":"טיול חדש","description":"יצירת טיול חדש ב-TravelMate","url":"./index.html?shortcut=new","icons":[{"src":"./assets/app-icon.svg","sizes":"any","type":"image/svg+xml"}]}
+  ]
 }

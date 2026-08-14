@@ -2,3 +2,6 @@ project_id = "hyaebqvwvdnbmvijnjcf"
 
 [functions.travel-assistant]
 verify_jwt = true
+
+[functions.admin-center]
+verify_jwt = true
