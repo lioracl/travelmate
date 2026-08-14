@@ -143,7 +143,24 @@
     'עזור לי לבחור יעד': 'Help me choose a destination', 'בנה רשימת אריזה': 'Build a packing list',
     'איך לחסוך בטיול?': 'How can I save on my trip?', 'תן לי רעיון מגניב לסופ״ש': 'Give me a cool weekend idea',
     'הודעה לעוזר': 'Message to assistant', 'AI עשוי לטעות': 'AI can make mistakes',
-    'שיתוף ב־WhatsApp': 'Share via WhatsApp', 'טיול משותף': 'Shared trip', 'הטיול שלי': 'My trip'
+    'שיתוף ב־WhatsApp': 'Share via WhatsApp', 'טיול משותף': 'Shared trip', 'הטיול שלי': 'My trip',
+    'הגדרות': 'Settings', 'פתיחת הגדרות': 'Open settings',
+    'התאמה אישית, אבטחה וניהול המכשיר': 'Personalization, security and device management',
+    'העדפות האפליקציה': 'App preferences', 'שפת האפליקציה': 'App language',
+    'בחר את שפת הממשק בכל המכשיר הזה': 'Choose the interface language on this device',
+    'עברית': 'Hebrew', 'תצוגת האפליקציה': 'App appearance',
+    'בחר מצב בהיר או כהה': 'Choose light or dark mode', 'בהיר': 'Light', 'כהה': 'Dark',
+    'אבטחה ופרטיות': 'Security & privacy', 'מצב החשבון ואימות דו־שלבי': 'Account status and two-factor authentication',
+    'יציאה וניהול המכשיר': 'Sign out and device management',
+    'יציאה מהמכשיר הזה': 'Sign out of this device', 'המידע המקומי יישאר במכשיר': 'Local data will remain on this device',
+    'יציאה מכל המכשירים': 'Sign out of all devices', 'מומלץ אם טלפון אבד או נגנב': 'Recommended if a phone was lost or stolen',
+    'יציאה וניקוי המכשיר': 'Sign out and clear this device', 'מוחק מהמכשיר נתוני TravelMate מקומיים': 'Deletes local TravelMate data from this device',
+    'קוד האימות והסיסמה אינם נשמרים באפליקציה.': 'Authentication codes and passwords are not stored in the app.',
+    'אימות דו־שלבי': 'Two-factor authentication', 'יש להתחבר לחשבון כדי להפעיל אימות באפליקציית קודים.': 'Sign in to enable authentication with an authenticator app.',
+    'המכשיר אינו מחובר': 'This device is not signed in', 'התחבר כדי לסנכרן מידע ולהשתמש באימות דו־שלבי.': 'Sign in to sync data and use two-factor authentication.',
+    'מופעל באמצעות אפליקציית קודים.': 'Enabled with an authenticator app.', 'פעיל': 'Active',
+    'קוד נוסף מגן על החשבון גם אם הסיסמה נחשפה.': 'An extra code protects the account even if the password is exposed.',
+    'מומלץ': 'Recommended', 'הפעלת אימות דו־שלבי בחינם': 'Enable two-factor authentication for free'
   });
 
   function readLanguage() {
@@ -260,19 +277,7 @@
   }
 
   function createSelector() {
-    if (!document.querySelector('[data-trip-list]') || document.querySelector('[data-language-selector]')) return;
-    var selector = document.createElement('div');
-    selector.className = 'language-selector';
-    selector.dataset.languageSelector = '';
-    selector.dataset.noTranslate = '';
-    selector.setAttribute('aria-label', 'בחירת שפת האפליקציה');
-    selector.innerHTML = '<span><i class="fa-solid fa-language"></i><b>שפת האפליקציה</b></span><div><button type="button" data-language-choice="he">עברית</button><button type="button" data-language-choice="en">English</button></div>';
-    var hero = document.querySelector('main > .hero');
-    if (hero) hero.insertAdjacentElement('afterend', selector);
-    selector.addEventListener('click', function (event) {
-      var button = event.target.closest('[data-language-choice]');
-      if (button) applyLanguage(button.dataset.languageChoice);
-    });
+    document.querySelectorAll('[data-language-selector]').forEach(function (selector) { selector.remove(); });
   }
 
   function start() {

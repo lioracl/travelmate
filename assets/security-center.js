@@ -25,19 +25,12 @@
     button.type = 'button';
     button.className = 'security-center-launcher';
     button.dataset.securityOpen = '';
-    button.innerHTML = '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>אבטחה</span>';
-    button.setAttribute('aria-label', 'פתיחת מרכז האבטחה');
-    if (document.body.classList.contains('home-page')) {
-      var account = Array.prototype.find.call(document.querySelectorAll('[data-cloud-account-open]'), function (candidate) {
-        return Boolean(candidate.offsetWidth || candidate.offsetHeight);
-      }) || document.querySelector('[data-cloud-account-open]');
-      if (account) account.insertAdjacentElement('afterend', button);
-      else document.body.appendChild(button);
-    } else {
-      var nav = document.querySelector('.sidebar nav');
-      if (nav) nav.appendChild(button);
-      else document.body.appendChild(button);
-    }
+    button.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i><span class="tip">הגדרות</span>';
+    button.setAttribute('aria-label', 'פתיחת הגדרות');
+    var sidebar = document.querySelector(document.body.classList.contains('home-page') ? '.home-sidebar' : '.sidebar');
+    if (!sidebar) return document.body.appendChild(button);
+    var logout = sidebar.querySelector(':scope > .trip-logout');
+    sidebar.insertBefore(button, logout || null);
   }
 
   function createDialog() {
@@ -47,8 +40,12 @@
     backdrop.dataset.securityDialog = '';
     backdrop.hidden = true;
     backdrop.innerHTML = '<div class="security-center" role="dialog" aria-modal="true" aria-labelledby="security-title">' +
-      '<header><div><small>הגנה על החשבון והמכשיר</small><h2 id="security-title">מרכז האבטחה</h2></div><button type="button" data-security-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header>' +
+      '<header><div><small>התאמה אישית, אבטחה וניהול המכשיר</small><h2 id="security-title">הגדרות</h2></div><button type="button" data-security-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header>' +
       '<p class="security-message" data-security-message></p>' +
+      '<section class="security-preferences"><h3>העדפות האפליקציה</h3><div class="settings-list">' +
+      '<div class="settings-row"><i class="fa-solid fa-language" aria-hidden="true"></i><span><strong>שפת האפליקציה</strong><small>בחר את שפת הממשק בכל המכשיר הזה</small></span><div class="settings-options" role="group" aria-label="שפת האפליקציה"><button type="button" data-language-choice="he">עברית</button><button type="button" data-language-choice="en">English</button></div></div>' +
+      '<div class="settings-row"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span><strong>תצוגת האפליקציה</strong><small>בחר מצב בהיר או כהה</small></span><div class="settings-options" role="group" aria-label="תצוגת האפליקציה"><button type="button" data-theme-choice="light"><i class="fa-regular fa-sun"></i> בהיר</button><button type="button" data-theme-choice="dark"><i class="fa-regular fa-moon"></i> כהה</button></div></div>' +
+      '</div></section><div class="settings-section-title"><i class="fa-solid fa-shield-halved"></i><span><strong>אבטחה ופרטיות</strong><small>מצב החשבון ואימות דו־שלבי</small></span></div>' +
       '<section class="security-status" data-security-status></section>' +
       '<section class="security-mfa" data-security-mfa></section>' +
       '<section class="security-actions"><h3>יציאה וניהול המכשיר</h3><div>' +
@@ -64,7 +61,27 @@
     if (!dialog) return;
     dialog.hidden = false;
     document.body.classList.add('security-center-open');
+    syncPreferences();
     refresh();
+  }
+
+  function syncPreferences() {
+    var language = window.TravelMateLanguage && window.TravelMateLanguage.get ? window.TravelMateLanguage.get() : 'he';
+    var theme = window.TravelMateTheme && window.TravelMateTheme.get ? window.TravelMateTheme.get() : 'light';
+    try {
+      if (!window.TravelMateLanguage) language = localStorage.getItem('travelmate-language') || 'he';
+      if (!window.TravelMateTheme) theme = localStorage.getItem('travelmate-theme') || 'light';
+    } catch (error) {}
+    document.querySelectorAll('[data-language-choice]').forEach(function (button) {
+      var selected = button.dataset.languageChoice === language;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+    document.querySelectorAll('[data-theme-choice]').forEach(function (button) {
+      var selected = button.dataset.themeChoice === theme;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
   }
 
   function closeDialog() {
@@ -152,6 +169,20 @@
     document.addEventListener('click', function (event) {
       if (event.target.closest('[data-security-open]')) openDialog();
       if (event.target.closest('[data-security-close]') || event.target.matches('[data-security-dialog]')) closeDialog();
+      var languageChoice = event.target.closest('[data-language-choice]');
+      if (languageChoice && window.TravelMateLanguage) {
+        window.TravelMateLanguage.set(languageChoice.dataset.languageChoice);
+        syncPreferences();
+      }
+      var themeChoice = event.target.closest('[data-theme-choice]');
+      if (themeChoice) {
+        if (window.TravelMateTheme) window.TravelMateTheme.set(themeChoice.dataset.themeChoice);
+        else {
+          try { localStorage.setItem('travelmate-theme', themeChoice.dataset.themeChoice); } catch (error) {}
+          document.documentElement.dataset.theme = themeChoice.dataset.themeChoice;
+        }
+        syncPreferences();
+      }
     });
     document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeDialog(); });
     document.querySelector('[data-security-signout]').onclick = async function () { await cloud.signOut('local'); location.reload(); };
@@ -187,6 +218,7 @@
   }
 
   window.TravelMateSecurity = { getCaptchaToken: function () { return captchaToken || undefined; }, open: openDialog };
+  window.TravelMateSettings = { open: openDialog, close: closeDialog };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { wire(); setupCaptcha(); });
   else { wire(); setupCaptcha(); }
 })();

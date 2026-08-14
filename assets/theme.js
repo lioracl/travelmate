@@ -13,6 +13,7 @@
   }
 
   function applyTheme(theme) {
+    theme = theme === 'dark' ? 'dark' : 'light';
     root.dataset.theme = theme;
     root.style.colorScheme = theme;
     document.querySelectorAll('[data-theme-toggle]').forEach(function (button) {
@@ -23,6 +24,12 @@
       button.setAttribute('title', label);
       button.innerHTML = '<i class="fa-regular ' + (dark ? 'fa-sun' : 'fa-moon') + '" aria-hidden="true"></i><span class="tip">' + label + '</span>';
     });
+    document.querySelectorAll('[data-theme-choice]').forEach(function (button) {
+      var selected = button.dataset.themeChoice === theme;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+    window.dispatchEvent(new CustomEvent('travelmate:theme-change', { detail: { theme: theme } }));
   }
 
   function saveTheme(theme) {
@@ -71,4 +78,5 @@
     createToggle();
     enableStableTripRendering();
   }
+  window.TravelMateTheme = { get: readTheme, set: saveTheme };
 })();
