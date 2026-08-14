@@ -63,23 +63,28 @@
   async function getLocalReceipt(key) { if (!key) return null; var database = await receiptDatabase(); var value = await new Promise(function (resolve, reject) { var request = database.transaction('files').objectStore('files').get(key); request.onsuccess = function () { resolve(request.result || null); }; request.onerror = function () { reject(request.error); }; }); database.close(); return value; }
   async function deleteLocalReceipt(key) { if (!key) return; var database = await receiptDatabase(); await new Promise(function (resolve) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = resolve; transaction.onerror = resolve; }); database.close(); }
   function waitReceiptRetry(delay) { return new Promise(function (resolve) { setTimeout(resolve, delay); }); }
-  async function storePrivateReceipt(file, expenseId) {
-    if (!file) throw new Error('RECEIPT_FILE_REQUIRED');
-    if (!cloud) throw new Error('RECEIPT_CLOUD_UNAVAILABLE');
+  async function privateStorageAccess() {
+    if (!cloud) throw new Error('STORAGE_CLOUD_UNAVAILABLE');
+    if (cloud.getPrivateStorageSession) return cloud.getPrivateStorageSession();
     var client = await cloud.getClient();
     var session = await cloud.getSession();
-    if (!session || !session.user) throw new Error('RECEIPT_SIGN_IN_REQUIRED');
-    var path = receiptPath(expenseId, file.name, session.user.id);
-    var result = await client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').upload(path, file, { cacheControl: '3600', upsert: false, contentType: 'application/octet-stream' });
+    if (!session || !session.user) throw new Error('STORAGE_SIGN_IN_REQUIRED');
+    return { client: client, session: session };
+  }
+  async function storePrivateReceipt(file, expenseId) {
+    if (!file) throw new Error('RECEIPT_FILE_REQUIRED');
+    var access = await privateStorageAccess();
+    var path = receiptPath(expenseId, file.name, access.session.user.id);
+    var result = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').upload(path, file, { cacheControl: '3600', upsert: false, contentType: 'application/octet-stream' });
     if (result.error) throw result.error;
     return path;
   }
-  async function storePrivateReceiptWithRetry(file, expenseId) { var error = null; for (var attempt = 0; attempt < 3; attempt += 1) { try { return await storePrivateReceipt(file, expenseId); } catch (caught) { error = caught; if (caught && caught.message === 'RECEIPT_SIGN_IN_REQUIRED') throw caught; if (attempt < 2) await waitReceiptRetry(350 * (attempt + 1)); } } throw error || new Error('RECEIPT_UPLOAD_FAILED'); }
+  async function storePrivateReceiptWithRetry(file, expenseId) { var error = null; for (var attempt = 0; attempt < 3; attempt += 1) { try { return await storePrivateReceipt(file, expenseId); } catch (caught) { error = caught; if (/SIGN_IN_REQUIRED|MFA_REQUIRED|CLOUD_UNAVAILABLE/.test(String(caught && (caught.code || caught.message) || ''))) throw caught; if (attempt < 2) await waitReceiptRetry(350 * (attempt + 1)); } } throw error || new Error('RECEIPT_UPLOAD_FAILED'); }
   async function receiptBlob(expense) {
     if (expense && expense.receiptLocalKey) { var local = await getLocalReceipt(expense.receiptLocalKey); if (local && local.blob) return local.blob; }
     if (expense && expense.receiptPath && cloud) {
-      var client = await cloud.getClient();
-      var result = await client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').download(expense.receiptPath);
+      var access = await privateStorageAccess();
+      var result = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').download(expense.receiptPath);
       if (result.error) throw result.error;
       return result.data;
     }
@@ -88,7 +93,7 @@
   }
   async function removePrivateReceipt(expense) {
     if (!expense) return;
-    if (expense.receiptPath && cloud) { var client = await cloud.getClient(); var result = await client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').remove([expense.receiptPath]); if (result.error) throw result.error; }
+    if (expense.receiptPath && cloud) { var access = await privateStorageAccess(); var result = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').remove([expense.receiptPath]); if (result.error) throw result.error; }
     if (expense.receiptLocalKey) await deleteLocalReceipt(expense.receiptLocalKey);
   }
   async function migrateInlineReceipts() {
@@ -567,12 +572,9 @@
   async function deleteLocalMemoryFile(key) { var database = await memoryDatabase(); return new Promise(function (resolve) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = function () { database.close(); resolve(); }; transaction.onerror = function () { database.close(); resolve(); }; }); }
   async function storeMemoryAttachment(file, memoryId) {
     try {
-      if (!cloud) throw new Error('no-cloud');
-      var session = await cloud.getSession();
-      if (!session || !session.user) throw new Error('signed-out');
-      var client = await cloud.getClient();
-      var path = session.user.id + '/memories/' + encodeURIComponent(tripId()) + '/' + memoryId + '/' + Date.now() + '-' + safeFileName(file.name);
-      var result = await client.storage.from('travel-documents').upload(path, file, { contentType: file.type || 'application/octet-stream', cacheControl: '0', upsert: false });
+      var access = await privateStorageAccess();
+      var path = access.session.user.id + '/memories/' + encodeURIComponent(tripId()) + '/' + memoryId + '/' + Date.now() + '-' + safeFileName(file.name);
+      var result = await access.client.storage.from('travel-documents').upload(path, file, { contentType: 'application/octet-stream', cacheControl: '0', upsert: false });
       if (result.error) throw result.error;
       return { name: file.name, type: file.type || 'application/octet-stream', size: file.size, storagePath: path, cloud: true };
     } catch (error) {
@@ -585,7 +587,7 @@
     try {
       var url = '';
       if (attachment.cloud) {
-        var client = await cloud.getClient(); var signed = await client.storage.from('travel-documents').createSignedUrl(attachment.storagePath, 300);
+        var access = await privateStorageAccess(); var signed = await access.client.storage.from('travel-documents').createSignedUrl(attachment.storagePath, 300);
         if (signed.error || !signed.data) throw signed.error || new Error('missing-url'); url = signed.data.signedUrl;
       } else {
         var blob = await getLocalMemoryFile(attachment.localKey); if (!blob) throw new Error('missing-file'); url = URL.createObjectURL(blob); setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
@@ -596,7 +598,7 @@
   async function removeMemory(memoryId) {
     var memory = state.memories.find(function (item) { return String(item.id) === String(memoryId); }); if (!memory) return;
     var attachments = Array.isArray(memory.attachments) ? memory.attachments : [];
-    try { var cloudPaths = attachments.filter(function (item) { return item.cloud && item.storagePath; }).map(function (item) { return item.storagePath; }); if (cloudPaths.length && cloud) { var client = await cloud.getClient(); await client.storage.from('travel-documents').remove(cloudPaths); } } catch (error) {}
+    try { var cloudPaths = attachments.filter(function (item) { return item.cloud && item.storagePath; }).map(function (item) { return item.storagePath; }); if (cloudPaths.length && cloud) { var access = await privateStorageAccess(); await access.client.storage.from('travel-documents').remove(cloudPaths); } } catch (error) {}
     await Promise.all(attachments.filter(function (item) { return item.localKey; }).map(function (item) { return deleteLocalMemoryFile(item.localKey); }));
     state.memories = state.memories.filter(function (item) { return String(item.id) !== String(memoryId); }); writeJson(storageKey('memories'), state.memories); saveTripData(); renderMemories(); renderSummary();
   }

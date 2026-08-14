@@ -190,6 +190,28 @@
     return session;
   }
 
+  async function getPrivateStorageSession() {
+    var client = await getClient();
+    var sessionResult = await client.auth.getSession();
+    if (sessionResult.error) throw sessionResult.error;
+    var session = sessionResult.data.session;
+    if (!session || !session.user) {
+      var signedOutError = new Error('STORAGE_SIGN_IN_REQUIRED');
+      signedOutError.code = 'STORAGE_SIGN_IN_REQUIRED';
+      throw signedOutError;
+    }
+    var assuranceResult = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assuranceResult.error) throw assuranceResult.error;
+    var assurance = assuranceResult.data || {};
+    if (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
+      var mfaError = new Error('MFA_REQUIRED');
+      mfaError.code = 'MFA_REQUIRED';
+      throw mfaError;
+    }
+    activateUserStorage(session.user.id);
+    return { client: client, session: session, assurance: assurance };
+  }
+
   async function listCloudTrips() {
     var client = await getClient();
     var result = await client.from('travel_trips').select('*').order('updated_at', { ascending: false });
@@ -522,6 +544,7 @@
   window.TravelMateCloud = {
     getClient: getClient,
     getSession: getSession,
+    getPrivateStorageSession: getPrivateStorageSession,
     getLocalTrips: getLocalTrips,
     setLocalTrips: setLocalTrips,
     upsertLocalTrip: upsertLocalTrip,

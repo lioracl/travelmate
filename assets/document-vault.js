@@ -237,7 +237,6 @@
     }
 
     async function saveFiles(files) {
-      if (!currentUser) return setStatus('יש להתחבר לפני העלאת מסמך.', true);
       if (!files.length) return setStatus('בחר לפחות קובץ אחד.', true);
       var tooLarge = files.find(function (file) { return file.size > MAX_FILE_SIZE; });
       if (tooLarge) return setStatus('הקובץ ' + tooLarge.name + ' גדול מ־25MB.', true);
@@ -247,12 +246,16 @@
       uploadButton.disabled = true;
       var uploadedCount = 0;
       try {
+        var storageAccess = await requirePrivateStorageAccess();
+        currentUser = storageAccess.session.user;
+        var selectedCategory = form.elements.category.value;
+        var selectedNote = form.elements.note.value.trim();
         for (var index = 0; index < files.length; index += 1) {
           var file = files[index];
           setStatus('מצפין/ה ומעלה ' + (index + 1) + ' מתוך ' + files.length + '…');
           var encrypted = await encryptFile(file, passphrase);
           var safeName = sanitizeFileName(file.name);
-          var objectName = currentUser.id + '/' + encodeURIComponent(tripId) + '/' + crypto.randomUUID() + '-' + safeName + '.vault';
+          var objectName = currentUser.id + '/' + encodeURIComponent(tripId) + '/' + secureObjectId() + '-' + safeName + '.vault';
           var uploadResult = await client.storage.from(bucket).upload(objectName, encrypted.blob, {
             contentType: 'application/octet-stream',
             cacheControl: '0',
@@ -266,8 +269,8 @@
             storage_path: objectName,
             mime_type: file.type || 'application/octet-stream',
             file_size: file.size,
-            category: form.elements.category.value,
-            note: form.elements.note.value.trim(),
+            category: selectedCategory,
+            note: selectedNote,
             encrypted: true,
             encryption_salt: bytesToBase64(encrypted.salt),
             encryption_iv: bytesToBase64(encrypted.iv)
@@ -294,6 +297,7 @@
       var passphrase = passphraseInput.value;
       if (passphrase.length < 10) return setStatus('הזן את סיסמת הצפנת הכספת לפני פתיחת המסמך.', true);
       setStatus('מוריד/ה ומפענח/ת את המסמך…');
+      try { await requirePrivateStorageAccess(); } catch (accessError) { return setStatus(storageErrorMessage(accessError), true); }
       var result = await client.storage.from(bucket).download(record.storage_path);
       if (result.error) return setStatus(storageErrorMessage(result.error), true);
       try {
@@ -423,6 +427,7 @@
     async function deleteDocument(record) {
       if (!confirm('למחוק לצמיתות את המסמך מהענן? לא ניתן לבטל פעולה זו.')) return;
       setStatus('מוחק/ת את המסמך…');
+      try { await requirePrivateStorageAccess(); } catch (accessError) { return setStatus(storageErrorMessage(accessError), true); }
       var storageResult = await client.storage.from(bucket).remove([record.storage_path]);
       if (storageResult.error) return setStatus(storageErrorMessage(storageResult.error), true);
       var metadataResult = await client.from('travel_documents').delete().eq('id', record.id);
@@ -510,7 +515,24 @@
   function authRedirectUrl(hash) { var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname); var base = local ? new URL(location.pathname.replace(/^\//, ''), 'https://lioracl.github.io/travelmate/') : new URL(location.pathname, location.origin); base.search = location.search; base.hash = hash || ''; return base.href; }
   function authErrorMessage(error) { var message = String(error && (error.message || error.code) || ''); if (/email not confirmed/i.test(message)) return 'החשבון עדיין לא אומת. לחץ על „לא קיבלתי מייל” כדי לשלוח שוב.'; if (/email address not authorized/i.test(message)) return 'Supabase אינו מורשה לשלוח לכתובת הזו. יש להגדיר SMTP פרטי או להשתמש בכתובת של חבר צוות הפרויקט.'; if (/rate limit|too many requests|over_email_send_rate_limit/i.test(message)) return 'הגעת למגבלת השליחה של Supabase. המתן כשעה ונסה שוב.'; if (/invalid login/i.test(message)) return 'כתובת הדוא״ל או סיסמת החשבון אינן נכונות.'; if (/already registered/i.test(message)) return 'כבר קיים חשבון עם כתובת זו. נסה להתחבר או שלח שוב את מייל האימות.'; if (/password/i.test(message)) return 'הסיסמה חייבת להכיל לפחות 8 תווים.'; return 'הפעולה נכשלה: ' + (message || 'נסה שוב בעוד רגע.'); }
   function databaseErrorMessage(error) { var message = String(error && error.message || ''); if (/travel_documents|schema cache|does not exist/i.test(message)) return 'הכספת עדיין לא הופעלה ב־Supabase. יש להריץ את קובץ ההגדרה ב־SQL Editor.'; return 'לא ניתן לקרוא כרגע את רשימת המסמכים.'; }
-  function storageErrorMessage(error) { var message = String(error && error.message || ''); if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/row-level security|unauthorized|permission/i.test(message)) return 'אין הרשאה לפעולה. התחבר מחדש ובדוק שהרשאות הכספת הופעלו.'; return 'הפעולה מול האחסון נכשלה. נסה שוב.'; }
+  async function requirePrivateStorageAccess() {
+    if (window.TravelMateCloud && window.TravelMateCloud.getPrivateStorageSession) return window.TravelMateCloud.getPrivateStorageSession();
+    if (!window.TravelMateCloud || !window.TravelMateCloud.getClient) { var unavailable = new Error('STORAGE_CLOUD_UNAVAILABLE'); unavailable.code = 'STORAGE_CLOUD_UNAVAILABLE'; throw unavailable; }
+    var storageClient = await window.TravelMateCloud.getClient();
+    var result = await storageClient.auth.getSession();
+    if (result.error) throw result.error;
+    if (!result.data.session || !result.data.session.user) { var error = new Error('STORAGE_SIGN_IN_REQUIRED'); error.code = 'STORAGE_SIGN_IN_REQUIRED'; throw error; }
+    return { client: storageClient, session: result.data.session };
+  }
+  function secureObjectId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+    var bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 15) | 64;
+    bytes[8] = (bytes[8] & 63) | 128;
+    return Array.from(bytes, function (byte) { return byte.toString(16).padStart(2, '0'); }).join('');
+  }
+  function storageErrorMessage(error) { var message = String(error && (error.message || error.code) || ''); if (/MFA_REQUIRED/i.test(message)) return 'כדי לגשת למסמכים אישיים יש להשלים אימות דו־שלבי. פתח את ההגדרות, השלם אימות ונסה שוב.'; if (/STORAGE_SIGN_IN_REQUIRED|JWT|session/i.test(message)) return 'ההתחברות פגה. התחבר מחדש ולאחר מכן נסה להעלות שוב.'; if (/STORAGE_CLOUD_UNAVAILABLE/i.test(message)) return 'שירות הענן עדיין לא נטען. רענן את האפליקציה ונסה שוב.'; if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/mime|content.?type/i.test(message)) return 'סוג הקובץ אינו מורשה עדיין באחסון. הפעל את עדכון ההעלאות ב־Supabase ונסה שוב.'; if (/row-level security|unauthorized|permission|403/i.test(message)) return 'האחסון דחה את ההרשאה. השלם אימות דו־שלבי או התחבר מחדש ונסה שוב.'; if (/network|fetch|timeout/i.test(message)) return 'החיבור לענן נכשל. בדוק את הרשת ונסה שוב.'; return 'הפעולה מול האחסון נכשלה: ' + (message || 'נסה שוב.'); }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
