@@ -5,6 +5,7 @@
   var currentSession = null;
   var captchaToken = '';
   var pendingFactorId = '';
+  var challengeInProgress = false;
 
   function escapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function (character) {
@@ -54,6 +55,75 @@
       '<button type="button" class="danger" data-security-clean><i class="fa-solid fa-mobile-screen-button"></i><span><strong>יציאה וניקוי המכשיר</strong><small>מוחק מהמכשיר נתוני TravelMate מקומיים</small></span></button>' +
       '</div></section><footer><i class="fa-solid fa-circle-info"></i> קוד האימות והסיסמה אינם נשמרים באפליקציה.</footer></div>';
     document.body.appendChild(backdrop);
+  }
+
+  function createMfaGate() {
+    if (document.querySelector('[data-mfa-gate]')) return;
+    var gate = document.createElement('section');
+    gate.className = 'security-mfa-gate';
+    gate.dataset.mfaGate = '';
+    gate.hidden = true;
+    gate.innerHTML = '<div class="security-mfa-gate-card" role="dialog" aria-modal="true" aria-labelledby="mfa-gate-title">' +
+      '<span class="security-mfa-gate-icon"><i class="fa-solid fa-shield-halved"></i></span>' +
+      '<small>שלב אבטחה נוסף</small><h2 id="mfa-gate-title">אימות הכניסה</h2>' +
+      '<p>הסיסמה אושרה. כדי לפתוח טיולים, הודעות ומסמכים אישיים הזן קוד מאפליקציית האימות.</p>' +
+      '<form data-mfa-gate-form><label>קוד בן 6 ספרות<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button type="submit">אימות ופתיחת המידע</button><span data-mfa-gate-message aria-live="polite"></span></form>' +
+      '<button type="button" class="security-mfa-gate-signout" data-mfa-gate-signout>יציאה מהחשבון</button></div>';
+    document.body.appendChild(gate);
+  }
+
+  function hideMfaGate() {
+    var gate = document.querySelector('[data-mfa-gate]');
+    if (gate) gate.hidden = true;
+    document.body.classList.remove('security-mfa-required');
+  }
+
+  async function enforceMfaChallenge() {
+    if (challengeInProgress || !currentSession || !cloud || !cloud.listMfaFactors || !cloud.getAssuranceLevel) {
+      if (!currentSession) hideMfaGate();
+      return;
+    }
+    challengeInProgress = true;
+    try {
+      var factorsResult = await cloud.listMfaFactors();
+      if (factorsResult.error) throw factorsResult.error;
+      var verified = (factorsResult.data && factorsResult.data.totp || []).filter(function (factor) { return factor.status === 'verified'; });
+      var assuranceResult = await cloud.getAssuranceLevel();
+      if (assuranceResult.error) throw assuranceResult.error;
+      var level = assuranceResult.data || {};
+      if (!verified.length || level.currentLevel === 'aal2' || level.nextLevel !== 'aal2') {
+        hideMfaGate();
+        return;
+      }
+      createMfaGate();
+      var gate = document.querySelector('[data-mfa-gate]');
+      var form = gate.querySelector('[data-mfa-gate-form]');
+      var status = gate.querySelector('[data-mfa-gate-message]');
+      gate.hidden = false;
+      document.body.classList.add('security-mfa-required');
+      form.onsubmit = async function (event) {
+        event.preventDefault();
+        var button = form.querySelector('button');
+        button.disabled = true; status.textContent = 'מאמת את הקוד…';
+        var result = await cloud.challengeAndVerifyTotp(verified[0].id, form.code.value);
+        if (result.error) {
+          status.textContent = 'הקוד אינו תקין או שפג תוקפו. נסה קוד חדש.';
+          form.code.select(); button.disabled = false; return;
+        }
+        status.textContent = 'הכניסה אושרה.';
+        hideMfaGate();
+        await refresh();
+      };
+      gate.querySelector('[data-mfa-gate-signout]').onclick = async function () {
+        await cloud.signOut('local');
+        location.reload();
+      };
+      setTimeout(function () { form.code.focus(); }, 40);
+    } catch (error) {
+      console.error('TravelMate MFA challenge check failed', error);
+    } finally {
+      challengeInProgress = false;
+    }
   }
 
   function openDialog() {
@@ -143,6 +213,7 @@
     pendingFactorId = '';
     message('האימות הדו־שלבי פעיל וההתחברות מאובטחת.');
     await renderMfa();
+    await enforceMfaChallenge();
   }
 
   async function removeMfa(factorId) {
@@ -161,11 +232,13 @@
       ? '<i class="fa-solid fa-circle-check"></i><div><strong>החשבון מחובר ומוצפן בתעבורה</strong><small>' + escapeHtml(currentSession.user.email) + (currentSession.user.email_confirmed_at ? ' · כתובת מאומתת' : ' · כתובת טרם אומתה') + '</small></div>'
       : '<i class="fa-solid fa-triangle-exclamation"></i><div><strong>המכשיר אינו מחובר</strong><small>התחבר כדי לסנכרן מידע ולהשתמש באימות דו־שלבי.</small></div>';
     await renderMfa();
+    await enforceMfaChallenge();
   }
 
   function wire() {
     createButton();
     createDialog();
+    createMfaGate();
     document.addEventListener('click', function (event) {
       if (event.target.closest('[data-security-open]')) openDialog();
       if (event.target.closest('[data-security-close]') || event.target.matches('[data-security-dialog]')) closeDialog();
@@ -196,6 +269,7 @@
       cloud.clearDeviceData();
       location.replace(location.pathname.indexOf('/trip/') >= 0 ? '../../index.html' : 'index.html');
     };
+    if (cloud && cloud.onAuthChange) cloud.onAuthChange(function () { refresh(); });
   }
 
   function setupCaptcha() {

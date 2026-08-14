@@ -435,6 +435,11 @@
       if (!currentUser) return setStatus('יש להתחבר לפני העלאת קובץ.', true);
       input.click();
     });
+    input.addEventListener('change', function () {
+      var selectedFiles = [].slice.call(input.files || []);
+      if (!selectedFiles.length) return;
+      saveFiles(selectedFiles);
+    });
     form.addEventListener('submit', function (event) {
       event.preventDefault();
       saveFiles([].slice.call(input.files || []));
@@ -459,6 +464,7 @@
         var categoryName = templateButton.closest('.doc-row').dataset.documentCategory;
         var categories = [].slice.call(form.elements.category.options).map(function (option) { return option.value; });
         if (categoryName && categories.includes(categoryName)) form.elements.category.value = categoryName;
+        input.value = '';
         input.click();
       });
     });

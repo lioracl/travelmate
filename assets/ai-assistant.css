@@ -20,3 +20,4 @@
 .ai-notes-list details[open] .ai-note-toggle span::after{content:"סגירה";font-size:12px}
 .ai-note-answer,.ai-notes-list footer{background:#f8fcfa}
 @media(max-width:650px){.ai-note-toggle span{display:none}.ai-note-toggle{padding:9px}}
+.ai-orb{z-index:2147481000!important;pointer-events:auto!important}.ai-panel{z-index:2147481100!important;pointer-events:auto!important}.ai-panel[hidden]{display:none!important}.ai-panel,.ai-panel *{pointer-events:auto}.ai-panel textarea{background:#fff!important;color:#153f33!important;-webkit-text-fill-color:#153f33!important;caret-color:#153f33!important}.ai-panel textarea::placeholder{color:#647b72!important;-webkit-text-fill-color:#647b72!important}.ai-panel .ai-composer{position:relative;z-index:2}
