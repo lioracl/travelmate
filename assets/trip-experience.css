@@ -115,3 +115,28 @@
 #budget :where(.expense-workspace,.budget-charts,.currency-converter) :where(p,small,span){color:rgba(238,255,248,.82)!important;-webkit-text-fill-color:rgba(238,255,248,.82)!important}
 #budget :where(.expense-workspace,.budget-charts,.currency-converter) :where(input,select,textarea){background:rgba(248,255,252,.95)!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important}
 #budget :where(.expense-workspace,.budget-charts,.currency-converter) button:not([type="submit"]){border:1px solid rgba(197,231,217,.72)!important;background:rgba(248,255,252,.94)!important;color:#176b4e!important}
+
+/* Receipt form: keep every field and filename inside the mobile card. */
+#budget .expense-workspace,#budget .receipt-form,#budget .receipt-source-actions,#budget .receipt-preview,#budget .receipt-grid,#budget .receipt-grid>*{box-sizing:border-box;min-width:0;max-width:100%}
+#budget .expense-workspace{overflow:hidden}
+#budget .receipt-preview{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:12px;padding:10px;border:1px solid rgba(197,231,217,.46);border-radius:16px;background:rgba(7,45,35,.42)}
+#budget .receipt-preview[hidden]{display:none!important}
+#budget .receipt-preview img{width:88px;height:88px;max-width:100%;display:block}
+#budget .receipt-preview span{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f7fffb!important;-webkit-text-fill-color:#f7fffb!important;font-size:13px;font-weight:800;text-align:start}
+#budget .receipt-grid label{min-width:0;overflow:hidden}
+#budget .receipt-grid :is(input,select){box-sizing:border-box;min-width:0;max-width:100%;margin:0}
+#budget .receipt-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#budget .receipt-actions button{width:100%;min-width:0;min-height:48px;white-space:normal;line-height:1.25}
+#budget .expense-receipt-name{max-width:100%;overflow-wrap:anywhere}
+#budget .expense-receipt-name small{display:block;margin-top:4px;color:#aee5cf!important;-webkit-text-fill-color:#aee5cf!important}
+@media(max-width:620px){
+  #budget .expense-workspace{width:100%;padding:14px!important;margin-inline:0!important}
+  #budget .receipt-form{width:100%;padding:14px 0 0!important}
+  #budget .receipt-preview{grid-template-columns:72px minmax(0,1fr)}
+  #budget .receipt-preview img{width:72px;height:72px}
+  #budget .receipt-grid{grid-template-columns:minmax(0,1fr)!important;gap:12px}
+  #budget .receipt-grid .wide{grid-column:auto!important}
+  #budget .receipt-grid label{width:100%;font-size:14px}
+  #budget .receipt-grid :is(input,select){width:100%!important;min-height:48px!important;font-size:16px!important}
+  #budget .receipt-actions{grid-template-columns:minmax(0,1fr)}
+}

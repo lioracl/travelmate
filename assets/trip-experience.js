@@ -57,8 +57,15 @@
     var extension = String(fileName || '').split('.').pop().replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 8) || 'bin';
     return userId + '/receipts/' + encodeURIComponent(tripId()).replace(/%/g, '_') + '/' + String(expenseId) + '-' + Date.now() + '.' + extension;
   }
+  function receiptDatabase() { return new Promise(function (resolve, reject) { var request = indexedDB.open('travelmate-private-receipts', 1); request.onupgradeneeded = function () { if (!request.result.objectStoreNames.contains('files')) request.result.createObjectStore('files'); }; request.onsuccess = function () { resolve(request.result); }; request.onerror = function () { reject(request.error); }; }); }
+  function receiptLocalKey(expenseId) { return tripId() + ':' + String(expenseId); }
+  async function putLocalReceipt(file, expenseId) { var key = receiptLocalKey(expenseId); var database = await receiptDatabase(); await new Promise(function (resolve, reject) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').put({ blob: file, name: file.name || ('receipt-' + expenseId), type: file.type || 'application/octet-stream', size: file.size || 0, savedAt: Date.now() }, key); transaction.oncomplete = resolve; transaction.onerror = function () { reject(transaction.error); }; }); database.close(); return key; }
+  async function getLocalReceipt(key) { if (!key) return null; var database = await receiptDatabase(); var value = await new Promise(function (resolve, reject) { var request = database.transaction('files').objectStore('files').get(key); request.onsuccess = function () { resolve(request.result || null); }; request.onerror = function () { reject(request.error); }; }); database.close(); return value; }
+  async function deleteLocalReceipt(key) { if (!key) return; var database = await receiptDatabase(); await new Promise(function (resolve) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = resolve; transaction.onerror = resolve; }); database.close(); }
+  function waitReceiptRetry(delay) { return new Promise(function (resolve) { setTimeout(resolve, delay); }); }
   async function storePrivateReceipt(file, expenseId) {
-    if (!file || !cloud) return null;
+    if (!file) throw new Error('RECEIPT_FILE_REQUIRED');
+    if (!cloud) throw new Error('RECEIPT_CLOUD_UNAVAILABLE');
     var client = await cloud.getClient();
     var session = await cloud.getSession();
     if (!session || !session.user) throw new Error('RECEIPT_SIGN_IN_REQUIRED');
@@ -67,7 +74,9 @@
     if (result.error) throw result.error;
     return path;
   }
+  async function storePrivateReceiptWithRetry(file, expenseId) { var error = null; for (var attempt = 0; attempt < 3; attempt += 1) { try { return await storePrivateReceipt(file, expenseId); } catch (caught) { error = caught; if (caught && caught.message === 'RECEIPT_SIGN_IN_REQUIRED') throw caught; if (attempt < 2) await waitReceiptRetry(350 * (attempt + 1)); } } throw error || new Error('RECEIPT_UPLOAD_FAILED'); }
   async function receiptBlob(expense) {
+    if (expense && expense.receiptLocalKey) { var local = await getLocalReceipt(expense.receiptLocalKey); if (local && local.blob) return local.blob; }
     if (expense && expense.receiptPath && cloud) {
       var client = await cloud.getClient();
       var result = await client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').download(expense.receiptPath);
@@ -78,10 +87,9 @@
     return null;
   }
   async function removePrivateReceipt(expense) {
-    if (!expense || !expense.receiptPath || !cloud) return;
-    var client = await cloud.getClient();
-    var result = await client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').remove([expense.receiptPath]);
-    if (result.error) throw result.error;
+    if (!expense) return;
+    if (expense.receiptPath && cloud) { var client = await cloud.getClient(); var result = await client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').remove([expense.receiptPath]); if (result.error) throw result.error; }
+    if (expense.receiptLocalKey) await deleteLocalReceipt(expense.receiptLocalKey);
   }
   async function migrateInlineReceipts() {
     var changed = false;
@@ -91,10 +99,28 @@
       try {
         var blob = await fetch(expense.receiptData).then(function (response) { return response.blob(); });
         var file = new File([blob], expense.receiptName || ('receipt-' + expense.id), { type: expense.receiptType || blob.type || 'application/octet-stream' });
-        expense.receiptPath = await storePrivateReceipt(file, expense.id);
+        expense.receiptPath = await storePrivateReceiptWithRetry(file, expense.id);
         delete expense.receiptData;
         changed = true;
       } catch (error) { console.warn('TravelMate receipt migration deferred', error); }
+    }
+    if (changed) { writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); }
+  }
+  async function syncPendingReceipts() {
+    var changed = false;
+    for (var index = 0; index < state.expenses.length; index += 1) {
+      var expense = state.expenses[index];
+      if (!expense.receiptPending || !expense.receiptLocalKey) continue;
+      try {
+        var local = await getLocalReceipt(expense.receiptLocalKey); if (!local || !local.blob) continue;
+        var file = new File([local.blob], local.name || expense.receiptName || ('receipt-' + expense.id), { type: local.type || expense.receiptType || 'application/octet-stream' });
+        var previousPath = expense.receiptPath || '';
+        expense.receiptPath = await storePrivateReceiptWithRetry(file, expense.id);
+        expense.receiptPending = false;
+        await deleteLocalReceipt(expense.receiptLocalKey); delete expense.receiptLocalKey;
+        if (previousPath && previousPath !== expense.receiptPath) removePrivateReceipt({ receiptPath: previousPath }).catch(function () {});
+        changed = true;
+      } catch (error) { console.warn('TravelMate receipt sync deferred', error && error.message || error); }
     }
     if (changed) { writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); }
   }
@@ -304,22 +330,33 @@
       status.textContent = file ? 'שומר את הקבלה…' : '';
       var expenseId = editing ? editing.id : Date.now();
       var receiptPathValue = editing && editing.receiptPath || '';
+      var receiptLocalKeyValue = editing && editing.receiptLocalKey || '';
+      var receiptPendingValue = Boolean(editing && editing.receiptPending);
       var legacyReceiptData = editing && editing.receiptData || '';
       if (file) {
         try {
           var oldReceipt = editing && editing.receiptPath ? { receiptPath: editing.receiptPath } : null;
-          receiptPathValue = await storePrivateReceipt(file, expenseId);
+          receiptPathValue = await storePrivateReceiptWithRetry(file, expenseId);
+          if (receiptLocalKeyValue) await deleteLocalReceipt(receiptLocalKeyValue);
+          receiptLocalKeyValue = ''; receiptPendingValue = false;
           legacyReceiptData = '';
           if (oldReceipt) removePrivateReceipt(oldReceipt).catch(function () {});
         } catch (receiptError) {
-          status.textContent = receiptError && receiptError.message === 'RECEIPT_SIGN_IN_REQUIRED' ? 'כדי לשמור קבלה פרטית יש להתחבר לחשבון. פרטי ההוצאה לא נשמרו עדיין.' : 'לא הצלחנו לשמור את הקבלה באחסון הפרטי. בדוק את החיבור ונסה שוב.';
-          return;
+          try {
+            receiptLocalKeyValue = await putLocalReceipt(file, expenseId); receiptPendingValue = true; legacyReceiptData = '';
+            status.textContent = 'הקבלה נשמרה במכשיר ותסונכרן אוטומטית עם האחסון הפרטי כשהחיבור יהיה זמין.';
+          } catch (localError) {
+            console.warn('TravelMate receipt save failed', receiptError && receiptError.message || receiptError, localError && localError.message || localError);
+            status.textContent = 'לא הצלחנו לשמור את קובץ הקבלה. פרטי ההוצאה לא נשמרו — נסה שוב או בחר קובץ קטן יותר.';
+            return;
+          }
         }
       }
-      var saved = { id: expenseId, amount: Number(form.amount.value), currency: form.currency.value, category: form.category.value, date: form.date.value, note: form.note.value.trim(), receiptName: file ? file.name : editing && editing.receiptName || '', receiptType: file ? file.type : editing && editing.receiptType || '', receiptSize: file ? file.size : editing && editing.receiptSize || 0, receiptPath: receiptPathValue };
+      var saved = { id: expenseId, amount: Number(form.amount.value), currency: form.currency.value, category: form.category.value, date: form.date.value, note: form.note.value.trim(), receiptName: file ? file.name : editing && editing.receiptName || '', receiptType: file ? file.type : editing && editing.receiptType || '', receiptSize: file ? file.size : editing && editing.receiptSize || 0, receiptPath: receiptPathValue, receiptPending: receiptPendingValue };
+      if (receiptLocalKeyValue) saved.receiptLocalKey = receiptLocalKeyValue;
       if (legacyReceiptData && !receiptPathValue) saved.receiptData = legacyReceiptData;
       if (editing) state.expenses[state.expenses.indexOf(editing)] = saved; else state.expenses.push(saved);
-      writeJson(storageKey('expenses'), state.expenses); saveTripData(); form.reset(); delete form.dataset.editingId; form.date.value = localDateValue(); form.hidden = true; panel.querySelector('[data-receipt-preview]').hidden = true; status.textContent = ''; renderExpenseList(); renderBudgetColumns(); renderSummary(); toast(editing ? 'ההוצאה עודכנה.' : 'ההוצאה והקבלה נוספו לקטגוריית ' + saved.category + '.');
+      writeJson(storageKey('expenses'), state.expenses); saveTripData(); form.reset(); delete form.dataset.editingId; form.date.value = localDateValue(); form.hidden = true; panel.querySelector('[data-receipt-preview]').hidden = true; status.textContent = ''; renderExpenseList(); renderBudgetColumns(); renderSummary(); toast(saved.receiptPending ? 'ההוצאה נשמרה. הקבלה שמורה במכשיר וממתינה לסנכרון פרטי.' : editing ? 'ההוצאה עודכנה.' : 'ההוצאה והקבלה נוספו לקטגוריית ' + saved.category + '.');
     };
     renderExpenseList();
     renderBudgetCharts();
@@ -442,7 +479,7 @@
   }
   function compressedReceipt(file) { return new Promise(function (resolve) { var reader = new FileReader(); reader.onload = function () { var image = new Image(); image.onload = function () { var scale = Math.min(1, 1200 / Math.max(image.width, image.height)); var canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(image.width * scale)); canvas.height = Math.max(1, Math.round(image.height * scale)); canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height); resolve(canvas.toDataURL('image/jpeg', .72)); }; image.onerror = function () { resolve(''); }; image.src = reader.result; }; reader.onerror = function () { resolve(''); }; reader.readAsDataURL(file); }); }
   function storedReceipt(file) { if (file.type.indexOf('image/') === 0) return compressedReceipt(file); return new Promise(function (resolve) { var reader = new FileReader(); reader.onload = function () { resolve(String(reader.result || '')); }; reader.onerror = function () { resolve(''); }; reader.readAsDataURL(file); }); }
-  function previewReceipt(file, panel) { var preview = panel.querySelector('[data-receipt-preview]'); if (!file) { preview.hidden = true; return; } var url = URL.createObjectURL(file); preview.hidden = false; preview.innerHTML = '<img src="' + url + '" alt="תצוגה מקדימה של הקבלה"><span>' + escapeHtml(file.name) + '</span>'; }
+  function previewReceipt(file, panel) { var preview = panel.querySelector('[data-receipt-preview]'); if (!file) { preview.hidden = true; return; } if (preview.dataset.objectUrl) URL.revokeObjectURL(preview.dataset.objectUrl); var url = URL.createObjectURL(file); preview.dataset.objectUrl = url; preview.hidden = false; preview.innerHTML = '<img src="' + url + '" alt="תצוגה מקדימה של הקבלה"><span dir="auto" title="' + escapeHtml(file.name) + '">' + escapeHtml(file.name) + '</span>'; }
   function fileToBase64(file) { return new Promise(function (resolve, reject) { var reader = new FileReader(); reader.onload = function () { resolve(String(reader.result).split(',')[1]); }; reader.onerror = reject; reader.readAsDataURL(file); }); }
   function loadTesseract() { if (window.Tesseract) return Promise.resolve(window.Tesseract); if (window.__travelMateTesseract) return window.__travelMateTesseract; window.__travelMateTesseract = new Promise(function (resolve, reject) { var script = document.createElement('script'); script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'; script.onload = function () { resolve(window.Tesseract); }; script.onerror = reject; document.head.appendChild(script); }); return window.__travelMateTesseract; }
   function receiptFromText(text) {
@@ -471,9 +508,9 @@
       var categoryHtml = Object.keys(grouped).map(function (category) {
         var items = grouped[category].slice().reverse(); var categoryTotal = items.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0); var categoryLocal = state.localCurrency === 'EUR' ? categoryTotal : localFromEuros(categoryTotal);
         var rows = items.map(function (expense) {
-          var hasReceipt = Boolean(expense.receiptPath || expense.receiptData); var parts = expenseCategoryParts(expense.category); var receiptLabel = expense.receiptName || 'ללא קבלה מצורפת'; var secondary = convertCurrency(Number(expense.amount || 0), expense.currency || 'EUR', state.secondaryCurrency);
+          var hasReceipt = Boolean(expense.receiptPath || expense.receiptData || expense.receiptLocalKey); var parts = expenseCategoryParts(expense.category); var receiptLabel = expense.receiptName || 'ללא קבלה מצורפת'; var secondary = convertCurrency(Number(expense.amount || 0), expense.currency || 'EUR', state.secondaryCurrency);
           var secondaryText = secondary && state.secondaryCurrency !== (expense.currency || 'EUR') ? '<small class="expense-secondary">כ־' + money(secondary, state.secondaryCurrency) + '</small>' : '';
-          return '<details class="expense-record" data-expense-id="' + escapeHtml(expense.id) + '"><summary><span class="expense-record-icon"><i class="fa-solid ' + (hasReceipt ? 'fa-receipt' : 'fa-wallet') + '"></i></span><span class="expense-record-title"><strong>' + escapeHtml(expense.note || 'הוצאה') + '</strong><small>' + escapeHtml(parts.subcategory || parts.category) + ' · ' + escapeHtml(expense.date || 'ללא תאריך') + '</small></span><span class="expense-record-price"><b>' + money(expense.amount, expense.currency || 'EUR') + '</b>' + secondaryText + '</span><i class="fa-solid fa-chevron-down expense-record-chevron"></i></summary><div class="expense-record-body"><dl><div><dt>מחיר כולל</dt><dd>' + money(expense.amount, expense.currency || 'EUR') + secondaryText + '</dd></div><div><dt>מטבע</dt><dd>' + escapeHtml(expense.currency || 'EUR') + '</dd></div><div><dt>קטגוריה</dt><dd>' + escapeHtml(expense.category || 'אחר') + '</dd></div><div><dt>תאריך</dt><dd>' + escapeHtml(expense.date || 'לא הוזן') + '</dd></div><div class="wide"><dt>קובץ קבלה</dt><dd>' + escapeHtml(receiptLabel) + '</dd></div></dl>' + (!hasReceipt && expense.receiptName ? '<p class="expense-receipt-warning">שם הקובץ הישן נשמר, אך תוכן הקבלה לא נשמר בעבר. יש לצרף אותה מחדש כדי לצפות או להוריד.</p>' : '') + '<div class="expense-record-actions"><button type="button" data-expense-edit="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-pen"></i> עריכת הוצאה</button>' + (hasReceipt ? '<button type="button" data-expense-view="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-eye"></i> צפייה בקבלה</button><button type="button" data-expense-download="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-download"></i> הורדת קבלה</button>' : '') + '<button type="button" class="danger" data-expense-delete="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-trash"></i> מחיקת הוצאה</button></div></div></details>';
+          return '<details class="expense-record" data-expense-id="' + escapeHtml(expense.id) + '"><summary><span class="expense-record-icon"><i class="fa-solid ' + (hasReceipt ? 'fa-receipt' : 'fa-wallet') + '"></i></span><span class="expense-record-title"><strong>' + escapeHtml(expense.note || 'הוצאה') + '</strong><small>' + escapeHtml(parts.subcategory || parts.category) + ' · ' + escapeHtml(expense.date || 'ללא תאריך') + '</small></span><span class="expense-record-price"><b>' + money(expense.amount, expense.currency || 'EUR') + '</b>' + secondaryText + '</span><i class="fa-solid fa-chevron-down expense-record-chevron"></i></summary><div class="expense-record-body"><dl><div><dt>מחיר כולל</dt><dd>' + money(expense.amount, expense.currency || 'EUR') + secondaryText + '</dd></div><div><dt>מטבע</dt><dd>' + escapeHtml(expense.currency || 'EUR') + '</dd></div><div><dt>קטגוריה</dt><dd>' + escapeHtml(expense.category || 'אחר') + '</dd></div><div><dt>תאריך</dt><dd>' + escapeHtml(expense.date || 'לא הוזן') + '</dd></div><div class="wide"><dt>קובץ קבלה</dt><dd class="expense-receipt-name">' + escapeHtml(receiptLabel) + (expense.receiptPending ? '<small> שמור במכשיר · ממתין לסנכרון פרטי</small>' : '') + '</dd></div></dl>' + (!hasReceipt && expense.receiptName ? '<p class="expense-receipt-warning">שם הקובץ הישן נשמר, אך תוכן הקבלה לא נשמר בעבר. יש לצרף אותה מחדש כדי לצפות או להוריד.</p>' : '') + '<div class="expense-record-actions"><button type="button" data-expense-edit="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-pen"></i> עריכת הוצאה</button>' + (hasReceipt ? '<button type="button" data-expense-view="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-eye"></i> צפייה בקבלה</button><button type="button" data-expense-download="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-download"></i> הורדת קבלה</button>' : '') + '<button type="button" class="danger" data-expense-delete="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-trash"></i> מחיקת הוצאה</button></div></div></details>';
         }).join('');
         return '<details class="expense-category-group"><summary><span><i class="fa-solid fa-chevron-down"></i><strong>' + escapeHtml(category) + '</strong><small>' + items.length + ' הוצאות</small></span><b>' + money(categoryLocal, state.localCurrency) + '</b></summary><div class="expense-category-items">' + rows + '</div></details>';
       }).join('');
@@ -487,8 +524,8 @@
     renderBudgetCharts();
   }
   function expenseById(id) { return state.expenses.find(function (expense) { return String(expense.id) === String(id); }); }
-  async function openExpenseReceipt(id) { var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); var url = URL.createObjectURL(blob); var link = document.createElement('a'); link.href = url; link.target = '_blank'; link.rel = 'noopener'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 60000); } catch (error) { toast('לא הצלחנו לפתוח את הקבלה הפרטית. ודא שהחשבון מחובר.'); } }
-  async function downloadExpenseReceipt(id) { var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); var url = URL.createObjectURL(blob); var link = document.createElement('a'); link.href = url; link.download = expense.receiptName || ('receipt-' + expense.id + (String(expense.receiptType).indexOf('pdf') >= 0 ? '.pdf' : '.jpg')); document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url); } catch (error) { toast('לא הצלחנו להוריד את הקבלה הפרטית.'); } }
+  async function openExpenseReceipt(id) { var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData && !expense.receiptLocalKey)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); if (!blob) throw new Error('RECEIPT_NOT_FOUND'); var url = URL.createObjectURL(blob); var link = document.createElement('a'); link.href = url; link.target = '_blank'; link.rel = 'noopener'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 60000); } catch (error) { toast('לא הצלחנו לפתוח את הקבלה. ודא שהחשבון מחובר או נסה מהמכשיר שבו היא נשמרה.'); } }
+  async function downloadExpenseReceipt(id) { var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData && !expense.receiptLocalKey)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); if (!blob) throw new Error('RECEIPT_NOT_FOUND'); var url = URL.createObjectURL(blob); var link = document.createElement('a'); link.href = url; link.download = expense.receiptName || ('receipt-' + expense.id + (String(expense.receiptType).indexOf('pdf') >= 0 ? '.pdf' : '.jpg')); document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url); } catch (error) { toast('לא הצלחנו להוריד את הקבלה. נסה מהמכשיר שבו היא נשמרה.'); } }
   function editExpense(id) { var expense = expenseById(id); var form = document.querySelector('[data-receipt-form]'); if (!expense || !form) return; form.dataset.editingId = String(expense.id); form.amount.value = expense.amount || ''; form.currency.value = expense.currency || state.localCurrency; form.category.value = expense.category || 'אחר'; form.date.value = expense.date || localDateValue(); form.note.value = expense.note || ''; form.hidden = false; var status = document.querySelector('[data-receipt-status]'); if (status) status.textContent = expense.receiptName ? 'הקבלה הקיימת תישמר, אלא אם תצלם או תעלה קובץ חדש.' : 'ערוך את הפרטים ושמור את ההוצאה.'; form.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   async function deleteExpense(id) { var expense = expenseById(id); if (!expense || !window.confirm('למחוק את ההוצאה ואת הקבלה המצורפת?')) return; try { await removePrivateReceipt(expense); } catch (error) { return toast('מחיקת הקבלה מהאחסון הפרטי נכשלה. נסה שוב.'); } state.expenses = state.expenses.filter(function (item) { return String(item.id) !== String(id); }); writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); renderBudgetColumns(); renderSummary(); toast('ההוצאה והקבלה נמחקו.'); }
 
@@ -593,6 +630,8 @@
     injectCurrencyCards(); createBudgetTools(); createCurrencyConverter(); createMemoriesSection(); setupCollapsibleSections();
     loadRate();
     migrateInlineReceipts();
+    syncPendingReceipts();
+    window.addEventListener('online', syncPendingReceipts);
   }
   init();
 })();
