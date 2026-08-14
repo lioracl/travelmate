@@ -26,7 +26,7 @@
     button.type = 'button';
     button.className = 'security-center-launcher';
     button.dataset.securityOpen = '';
-    button.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i><span class="tip">הגדרות</span>';
+    button.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i><span class="security-launcher-label">הגדרות</span>';
     button.setAttribute('aria-label', 'פתיחת הגדרות');
     var sidebar = document.querySelector(document.body.classList.contains('home-page') ? '.home-sidebar' : '.sidebar');
     if (!sidebar) return document.body.appendChild(button);

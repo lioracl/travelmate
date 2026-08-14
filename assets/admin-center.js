@@ -74,13 +74,24 @@
 
   function addLauncher() {
     var preferences = document.querySelector('.security-preferences .settings-list');
-    if (!preferences || preferences.querySelector('[data-admin-open]')) return;
-    var row = document.createElement('button');
-    row.type = 'button';
-    row.className = 'settings-row admin-settings-row';
-    row.dataset.adminOpen = '';
-    row.innerHTML = '<i class="fa-solid fa-user-shield"></i><span><strong>מרכז מנהל</strong><small>משתמשים, הרשאות, הגדרות מערכת ויומן פעולות</small></span><b>פתיחה <i class="fa-solid fa-chevron-left"></i></b>';
-    preferences.appendChild(row);
+    if (preferences && !preferences.querySelector('[data-admin-open="settings"]')) {
+      var row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'settings-row admin-settings-row';
+      row.dataset.adminOpen = 'settings';
+      row.innerHTML = '<i class="fa-solid fa-user-shield"></i><span><strong>מרכז מנהל</strong><small>משתמשים, הרשאות, הגדרות מערכת ויומן פעולות</small></span><b>פתיחה <i class="fa-solid fa-chevron-left"></i></b>';
+      preferences.appendChild(row);
+    }
+    var sidebar = document.querySelector(document.body.classList.contains('home-page') ? '.home-sidebar' : '.sidebar');
+    if (!sidebar || sidebar.querySelector('[data-admin-open="sidebar"]')) return;
+    var launcher = document.createElement('button');
+    launcher.type = 'button';
+    launcher.className = 'admin-center-launcher';
+    launcher.dataset.adminOpen = 'sidebar';
+    launcher.setAttribute('aria-label', 'פתיחת מרכז המנהל');
+    launcher.innerHTML = '<i class="fa-solid fa-user-shield" aria-hidden="true"></i><span>מרכז מנהל</span>';
+    var settingsButton = sidebar.querySelector(':scope > [data-security-open]');
+    sidebar.insertBefore(launcher, settingsButton || sidebar.querySelector(':scope > .trip-logout') || null);
   }
 
   function formatDate(value) {
@@ -88,13 +99,15 @@
     try { return new Intl.DateTimeFormat('he-IL', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value)); } catch (_) { return value; }
   }
 
-  function userRows() {
-    return state.users.map(function (user) {
+  function userRows(query) {
+    var normalized = String(query || '').trim().toLowerCase();
+    var users = normalized ? state.users.filter(function (user) { return String(user.email || '').toLowerCase().indexOf(normalized) >= 0 || String(user.id || '').toLowerCase().indexOf(normalized) >= 0 || String(user.role || '').toLowerCase().indexOf(normalized) >= 0; }) : state.users;
+    return users.map(function (user) {
       var disabled = user.bannedUntil && new Date(user.bannedUntil) > new Date();
       var roleOptions = state.role === 'super_admin' && user.role !== 'super_admin'
         ? '<select data-admin-role data-user-id="' + escapeHtml(user.id) + '"><option value="user"' + (user.role === 'user' ? ' selected' : '') + '>משתמש</option><option value="admin"' + (user.role === 'admin' ? ' selected' : '') + '>מנהל</option></select>'
         : '<span class="admin-role">' + (user.role === 'super_admin' ? 'מנהל ראשי' : user.role === 'admin' ? 'מנהל' : 'משתמש') + '</span>';
-      return '<article class="admin-user-card"><span class="admin-user-avatar"><i class="fa-solid fa-user"></i></span><div><strong>' + escapeHtml(user.email || 'ללא כתובת') + '</strong><small>כניסה אחרונה: ' + escapeHtml(formatDate(user.lastSignInAt)) + '</small><code>' + escapeHtml(user.id) + '</code></div>' + roleOptions + '<button type="button" class="' + (disabled ? 'enable' : 'disable') + '" data-admin-toggle-user data-user-id="' + escapeHtml(user.id) + '" data-enabled="' + String(disabled) + '">' + (disabled ? 'שחרור משתמש' : 'חסימת משתמש') + '</button></article>';
+      return '<article class="admin-user-card"><span class="admin-user-avatar"><i class="fa-solid fa-user"></i></span><div><strong>' + escapeHtml(user.email || 'ללא כתובת') + '</strong><small>כניסה אחרונה: ' + escapeHtml(formatDate(user.lastSignInAt)) + '</small><code>' + escapeHtml(user.id) + '</code></div>' + roleOptions + '<div class="admin-user-actions"><button type="button" data-admin-copy-user data-user-email="' + escapeHtml(user.email || '') + '" data-user-id="' + escapeHtml(user.id) + '"><i class="fa-regular fa-copy"></i><span>העתקה</span></button><button type="button" class="' + (disabled ? 'enable' : 'disable') + '" data-admin-toggle-user data-user-id="' + escapeHtml(user.id) + '" data-enabled="' + String(disabled) + '">' + (disabled ? 'שחרור משתמש' : 'חסימת משתמש') + '</button></div></article>';
     }).join('');
   }
 
@@ -104,7 +117,8 @@
     try {
       var data = await invoke('list-users');
       state.users = data.users || [];
-      host.innerHTML = '<section class="admin-summary"><div><strong>' + state.users.length + '</strong><span>משתמשים בעמוד</span></div><div><strong>' + state.users.filter(function (user) { return user.role !== 'user'; }).length + '</strong><span>מנהלים</span></div></section><section class="admin-users">' + userRows() + '</section>';
+      var blocked = state.users.filter(function (user) { return user.bannedUntil && new Date(user.bannedUntil) > new Date(); }).length;
+      host.innerHTML = '<section class="admin-summary"><div><strong>' + state.users.length + '</strong><span>משתמשים</span></div><div><strong>' + state.users.filter(function (user) { return user.role !== 'user'; }).length + '</strong><span>מנהלים</span></div><div><strong>' + blocked + '</strong><span>חסומים</span></div></section><div class="admin-toolbar"><label><i class="fa-solid fa-magnifying-glass"></i><input type="search" data-admin-user-search placeholder="חיפוש לפי אימייל, מזהה או תפקיד"></label><button type="button" data-admin-refresh><i class="fa-solid fa-rotate"></i> רענון</button></div><section class="admin-users">' + userRows() + '</section>';
     } catch (error) { renderError(host, error); }
   }
 
@@ -126,7 +140,8 @@
     try {
       var data = await invoke('audit');
       var events = data.events || [];
-      host.innerHTML = events.length ? '<section class="admin-audit">' + events.map(function (event) { return '<article><i class="fa-solid fa-shield"></i><div><strong>' + escapeHtml(event.action) + '</strong><small>' + escapeHtml(formatDate(event.created_at)) + (event.target_user_id ? ' · יעד ' + escapeHtml(event.target_user_id) : '') + '</small></div></article>'; }).join('') + '</section>' : '<div class="admin-empty">עדיין לא נרשמו פעולות מנהל.</div>';
+      host.innerHTML = events.length ? '<div class="admin-toolbar"><span><strong>' + events.length + '</strong> פעולות אחרונות</span><button type="button" data-admin-export-audit><i class="fa-solid fa-file-csv"></i> ייצוא CSV</button></div><section class="admin-audit">' + events.map(function (event) { return '<article><i class="fa-solid fa-shield"></i><div><strong>' + escapeHtml(event.action) + '</strong><small>' + escapeHtml(formatDate(event.created_at)) + (event.target_user_id ? ' · יעד ' + escapeHtml(event.target_user_id) : '') + '</small></div></article>'; }).join('') + '</section>' : '<div class="admin-empty">עדיין לא נרשמו פעולות מנהל.</div>';
+      host.dataset.auditEvents = JSON.stringify(events);
     } catch (error) { renderError(host, error); }
   }
 
@@ -137,9 +152,13 @@
 
   function openAdmin() {
     var modal = document.querySelector('[data-admin-dialog]');
-    modal.hidden = false;
-    document.body.classList.add('admin-center-open');
-    renderUsers();
+    if (window.TravelMateSettings && window.TravelMateSettings.close) window.TravelMateSettings.close();
+    document.body.classList.remove('mobile-menu-open');
+    requestAnimationFrame(function () {
+      modal.hidden = false;
+      document.body.classList.add('admin-center-open');
+      renderUsers();
+    });
   }
 
   function closeAdmin() {
@@ -176,7 +195,29 @@
       if (!confirm(toggle.dataset.enabled === 'true' ? 'לשחרר את המשתמש ולאפשר כניסה מחדש?' : 'לחסום את המשתמש מכל המכשירים?')) return;
       status('מעדכן את המשתמש…');
       try { await invoke('update-user', { userId: toggle.dataset.userId, enabled: toggle.dataset.enabled === 'true' }); status('המשתמש עודכן.'); renderUsers(); } catch (error) { status(error.message, true); }
+      return;
     }
+    if (event.target.closest('[data-admin-refresh]')) { renderUsers(); return; }
+    var copyUser = event.target.closest('[data-admin-copy-user]');
+    if (copyUser) {
+      var details = (copyUser.dataset.userEmail || 'ללא אימייל') + '\n' + copyUser.dataset.userId;
+      if (navigator.clipboard) await navigator.clipboard.writeText(details);
+      status('פרטי המשתמש הועתקו.');
+      return;
+    }
+    if (event.target.closest('[data-admin-export-audit]')) {
+      var host = document.querySelector('[data-admin-content]');
+      var events = JSON.parse(host.dataset.auditEvents || '[]');
+      var csv = '\uFEFFפעולה,תאריך,משתמש יעד\n' + events.map(function (item) { return [item.action, item.created_at, item.target_user_id || ''].map(function (value) { return '"' + String(value || '').replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+      var csvUrl = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      var link = document.createElement('a'); link.href = csvUrl; link.download = 'travelmate-admin-audit.csv'; document.body.appendChild(link); link.click(); link.remove(); setTimeout(function () { URL.revokeObjectURL(csvUrl); }, 60000);
+    }
+  });
+
+  document.addEventListener('input', function (event) {
+    if (!event.target.matches('[data-admin-user-search]')) return;
+    var list = document.querySelector('.admin-users');
+    if (list) list.innerHTML = userRows(event.target.value) || '<div class="admin-empty">לא נמצאו משתמשים תואמים.</div>';
   });
 
   document.addEventListener('change', async function (event) {
