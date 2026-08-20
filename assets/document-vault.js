@@ -43,7 +43,7 @@
       '<div class="vault-auth" data-vault-auth><div class="vault-auth-copy"><i class="fa-solid fa-user-lock"></i><div><strong>התחברות לכספת</strong><span>החשבון מגן על המסמכים ומאפשר גישה גם מהטלפון.</span></div></div><form data-vault-auth-form><input name="email" type="email" autocomplete="email" placeholder="כתובת דוא״ל" required><input name="password" type="password" autocomplete="current-password" minlength="8" placeholder="סיסמת חשבון · לפחות 8 תווים" required><button type="submit" data-auth-signin>כניסה</button><button type="button" class="secondary" data-auth-signup>יצירת חשבון</button><button type="button" class="secondary" data-auth-resend>לא קיבלתי מייל · שלח שוב</button></form></div>' +
       '<div class="vault-session" data-vault-session hidden><div><i class="fa-solid fa-circle-check"></i><span>מחובר/ת בתור <strong data-vault-email></strong></span></div><button type="button" data-vault-signout>יציאה</button></div>' +
       '<div class="vault-unlock" data-vault-unlock hidden><label><span>סיסמת הצפנת הכספת</span><span class="vault-passphrase-control"><input data-vault-passphrase type="password" autocomplete="off" minlength="10" placeholder="אותה סיסמה שבה הצפנת את הקבצים"><button type="button" data-vault-toggle-passphrase aria-label="הצגת סיסמת הכספת"><i class="fa-solid fa-eye"></i></button></span></label><small><i class="fa-solid fa-triangle-exclamation"></i> לפתיחת מסמך יש להזין את אותה סיסמת כספת ששימשה בהעלאה. היא נפרדת מסיסמת החשבון ואינה נשמרת.</small></div>' +
-      '<form class="vault-upload" data-vault-form hidden><select name="category" aria-label="קטגוריה"><option>טיסות</option><option>לינה</option><option>ביטוח</option><option>תחבורה</option><option>כרטיסים</option><option>דרכון ואשרות</option><option>אחר</option></select><input name="note" type="text" maxlength="180" placeholder="הערה אופציונלית — ללא מספרי דרכון"><button class="vault-upload-button" type="submit"><i class="fa-solid fa-lock"></i> הצפנה ושמירה</button><label class="vault-drop" data-vault-drop><input name="files" type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.txt"><span><i class="fa-solid fa-file-shield"></i><strong>גרור קבצים לכאן או לחץ לבחירה</strong><small>PDF, תמונות וקובצי Office · עד 25MB לקובץ</small></span></label></form>' +
+      '<form class="vault-upload" data-vault-form hidden><select name="category" aria-label="קטגוריה"><option>טיסות</option><option>לינה</option><option>ביטוח</option><option>תחבורה</option><option>כרטיסים</option><option>דרכון ואשרות</option><option>אחר</option></select><input name="note" type="text" maxlength="180" placeholder="הערה אופציונלית — ללא מספרי דרכון"><button class="vault-upload-button" type="submit"><i class="fa-solid fa-lock"></i> הצפנה ושמירה</button><label class="vault-drop" data-vault-drop><input name="files" type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt"><span><i class="fa-solid fa-file-shield"></i><strong>גרור קבצים לכאן או לחץ לבחירה</strong><small>PDF, תמונות וקובצי Office · עד 25MB לקובץ</small></span></label></form>' +
       '<p class="vault-status" data-vault-status aria-live="polite"></p><div class="vault-summary" data-vault-summary hidden><strong data-vault-count>0 מסמכים</strong><div><small data-vault-size>0 MB</small><div class="vault-storage"><i data-vault-storage style="width:0%"></i></div></div></div><div class="vault-list" data-vault-list></div>';
   }
 
@@ -246,14 +246,22 @@
       uploadButton.disabled = true;
       var uploadedCount = 0;
       try {
+        // Android document providers can revoke a temporary File handle while an
+        // authentication request is in flight. Copy every selected file into
+        // memory immediately, before waiting for Supabase or MFA.
+        setStatus('מכין/ה את הקבצים להצפנה…');
+        var preparedFiles = [];
+        for (var prepareIndex = 0; prepareIndex < files.length; prepareIndex += 1) {
+          preparedFiles.push({ file: files[prepareIndex], bytes: await readSelectedFile(files[prepareIndex]) });
+        }
         var storageAccess = await requirePrivateStorageAccess();
         currentUser = storageAccess.session.user;
         var selectedCategory = form.elements.category.value;
         var selectedNote = form.elements.note.value.trim();
-        for (var index = 0; index < files.length; index += 1) {
-          var file = files[index];
-          setStatus('מצפין/ה ומעלה ' + (index + 1) + ' מתוך ' + files.length + '…');
-          var encrypted = await encryptFile(file, passphrase);
+        for (var index = 0; index < preparedFiles.length; index += 1) {
+          var file = preparedFiles[index].file;
+          setStatus('מצפין/ה ומעלה ' + (index + 1) + ' מתוך ' + preparedFiles.length + '…');
+          var encrypted = await encryptBytes(preparedFiles[index].bytes, passphrase);
           var safeName = sanitizeFileName(file.name);
           var objectName = currentUser.id + '/' + encodeURIComponent(tripId) + '/' + secureObjectId() + '-' + safeName + '.vault';
           var uploadResult = await client.storage.from(bucket).upload(objectName, encrypted.blob, {
@@ -340,16 +348,27 @@
       preview.setAttribute('aria-label', 'תצוגת המסמך ' + record.file_name);
       preview.innerHTML = '<article class="vault-preview"><header><div><span>תצוגה מאובטחת</span><h2>' + escapeHtml(record.file_name) + '</h2><p>' + escapeHtml(record.category) + ' · ' + formatSize(record.file_size) + '</p></div><button type="button" data-vault-preview-close aria-label="סגירת המסמך"><i class="fa-solid fa-xmark"></i></button></header><div class="vault-preview-body" data-vault-preview-body></div><footer><small><i class="fa-solid fa-shield-halved"></i> הקובץ פוענח רק בזיכרון המכשיר ולא נשלח לשירות חיצוני.</small><button type="button" data-vault-preview-download><i class="fa-solid fa-download"></i> הורדה למכשיר</button></footer></article>';
       var body = preview.querySelector('[data-vault-preview-body]');
+      var closeButton = preview.querySelector('[data-vault-preview-close]');
+      var previouslyFocused = document.activeElement;
 
       function closePreview() {
+        if (preview.dataset.closed === 'true') return;
+        preview.dataset.closed = 'true';
         URL.revokeObjectURL(objectUrl);
+        document.body.classList.remove('vault-preview-open');
         preview.remove();
+        if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
       }
       preview._closePreview = closePreview;
-      preview.querySelector('[data-vault-preview-close]').addEventListener('click', closePreview);
+      closeButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        closePreview();
+      });
       preview.querySelector('[data-vault-preview-download]').addEventListener('click', function () { downloadBlob(blob, record.file_name); });
       preview.addEventListener('click', function (event) { if (event.target === preview) closePreview(); });
       preview.addEventListener('keydown', function (event) { if (event.key === 'Escape') closePreview(); });
+      document.body.classList.add('vault-preview-open');
       document.body.appendChild(preview);
 
       if (type.indexOf('image/') === 0) {
@@ -367,7 +386,7 @@
         body.innerHTML = '<div class="vault-preview-unavailable"><i class="fa-solid fa-file-arrow-down"></i><strong>הקובץ פוענח בהצלחה</strong><p>הדפדפן אינו מציג קובץ מסוג זה בתוך האפליקציה. לחץ על „הורדה למכשיר” כדי לפתוח אותו באפליקציה המתאימה.</p></div>';
       }
 
-      preview.querySelector('[data-vault-preview-close]').focus();
+      if (preview.isConnected) closeButton.focus();
     }
 
     async function renderPdfPreview(blob, body) {
@@ -484,11 +503,25 @@
     return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: PBKDF2_ITERATIONS, hash: 'SHA-256' }, material, { name: 'AES-GCM', length: 256 }, false, [usage]);
   }
 
-  async function encryptFile(file, passphrase) {
+  async function readSelectedFile(file) {
+    try {
+      return await file.arrayBuffer();
+    } catch (error) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function () { resolve(reader.result); };
+        reader.onerror = function () { reject(reader.error || error); };
+        reader.onabort = function () { reject(new Error('FILE_SELECTION_ABORTED')); };
+        try { reader.readAsArrayBuffer(file); } catch (fallbackError) { reject(fallbackError); }
+      });
+    }
+  }
+
+  async function encryptBytes(bytes, passphrase) {
     var salt = crypto.getRandomValues(new Uint8Array(16));
     var iv = crypto.getRandomValues(new Uint8Array(12));
     var key = await deriveKey(passphrase, salt, 'encrypt');
-    var encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, await file.arrayBuffer());
+    var encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, bytes);
     return { blob: new Blob([encrypted], { type: 'application/octet-stream' }), salt: salt, iv: iv };
   }
 
@@ -532,7 +565,7 @@
     bytes[8] = (bytes[8] & 63) | 128;
     return Array.from(bytes, function (byte) { return byte.toString(16).padStart(2, '0'); }).join('');
   }
-  function storageErrorMessage(error) { var message = String(error && (error.message || error.code) || ''); if (/MFA_REQUIRED/i.test(message)) return 'כדי לגשת למסמכים אישיים יש להשלים אימות דו־שלבי. פתח את ההגדרות, השלם אימות ונסה שוב.'; if (/STORAGE_SIGN_IN_REQUIRED|JWT|session/i.test(message)) return 'ההתחברות פגה. התחבר מחדש ולאחר מכן נסה להעלות שוב.'; if (/STORAGE_CLOUD_UNAVAILABLE/i.test(message)) return 'שירות הענן עדיין לא נטען. רענן את האפליקציה ונסה שוב.'; if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/mime|content.?type/i.test(message)) return 'סוג הקובץ אינו מורשה עדיין באחסון. הפעל את עדכון ההעלאות ב־Supabase ונסה שוב.'; if (/row-level security|unauthorized|permission|403/i.test(message)) return 'האחסון דחה את ההרשאה. השלם אימות דו־שלבי או התחבר מחדש ונסה שוב.'; if (/network|fetch|timeout/i.test(message)) return 'החיבור לענן נכשל. בדוק את הרשת ונסה שוב.'; return 'הפעולה מול האחסון נכשלה: ' + (message || 'נסה שוב.'); }
+  function storageErrorMessage(error) { var message = String(error && (error.message || error.code || error.name) || ''); if (/requested file|directory could not be found|NotFoundError|FILE_SELECTION_ABORTED/i.test(message)) return 'הקובץ שבחרת לא היה זמין לקריאה. בחר אותו שוב מתוך „קבצים” או „הורדות” במכשיר.'; if (/MFA_REQUIRED/i.test(message)) return 'כדי לגשת למסמכים אישיים יש להשלים אימות דו־שלבי. פתח את ההגדרות, השלם אימות ונסה שוב.'; if (/STORAGE_SIGN_IN_REQUIRED|JWT|session/i.test(message)) return 'ההתחברות פגה. התחבר מחדש ולאחר מכן נסה להעלות שוב.'; if (/STORAGE_CLOUD_UNAVAILABLE/i.test(message)) return 'שירות הענן עדיין לא נטען. רענן את האפליקציה ונסה שוב.'; if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/mime|content.?type/i.test(message)) return 'סוג הקובץ אינו מורשה עדיין באחסון. הפעל את עדכון ההעלאות ב־Supabase ונסה שוב.'; if (/row-level security|unauthorized|permission|403/i.test(message)) return 'האחסון דחה את ההרשאה. השלם אימות דו־שלבי או התחבר מחדש ונסה שוב.'; if (/network|fetch|timeout/i.test(message)) return 'החיבור לענן נכשל. בדוק את הרשת ונסה שוב.'; return 'הפעולה מול האחסון נכשלה: ' + (message || 'נסה שוב.'); }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
