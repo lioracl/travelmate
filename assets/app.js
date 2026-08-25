@@ -1,19 +1,19 @@
 var appScript=document.currentScript;
 (function(){
-  var version='20260825-8',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
-  var structureStyles=['travel-services.css','trip-experience.css','transport-planner.css','collaboration.css','chat-place-sharing.css','place-directions.css','activity-contrast.css','about.css','contrast-core.css'];
+  var version='20260825-9',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
+  var structureStyles=['travel-services.css','trip-experience.css','transport-planner.css','collaboration.css','chat-place-sharing.css','place-directions.css','activity-contrast.css','about.css'];
   var structureScripts=['travel-services.js','trip-experience.js','transport-planner.js','place-directions.js','collaboration.js','about.js'];
   var features={
-    places:{styles:['place-planner.css','lodging-manager.css','place-auto-fill.css','place-directions.css','place-sharing.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js','place-sharing.js']},
-    plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','place-directions.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:['auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
-    documents:{styles:['document-vault.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:[]},
-    budget:{styles:['trip-experience.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:['trip-experience.js']},
-    memories:{styles:['trip-experience.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:['trip-experience.js']},
-    summary:{styles:['trip-experience.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:['trip-experience.js']},
-    group:{styles:['collaboration.css','chat-place-sharing.css','place-directions.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:['place-directions.js','collaboration.js']},
-    transport:{styles:['transport-planner.css','travel-services.css','place-directions.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:['travel-services.js','transport-planner.js','place-directions.js']},
-    getaways:{styles:['travel-services.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:['travel-services.js','getaway-fix.js']},
-    about:{styles:['about.css','contrast-view.css','contrast-detail.css','contrast-final.css'],scripts:['about.js']}
+    places:{styles:['place-planner.css','lodging-manager.css','place-auto-fill.css','place-directions.css','place-sharing.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js','place-sharing.js']},
+    plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','place-directions.css'],scripts:['auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
+    documents:{styles:['document-vault.css'],scripts:[]},
+    budget:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
+    memories:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
+    summary:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
+    group:{styles:['collaboration.css','chat-place-sharing.css','place-directions.css'],scripts:['place-directions.js','collaboration.js']},
+    transport:{styles:['transport-planner.css','travel-services.css','place-directions.css'],scripts:['travel-services.js','transport-planner.js','place-directions.js']},
+    getaways:{styles:['travel-services.css'],scripts:['travel-services.js','getaway-fix.js']},
+    about:{styles:['about.css'],scripts:['about.js']}
   };
   function assetUrl(file){return new URL(file,appScript.src).href+'?v='+version}
   function loadStyle(file){
