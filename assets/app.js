@@ -1,11 +1,11 @@
 var appScript=document.currentScript;
 (function(){
-  var version='20260825-1',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
+  var version='20260825-2',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
   var structureStyles=['travel-services.css','trip-experience.css','transport-planner.css','collaboration.css','chat-place-sharing.css','place-directions.css','activity-contrast.css','about.css'];
   var structureScripts=['travel-services.js','trip-experience.js','transport-planner.js','place-directions.js','collaboration.js','about.js'];
   var features={
-    places:{styles:['place-planner.css','place-auto-fill.css','place-directions.css','place-sharing.css'],scripts:['place-auto-fill.js','place-directions.js','place-sharing.js']},
-    plan:{styles:['auto-planner.css','place-planner.css','place-auto-fill.css','place-directions.css'],scripts:['auto-planner.js','place-auto-fill.js','place-directions.js']},
+    places:{styles:['place-planner.css','lodging-manager.css','place-auto-fill.css','place-directions.css','place-sharing.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js','place-sharing.js']},
+    plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','place-directions.css'],scripts:['auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
     documents:{styles:['document-vault.css'],scripts:[]},
     budget:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
     memories:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
