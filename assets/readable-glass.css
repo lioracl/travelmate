@@ -170,3 +170,122 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     justify-self:center!important
   }
 }
+
+/* 1.50.5 — single, final authority for the mobile trip drawer. */
+@media(max-width:1000px){
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar{
+    --tm-drawer-text:#123f32;
+    --tm-drawer-muted:#49675d;
+    display:flex!important;
+    border:1px solid rgba(44,119,91,.34)!important;
+    border-radius:24px 0 0 24px!important;
+    background:linear-gradient(155deg,rgba(248,253,250,.99),rgba(220,239,230,.985))!important;
+    color:var(--tm-drawer-text)!important;
+    -webkit-text-fill-color:var(--tm-drawer-text)!important;
+    box-shadow:-18px 0 54px rgba(3,43,31,.28)!important;
+    text-shadow:none!important;
+    opacity:1!important
+  }
+  html[dir="ltr"] body.tm-new-design:not(.home-page) .workspace>.sidebar{
+    border-radius:0 24px 24px 0!important;
+    box-shadow:18px 0 54px rgba(3,43,31,.28)!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar :where(
+    .logo,.back,.destination-mini,a,button,.tip,strong,small,span,i
+  ){
+    color:var(--tm-drawer-text)!important;
+    -webkit-text-fill-color:var(--tm-drawer-text)!important;
+    -webkit-text-stroke:0!important;
+    text-shadow:none!important;
+    filter:none!important;
+    opacity:1!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar .destination-mini{
+    border:1px solid rgba(39,116,87,.32)!important;
+    background:rgba(255,255,255,.62)!important;
+    color:var(--tm-drawer-text)!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar .destination-mini small{
+    color:var(--tm-drawer-muted)!important;
+    -webkit-text-fill-color:var(--tm-drawer-muted)!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar nav{
+    scrollbar-color:rgba(31,108,79,.38) transparent!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about),
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
+    border:1px solid transparent!important;
+    background:transparent!important;
+    color:var(--tm-drawer-text)!important;
+    -webkit-text-fill-color:var(--tm-drawer-text)!important;
+    box-shadow:none!important;
+    opacity:1!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about) :is(i,.tip),
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button) :is(i,.tip){
+    color:inherit!important;
+    -webkit-text-fill-color:currentColor!important;
+    opacity:1!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about):is(:hover,:focus-visible){
+    border-color:rgba(34,111,82,.2)!important;
+    background:rgba(195,226,212,.68)!important;
+    color:#0b503a!important;
+    -webkit-text-fill-color:#0b503a!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar nav a:is(.active,[aria-current="page"]){
+    border-color:#0b7654!important;
+    background:linear-gradient(135deg,#16805d,#0b6248)!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+    box-shadow:0 8px 20px rgba(7,78,55,.2)!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar nav a:is(.active,[aria-current="page"]) :is(i,.tip,span){
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar>.admin-center-launcher,
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar>.security-center-launcher{
+    width:calc(100% - 8px)!important;
+    min-height:48px!important;
+    margin:5px 4px 0!important;
+    padding:0 15px!important;
+    justify-content:flex-start!important;
+    gap:12px!important;
+    border:1px solid rgba(30,108,79,.3)!important;
+    border-radius:14px!important;
+    background:rgba(244,252,248,.88)!important;
+    color:#0d503c!important;
+    -webkit-text-fill-color:#0d503c!important;
+    box-shadow:0 5px 14px rgba(9,67,49,.1)!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar>.admin-center-launcher :is(i,span),
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar>.security-center-launcher :is(i,span){
+    color:#0d503c!important;
+    -webkit-text-fill-color:#0d503c!important;
+    opacity:1!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar>.trip-logout{
+    width:calc(100% - 8px)!important;
+    min-height:48px!important;
+    margin:7px 4px 0!important;
+    padding:0 15px!important;
+    display:flex!important;
+    justify-content:flex-start!important;
+    gap:12px!important;
+    border:1px solid rgba(173,58,53,.32)!important;
+    border-radius:14px!important;
+    background:rgba(255,239,237,.92)!important;
+    color:#a52f29!important;
+    -webkit-text-fill-color:#a52f29!important;
+    box-shadow:none!important
+  }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar>.trip-logout :is(i,.tip,span){
+    position:static!important;
+    color:#a52f29!important;
+    -webkit-text-fill-color:#a52f29!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transform:none!important
+  }
+}
