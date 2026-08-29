@@ -395,7 +395,7 @@
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-labelledby', 'cloud-account-title');
-    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message>התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
+    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message role="status" aria-live="polite" data-message-state="info">התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><div class="cloud-auth-secondary" aria-label="אפשרויות התחברות נוספות"><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></div></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
     panel.classList.add('cloud-account-split');
     panel.insertAdjacentHTML('afterbegin', '<button class="cloud-account-close" type="button" data-cloud-account-close aria-label="סגירת חלון ההתחברות"><i class="fa-solid fa-xmark"></i></button>');
     backdrop.appendChild(panel);
@@ -440,8 +440,11 @@
   });
 
   function setMessage(value, error) {
+    var state = error ? 'error' : /התקבלה|נשלח|אושר|מסונכרן|הכול מסונכרן/.test(value) ? 'success' : 'info';
     message.textContent = value;
     message.classList.toggle('error', Boolean(error));
+    message.dataset.messageState = state;
+    message.setAttribute('role', error ? 'alert' : 'status');
   }
 
   function authMessage(error) {
@@ -450,7 +453,7 @@
     if (/email address not authorized/i.test(value)) return 'Supabase אינו מורשה לשלוח לכתובת הזו. יש להגדיר SMTP פרטי או להשתמש בכתובת של חבר צוות הפרויקט.';
     if (/rate limit|too many requests|over_email_send_rate_limit/i.test(value)) return 'הגעת למגבלת השליחה של Supabase. המתן כשעה ונסה שוב, או הגדר SMTP פרטי.';
     if (/invalid login/i.test(value)) return 'כתובת הדוא״ל או הסיסמה אינן נכונות. אם טרם אימתת את החשבון, שלח שוב את מייל האימות.';
-    return 'הפעולה נכשלה: ' + (value || 'נסה שוב בעוד רגע.');
+    return 'לא הצלחנו להשלים את הפעולה. נסו שוב בעוד רגע.';
   }
 
   function setSession(session) {

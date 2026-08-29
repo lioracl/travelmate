@@ -281,6 +281,12 @@
     host.dataset.securityCaptcha = '';
     host.className = 'security-captcha';
     form.insertBefore(host, form.querySelector('.cloud-login-submit'));
+    if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+      host.classList.add('security-captcha-development');
+      host.setAttribute('role', 'status');
+      host.innerHTML = '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>בדיקת האבטחה זמינה באתר המאובטח ולא בתצוגה המקומית.</span>';
+      return;
+    }
     function render() {
       if (!window.turnstile) return;
       window.turnstile.render(host, { sitekey: config.turnstileSiteKey, theme: 'light', callback: function (token) { captchaToken = token; } });

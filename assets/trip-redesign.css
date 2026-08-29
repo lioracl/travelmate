@@ -28,10 +28,10 @@ body:not(.home-page) .hero .status{border:0;border-radius:0;background:transpare
 body:not(.home-page) .hero-back,body:not(.home-page) .hero .share{border:1px solid var(--trip-line);border-radius:0;background:rgba(5,20,16,.48);color:#fff;box-shadow:none}
 body:not(.home-page) .hero-country-flag{top:50%;left:calc(50% + 145px);width:auto;height:auto;border:0;border-radius:0;background:transparent;box-shadow:none;font-size:36px;transform:translateY(34px)}
 body:not(.home-page) .quick-grid{margin:18px 0;gap:14px}
-body:not(.home-page) .card,body:not(.home-page) .panel,body:not(.home-page) .module,body:not(.home-page) .plan-card,body:not(.home-page) .place-card,body:not(.home-page) .doc-row,body:not(.home-page) .expense,body:not(.home-page) .tip-card,body:not(.home-page) .nearby,body:not(.home-page) .summary-card,body:not(.home-page) .auto-card,body:not(.home-page) .service-card,body:not(.home-page) .transport-card,body:not(.home-page) .external-resources{border:1px solid var(--trip-line);border-radius:0;background:var(--trip-glass-soft);color:#fff;box-shadow:0 18px 48px rgba(0,0,0,.18);backdrop-filter:blur(16px) saturate(125%)}
+body:not(.home-page) .card,body:not(.home-page) .panel,body:not(.home-page) .module,body:not(.home-page) .plan-card,body:not(.home-page) .place-card,body:not(.home-page) .doc-row,body:not(.home-page) .expense,body:not(.home-page) .tip-card,body:not(.home-page) .nearby,body:not(.home-page) .summary-card,body:not(.home-page) .auto-card,body:not(.home-page) .service-card,body:not(.home-page) .transport-card,body:not(.home-page) .external-resources{border:1px solid var(--tm-card-border);border-radius:var(--tm-card-corner,var(--tm-card-radius));background:var(--tm-card-surface,var(--tm-card-bg));color:var(--tm-card-text);box-shadow:var(--tm-card-elevation,var(--tm-card-shadow));backdrop-filter:var(--tm-card-blur)}
 body:not(.home-page) .section:not(.hero){scroll-margin-top:18px;margin-top:22px;padding:26px;border:1px solid var(--trip-line);border-radius:0;background:var(--trip-glass);box-shadow:0 20px 60px rgba(0,0,0,.2);backdrop-filter:blur(20px) saturate(120%)}
 body:not(.home-page) .section-head h1,body:not(.home-page) .panel h2,body:not(.home-page) .auto-card h3,body:not(.home-page) .service-card h3{color:#fff;font-weight:400}
-body:not(.home-page) .section-head p,body:not(.home-page) .card small,body:not(.home-page) .card span,body:not(.home-page) .module small,body:not(.home-page) .plan-card p,body:not(.home-page) .place-card p,body:not(.home-page) .tip-card p,body:not(.home-page) .doc-row span,body:not(.home-page) .auto-card p,body:not(.home-page) .service-card p{color:rgba(255,255,255,.68)}
+body:not(.home-page) .section-head p,body:not(.home-page) .card small,body:not(.home-page) .card span,body:not(.home-page) .module small,body:not(.home-page) .plan-card p,body:not(.home-page) .place-card p,body:not(.home-page) .tip-card p,body:not(.home-page) .doc-row span,body:not(.home-page) .auto-card p,body:not(.home-page) .service-card p{color:var(--tm-card-secondary)}
 body:not(.home-page) .icon,body:not(.home-page) .mark,body:not(.home-page) .forecast-icon,body:not(.home-page) .weather-top-icon{border-radius:0;background:rgba(14,97,75,.72);color:#fff}
 body:not(.home-page) .pill-btn,body:not(.home-page) .open-map,body:not(.home-page) .panel-head button,body:not(.home-page) .plan-card button,body:not(.home-page) .doc-row button{border-radius:0;border:1px solid var(--trip-line);background:rgba(14,97,75,.78);color:#fff}
 body:not(.home-page) .weather-top-widget{position:relative;z-index:3;margin:0 0 14px;border:1px solid var(--trip-line);border-radius:0;background:rgba(5,20,16,.55);color:#fff;box-shadow:none;backdrop-filter:blur(18px)}
@@ -47,7 +47,7 @@ body:not(.home-page) .weather-live-metrics b{border-radius:0;background:rgba(255
 .trip-logout-dialog{position:fixed;inset:0;z-index:1800;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.62);backdrop-filter:blur(12px)}
 .trip-logout-dialog[hidden]{display:none}.trip-logout-dialog>div{width:min(360px,100%);padding:24px;border:1px solid var(--trip-line);background:rgba(5,20,16,.9);color:#fff;backdrop-filter:blur(20px);text-align:right}.trip-logout-dialog h2{margin:0 0 8px;font-weight:400}.trip-logout-dialog p{margin:0 0 20px;color:rgba(255,255,255,.68)}.trip-logout-actions{display:flex;gap:8px}.trip-logout-actions button{flex:1;min-height:34px;border:1px solid var(--trip-line);border-radius:0;background:rgba(255,255,255,.08);color:#fff}.trip-logout-actions [data-trip-logout-confirm]{border-color:#e40516;background:#e40516}
 @media(max-width:1000px){body:not(.home-page) .sidebar{display:none}body:not(.home-page) .content{margin-right:0;padding:14px}body:not(.home-page) .mobile-header{display:flex}body:not(.home-page) .hero{min-height:380px;padding:34px 20px}body:not(.home-page) .section:not(.hero){padding:20px}}
-@media(max-width:650px){body:not(.home-page) .hero{min-height:340px;align-items:center;justify-content:center;padding:70px 18px 28px}body:not(.home-page) .hero h1{font-size:52px}body:not(.home-page) .hero-country-flag{position:static!important;transform:none;margin-bottom:6px}body:not(.home-page) .quick-grid,body:not(.home-page) .modules{grid-template-columns:1fr}body:not(.home-page) .section:not(.hero){padding:16px}body:not(.home-page) .weather-live-grid{overflow-x:auto;grid-auto-flow:column;grid-auto-columns:minmax(250px,82vw)}}
+@media(max-width:650px){body:not(.home-page) .hero{min-height:270px;align-items:center;justify-content:center;padding:58px 14px 14px}body:not(.home-page) .hero h1{font-size:38px}body:not(.home-page) .hero-country-flag{position:static!important;transform:none;margin-bottom:6px}body:not(.home-page) .quick-grid,body:not(.home-page) .modules{grid-template-columns:1fr}body:not(.home-page) .section:not(.hero){padding:16px}body:not(.home-page) .weather-live-grid{overflow-x:auto;grid-auto-flow:column;grid-auto-columns:minmax(250px,82vw)}}
 
 body:not(.home-page) .custom-hero{align-items:center;justify-content:flex-start;text-align:right;padding:64px 72px}.custom-hero .hero-copy{width:min(680px,70%);margin-left:auto;text-align:right!important}.custom-hero .status{display:none}.custom-hero h1{margin:0 0 12px;font-size:clamp(68px,9vw,118px)}.custom-hero .hero-country-line{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:12px;color:#fff;font:300 clamp(20px,2.4vw,30px) "Rubik",sans-serif}.custom-hero .hero-country-line [data-country-flag]{font-size:1.1em}.custom-hero .hero-back{top:24px;right:28px;padding:6px 0;border:0!important;background:transparent!important;color:#fff;font:300 14px "Rubik",sans-serif;box-shadow:none!important;backdrop-filter:none!important}.custom-hero .share{position:absolute;top:24px;left:28px;width:38px;height:38px;padding:0;display:grid;place-items:center;border:0!important;background:transparent!important;color:#fff;font-size:22px;box-shadow:none!important;backdrop-filter:none!important}.custom-hero .share i{margin:0}@media(max-width:650px){body:not(.home-page) .custom-hero{padding:74px 22px 32px}.custom-hero .hero-copy{width:100%}.custom-hero h1{font-size:58px}.custom-hero .hero-country-line{font-size:19px}.custom-hero .hero-back{right:18px}.custom-hero .share{left:18px}}
 
@@ -159,13 +159,13 @@ body:not(.home-page) :where(
   .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
   .trip-summary-card,.smart-tool-panel,.trip-home-actions a
 ){
-  border:1px solid rgba(255,255,255,.3)!important;
-  border-radius:14px!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.2))!important;
-  color:#414846!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.52)!important;
-  backdrop-filter:blur(22px) saturate(145%)!important;
-  -webkit-backdrop-filter:blur(22px) saturate(145%)!important;
+  border:1px solid var(--tm-card-border)!important;
+  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
+  background:var(--tm-card-surface,var(--tm-card-bg))!important;
+  color:var(--tm-card-text)!important;
+  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
+  backdrop-filter:var(--tm-card-blur)!important;
+  -webkit-backdrop-filter:var(--tm-card-blur)!important;
 }
 body:not(.home-page) :where(
   .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
@@ -174,7 +174,7 @@ body:not(.home-page) :where(
   .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
   .trip-summary-card,.smart-tool-panel,.trip-home-actions a
 ) :where(h1,h2,h3,h4,strong,b,p,span,small,time,label){
-  color:#414846;
+  color:inherit;
 }
 body:not(.home-page) :where(
   .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
@@ -202,31 +202,31 @@ body.tm-new-design{
 }
 body.tm-new-design::before{display:none!important}
 body.tm-new-design :where(.card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,.nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,.external-resources,.planned-activity,.saved-place,.planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,.forecast-day,.resource-link){
-  border:1px solid rgba(255,255,255,.3)!important;
-  border-radius:14px!important;
+  border:1px solid var(--tm-card-border)!important;
+  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
   outline:0!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.2))!important;
-  color:#414846!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.52)!important;
-  backdrop-filter:blur(22px) saturate(145%)!important;
-  -webkit-backdrop-filter:blur(22px) saturate(145%)!important;
+  background:var(--tm-card-surface,var(--tm-card-bg))!important;
+  color:var(--tm-card-text)!important;
+  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
+  backdrop-filter:var(--tm-card-blur)!important;
+  -webkit-backdrop-filter:var(--tm-card-blur)!important;
 }
 body.tm-new-design :where(.card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,.auto-card,.generated-day,.service-card,.day-tab,.day-item,.forecast-day,.resource-link):hover{
-  transform:none!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.62)!important;
+  transform:translateY(-1px)!important;
+  box-shadow:var(--tm-card-shadow-hover)!important;
 }
 body.tm-new-design :where(.icon,.forecast-icon,.day-dot,.avatar-small,.mark){
-  border:1px solid rgba(14,97,75,.16)!important;
-  border-radius:2px!important;
-  background:rgba(255,255,255,.2)!important;
-  color:#0e614b!important;
+  border:1px solid var(--tm-card-border)!important;
+  border-radius:var(--tm-card-radius-compact)!important;
+  background:var(--tm-card-bg-compact)!important;
+  color:var(--tm-card-icon)!important;
   box-shadow:none!important;
 }
 body.tm-new-design :where(input,select,textarea){
-  border:1px solid rgba(14,97,75,.18);
-  border-radius:2px;
-  background:rgba(255,255,255,.72);
-  color:#414846;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:var(--tm-card-radius-control);
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
   box-shadow:none;
 }
 body.tm-new-design :where(.modal,.about-dialog,.weather-live-dialog,.smart-hub-modal){
@@ -238,7 +238,7 @@ body.tm-new-design :where(.modal,.about-dialog,.weather-live-dialog,.smart-hub-m
   backdrop-filter:blur(26px) saturate(140%);
   -webkit-backdrop-filter:blur(26px) saturate(140%);
 }
-body.tm-new-design :where(button,.pill-btn,.mini-btn,.planner-action,.service-link){
+body.tm-new-design :where(button,.pill-btn,.mini-btn,.planner-action,.service-link):not(.maplibregl-map *){
   box-shadow:none!important;
 }
 body.tm-new-design :where(.primary,.create-trip,.service-form button){
@@ -324,7 +324,7 @@ body.tm-new-design[data-trip-view="places"] #places .nearby-panel.place-planner{
 }
 body.tm-new-design[data-trip-view="places"] #places :where(
   h1,h2,h3,h4,p,span,small,strong,b,label,.nearby-status,.place-planner-note
-){
+):not(.nearby-category-drawer *):not(.nearby-map-detail *){
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
 }

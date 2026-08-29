@@ -256,17 +256,17 @@ body.tm-new-design .sidebar .brand-dot i{
   font-size:18px!important
 }
 body.tm-new-design[data-trip-view="overview"] .hero .weather-top-widget{
-  min-height:148px!important;
-  padding:20px!important;
-  display:block!important;
+  min-height:var(--tm-overview-weather-height,78px)!important;
+  padding:14px 16px!important;
+  display:flex!important;
   text-align:right!important
 }
 body.tm-new-design[data-trip-view="overview"] .hero .weather-top-copy{
-  position:absolute!important;
-  top:20px!important;
-  right:62px!important;
-  left:20px!important;
-  display:flex!important;
+  position:static!important;
+  top:auto!important;
+  right:auto!important;
+  left:auto!important;
+  display:grid!important;
   flex-direction:column!important;
   align-items:flex-start!important;
   gap:5px!important;
@@ -285,9 +285,9 @@ body.tm-new-design[data-trip-view="overview"] .hero .weather-top-copy strong{
   line-height:1.25!important
 }
 body.tm-new-design[data-trip-view="overview"] .hero .weather-top-icon{
-  position:absolute!important;
-  top:20px!important;
-  right:20px!important;
+  position:static!important;
+  top:auto!important;
+  right:auto!important;
   left:auto!important;
   width:34px!important;
   height:34px!important;
@@ -295,19 +295,19 @@ body.tm-new-design[data-trip-view="overview"] .hero .weather-top-icon{
   background:transparent!important
 }
 body.tm-new-design[data-trip-view="overview"] .hero .weather-top-temperature{
-  position:absolute!important;
-  left:42px!important;
-  bottom:18px!important;
-  margin:0!important;
-  font-size:30px!important;
+  position:static!important;
+  left:auto!important;
+  bottom:auto!important;
+  margin-inline-start:auto!important;
+  font-size:28px!important;
   line-height:1!important
 }
 body.tm-new-design[data-trip-view="overview"] .hero .weather-top-chevron{
-  position:absolute!important;
-  left:20px!important;
-  bottom:25px!important;
-  font-size:9px!important;
-  transform:rotate(90deg)!important
+  position:static!important;
+  left:auto!important;
+  bottom:auto!important;
+  font-size:10px!important;
+  transform:none!important
 }
 body.tm-new-design .trip-home-actions nav{
   grid-template-columns:repeat(5,minmax(0,1fr))!important;
@@ -337,7 +337,7 @@ body.tm-new-design .trip-home-actions a i{
   body.tm-new-design .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 @media(max-width:520px){
-  body.tm-new-design .trip-home-actions nav{grid-template-columns:1fr!important}
+  body.tm-new-design:not([data-trip-kind="custom"]) .trip-home-actions nav{grid-template-columns:1fr!important}
 }
 
 body.tm-new-design .sidebar>.theme-toggle{display:none!important}
@@ -387,45 +387,41 @@ body.home-page.is-authenticated .trip-card-shell.cloud-trip-card{
 /* Weather card content stays bright and readable over every destination image. */
 body.tm-new-design .hero .weather-top-widget,
 body.tm-new-design .hero .weather-top-widget :where(small,strong,span,i){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  text-shadow:0 1px 10px rgba(0,0,0,.28)!important
+  color:var(--tm-weather-card-text)!important;
+  -webkit-text-fill-color:var(--tm-weather-card-text)!important;
+  text-shadow:none!important
 }
 body.tm-new-design .hero .weather-top-widget>.weather-top-copy,
 body.tm-new-design .hero .weather-top-widget>.weather-top-copy small,
 body.tm-new-design .hero .weather-top-widget>.weather-top-copy strong,
 body.tm-new-design .hero .weather-top-widget>.weather-top-temperature{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
+  color:var(--tm-weather-card-text)!important;
+  -webkit-text-fill-color:var(--tm-weather-card-text)!important;
   opacity:1!important
 }
 body.tm-new-design .hero .weather-top-icon,
 body.tm-new-design .hero .weather-top-icon svg{
-  color:#fff!important
+  color:var(--tm-card-icon)!important
 }
 
 body.tm-new-design #trip-home-actions-title{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
+  color:var(--tm-card-heading)!important;
+  -webkit-text-fill-color:var(--tm-card-heading)!important;
   opacity:1!important;
   text-shadow:0 1px 10px rgba(0,0,0,.28)!important
 }
 
 body.tm-new-design[data-trip-view="overview"] .hero .weather-top-widget{
-  background:linear-gradient(
-    135deg,
-    rgba(255,255,255,.12),
-    rgba(255,255,255,.035)
-  )!important;
-  -webkit-backdrop-filter:blur(18px) saturate(135%)!important;
-  backdrop-filter:blur(18px) saturate(135%)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 10px 28px rgba(0,0,0,.06)!important
+  background:var(--tm-weather-card-bg)!important;
+  -webkit-backdrop-filter:var(--tm-card-blur)!important;
+  backdrop-filter:var(--tm-card-blur)!important;
+  box-shadow:var(--tm-card-shadow)!important
 }
 
 /* Keep all trip-page typography bright over destination photography. */
 body.tm-new-design .content :where(
   h1,h2,h3,h4,h5,h6,p,small,strong,span,label,legend,a,button,li,dt,dd,time
-),
+):not(.maplibregl-map *),
 body.tm-new-design .sidebar :where(a,button,span,small,strong){
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
@@ -624,10 +620,10 @@ body.tm-new-design .auto-place-preview-item.excluded .auto-place-preview-copy{
 
 /* Weather card is the master card for every primary TravelMate surface. */
 :root{
-  --tm-weather-card-background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.035));
-  --tm-weather-card-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 10px 28px rgba(0,0,0,.06);
-  --tm-weather-card-text:#fff;
-  --tm-weather-card-radius:14px;
+  --tm-weather-card-background:linear-gradient(145deg,rgba(253,255,254,.92),rgba(236,246,241,.88));
+  --tm-weather-card-shadow:0 1px 2px rgba(20,45,36,.025),0 8px 22px rgba(20,45,36,.065);
+  --tm-weather-card-text:#20362e;
+  --tm-weather-card-radius:20px;
 }
 html body.tm-new-design[data-trip-view][class] main.content :is(
   .weather-master-card,
@@ -705,7 +701,7 @@ html body :where(
   .icon,.mark,.forecast-icon,.weather-top-icon,.day-dot,.avatar-small,
   .memory-icon,.message-place-pin,.transport-result-icon,.invite-hero-icon,
   [class$="-icon"],[class*="-icon "]
-),
+):not(.maplibregl-map *),
 html body .auto-place-launch>i:first-child,
 html body .auto-place-dialog h3>span,
 html body .auto-place-origins i,
@@ -799,7 +795,7 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.
 
 /* Weather-card buttons: compact glass controls with a clear hover/focus state. */
 html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
-  .nearby-search,.nearby-map-button,[data-nearby-map-search]
+  .nearby-search,.nearby-map-button
 ){
   border:1px solid rgba(255,255,255,.28)!important;
   border-radius:14px!important;
@@ -812,7 +808,7 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #places :wh
   text-shadow:0 1px 8px rgba(0,0,0,.28)!important;
 }
 html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
-  .nearby-search,.nearby-map-button,[data-nearby-map-search]
+  .nearby-search,.nearby-map-button
 ):is(:hover,:focus-visible){
   border-color:rgba(255,255,255,.48)!important;
   background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.11))!important;
@@ -943,7 +939,7 @@ html body.home-page.is-authenticated main.content :is(
 html body.tm-new-design :where(
   button:not(.weather-top-widget):not(.map-pin),
   .pill-btn,.mini-btn,.planner-action,.service-link
-),
+):not(.maplibregl-map *),
 html body.home-page :where(
   button:not(.weather-top-widget):not(.trip-activity-toggle),
   .pill-btn,.mini-btn
@@ -961,7 +957,7 @@ html body.home-page :where(
 html body.tm-new-design :where(
   button:not(.weather-top-widget):not(.map-pin),
   .pill-btn,.mini-btn,.planner-action,.service-link
-):is(:hover,:focus-visible),
+):not(.maplibregl-map *):is(:hover,:focus-visible),
 html body.home-page :where(
   button:not(.weather-top-widget):not(.trip-activity-toggle),
   .pill-btn,.mini-btn
@@ -1050,9 +1046,9 @@ html body.tm-new-design[data-trip-view="plan"] #plan .saved-place{
     backdrop-filter:blur(18px) saturate(125%)!important
   }
   body:not(.home-page) :where(.mobile-menu-button,.mobile-back){
-    flex:0 0 46px;
-    width:46px!important;
-    height:46px!important;
+    flex:0 0 40px;
+    width:40px!important;
+    height:40px!important;
     background:linear-gradient(135deg,rgba(235,247,241,.98),rgba(207,231,219,.92))!important;
     border:1px solid rgba(20,101,75,.3)!important;
     color:#174f3d!important;
@@ -1183,8 +1179,8 @@ html body.tm-new-design[data-trip-view] main.content>section>.section-head{
   width:100%!important;
   margin:0 0 16px!important;
   padding:16px 18px!important;
-  border:0!important;
-  border-radius:14px!important;
+  border:1px solid var(--tm-card-border)!important;
+  border-radius:var(--tm-card-radius)!important;
   background:var(--tm-weather-card-background)!important;
   color:#fff!important;
   box-shadow:var(--tm-weather-card-shadow)!important;
@@ -1701,12 +1697,12 @@ body.home-page .cloud-account-split .cloud-account-close{
     position:sticky!important;
     top:max(8px,env(safe-area-inset-top))!important;
     z-index:1250!important;
-    min-height:64px!important;
-    margin-bottom:12px!important;
+    min-height:var(--tm-mobile-header-height,54px)!important;
+    margin-bottom:8px!important;
     border:0!important;
-    border-radius:18px!important;
+    border-radius:16px!important;
     background:linear-gradient(135deg,rgba(250,253,251,.98),rgba(218,238,228,.96))!important;
-    box-shadow:0 10px 28px rgba(13,68,50,.2)!important
+    box-shadow:0 5px 16px rgba(13,68,50,.12)!important
   }
   body:not(.home-page) .network-usage-meter.in-trip{
     top:calc(max(8px,env(safe-area-inset-top)) + 72px)!important;
@@ -2146,7 +2142,7 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
     z-index:1250!important
   }
   html body:not(.home-page) .network-usage-meter.in-trip{
-    top:calc(max(8px,env(safe-area-inset-top)) + 84px)!important
+    top:calc(max(8px,env(safe-area-inset-top)) + 68px)!important
   }
   html body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
     display:grid!important;
@@ -2192,7 +2188,7 @@ html body.tm-new-design main.content>section:is(
 }
 @media(max-width:1000px){
   html body:not(.home-page) main.content{
-    padding-top:94px!important
+    padding-top:76px!important
   }
   html body:not(.home-page) .mobile-header{
     position:fixed!important;
@@ -2203,7 +2199,7 @@ html body.tm-new-design main.content>section:is(
     z-index:1250!important
   }
   html body:not(.home-page) .network-usage-meter.in-trip{
-    top:calc(max(8px,env(safe-area-inset-top)) + 84px)!important
+    top:calc(max(8px,env(safe-area-inset-top)) + 68px)!important
   }
 }
 
@@ -2289,13 +2285,13 @@ html body.tm-new-design main.content>section:is(
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ){
-  border:0!important;
-  border-radius:14px!important;
-  background:var(--tm-weather-card-background)!important;
-  color:var(--tm-weather-card-text)!important;
-  box-shadow:var(--tm-weather-card-shadow)!important;
-  backdrop-filter:blur(18px)!important;
-  -webkit-backdrop-filter:blur(18px)!important
+  border:1px solid var(--tm-card-border)!important;
+  border-radius:var(--tm-card-compact-radius)!important;
+  background:var(--tm-card-bg)!important;
+  color:var(--tm-card-text)!important;
+  box-shadow:var(--tm-card-shadow)!important;
+  backdrop-filter:var(--tm-card-blur)!important;
+  -webkit-backdrop-filter:var(--tm-card-blur)!important
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
@@ -2307,45 +2303,45 @@ html body.tm-new-design main.content>section:is(
 ){
   border:0!important;
   border-radius:14px!important;
-  background:var(--tm-weather-card-background)!important;
-  color:#fff!important;
-  box-shadow:var(--tm-weather-card-shadow)!important
+  background:var(--tm-card-nested-bg)!important;
+  color:var(--tm-card-text)!important;
+  box-shadow:var(--tm-card-compact-shadow)!important
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ) :where(h1,h2,h3,h4,p,strong,span,small,label,i){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  text-shadow:0 1px 12px rgba(0,0,0,.18)!important
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important;
+  text-shadow:none!important
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ) :where(input,select,textarea){
-  border:0!important;
-  background:rgba(255,255,255,.14)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.2)!important
+  border:1px solid var(--tm-control-border)!important;
+  background:var(--tm-control-bg)!important;
+  color:var(--tm-control-text)!important;
+  -webkit-text-fill-color:var(--tm-control-text)!important;
+  box-shadow:none!important
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ) :where(input,textarea)::placeholder{
-  color:rgba(255,255,255,.74)!important;
-  -webkit-text-fill-color:rgba(255,255,255,.74)!important
+  color:var(--tm-control-placeholder)!important;
+  -webkit-text-fill-color:var(--tm-control-placeholder)!important
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ) :where(button,.button,.btn,.icon-button,.pill-btn,a[class*="button"]){
-  border:0!important;
-  background:rgba(255,255,255,.14)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.2)!important
+  border:1px solid var(--tm-control-border)!important;
+  background:var(--tm-control-bg)!important;
+  color:var(--tm-control-text)!important;
+  -webkit-text-fill-color:var(--tm-control-text)!important;
+  box-shadow:none!important
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ) :where(button,.button,.btn,.icon-button,.pill-btn) :where(i,svg){
-  color:#fff!important;
+  color:currentColor!important;
   fill:currentColor!important;
   stroke:currentColor!important
 }
@@ -3405,10 +3401,10 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
  * preserving green only for primary actions.
  */
 html body.tm-new-design{
-  --tm-weather-surface:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.035));
-  --tm-weather-border:rgba(255,255,255,.28);
-  --tm-weather-text:#fff;
-  --tm-weather-muted:rgba(255,255,255,.78)
+  --tm-weather-surface:linear-gradient(145deg,rgba(253,255,254,.92),rgba(236,246,241,.88));
+  --tm-weather-border:rgba(86,126,109,.22);
+  --tm-weather-text:#20362e;
+  --tm-weather-muted:#667a72
 }
 html body.tm-new-design main.content>section:not(.hero),
 html body.tm-new-design main.content>section:not(.hero)>.section-head,
@@ -3510,13 +3506,13 @@ html body.tm-new-design[data-trip-view][data-trip-view] main.content :is(
   .auto-card.auto-card,.group-card.group-card,.album-card.album-card,
   .memory-card.memory-card,.trip-summary-card.trip-summary-card
 ){
-  background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(237,244,239,.8))!important;
+  background:var(--tm-card-surface,var(--tm-card-bg))!important;
   background-color:transparent!important;
-  border:1px solid rgba(255,255,255,.7)!important;
-  border-radius:14px!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 28px rgba(12,42,32,.12)!important;
-  color:#26332e!important;
-  -webkit-text-fill-color:#26332e!important;
+  border:1px solid var(--tm-card-border)!important;
+  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
+  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important;
   opacity:1!important
 }
@@ -3558,31 +3554,14 @@ html body.tm-new-design[data-trip-view][data-trip-view] main.content :is(
   #plan#plan,#transport#transport,#car-rental#car-rental,#getaways#getaways,
   #documents#documents,#budget#budget,#places#places,#memories#memories,#group#group
 )>.section-head.section-head{
-  background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(237,244,239,.8))!important;
+  background:var(--tm-card-surface,var(--tm-card-bg))!important;
   background-color:transparent!important;
-  border:1px solid rgba(255,255,255,.7)!important;
-  border-radius:14px!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 28px rgba(12,42,32,.12)!important;
-  color:#26332e!important;
-  -webkit-text-fill-color:#26332e!important
+  border:1px solid var(--tm-card-border)!important;
+  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
+  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important
 }
-html body.tm-new-design[data-trip-view][data-trip-view] main.content :is(
-  #plan#plan,#transport#transport,#car-rental#car-rental,#getaways#getaways,
-  #documents#documents,#budget#budget,#places#places,#memories#memories,#group#group
-) :is(
-  .section-head,.planner-toolbar,.planner-composer,.generated-day,.planned-activity,
-  .saved-place,.external-resources,.transport-card,.transport-result,.transport-empty,
-  .fare-row,.service-card,.getaway-result,.doc-row,.document-vault,.ai-notes-archive,
-  .expense-workspace,.budget-columns-editor,.budget-category-editor,.auto-card,
-  .group-card,.album-card,.memory-card,.trip-summary-card
-) :is(h1,h2,h3,h4,strong,b,label,p,small,span,li,a,i),
-html body.tm-new-design[data-trip-view][data-trip-view] main.content section.trip-home-actions.trip-home-actions a[href] *{
-  color:#26332e!important;
-  -webkit-text-fill-color:#26332e!important;
-  text-shadow:none!important;
-  opacity:1!important
-}
-
 /* Keep pale controls readable inside the dark weather-card glass. */
 html body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
   .google-rating-link,.saved-calendar-link,.schedule-conflict-note,
@@ -3856,12 +3835,12 @@ html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,
 
 @media(max-width:650px){
   html body.tm-new-design[data-trip-view="overview"] main.content #overview.custom-hero{
-    min-height:420px!important;
+    min-height:286px!important;
     display:flex!important;
     flex-direction:column!important;
     justify-content:flex-end!important;
-    gap:12px!important;
-    padding:72px 18px 18px!important
+    gap:10px!important;
+    padding:58px 14px 14px!important
   }
   html body.tm-new-design[data-trip-view="overview"] main.content #overview.custom-hero>.hero-copy{
     position:relative!important;
@@ -3869,11 +3848,11 @@ html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,
     width:100%!important;
     max-width:none!important;
     margin:0!important;
-    padding:13px 15px!important;
-    border:1px solid rgba(225,255,244,.52)!important;
-    border-radius:16px!important;
-    background:rgba(5,48,36,.76)!important;
-    box-shadow:0 10px 24px rgba(0,27,20,.24)!important
+    padding:9px 11px!important;
+    border:0!important;
+    border-radius:13px!important;
+    background:rgba(10,39,30,.58)!important;
+    box-shadow:none!important
   }
   html body.tm-new-design[data-trip-view="overview"] main.content #overview.custom-hero>.hero-copy>p{
     margin:.35rem 0 0!important;
@@ -3891,20 +3870,20 @@ html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,
     max-width:none!important;
     margin:0!important;
     transform:none!important;
-    border:1px solid rgba(255,255,255,.46)!important;
-    background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.1))!important;
-    color:#fff!important;
-    -webkit-text-fill-color:#fff!important;
-    -webkit-backdrop-filter:blur(20px) saturate(145%)!important;
-    backdrop-filter:blur(20px) saturate(145%)!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 10px 26px rgba(0,31,23,.22)!important;
-    text-shadow:0 1px 8px rgba(0,34,25,.54)!important
+    border:1px solid var(--tm-card-border)!important;
+    background:var(--tm-weather-card-bg)!important;
+    color:var(--tm-weather-card-text)!important;
+    -webkit-text-fill-color:var(--tm-weather-card-text)!important;
+    -webkit-backdrop-filter:var(--tm-card-blur)!important;
+    backdrop-filter:var(--tm-card-blur)!important;
+    box-shadow:var(--tm-card-shadow)!important;
+    text-shadow:none!important
   }
   html body.tm-new-design[data-trip-view="overview"] main.content #overview.custom-hero .weather-top-widget *{
     color:inherit!important;
     -webkit-text-fill-color:inherit!important;
     opacity:1!important;
-    text-shadow:0 1px 8px rgba(0,34,25,.54)!important
+    text-shadow:none!important
   }
   html body.tm-new-design .sidebar .destination-mini{
     border:2px solid rgba(77,151,120,.82)!important;
@@ -3962,14 +3941,14 @@ html body.tm-new-design :is(
   -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
   box-shadow:var(--tm-weather-unified-shadow)!important
 }
-html body.tm-new-design main.content>section:not(.hero) :is(h1,h2,h3,h4,h5,strong,b,time,label,legend,p,small,span),
+html body.tm-new-design main.content>section:not(.hero) :is(h1,h2,h3,h4,h5,strong,b,time,label,legend,p,small,span):not(.nearby-category-drawer *):not(.maplibregl-map *),
 html body.tm-new-design main.content :is(
   .card,.panel,.module,.generated-day,.planned-activity,.saved-place,.nearby-panel,.nearby-result,
   .auto-place-dialog,.planner-toolbar,.planner-composer,.trip-anchor,.doc-row,.document-vault,
   .expense-workspace,.expense-record,.receipt-card,.budget-charts,.currency-converter,
   .transport-card,.travel-service-card,.service-card,.fare-guide,.getaway-result,
   .external-resources,.group-card,.album-card,.memory-card,.trip-summary-card,.resource-link
-) :is(h1,h2,h3,h4,h5,strong,b,time,label,legend,p,small,span),
+) :is(h1,h2,h3,h4,h5,strong,b,time,label,legend,p,small,span):not(.nearby-category-drawer *):not(.maplibregl-map *),
 html body.tm-new-design :is(
   .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
   .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
@@ -3979,7 +3958,7 @@ html body.tm-new-design :is(
   -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
   text-shadow:none!important
 }
-html body.tm-new-design main.content :is(p,small,.muted,.nearby-status,.day-summary,.trip-calendar-hint),
+html body.tm-new-design main.content :is(p,small,.muted,.nearby-status,.day-summary,.trip-calendar-hint):not(.nearby-category-drawer *):not(.maplibregl-map *),
 html body.tm-new-design :is(.about-dialog,.modal,.trip-calendar-dialog,.invite-card,.place-directions-dialog,.place-share-dialog) :is(p,small,li){
   color:var(--tm-weather-unified-muted)!important;
   -webkit-text-fill-color:var(--tm-weather-unified-muted)!important
@@ -4237,21 +4216,21 @@ html body.tm-new-design main.content :is(
 html body.tm-new-design :is(button,a[href],[role="button"],summary,label[for]){
   touch-action:manipulation
 }
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary){
+html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *){
   min-height:42px;
   display:inline-flex;
   align-items:center;
   justify-content:center
 }
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(:disabled):not([aria-disabled="true"]){
+html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):not(:disabled):not([aria-disabled="true"]){
   cursor:pointer
 }
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):focus-visible{
+html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):focus-visible{
   outline:3px solid #f7c96b!important;
   outline-offset:3px!important
 }
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):disabled,
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary)[aria-disabled="true"]{
+html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):disabled,
+html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *)[aria-disabled="true"]{
   opacity:.52!important;
   cursor:not-allowed!important
 }
@@ -4274,7 +4253,7 @@ html body.tm-new-design main.content :is(
   color:inherit!important;
   -webkit-text-fill-color:inherit!important
 }
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(:disabled):not([aria-disabled="true"]):hover{
+html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):not(:disabled):not([aria-disabled="true"]):hover{
   border-color:var(--tm-weather-unified-border-hover)!important
 }
 
@@ -4301,7 +4280,7 @@ html body.home-page.is-authenticated main.content :is(
 }
 
 @media(max-width:650px){
-  html body.tm-new-design main.content :is(button,a[href],[role="button"],summary){min-height:44px}
+  html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *){min-height:44px}
   html body.tm-new-design main.content :is(
     .auto-place-dialog,.trip-calendar-dialog,.place-directions-dialog,.place-share-dialog,
     .invite-dialog,.weather-live-modal,.modal,.ai-panel
@@ -4567,7 +4546,7 @@ html body.tm-new-design main.content :is(
   .invite-card,.album-card,.album-panel,.memory-card,.trip-summary-card,
   .smart-tool-panel,.resource-link,.network-usage-panel,.gps-consent-card,
   .weather-insight,.weather-live-day
-) :where(h1,h2,h3,h4,h5,h6,p,strong,b,span,small,label,time){
+) :where(h1,h2,h3,h4,h5,h6,p,strong,b,span,small,label,time):not(.nearby-category-drawer *):not(.maplibregl-map *){
   color:inherit!important;
   -webkit-text-fill-color:currentColor!important;
   opacity:1
@@ -4762,7 +4741,7 @@ html body.tm-new-design :is(
   -webkit-text-fill-color:#26332e!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.86),0 14px 34px rgba(12,42,32,.14)!important
 }
-html body.tm-new-design main.content>section:not(.hero) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li),
+html body.tm-new-design main.content>section:not(.hero) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li):not(.maplibregl-map *):not(.nearby-category-drawer *),
 html body.tm-new-design :is(
   .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
   .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
@@ -4846,7 +4825,7 @@ html body.tm-new-design main.content>section:not(.hero) :is(
   .travel-service-card,.service-card,.fare-guide,.getaway-result,.external-resources,
   .group-card,.album-card,.memory-card,.trip-summary-card,.resource-link,
   .day-heading,.day-tab,.lodging-day-card,.airport-day-card
-) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li),
+) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li):not(.maplibregl-map *):not(.nearby-category-drawer *),
 html body.tm-new-design :is(
   .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
   .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
@@ -4873,7 +4852,7 @@ html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-c
 }
 html body.tm-new-design main.content>section:not(.hero) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)
-){
+):not(.maplibregl-map *){
   border-color:rgba(210,241,228,.78)!important;
   background:rgba(244,255,250,.94)!important;
   color:#15523f!important;
@@ -4882,7 +4861,7 @@ html body.tm-new-design main.content>section:not(.hero) :is(
 }
 html body.tm-new-design main.content>section:not(.hero) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)
-) *{
+):not(.maplibregl-map *) *{
   color:inherit!important;
   -webkit-text-fill-color:inherit!important
 }
