@@ -620,10 +620,10 @@ body.tm-new-design .auto-place-preview-item.excluded .auto-place-preview-copy{
 
 /* Weather card is the master card for every primary TravelMate surface. */
 :root{
-  --tm-weather-card-background:linear-gradient(145deg,rgba(253,255,254,.92),rgba(236,246,241,.88));
-  --tm-weather-card-shadow:0 1px 2px rgba(20,45,36,.025),0 8px 22px rgba(20,45,36,.065);
-  --tm-weather-card-text:#20362e;
-  --tm-weather-card-radius:20px;
+  --tm-weather-card-background:var(--tm-card-bg);
+  --tm-weather-card-shadow:var(--tm-card-shadow);
+  --tm-weather-card-text:var(--tm-card-text);
+  --tm-weather-card-radius:var(--tm-card-radius);
 }
 html body.tm-new-design[data-trip-view][class] main.content :is(
   .weather-master-card,
@@ -3401,10 +3401,10 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
  * preserving green only for primary actions.
  */
 html body.tm-new-design{
-  --tm-weather-surface:linear-gradient(145deg,rgba(253,255,254,.92),rgba(236,246,241,.88));
-  --tm-weather-border:rgba(86,126,109,.22);
-  --tm-weather-text:#20362e;
-  --tm-weather-muted:#667a72
+  --tm-weather-surface:var(--tm-card-bg);
+  --tm-weather-border:var(--tm-card-border);
+  --tm-weather-text:var(--tm-card-text);
+  --tm-weather-muted:var(--tm-card-muted)
 }
 html body.tm-new-design main.content>section:not(.hero),
 html body.tm-new-design main.content>section:not(.hero)>.section-head,
@@ -3909,13 +3909,13 @@ html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,
 
 /* 1.50.2 final contrast authority — match the light overview weather glass. */
 html body.tm-new-design{
-  --tm-weather-unified-bg:linear-gradient(135deg,rgba(255,255,255,.78),rgba(232,240,234,.68));
-  --tm-weather-unified-bg-strong:linear-gradient(135deg,rgba(255,255,255,.9),rgba(238,245,240,.78));
-  --tm-weather-unified-border:rgba(255,255,255,.68);
-  --tm-weather-unified-border-hover:rgba(255,255,255,.9);
-  --tm-weather-unified-text:#26332e;
-  --tm-weather-unified-muted:#596761;
-  --tm-weather-unified-shadow:inset 0 1px 0 rgba(255,255,255,.82),0 14px 34px rgba(12,42,32,.14)
+  --tm-weather-unified-bg:var(--tm-card-bg);
+  --tm-weather-unified-bg-strong:var(--tm-card-bg-hover);
+  --tm-weather-unified-border:var(--tm-card-border);
+  --tm-weather-unified-border-hover:var(--tm-card-border-hover);
+  --tm-weather-unified-text:var(--tm-card-text);
+  --tm-weather-unified-muted:var(--tm-card-muted);
+  --tm-weather-unified-shadow:var(--tm-card-shadow)
 }
 html body.tm-new-design main.content>section:not(.hero),
 html body.tm-new-design main.content :is(
@@ -4095,13 +4095,13 @@ html body.tm-new-design #places .nearby-panel.place-planner .nearby-status{
 
 /* 1.43.1 — exhaustive weather-card surface and interaction audit. */
 :root{
-  --tm-weather-unified-bg:linear-gradient(135deg,rgba(255,255,255,.78),rgba(232,240,234,.68));
-  --tm-weather-unified-bg-strong:linear-gradient(135deg,rgba(255,255,255,.9),rgba(238,245,240,.78));
-  --tm-weather-unified-border:rgba(255,255,255,.68);
-  --tm-weather-unified-border-hover:rgba(255,255,255,.9);
-  --tm-weather-unified-text:#26332e;
-  --tm-weather-unified-muted:#596761;
-  --tm-weather-unified-shadow:inset 0 1px 0 rgba(255,255,255,.82),0 14px 34px rgba(12,42,32,.14)
+  --tm-weather-unified-bg:var(--tm-card-bg);
+  --tm-weather-unified-bg-strong:var(--tm-card-bg-hover);
+  --tm-weather-unified-border:var(--tm-card-border);
+  --tm-weather-unified-border-hover:var(--tm-card-border-hover);
+  --tm-weather-unified-text:var(--tm-card-text);
+  --tm-weather-unified-muted:var(--tm-card-muted);
+  --tm-weather-unified-shadow:var(--tm-card-shadow)
 }
 
 /* Dynamic cards that were not part of the first pass. */
@@ -4786,13 +4786,13 @@ html body.tm-new-design :is(.about-close,.modal-close,.invite-close,.trip-calend
 
 /* 1.50.3 — restore the readable dark weather-glass language after the light-theme regression. */
 html body.tm-new-design{
-  --tm-weather-unified-bg:linear-gradient(135deg,rgba(10,45,36,.88),rgba(21,62,51,.78));
-  --tm-weather-unified-bg-strong:linear-gradient(135deg,rgba(7,38,30,.95),rgba(18,58,47,.88));
-  --tm-weather-unified-border:rgba(218,255,240,.58);
-  --tm-weather-unified-border-hover:rgba(239,255,249,.88);
-  --tm-weather-unified-text:#f8fffb;
-  --tm-weather-unified-muted:#d8eee5;
-  --tm-weather-unified-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 14px 34px rgba(0,24,18,.27)
+  --tm-weather-unified-bg:var(--tm-card-bg);
+  --tm-weather-unified-bg-strong:var(--tm-card-bg-hover);
+  --tm-weather-unified-border:var(--tm-card-border);
+  --tm-weather-unified-border-hover:var(--tm-card-border-hover);
+  --tm-weather-unified-text:var(--tm-card-text);
+  --tm-weather-unified-muted:var(--tm-card-muted);
+  --tm-weather-unified-shadow:var(--tm-card-shadow)
 }
 html body.tm-new-design main.content>section:not(.hero),
 html body.tm-new-design main.content>section:not(.hero) :is(
