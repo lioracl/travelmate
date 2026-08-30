@@ -1,13 +1,13 @@
 /* Final visual authority. This file is deliberately promoted to the end of <head>. */
 :root{
-  --tm-readable-surface:linear-gradient(145deg,rgba(8,48,37,.91),rgba(15,67,52,.82));
-  --tm-readable-surface-soft:linear-gradient(145deg,rgba(24,78,62,.88),rgba(10,55,43,.83));
-  --tm-readable-border:rgba(222,255,243,.64);
-  --tm-readable-text:#f8fffb;
-  --tm-readable-muted:#d8eee5;
-  --tm-readable-control:#f3fbf7;
+  --tm-readable-surface:linear-gradient(135deg,rgba(237,249,243,.52),rgba(205,231,219,.32));
+  --tm-readable-surface-soft:linear-gradient(135deg,rgba(239,250,245,.38),rgba(211,235,224,.22));
+  --tm-readable-border:rgba(255,255,255,.38);
+  --tm-readable-text:#26322e;
+  --tm-readable-muted:#56665f;
+  --tm-readable-control:rgba(245,252,248,.72);
   --tm-readable-control-text:#124d3a;
-  --tm-readable-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 14px 34px rgba(0,25,18,.25)
+  --tm-readable-shadow:inset 0 1px 0 rgba(255,255,255,.48),0 12px 30px rgba(0,35,26,.12)
 }
 
 
@@ -608,14 +608,14 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
 
 /* Canonical application-wide glass surface, restored from the de87923 Overview weather card. */
 :root{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.20));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(255,255,255,.50),rgba(255,255,255,.26));
-  --tm-weather-card-text:#414846;
-  --tm-card-bg:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.20));
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(255,255,255,.24),rgba(255,255,255,.11));
-  --tm-card-bg-compact:rgba(255,255,255,.18);
-  --tm-card-bg-hover:linear-gradient(135deg,rgba(255,255,255,.50),rgba(255,255,255,.26));
-  --tm-card-border:rgba(255,255,255,.30);
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(237,249,243,.52),rgba(205,231,219,.32));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(242,251,247,.60),rgba(211,235,224,.40));
+  --tm-weather-card-text:#26322e;
+  --tm-card-bg:linear-gradient(135deg,rgba(237,249,243,.52),rgba(205,231,219,.32));
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(239,250,245,.38),rgba(211,235,224,.22));
+  --tm-card-bg-compact:rgba(230,244,237,.28);
+  --tm-card-bg-hover:linear-gradient(135deg,rgba(242,251,247,.60),rgba(211,235,224,.40));
+  --tm-card-border:rgba(255,255,255,.38);
   --tm-card-border-hover:rgba(255,255,255,.52);
   --tm-card-radius:14px;
   --tm-card-radius-featured:14px;
@@ -627,10 +627,10 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-card-blur:blur(22px) saturate(145%);
   --tm-card-padding:20px;
   --tm-card-padding-compact:14px;
-  --tm-card-text:#414846;
+  --tm-card-text:#26322e;
   --tm-card-heading:#26322e;
-  --tm-card-secondary:#4f5d58;
-  --tm-card-muted:#626f6a;
+  --tm-card-secondary:#465850;
+  --tm-card-muted:#5d6e66;
   --tm-card-link:#12694f;
   --tm-card-icon:#1d7b5d;
   --tm-card-control:rgba(255,255,255,.66);
@@ -641,15 +641,21 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-card-focus:#258b68
 }
 html[data-theme="dark"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(7,39,30,.68),rgba(5,28,22,.50));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(12,54,42,.76),rgba(7,35,27,.60));
+  --tm-readable-surface:linear-gradient(135deg,rgba(7,39,30,.76),rgba(5,28,22,.62));
+  --tm-readable-surface-soft:linear-gradient(135deg,rgba(10,49,38,.60),rgba(5,34,26,.46));
+  --tm-readable-border:rgba(200,235,220,.26);
+  --tm-readable-text:#f5fbf8;
+  --tm-readable-muted:#c8dcd3;
+  --tm-readable-control:rgba(230,243,237,.88);
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(7,39,30,.76),rgba(5,28,22,.62));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(12,54,42,.82),rgba(7,35,27,.68));
   --tm-weather-card-text:#f5fbf8;
   --tm-weather-card-background:linear-gradient(135deg,rgba(7,39,30,.88),rgba(5,28,22,.8));
   --tm-weather-card-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 30px rgba(0,0,0,.2);
-  --tm-card-bg:linear-gradient(135deg,rgba(7,39,30,.68),rgba(5,28,22,.50));
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,49,38,.42),rgba(5,34,26,.30));
-  --tm-card-bg-compact:rgba(11,48,38,.34);
-  --tm-card-bg-hover:linear-gradient(135deg,rgba(12,54,42,.76),rgba(7,35,27,.60));
+  --tm-card-bg:linear-gradient(135deg,rgba(7,39,30,.76),rgba(5,28,22,.62));
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,49,38,.60),rgba(5,34,26,.46));
+  --tm-card-bg-compact:rgba(11,48,38,.48);
+  --tm-card-bg-hover:linear-gradient(135deg,rgba(12,54,42,.82),rgba(7,35,27,.68));
   --tm-card-border:rgba(200,235,220,.24);
   --tm-card-border-hover:rgba(200,235,220,.4);
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 30px rgba(0,0,0,.2);
@@ -945,4 +951,19 @@ html[data-theme][data-theme] body.tm-new-design main.content .section-head{paddi
     box-sizing:border-box!important
   }
   html body.tm-new-design main.content :is(.modules,.quick-grid,.dashboard,.places-grid,.tips-grid,.doc-summary,.resource-links){grid-template-columns:minmax(0,1fr)!important}
+}
+/* Keep assistant content in the same translucent surface family as the host panel. */
+html body.tm-new-design .ai-panel .ai-context-bar,
+html body.tm-new-design .ai-panel .ai-bubble,
+html body.tm-new-design .ai-panel .ai-composer,
+html body.tm-new-design .ai-panel .ai-composer-row,
+html body.tm-new-design .ai-panel .ai-quick-prompts button{
+  border-color:var(--tm-card-control-border);
+  background:var(--tm-card-bg-nested);
+  color:var(--tm-card-text);
+  box-shadow:var(--tm-card-shadow-compact);
+}
+html body.tm-new-design .ai-panel .ai-composer textarea{
+  background:transparent;
+  color:var(--tm-card-control-text);
 }

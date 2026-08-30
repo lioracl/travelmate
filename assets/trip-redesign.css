@@ -313,34 +313,34 @@ body.tm-new-design[data-trip-view="places"] #places > .section-head .trip-action
 body.tm-new-design[data-trip-view="places"] #places > .section-head .tm-collapse-button{
   display:none!important;
 }
-body.tm-new-design[data-trip-view="places"] #places .nearby-panel.place-planner{
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
+body.tm-new-design[data-trip-view="places"] #places .nearby-panel{
+  padding:var(--tm-card-padding)!important;
+  border:1px solid var(--tm-card-border)!important;
+  border-radius:var(--tm-card-radius-featured)!important;
+  background:var(--tm-card-bg)!important;
+  box-shadow:var(--tm-card-shadow)!important;
+  backdrop-filter:var(--tm-card-blur)!important;
+  -webkit-backdrop-filter:var(--tm-card-blur)!important;
 }
 body.tm-new-design[data-trip-view="places"] #places :where(
   h1,h2,h3,h4,p,span,small,strong,b,label,.nearby-status,.place-planner-note
 ):not(.nearby-category-drawer *):not(.nearby-map-detail *){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
 }
 body.tm-new-design[data-trip-view="places"] #places .place-planner-note{
   border:0!important;
-  background:rgba(255,255,255,.1)!important;
+  background:var(--tm-card-bg-compact)!important;
 }
 body.tm-new-design[data-trip-view="places"] #places :where(input,select,textarea){
-  border-color:rgba(255,255,255,.24)!important;
-  background:rgba(7,18,15,.28)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
+  border-color:var(--tm-card-control-border)!important;
+  background:var(--tm-card-control)!important;
+  color:var(--tm-card-control-text)!important;
+  -webkit-text-fill-color:var(--tm-card-control-text)!important;
 }
 body.tm-new-design[data-trip-view="places"] #places :where(input,textarea)::placeholder{
-  color:rgba(255,255,255,.72)!important;
-  -webkit-text-fill-color:rgba(255,255,255,.72)!important;
+  color:var(--tm-card-control-placeholder)!important;
+  -webkit-text-fill-color:var(--tm-card-control-placeholder)!important;
 }
 body.tm-new-design[data-trip-view="places"] #places select option{
   color:#414846;

@@ -41,42 +41,13 @@
     document.querySelectorAll('[data-theme-toggle]').forEach(function (button) { button.remove(); });
   }
 
-  function stabilizeTripLayers(rootNode) {
-    if (!document.body || !document.body.classList.contains('tm-new-design')) return;
-    var nodes = [];
-    if (rootNode && rootNode.nodeType === 1) {
-      if (rootNode.matches('main.content, main.content *, .about-backdrop, .about-backdrop *')) nodes.push(rootNode);
-      nodes = nodes.concat(Array.prototype.slice.call(rootNode.querySelectorAll
-        ? rootNode.querySelectorAll('main.content, main.content *, .about-backdrop, .about-backdrop *')
-        : []));
-    } else {
-      nodes = Array.prototype.slice.call(document.querySelectorAll('main.content, main.content *, .about-backdrop, .about-backdrop *'));
-    }
-    nodes.forEach(function (element) {
-      element.style.setProperty('backdrop-filter', 'none', 'important');
-      element.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
-    });
-  }
-
-  function enableStableTripRendering() {
-    stabilizeTripLayers(document);
-    if (!document.body || typeof MutationObserver === 'undefined') return;
-    new MutationObserver(function (mutations) {
-      mutations.forEach(function (mutation) {
-        Array.prototype.forEach.call(mutation.addedNodes || [], stabilizeTripLayers);
-      });
-    }).observe(document.body, { childList: true, subtree: true });
-  }
-
   applyTheme(readTheme());
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       createToggle();
-      enableStableTripRendering();
     });
   } else {
     createToggle();
-    enableStableTripRendering();
   }
   window.TravelMateTheme = { get: readTheme, set: saveTheme };
 })();
