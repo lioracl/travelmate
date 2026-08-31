@@ -175,7 +175,6 @@ body.home-page.is-authenticated .trip-area-head span{
 }
 body.home-page.is-authenticated #active-trips>.trip-card-shell{
   border-radius:14px!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.24),rgba(255,255,255,.1))!important;
   overflow:hidden
 }
 body.home-page.is-authenticated .trip-card{
@@ -192,8 +191,8 @@ body.home-page.is-authenticated .trip-copy{
   padding:14px 16px;
   border:0;
   border-radius:14px;
-  background:linear-gradient(135deg,rgba(5,29,22,.72),rgba(8,47,35,.46));
-  color:rgba(255,255,255,.98);
+  background:var(--tm-card-photo-copy);
+  color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
   -webkit-backdrop-filter:blur(12px) saturate(125%);
   backdrop-filter:blur(12px) saturate(125%);
@@ -4000,30 +3999,7 @@ html body.tm-new-design :is(.about-close,.modal-close,.invite-close,.trip-calend
   -webkit-text-fill-color:#26332e!important
 }
 
-/* 1.44.0 — clearly frame the complete place picker and support an accumulating budget. */
-html body.tm-new-design #places .nearby-panel.place-planner{
-  position:relative;
-  padding:clamp(18px,2.5vw,30px)!important;
-  border:2px solid rgba(92,218,168,.92)!important;
-  border-radius:24px!important;
-  background:linear-gradient(145deg,rgba(10,46,37,.96),rgba(19,63,51,.9))!important;
-  box-shadow:0 0 0 5px rgba(156,239,205,.13),0 22px 55px rgba(0,24,18,.28),inset 0 1px 0 rgba(255,255,255,.18)!important
-}
-html body.tm-new-design #places .nearby-panel.place-planner .place-planner-intro{
-  margin:-2px -2px 20px;
-  padding:4px 4px 18px;
-  border-bottom:1px solid rgba(192,242,219,.38)
-}
-html body.tm-new-design #places .nearby-panel.place-planner .nearby-controls{
-  padding:clamp(14px,2vw,20px)!important;
-  border:1px solid rgba(191,242,219,.54)!important;
-  border-radius:18px!important;
-  background:rgba(5,38,30,.52)!important
-}
-html body.tm-new-design #places .nearby-panel.place-planner .nearby-map-shell,
-html body.tm-new-design #places .nearby-panel.place-planner .nearby-status{
-  border-color:rgba(191,242,219,.48)!important
-}
+/* Places material is owned by readable-glass.css; feature CSS owns layout only. */
 .budget-limit-mode{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -4072,13 +4048,6 @@ html body.tm-new-design #places .nearby-panel.place-planner .nearby-status{
 }
 .is-unlimited-budget{display:inline-flex;align-items:center;gap:6px}
 @media(max-width:650px){
-  html body.tm-new-design #places .nearby-panel.place-planner{
-    margin-inline:6px!important;
-    padding:17px 13px!important;
-    border-width:2px!important;
-    border-radius:20px!important;
-    box-shadow:0 0 0 4px rgba(156,239,205,.14),0 17px 38px rgba(0,24,18,.3)!important
-  }
   .budget-limit-mode{grid-template-columns:1fr}
   .budget-limit-mode label>span{min-height:62px}
 }
@@ -4286,17 +4255,6 @@ html body.home-page.is-authenticated main.content :is(
   ){border-width:2px!important}
 }
 
-/* 1.44.1 — stable mobile budget layout and a weather-card place picker. */
-html body.tm-new-design main.content #places .nearby-panel.place-planner{
-  border:1.5px solid var(--tm-weather-unified-border)!important;
-  background:var(--tm-weather-unified-bg)!important;
-  box-shadow:var(--tm-weather-unified-shadow)!important
-}
-html body.tm-new-design main.content #places .nearby-panel.place-planner .nearby-controls{
-  border:1px solid rgba(224,255,243,.42)!important;
-  background:rgba(5,38,30,.28)!important
-}
-
 html body.tm-new-design main.content #budget,
 html body.tm-new-design main.content #budget *{
   box-sizing:border-box
@@ -4465,11 +4423,6 @@ html body.tm-new-design main.content #budget .budget-hero-meter.is-unlimited>spa
     width:100%!important;
     margin-inline:0!important;
     padding-inline:13px!important
-  }
-  html body.tm-new-design main.content #places .nearby-panel.place-planner{
-    margin-inline:0!important;
-    border:1.5px solid var(--tm-weather-unified-border)!important;
-    box-shadow:var(--tm-weather-unified-shadow)!important
   }
 }
 
@@ -4663,11 +4616,6 @@ html body.home-page.is-authenticated main.content :is(
 }
 
 /* 1.44.1 final authority — budget controls stay inside the mobile viewport. */
-html body.tm-new-design main.content #places .nearby-panel.place-planner{
-  border:1.5px solid var(--tm-weather-unified-border)!important;
-  background:var(--tm-weather-unified-bg)!important;
-  box-shadow:var(--tm-weather-unified-shadow)!important
-}
 html body.tm-new-design main.content #budget .budget-limit-mode input[type="radio"]{
   position:absolute!important;
   width:1px!important;
@@ -4842,7 +4790,7 @@ html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-c
 }
 html body.tm-new-design main.content>section:not(.hero) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
-):not(.maplibregl-map *){
+):not(.maplibregl-map *):not(.trip-home-actions a){
   border-color:rgba(210,241,228,.78)!important;
   background:rgba(244,255,250,.94)!important;
   color:#15523f!important;
@@ -4851,7 +4799,7 @@ html body.tm-new-design main.content>section:not(.hero) :is(
 }
 html body.tm-new-design main.content>section:not(.hero) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
-):not(.maplibregl-map *) *{
+):not(.maplibregl-map *):not(.trip-home-actions a) *{
   color:inherit!important;
   -webkit-text-fill-color:inherit!important
 }

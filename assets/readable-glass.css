@@ -638,7 +638,9 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-card-control-text:#173d32;
   --tm-card-control-placeholder:#71837b;
   --tm-card-control-selected:#dcefe6;
-  --tm-card-focus:#258b68
+  --tm-card-focus:#258b68;
+  --tm-card-photo-copy:linear-gradient(135deg,rgba(5,29,22,.72),rgba(8,47,35,.46));
+  --tm-card-text-on-photo:#fff
 }
 html[data-theme="dark"]{
   --tm-readable-surface:linear-gradient(135deg,rgba(7,39,30,.76),rgba(5,28,22,.62));
@@ -671,7 +673,9 @@ html[data-theme="dark"]{
   --tm-card-control-border:rgba(200,235,220,.34);
   --tm-card-control-text:#132f27;
   --tm-card-control-placeholder:#60756c;
-  --tm-card-control-selected:#cfe8dc
+  --tm-card-control-selected:#cfe8dc;
+  --tm-card-photo-copy:linear-gradient(135deg,rgba(2,19,14,.8),rgba(4,34,25,.58));
+  --tm-card-text-on-photo:#fff
 }
 
 html body :is(.tm-card-surface),
@@ -873,10 +877,16 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-overview-summary{
   --tm-card-bg:transparent;
   --tm-card-border:transparent;
-  --tm-card-shadow:none
+  --tm-card-shadow:none;
+  --tm-weather-unified-bg:var(--tm-card-bg);
+  --tm-weather-unified-border:var(--tm-card-border);
+  --tm-weather-unified-shadow:var(--tm-card-shadow);
+  --tm-app-glass-screen:var(--tm-card-bg);
+  --tm-app-glass-border-soft:var(--tm-card-border);
+  --tm-app-glass-shadow:var(--tm-card-shadow)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-overview-summary .budget-card{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow)}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:var(--tm-custom-overview-subtle);--tm-card-elevation:none;--tm-card-blur:blur(10px) saturate(120%)}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:var(--tm-custom-overview-subtle);--tm-card-elevation:none;--tm-card-blur:blur(10px) saturate(120%);--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow);display:grid;gap:10px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;gap:6px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{--tm-card-surface:transparent;--tm-card-elevation:none;min-width:0;gap:7px;padding:10px;font-size:13px}
@@ -968,4 +978,60 @@ html body.tm-new-design .ai-panel .ai-quick-prompts button{
 html body.tm-new-design .ai-panel .ai-composer textarea{
   background:transparent;
   color:var(--tm-card-control-text);
+}
+
+/* Three reference components: material comes only from the shared tm-card tokens. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] #overview .weather-top-widget{
+  --tm-card-surface:var(--tm-card-bg);
+  --tm-card-elevation:var(--tm-card-shadow);
+  --tm-weather-unified-bg:var(--tm-card-bg);
+  --tm-weather-unified-border:var(--tm-card-border);
+  --tm-weather-unified-shadow:var(--tm-card-shadow)
+}
+
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] main.content>section#places{
+  --tm-card-bg:transparent;
+  --tm-card-border:transparent;
+  --tm-card-shadow:none;
+  --tm-weather-unified-bg:var(--tm-card-bg);
+  --tm-weather-unified-border:var(--tm-card-border);
+  --tm-weather-unified-shadow:var(--tm-card-shadow);
+  --tm-app-glass-screen:var(--tm-card-bg);
+  --tm-app-glass-border-soft:var(--tm-card-border);
+  --tm-app-glass-shadow:var(--tm-card-shadow)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner{
+  --tm-card-surface:var(--tm-weather-card-bg);
+  --tm-card-border:rgba(255,255,255,.38);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.52),0 12px 30px rgba(0,35,26,.12);
+  --tm-card-elevation:var(--tm-card-shadow);
+  --tm-weather-unified-bg:var(--tm-card-surface);
+  --tm-weather-unified-border:var(--tm-card-border);
+  --tm-weather-unified-shadow:var(--tm-card-shadow);
+  --tm-app-glass-card:var(--tm-card-surface);
+  --tm-app-glass-border:var(--tm-card-border);
+  --tm-app-glass-shadow:var(--tm-card-shadow)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-controls,.nearby-mode-bar,.nearby-category-chips,.nearby-free-search,.nearby-status
+){
+  --tm-card-surface:var(--tm-card-bg-nested);
+  --tm-card-elevation:var(--tm-card-shadow-compact)
+}
+
+html body.home-page.is-authenticated #active-trips>.trip-card-shell{
+  --tm-card-surface:transparent;
+  --tm-card-border:transparent;
+  --tm-card-elevation:none;
+  --tm-weather-unified-bg:var(--tm-card-surface);
+  --tm-weather-unified-border:var(--tm-card-border);
+  --tm-weather-unified-shadow:var(--tm-card-elevation);
+  --tm-app-glass-card:var(--tm-card-surface);
+  --tm-app-glass-border:var(--tm-card-border);
+  --tm-app-glass-shadow:var(--tm-card-elevation)
+}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy,
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy :is(h2,p,span,strong,i){
+  color:var(--tm-card-text-on-photo);
+  -webkit-text-fill-color:currentColor
 }
