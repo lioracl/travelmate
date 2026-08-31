@@ -228,5 +228,6 @@
       mutation.addedNodes.forEach(function (node) { initNearbyPanels(node); });
     });
   }).observe(document.documentElement, { childList: true, subtree: true });
+  window.TravelMateNearby = { categories: categoryRegistry, init: initNearbyPanels };
   window.TravelMateNearbyTest = { gpsSearchRadius: gpsSearchRadius, normalizePlaceName: normalizePlaceName, poiScore: poiScore, categoryCount: categoryRegistry.length };
 })();

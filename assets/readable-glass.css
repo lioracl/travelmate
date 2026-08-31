@@ -608,13 +608,13 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
 
 /* Canonical application-wide glass surface, restored from the de87923 Overview weather card. */
 :root{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(237,249,243,.52),rgba(205,231,219,.32));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(242,251,247,.60),rgba(211,235,224,.40));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(237,249,243,.36),rgba(205,231,219,.18));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(242,251,247,.46),rgba(211,235,224,.28));
   --tm-weather-card-text:#26322e;
-  --tm-card-bg:linear-gradient(135deg,rgba(237,249,243,.52),rgba(205,231,219,.32));
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(239,250,245,.38),rgba(211,235,224,.22));
-  --tm-card-bg-compact:rgba(230,244,237,.28);
-  --tm-card-bg-hover:linear-gradient(135deg,rgba(242,251,247,.60),rgba(211,235,224,.40));
+  --tm-card-bg:linear-gradient(135deg,rgba(237,249,243,.36),rgba(205,231,219,.18));
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(239,250,245,.22),rgba(211,235,224,.10));
+  --tm-card-bg-compact:rgba(230,244,237,.16);
+  --tm-card-bg-hover:linear-gradient(135deg,rgba(242,251,247,.46),rgba(211,235,224,.28));
   --tm-card-border:rgba(255,255,255,.38);
   --tm-card-border-hover:rgba(255,255,255,.52);
   --tm-card-radius:14px;
@@ -696,7 +696,6 @@ html body.home-page :is(.trip-card-shell,.cloud-trip-card,.home-about){
   background:var(--tm-card-surface,var(--tm-card-bg))!important;
   background-color:transparent!important;
   color:var(--tm-card-text)!important;
-  -webkit-text-fill-color:var(--tm-card-text)!important;
   box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
   -webkit-backdrop-filter:var(--tm-card-blur)!important;
   backdrop-filter:var(--tm-card-blur)!important;
@@ -860,8 +859,6 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-card-bg:var(--tm-custom-overview-surface);
-  --tm-card-bg-nested:var(--tm-custom-overview-subtle);
-  --tm-card-bg-compact:var(--tm-custom-overview-subtle);
   --tm-app-glass-screen:var(--tm-custom-overview-surface);
   --tm-app-glass-card:var(--tm-custom-overview-subtle);
   --tm-app-glass-card-strong:var(--tm-custom-overview-subtle);
@@ -873,8 +870,13 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-overview-summary,
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{margin-top:12px}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-overview-summary{
+  --tm-card-bg:transparent;
+  --tm-card-border:transparent;
+  --tm-card-shadow:none
+}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-overview-summary .budget-card{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow)}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:transparent;--tm-card-elevation:none}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:var(--tm-custom-overview-subtle);--tm-card-elevation:none;--tm-card-blur:blur(10px) saturate(120%)}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow);display:grid;gap:10px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;gap:6px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{--tm-card-surface:transparent;--tm-card-elevation:none;min-width:0;gap:7px;padding:10px;font-size:13px}
