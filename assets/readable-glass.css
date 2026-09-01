@@ -832,9 +832,9 @@ html body.tm-new-design .weather-top-widget{
 html body.tm-new-design .weather-top-widget:hover{transform:translateY(-1px);background:var(--tm-weather-card-bg-hover);box-shadow:var(--tm-card-shadow-hover)}
 html body.tm-new-design .weather-top-widget :is(strong,small,span,i){color:inherit;-webkit-text-fill-color:currentColor;text-shadow:none}
 html body.tm-new-design .weather-top-widget .weather-top-icon{
-  border:1px solid rgba(255,255,255,.52);
+  border:1px solid rgba(255,255,255,.24);
   border-radius:14px;
-  background:rgba(255,255,255,.28);
+  background:rgba(255,255,255,.09);
   color:var(--tm-card-icon)
 }
 html body.tm-new-design .weather-top-widget :is(.weather-top-copy small,.weather-top-chevron){color:var(--tm-card-muted)}
@@ -869,19 +869,19 @@ html body.tm-new-design[data-trip-view="overview"] .assistant-actions button{min
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-mobile-header-height:72px;
   --tm-overview-weather-height:118px;
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.18),rgba(188,224,207,.06));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(240,251,246,.24),rgba(194,229,213,.10));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.12),rgba(188,224,207,.03));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(240,251,246,.17),rgba(194,229,213,.06));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.11),rgba(195,228,213,.04));
-  --tm-card-bg-compact:rgba(227,245,236,.07);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.07),rgba(195,228,213,.02));
+  --tm-card-bg-compact:rgba(227,245,236,.04);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
-  --tm-card-border:rgba(255,255,255,.32);
-  --tm-card-border-hover:rgba(255,255,255,.48);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 8px 22px rgba(0,40,28,.08);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.20),0 4px 12px rgba(0,40,28,.05);
-  --tm-card-control:rgba(243,252,247,.14);
-  --tm-card-control-selected:rgba(174,222,201,.24);
-  --tm-card-blur:blur(11px) saturate(124%);
+  --tm-card-border:rgba(255,255,255,.22);
+  --tm-card-border-hover:rgba(255,255,255,.36);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 6px 18px rgba(0,40,28,.06);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.14),0 3px 10px rgba(0,40,28,.04);
+  --tm-card-control:rgba(243,252,247,.07);
+  --tm-card-control-selected:rgba(174,222,201,.16);
+  --tm-card-blur:blur(7px) saturate(116%);
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-overview-green-soft:var(--tm-card-control-selected);
@@ -896,18 +896,18 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-app-glass-shadow:0 1px 2px rgba(20,45,36,.02),0 7px 20px rgba(20,45,36,.06)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.22),rgba(3,27,20,.09));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(9,52,39,.30),rgba(5,34,25,.14));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.15),rgba(3,27,20,.05));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(9,52,39,.21),rgba(5,34,25,.09));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.13),rgba(4,31,23,.05));
-  --tm-card-bg-compact:rgba(10,48,36,.08);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.08),rgba(4,31,23,.03));
+  --tm-card-bg-compact:rgba(10,48,36,.05);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
-  --tm-card-border:rgba(205,239,224,.20);
-  --tm-card-border-hover:rgba(205,239,224,.34);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 9px 24px rgba(0,0,0,.16);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.06),0 4px 12px rgba(0,0,0,.11);
-  --tm-card-control:rgba(219,239,230,.06);
-  --tm-card-control-selected:rgba(61,139,106,.18)
+  --tm-card-border:rgba(205,239,224,.14);
+  --tm-card-border-hover:rgba(205,239,224,.25);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 7px 19px rgba(0,0,0,.12);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.04),0 3px 10px rgba(0,0,0,.08);
+  --tm-card-control:rgba(219,239,230,.035);
+  --tm-card-control-selected:rgba(61,139,106,.12)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
@@ -947,7 +947,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .tri
   -webkit-backdrop-filter:var(--tm-card-blur);
   backdrop-filter:var(--tm-card-blur)
 }
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:var(--tm-custom-overview-subtle);--tm-card-elevation:none;--tm-card-blur:blur(10px) saturate(120%);--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:var(--tm-custom-overview-subtle);--tm-card-elevation:none;--tm-card-blur:blur(6px) saturate(112%);--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow);display:grid;gap:10px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;gap:6px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{--tm-card-surface:transparent;--tm-card-elevation:none;min-width:0;gap:7px;padding:10px;font-size:13px}
@@ -1043,27 +1043,27 @@ html body.tm-new-design .ai-panel .ai-composer textarea{
 
 /* Three reference components: material comes only from the shared tm-card tokens. */
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.18),rgba(188,224,207,.06));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.12),rgba(188,224,207,.03));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.11),rgba(195,228,213,.04));
-  --tm-card-bg-compact:rgba(227,245,236,.07);
-  --tm-card-border:rgba(255,255,255,.32);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 8px 22px rgba(0,40,28,.08);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.20),0 4px 12px rgba(0,40,28,.05);
-  --tm-card-control:rgba(243,252,247,.14);
-  --tm-card-control-selected:rgba(174,222,201,.24);
-  --tm-card-blur:blur(11px) saturate(124%)
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.07),rgba(195,228,213,.02));
+  --tm-card-bg-compact:rgba(227,245,236,.04);
+  --tm-card-border:rgba(255,255,255,.22);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 6px 18px rgba(0,40,28,.06);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.14),0 3px 10px rgba(0,40,28,.04);
+  --tm-card-control:rgba(243,252,247,.07);
+  --tm-card-control-selected:rgba(174,222,201,.16);
+  --tm-card-blur:blur(7px) saturate(116%)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.22),rgba(3,27,20,.09));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.15),rgba(3,27,20,.05));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.13),rgba(4,31,23,.05));
-  --tm-card-bg-compact:rgba(10,48,36,.08);
-  --tm-card-border:rgba(205,239,224,.20);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 9px 24px rgba(0,0,0,.16);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.06),0 4px 12px rgba(0,0,0,.11);
-  --tm-card-control:rgba(219,239,230,.06);
-  --tm-card-control-selected:rgba(61,139,106,.18)
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.08),rgba(4,31,23,.03));
+  --tm-card-bg-compact:rgba(10,48,36,.05);
+  --tm-card-border:rgba(205,239,224,.14);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 7px 19px rgba(0,0,0,.12);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.04),0 3px 10px rgba(0,0,0,.08);
+  --tm-card-control:rgba(219,239,230,.035);
+  --tm-card-control-selected:rgba(61,139,106,.12)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] main.content>section#places{
   border:0;
@@ -1096,9 +1096,11 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   border-color:var(--tm-card-control-border);
   background:var(--tm-card-control);
   color:var(--tm-card-control-text);
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none;
   box-shadow:var(--tm-card-shadow-compact);
-  -webkit-backdrop-filter:blur(9px) saturate(118%);
-  backdrop-filter:blur(9px) saturate(118%)
+  -webkit-backdrop-filter:blur(6px) saturate(112%);
+  backdrop-filter:blur(6px) saturate(112%)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
   .nearby-category-chips button.active,.nearby-category-drawer button.active,
@@ -1108,15 +1110,19 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   background:var(--tm-card-control-selected);
   color:var(--tm-card-link)
 }
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-category-chips button,.nearby-category-drawer button,.nearby-category-search-results button,
+  .nearby-mode-bar button
+) :is(span,i){color:inherit;-webkit-text-fill-color:currentColor;text-shadow:none}
 
 html body.home-page.is-authenticated #active-trips>.trip-card-shell{
-  border:1px solid rgba(255,255,255,.3);
+  border:1px solid rgba(255,255,255,.18);
   border-radius:var(--tm-card-radius);
   background:transparent;
   color:var(--tm-card-text);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.52);
-  -webkit-backdrop-filter:var(--tm-card-blur);
-  backdrop-filter:var(--tm-card-blur)
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-card{
   border:0;
@@ -1126,22 +1132,22 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-card{
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-card::after{display:none}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-overlay{
-  background:linear-gradient(180deg,rgba(5,20,16,.02),rgba(5,20,16,.30))
+  background:linear-gradient(180deg,rgba(5,20,16,.01),rgba(5,20,16,.22))
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
-  border:1px solid rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.14);
   border-radius:var(--tm-card-radius);
   right:18px;
   bottom:18px;
   left:auto;
-  width:min(72%,300px);
+  width:min(68%,280px);
   padding:14px 16px;
-  background:linear-gradient(135deg,rgba(3,25,18,.28),rgba(5,42,30,.12));
+  background:linear-gradient(135deg,rgba(3,25,18,.20),rgba(5,42,30,.07));
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 5px 16px rgba(0,24,17,.12);
-  -webkit-backdrop-filter:blur(10px) saturate(120%);
-  backdrop-filter:blur(10px) saturate(120%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 12px rgba(0,24,17,.09);
+  -webkit-backdrop-filter:blur(7px) saturate(114%);
+  backdrop-filter:blur(7px) saturate(114%);
   text-shadow:0 1px 5px rgba(0,0,0,.36)
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy,
