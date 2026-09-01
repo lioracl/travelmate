@@ -137,22 +137,7 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
   min-height:360px;
 }
 .home-page.is-authenticated .trip-card{
-  min-height:360px;
-  border:1px solid rgba(255,255,255,.3)!important;
-  border-radius:2px!important;
-  box-shadow:none;
-}
-.home-page.is-authenticated .trip-card:after{
-  content:"";
-  position:absolute;
-  inset:auto 0 0;
-  height:52%;
-  background:rgba(5,20,16,.38);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-}
-.home-page.is-authenticated .trip-overlay{
-  background:linear-gradient(180deg,rgba(5,20,16,.06),rgba(5,20,16,.56));
+  min-height:360px
 }
 .home-page.is-authenticated .trip-copy{
   z-index:2;
@@ -335,10 +320,6 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
   color:#145640!important;
   -webkit-text-fill-color:#145640!important;
   text-shadow:none!important
-}
-.home-page.is-authenticated .trip-card-shell{
-  border:2px solid rgba(235,255,247,.48)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 16px 38px rgba(0,0,0,.2)!important
 }
 .home-page.is-authenticated .trip-activity-toggle:not(.active){
   max-width:164px;

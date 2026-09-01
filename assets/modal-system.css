@@ -16,7 +16,7 @@ body:not(.home-page) .hero .weather-top-widget{row-gap:22px!important}
 
 /* One card language across TravelMate: match the live weather glass card. */
 body :where(
-  .card,.panel,.module,.trip-card,.trip-card-shell,.trip-archive,
+  .card,.panel,.module,.trip-archive,
   .home-about,.plan-card,.place-card,.doc-row,.expense,.tip-card,
   .nearby,.summary-card,.auto-card,.generated-day,.service-card,
   .transport-card,.external-resources,.planned-activity,.saved-place,
@@ -44,7 +44,7 @@ body :where(
   color:#414846!important;
 }
 body :where(
-  .card,.panel,.module,.trip-card,.trip-archive,.home-about,.plan-card,
+  .card,.panel,.module,.trip-archive,.home-about,.plan-card,
   .place-card,.doc-row,.expense,.tip-card,.nearby,.summary-card,
   .auto-card,.generated-day,.service-card,.transport-card,
   .external-resources,.planned-activity,.saved-place,.planner-toolbar,
@@ -54,9 +54,7 @@ body :where(
 ):hover{
   box-shadow:inset 0 1px 0 rgba(255,255,255,.62)!important;
 }
-.home-page.is-authenticated .trip-card:after{border-radius:0 0 13px 13px}
-.home-page.is-authenticated #active-trips>.trip-card,
-.home-page.is-authenticated #active-trips>.trip-card-shell,
+
 .home-page.is-authenticated #active-trips>.add-destination,
 .home-page.is-authenticated .trip-archive,
 .home-page.is-authenticated .home-about{
