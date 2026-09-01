@@ -3166,16 +3166,6 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
  * filled actions keep white copy.
  */
 @media(max-width:900px){
-  html body.tm-new-design .mobile-header{
-    background:var(--tm-card-bg)!important;
-    border:1px solid var(--tm-card-border)!important;
-    color:#174936!important
-  }
-  html body.tm-new-design .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
-    color:#174936!important;
-    -webkit-text-fill-color:#174936!important;
-    text-shadow:none!important
-  }
   html body.tm-new-design main.content>section:not(.hero):not(#places),
   html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
     .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,

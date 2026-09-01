@@ -574,7 +574,7 @@ html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"] main.conte
 }
 
 /* Specificity bridge for legacy duplicated theme selectors; Overview only. */
-html body.tm-new-design.tm-new-design[data-trip-view="overview"][data-trip-view="overview"] main.content.content :is(
+html body.tm-new-design.tm-new-design[data-trip-view="overview"][data-trip-view="overview"]:not([data-trip-kind="custom"]) main.content.content :is(
   .trip-overview-summary.trip-overview-summary>.card.card,
   .quick-grid.quick-grid>.card.card,
   .modules.modules>.module.module
@@ -598,7 +598,7 @@ html body.tm-new-design.tm-new-design[data-trip-view="overview"][data-trip-view=
   border-radius:16px!important
 }
 
-html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overview"][data-trip-view="overview"] main.content.content :is(
+html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overview"][data-trip-view="overview"]:not([data-trip-kind="custom"]) main.content.content :is(
   .trip-overview-summary.trip-overview-summary>.card.card,
   .quick-grid.quick-grid>.card.card,
   .modules.modules>.module.module
@@ -869,8 +869,22 @@ html body.tm-new-design[data-trip-view="overview"] .assistant-actions button{min
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-mobile-header-height:72px;
   --tm-overview-weather-height:118px;
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.27),rgba(188,224,207,.11));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(240,251,246,.36),rgba(194,229,213,.17));
+  --tm-card-bg:var(--tm-weather-card-bg);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.18),rgba(195,228,213,.07));
+  --tm-card-bg-compact:rgba(227,245,236,.12);
+  --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
+  --tm-card-border:rgba(255,255,255,.48);
+  --tm-card-border-hover:rgba(255,255,255,.68);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.52),0 12px 32px rgba(0,40,28,.11);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.30),0 5px 16px rgba(0,40,28,.07);
+  --tm-card-control:rgba(243,252,247,.28);
+  --tm-card-control-selected:rgba(174,222,201,.45);
+  --tm-card-blur:blur(20px) saturate(142%);
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
+  --tm-overview-green-soft:var(--tm-card-control-selected);
   --tm-card-bg:var(--tm-custom-overview-surface);
   --tm-app-glass-screen:var(--tm-custom-overview-surface);
   --tm-app-glass-card:var(--tm-custom-overview-subtle);
@@ -880,6 +894,35 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-app-glass-text:#20362e;
   --tm-app-glass-muted:#667a72;
   --tm-app-glass-shadow:0 1px 2px rgba(20,45,36,.02),0 7px 20px rgba(20,45,36,.06)
+}
+html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.36),rgba(3,27,20,.18));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(9,52,39,.46),rgba(5,34,25,.27));
+  --tm-card-bg:var(--tm-weather-card-bg);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.22),rgba(4,31,23,.10));
+  --tm-card-bg-compact:rgba(10,48,36,.15);
+  --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
+  --tm-card-border:rgba(205,239,224,.28);
+  --tm-card-border-hover:rgba(205,239,224,.46);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 14px 34px rgba(0,0,0,.22);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.08),0 6px 16px rgba(0,0,0,.16);
+  --tm-card-control:rgba(219,239,230,.10);
+  --tm-card-control-selected:rgba(61,139,106,.28)
+}
+@media(max-width:900px){
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
+    border:1px solid var(--tm-card-border);
+    background:var(--tm-card-bg);
+    color:var(--tm-card-text);
+    box-shadow:var(--tm-card-shadow-compact);
+    -webkit-backdrop-filter:var(--tm-card-blur);
+    backdrop-filter:var(--tm-card-blur)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
+    color:var(--tm-card-text);
+    -webkit-text-fill-color:currentColor;
+    text-shadow:none
+  }
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-overview-summary,
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{margin-top:12px}
@@ -894,7 +937,16 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main
   --tm-app-glass-border-soft:var(--tm-card-border);
   --tm-app-glass-shadow:var(--tm-card-shadow)
 }
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-overview-summary .budget-card{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow)}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-overview-summary .budget-card{
+  --tm-card-surface:var(--tm-custom-overview-surface);
+  --tm-card-elevation:var(--tm-card-shadow);
+  border:1px solid var(--tm-card-border);
+  background:var(--tm-card-surface);
+  color:var(--tm-card-text);
+  box-shadow:var(--tm-card-elevation);
+  -webkit-backdrop-filter:var(--tm-card-blur);
+  backdrop-filter:var(--tm-card-blur)
+}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:var(--tm-custom-overview-subtle);--tm-card-elevation:none;--tm-card-blur:blur(10px) saturate(120%);--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow);display:grid;gap:10px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;gap:6px}
@@ -990,6 +1042,29 @@ html body.tm-new-design .ai-panel .ai-composer textarea{
 }
 
 /* Three reference components: material comes only from the shared tm-card tokens. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.27),rgba(188,224,207,.11));
+  --tm-card-bg:var(--tm-weather-card-bg);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.18),rgba(195,228,213,.07));
+  --tm-card-bg-compact:rgba(227,245,236,.12);
+  --tm-card-border:rgba(255,255,255,.48);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.52),0 12px 32px rgba(0,40,28,.11);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.30),0 5px 16px rgba(0,40,28,.07);
+  --tm-card-control:rgba(243,252,247,.28);
+  --tm-card-control-selected:rgba(174,222,201,.45);
+  --tm-card-blur:blur(20px) saturate(142%)
+}
+html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.36),rgba(3,27,20,.18));
+  --tm-card-bg:var(--tm-weather-card-bg);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.22),rgba(4,31,23,.10));
+  --tm-card-bg-compact:rgba(10,48,36,.15);
+  --tm-card-border:rgba(205,239,224,.28);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 14px 34px rgba(0,0,0,.22);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.08),0 6px 16px rgba(0,0,0,.16);
+  --tm-card-control:rgba(219,239,230,.10);
+  --tm-card-control-selected:rgba(61,139,106,.28)
+}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] main.content>section#places{
   border:0;
   border-radius:var(--tm-card-radius);
@@ -1000,11 +1075,11 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] main.c
   backdrop-filter:none
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner{
-  border:1px solid rgba(255,255,255,.38);
+  border:1px solid var(--tm-card-border);
   border-radius:var(--tm-card-radius-featured);
   background:var(--tm-weather-card-bg);
   color:var(--tm-card-text);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.52),0 12px 30px rgba(0,35,26,.12);
+  box-shadow:var(--tm-card-shadow);
   -webkit-backdrop-filter:var(--tm-card-blur);
   backdrop-filter:var(--tm-card-blur)
 }
@@ -1013,6 +1088,25 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
 ){
   --tm-card-surface:var(--tm-card-bg-nested);
   --tm-card-elevation:var(--tm-card-shadow-compact)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-category-search input,.nearby-category-chips button,.nearby-category-drawer button,
+  .nearby-category-search-results button,.nearby-mode-bar,.nearby-free-search,.nearby-free-search input
+){
+  border-color:var(--tm-card-control-border);
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
+  box-shadow:var(--tm-card-shadow-compact);
+  -webkit-backdrop-filter:blur(12px) saturate(125%);
+  backdrop-filter:blur(12px) saturate(125%)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-category-chips button.active,.nearby-category-drawer button.active,
+  .nearby-category-search-results button.active,.nearby-mode-bar button.active
+){
+  border-color:var(--tm-card-border-hover);
+  background:var(--tm-card-control-selected);
+  color:var(--tm-card-link)
 }
 
 html body.home-page.is-authenticated #active-trips>.trip-card-shell{
@@ -1037,12 +1131,17 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-overla
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
   border:0;
   border-radius:var(--tm-card-radius);
-  background:var(--tm-card-photo-copy);
+  right:18px;
+  bottom:18px;
+  left:auto;
+  width:min(82%,340px);
+  padding:16px;
+  background:linear-gradient(135deg,rgba(3,25,18,.62),rgba(5,42,30,.34));
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 22px rgba(0,24,17,.2);
-  -webkit-backdrop-filter:blur(12px) saturate(125%);
-  backdrop-filter:blur(12px) saturate(125%);
+  -webkit-backdrop-filter:blur(14px) saturate(128%);
+  backdrop-filter:blur(14px) saturate(128%);
   text-shadow:none
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy,
