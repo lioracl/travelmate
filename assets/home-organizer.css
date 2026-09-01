@@ -263,9 +263,8 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 }
 
 /* Trip card date editor and high-contrast dashboard actions. */
-.trip-edit-dates{position:absolute;z-index:6;top:72px;left:24px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;gap:7px;border:2px solid #fff;border-radius:999px;background:#f0783c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font:inherit;font-size:12px;font-weight:900;box-shadow:0 9px 24px rgba(73,27,8,.3);cursor:pointer}
-.trip-edit-dates i,.trip-edit-dates span{color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:0!important}
-.trip-delete{position:absolute;z-index:6;top:122px;left:24px;min-height:38px;padding:0 13px;display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.82);border-radius:999px;background:rgba(57,30,27,.84)!important;color:#fff!important;font:inherit;font-size:12px;font-weight:900;box-shadow:0 8px 20px rgba(28,15,13,.28);backdrop-filter:blur(12px);cursor:pointer}.trip-delete i,.trip-delete span{color:#fff!important;-webkit-text-fill-color:#fff!important}.trip-delete:disabled{opacity:.55;cursor:wait}
+.trip-edit-dates{position:absolute;z-index:6;top:72px;left:24px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;gap:7px;border-radius:999px;font:inherit;font-size:12px;font-weight:900;cursor:pointer}
+.trip-delete{position:absolute;z-index:6;top:122px;left:24px;min-height:38px;padding:0 13px;display:inline-flex;align-items:center;gap:7px;border-radius:999px;font:inherit;font-size:12px;font-weight:900;cursor:pointer}.trip-delete:disabled{opacity:.55;cursor:wait}
 .trip-date-editor-open{overflow:hidden}
 .trip-date-editor-backdrop{position:fixed;inset:0;z-index:2200;display:grid;place-items:center;padding:18px;background:rgba(5,20,16,.66);backdrop-filter:blur(10px)}
 .trip-date-editor{position:relative;width:min(480px,100%);padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:24px;background:#fff;color:#18392f;box-shadow:0 30px 90px rgba(0,0,0,.34)}
@@ -496,16 +495,6 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
   .home-page:not(.is-authenticated) .destination-slide{display:block;width:92px;height:260px}
   .home-page:not(.is-authenticated) .destination-slide.active{width:145px;height:390px}
 }
-
-html body.home-page.is-authenticated .trip-card-shell .trip-delete{
-  background:linear-gradient(135deg,#ffe2df,#ffc9c3)!important;
-  border:2px solid #d95f55!important;
-  color:#7c211c!important;
-  box-shadow:0 8px 20px rgba(128,31,24,.2)!important;
-  opacity:1!important
-}
-html body.home-page.is-authenticated .trip-card-shell .trip-delete :is(i,span){color:#7c211c!important;-webkit-text-fill-color:#7c211c!important;opacity:1!important;font-weight:900!important}
-html body.home-page.is-authenticated .trip-card-shell .trip-delete:hover{background:linear-gradient(135deg,#ffd4cf,#ffb7af)!important;border-color:#b84037!important}
 
 html body.home-page.is-authenticated [data-archive-list] .trip-activity-toggle,
 html body.home-page.is-authenticated [data-archive-list] .trip-date-state{

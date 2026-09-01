@@ -30,7 +30,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   .budget-charts,.currency-converter,.transport-card,.travel-service-card,.service-card,
   .fare-guide,.getaway-result,.group-card,.album-card,.memory-card,.trip-summary-card,
   .resource-link
-){
+):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1.5px solid var(--tm-readable-border)!important;
   background:var(--tm-readable-surface-soft)!important;
   color:var(--tm-readable-text)!important;
@@ -48,7 +48,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   .budget-charts,.currency-converter,.transport-card,.travel-service-card,.service-card,
   .fare-guide,.getaway-result,.group-card,.album-card,.memory-card,.trip-summary-card,
   .resource-link
-) :where(h1,h2,h3,h4,h5,h6,p,span,strong,b,small,label,legend,time,li){
+):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) :where(h1,h2,h3,h4,h5,h6,p,span,strong,b,small,label,legend,time,li){
   color:inherit!important;
   -webkit-text-fill-color:currentColor!important;
   opacity:1!important
@@ -57,12 +57,12 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
 html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
   small,.muted,.day-summary,.saved-place-type,.activity-copy small,
   .trip-anchor-copy small,.trip-anchor-copy p
-){
+):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   color:var(--tm-readable-muted)!important;
   -webkit-text-fill-color:var(--tm-readable-muted)!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(input,select,textarea){
+html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(input,select,textarea):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1px solid rgba(208,239,226,.78)!important;
   background:rgba(250,255,252,.96)!important;
   color:#173d32!important;
@@ -71,7 +71,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   text-shadow:none!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(input,textarea)::placeholder{
+html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(input,textarea):not(body[data-trip-kind="custom"][data-trip-view="overview"] *)::placeholder{
   color:#687a72!important;
   -webkit-text-fill-color:#687a72!important;
   opacity:1!important
@@ -79,7 +79,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
 
 html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)
-):not(.maplibregl-map *){
+):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1px solid rgba(195,231,216,.82)!important;
   background:var(--tm-readable-control)!important;
   color:var(--tm-readable-control-text)!important;
@@ -90,7 +90,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
 
 html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)
-):not(.maplibregl-map *) *{
+):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) *{
   color:inherit!important;
   -webkit-text-fill-color:inherit!important
 }
@@ -98,7 +98,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
 html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
   .primary,button[type="submit"],.nearby-search,.lodging-navigate,.airport-navigate,
   .lodging-actions button,.trip-anchor>a
-){
+):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1px solid rgba(137,231,194,.9)!important;
   background:linear-gradient(135deg,#087554,#0c6048)!important;
   color:#fff!important;
@@ -109,7 +109,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
 html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
   .primary,button[type="submit"],.nearby-search,.lodging-navigate,.airport-navigate,
   .lodging-actions button,.trip-anchor>a
-) *{
+):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) *{
   color:#fff!important;
   -webkit-text-fill-color:#fff!important
 }
@@ -300,7 +300,7 @@ html body.tm-new-design[data-trip-view="overview"]{
   --tm-overview-text:var(--tm-card-text);
   --tm-overview-muted:var(--tm-card-secondary);
   --tm-overview-green:#0e614b;
-  --tm-overview-green-soft:#edf5f1;
+  --tm-overview-green-soft:var(--tm-card-control-selected);
   --tm-overview-shadow:var(--tm-card-shadow);
   --tm-overview-shadow-hover:var(--tm-card-shadow-hover)
 }
@@ -497,16 +497,16 @@ html body.tm-new-design[data-trip-view="overview"] main.content .progress>i{
 }
 
 html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"]{
-  --tm-overview-card:#17241f;
-  --tm-overview-card-soft:#1c2b25;
-  --tm-overview-border:#34483f;
-  --tm-overview-border-hover:#547064;
-  --tm-overview-text:#f1f6f3;
-  --tm-overview-muted:#b8c8c0;
+  --tm-overview-card:var(--tm-card-bg);
+  --tm-overview-card-soft:var(--tm-card-bg-nested);
+  --tm-overview-border:var(--tm-card-border);
+  --tm-overview-border-hover:var(--tm-card-border-hover);
+  --tm-overview-text:var(--tm-card-text);
+  --tm-overview-muted:var(--tm-card-secondary);
   --tm-overview-green:#71c7a5;
-  --tm-overview-green-soft:#20372e;
-  --tm-overview-shadow:0 2px 6px rgba(0,0,0,.18),0 14px 32px rgba(0,0,0,.24);
-  --tm-overview-shadow-hover:0 4px 10px rgba(0,0,0,.2),0 18px 36px rgba(0,0,0,.3)
+  --tm-overview-green-soft:var(--tm-card-control-selected);
+  --tm-overview-shadow:var(--tm-card-shadow);
+  --tm-overview-shadow-hover:var(--tm-card-shadow-hover)
 }
 
 html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -707,7 +707,7 @@ html body.home-page :is(.home-about){
   opacity:1!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places),
+html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
 html body.tm-new-design main.content>.trip-home-actions,
 html body.tm-new-design main.content :is(
   .expense-workspace,.document-vault,.transport-card,.travel-service-card,
@@ -832,9 +832,9 @@ html body.tm-new-design .weather-top-widget{
 html body.tm-new-design .weather-top-widget:hover{transform:translateY(-1px);background:var(--tm-weather-card-bg-hover);box-shadow:var(--tm-card-shadow-hover)}
 html body.tm-new-design .weather-top-widget :is(strong,small,span,i){color:inherit;-webkit-text-fill-color:currentColor;text-shadow:none}
 html body.tm-new-design .weather-top-widget .weather-top-icon{
-  border:1px solid rgba(255,255,255,.24);
+  border:1px solid rgba(255,255,255,.14);
   border-radius:14px;
-  background:rgba(255,255,255,.09);
+  background:rgba(255,255,255,.035);
   color:var(--tm-card-icon)
 }
 html body.tm-new-design .weather-top-widget :is(.weather-top-copy small,.weather-top-chevron){color:var(--tm-card-muted)}
@@ -869,19 +869,19 @@ html body.tm-new-design[data-trip-view="overview"] .assistant-actions button{min
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-mobile-header-height:72px;
   --tm-overview-weather-height:118px;
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.12),rgba(188,224,207,.03));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(240,251,246,.17),rgba(194,229,213,.06));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.06),rgba(188,224,207,.015));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(240,251,246,.085),rgba(194,229,213,.025));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.07),rgba(195,228,213,.02));
-  --tm-card-bg-compact:rgba(227,245,236,.04);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.035),rgba(195,228,213,.01));
+  --tm-card-bg-compact:rgba(227,245,236,.025);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
-  --tm-card-border:rgba(255,255,255,.22);
-  --tm-card-border-hover:rgba(255,255,255,.36);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 6px 18px rgba(0,40,28,.06);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.14),0 3px 10px rgba(0,40,28,.04);
-  --tm-card-control:rgba(243,252,247,.07);
-  --tm-card-control-selected:rgba(174,222,201,.16);
-  --tm-card-blur:blur(7px) saturate(116%);
+  --tm-card-border:rgba(255,255,255,.14);
+  --tm-card-border-hover:rgba(255,255,255,.24);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 4px 12px rgba(0,40,28,.035);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.09),0 2px 6px rgba(0,40,28,.025);
+  --tm-card-control:rgba(243,252,247,.03);
+  --tm-card-control-selected:rgba(116,194,159,.10);
+  --tm-card-blur:blur(3px) saturate(108%);
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-overview-green-soft:var(--tm-card-control-selected);
@@ -896,18 +896,18 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-app-glass-shadow:0 1px 2px rgba(20,45,36,.02),0 7px 20px rgba(20,45,36,.06)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.15),rgba(3,27,20,.05));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(9,52,39,.21),rgba(5,34,25,.09));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.09),rgba(3,27,20,.025));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(9,52,39,.13),rgba(5,34,25,.045));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.08),rgba(4,31,23,.03));
-  --tm-card-bg-compact:rgba(10,48,36,.05);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.045),rgba(4,31,23,.015));
+  --tm-card-bg-compact:rgba(10,48,36,.025);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
-  --tm-card-border:rgba(205,239,224,.14);
-  --tm-card-border-hover:rgba(205,239,224,.25);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 7px 19px rgba(0,0,0,.12);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.04),0 3px 10px rgba(0,0,0,.08);
-  --tm-card-control:rgba(219,239,230,.035);
-  --tm-card-control-selected:rgba(61,139,106,.12)
+  --tm-card-border:rgba(205,239,224,.11);
+  --tm-card-border-hover:rgba(205,239,224,.18);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 12px rgba(0,0,0,.08);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.03),0 2px 6px rgba(0,0,0,.05);
+  --tm-card-control:rgba(219,239,230,.02);
+  --tm-card-control-selected:rgba(61,139,106,.08)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
@@ -947,10 +947,11 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .tri
   -webkit-backdrop-filter:var(--tm-card-blur);
   backdrop-filter:var(--tm-card-blur)
 }
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:var(--tm-custom-overview-subtle);--tm-card-elevation:none;--tm-card-blur:blur(6px) saturate(112%);--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:transparent;--tm-card-elevation:none;--tm-card-blur:none;--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow);display:grid;gap:10px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;gap:6px}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{--tm-card-surface:transparent;--tm-card-elevation:none;min-width:0;gap:7px;padding:10px;font-size:13px}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{--tm-card-surface:transparent;--tm-card-elevation:none;--tm-card-blur:none;min-width:0;gap:7px;padding:10px;font-size:13px}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact button{border:1px solid var(--tm-card-control-border);background:var(--tm-card-control);color:var(--tm-card-control-text);box-shadow:var(--tm-card-shadow-compact);-webkit-backdrop-filter:none;backdrop-filter:none}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a i{font-size:16px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions>div p{margin:0 0 2px;font-size:11px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions h2{margin:0;font-size:19px;line-height:1.25}
@@ -1043,27 +1044,27 @@ html body.tm-new-design .ai-panel .ai-composer textarea{
 
 /* Three reference components: material comes only from the shared tm-card tokens. */
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.12),rgba(188,224,207,.03));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.06),rgba(188,224,207,.015));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.07),rgba(195,228,213,.02));
-  --tm-card-bg-compact:rgba(227,245,236,.04);
-  --tm-card-border:rgba(255,255,255,.22);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 6px 18px rgba(0,40,28,.06);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.14),0 3px 10px rgba(0,40,28,.04);
-  --tm-card-control:rgba(243,252,247,.07);
-  --tm-card-control-selected:rgba(174,222,201,.16);
-  --tm-card-blur:blur(7px) saturate(116%)
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.035),rgba(195,228,213,.01));
+  --tm-card-bg-compact:rgba(227,245,236,.025);
+  --tm-card-border:rgba(255,255,255,.14);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 4px 12px rgba(0,40,28,.035);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.09),0 2px 6px rgba(0,40,28,.025);
+  --tm-card-control:rgba(243,252,247,.03);
+  --tm-card-control-selected:rgba(116,194,159,.10);
+  --tm-card-blur:blur(3px) saturate(108%)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.15),rgba(3,27,20,.05));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.09),rgba(3,27,20,.025));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.08),rgba(4,31,23,.03));
-  --tm-card-bg-compact:rgba(10,48,36,.05);
-  --tm-card-border:rgba(205,239,224,.14);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 7px 19px rgba(0,0,0,.12);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.04),0 3px 10px rgba(0,0,0,.08);
-  --tm-card-control:rgba(219,239,230,.035);
-  --tm-card-control-selected:rgba(61,139,106,.12)
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.045),rgba(4,31,23,.015));
+  --tm-card-bg-compact:rgba(10,48,36,.025);
+  --tm-card-border:rgba(205,239,224,.11);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 12px rgba(0,0,0,.08);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.03),0 2px 6px rgba(0,0,0,.05);
+  --tm-card-control:rgba(219,239,230,.02);
+  --tm-card-control-selected:rgba(61,139,106,.08)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] main.content>section#places{
   border:0;
@@ -1091,7 +1092,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
   .nearby-category-search input,.nearby-category-chips button,.nearby-category-drawer button,
-  .nearby-category-search-results button,.nearby-mode-bar,.nearby-free-search,.nearby-free-search input
+  .nearby-category-search-results button,.nearby-mode-bar button,
+  .nearby-controls select,.nearby-controls .nearby-map-button,.nearby-free-search input
 ){
   border-color:var(--tm-card-control-border);
   background:var(--tm-card-control);
@@ -1099,8 +1101,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   -webkit-text-fill-color:currentColor;
   text-shadow:none;
   box-shadow:var(--tm-card-shadow-compact);
-  -webkit-backdrop-filter:blur(6px) saturate(112%);
-  backdrop-filter:blur(6px) saturate(112%)
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
   .nearby-category-chips button.active,.nearby-category-drawer button.active,
@@ -1114,6 +1116,28 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   .nearby-category-chips button,.nearby-category-drawer button,.nearby-category-search-results button,
   .nearby-mode-bar button
 ) :is(span,i){color:inherit;-webkit-text-fill-color:currentColor;text-shadow:none}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-category-search i,.nearby-controls .nearby-map-button i,.nearby-free-search i
+){color:var(--tm-card-control-text);-webkit-text-fill-color:currentColor;text-shadow:none}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-category-search input,.nearby-free-search input
+):-webkit-autofill{
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:var(--tm-card-control-text);
+  caret-color:var(--tm-card-control-text)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .nearby-search{
+  border:1px solid rgba(99,190,151,.42);
+  background:linear-gradient(135deg,rgba(15,116,83,.90),rgba(11,91,67,.86));
+  color:#fff;
+  -webkit-text-fill-color:currentColor;
+  box-shadow:0 3px 9px rgba(0,44,31,.10);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  text-shadow:0 1px 3px rgba(0,30,21,.34)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .nearby-search :is(i,span){color:inherit;-webkit-text-fill-color:currentColor}
 
 html body.home-page.is-authenticated #active-trips>.trip-card-shell{
   border:1px solid rgba(255,255,255,.18);
@@ -1140,14 +1164,14 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
   right:18px;
   bottom:18px;
   left:auto;
-  width:min(68%,280px);
+  width:min(64%,260px);
   padding:14px 16px;
-  background:linear-gradient(135deg,rgba(3,25,18,.20),rgba(5,42,30,.07));
+  background:linear-gradient(135deg,rgba(3,25,18,.13),rgba(5,42,30,.04));
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 12px rgba(0,24,17,.09);
-  -webkit-backdrop-filter:blur(7px) saturate(114%);
-  backdrop-filter:blur(7px) saturate(114%);
+  -webkit-backdrop-filter:blur(3px) saturate(108%);
+  backdrop-filter:blur(3px) saturate(108%);
   text-shadow:0 1px 5px rgba(0,0,0,.36)
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy,
@@ -1155,3 +1179,16 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy :
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor
 }
+html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-edit-dates,.trip-delete){
+  border:1px solid rgba(255,255,255,.24);
+  background:rgba(4,31,23,.10);
+  color:var(--tm-card-text-on-photo);
+  -webkit-text-fill-color:currentColor;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 7px rgba(0,24,17,.08);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  text-shadow:0 1px 4px rgba(0,0,0,.42)
+}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-edit-dates{border-color:rgba(255,174,119,.38)}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-delete{border-color:rgba(255,150,143,.34);background:rgba(72,18,14,.10)}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-edit-dates,.trip-delete) :is(i,span){color:inherit;-webkit-text-fill-color:currentColor}
