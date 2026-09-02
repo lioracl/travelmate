@@ -31,12 +31,17 @@
 .nearby-category-drawer section>div>button{
   width:100%;
   min-width:0;
-  min-height:50px;
+  height:56px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:center;
   justify-content:flex-start;
+  gap:8px;
   padding:8px 10px;
   text-align:start;
   line-height:1.35;
   white-space:normal;
+  overflow:hidden;
   overflow-wrap:anywhere
 }
 .nearby-category-drawer section>div>button i{flex:0 0 auto}
