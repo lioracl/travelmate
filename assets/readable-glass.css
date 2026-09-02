@@ -842,14 +842,14 @@ html body.tm-new-design .weather-top-widget :is(.weather-top-copy small,.weather
 html body.tm-new-design[data-trip-view="overview"] .weather-top-widget{min-height:0;padding:16px 18px;gap:12px;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center}
 html body.tm-new-design[data-trip-view="overview"] .weather-top-copy{display:grid;gap:3px;min-width:0}
 html body.tm-new-design[data-trip-view="overview"] .weather-top-copy small{font-size:12px;line-height:1.35}
-html body.tm-new-design[data-trip-view="overview"] .weather-top-copy strong{font-size:15px;line-height:1.35}
+html body.tm-new-design[data-trip-view="overview"] .weather-top-copy strong{font-size:15px;line-height:1.35;font-weight:750}
 html body.tm-new-design[data-trip-view="overview"] .weather-top-temperature{font-size:30px;line-height:1;font-weight:800}
 html body.tm-new-design[data-trip-view="overview"] .weather-top-icon{width:38px;height:38px}
 
 html body.tm-new-design[data-trip-view="overview"] .budget-card{align-items:stretch;flex-direction:column;gap:10px}
 html body.tm-new-design[data-trip-view="overview"] .budget-card>div:first-child{display:grid;grid-template-columns:1fr auto;align-items:end;gap:2px 12px}
 html body.tm-new-design[data-trip-view="overview"] .budget-card>div:first-child>small{grid-column:1/-1}
-html body.tm-new-design[data-trip-view="overview"] .budget-card>div:first-child>strong{font-size:30px;line-height:1.1;margin:2px 0}
+html body.tm-new-design[data-trip-view="overview"] .budget-card>div:first-child>strong{font-size:30px;line-height:1.1;margin:2px 0;font-weight:800;color:var(--tm-card-heading)}
 html body.tm-new-design[data-trip-view="overview"] .budget-card .progress{grid-column:1/-1;margin-top:7px}
 html body.tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{margin:0;padding:10px 0 0;border:0;border-top:1px solid var(--tm-card-border);border-radius:0;background:transparent;box-shadow:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 html body.tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact span{font-size:12px;line-height:1.45}
@@ -869,19 +869,19 @@ html body.tm-new-design[data-trip-view="overview"] .assistant-actions button{min
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-mobile-header-height:72px;
   --tm-overview-weather-height:118px;
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.06),rgba(188,224,207,.015));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(240,251,246,.085),rgba(194,229,213,.025));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.04),rgba(188,224,207,.01));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(240,251,246,.06),rgba(194,229,213,.018));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.035),rgba(195,228,213,.01));
-  --tm-card-bg-compact:rgba(227,245,236,.025);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.025),rgba(195,228,213,.006));
+  --tm-card-bg-compact:rgba(227,245,236,.02);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
-  --tm-card-border:rgba(255,255,255,.14);
-  --tm-card-border-hover:rgba(255,255,255,.24);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 4px 12px rgba(0,40,28,.035);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.09),0 2px 6px rgba(0,40,28,.025);
-  --tm-card-control:rgba(243,252,247,.03);
-  --tm-card-control-selected:rgba(116,194,159,.10);
-  --tm-card-blur:blur(3px) saturate(108%);
+  --tm-card-border:rgba(255,255,255,.11);
+  --tm-card-border-hover:rgba(255,255,255,.19);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 3px 10px rgba(0,40,28,.025);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.07),0 1px 4px rgba(0,40,28,.018);
+  --tm-card-control:rgba(243,252,247,.025);
+  --tm-card-control-selected:rgba(116,194,159,.08);
+  --tm-card-blur:blur(1px) saturate(104%);
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-overview-green-soft:var(--tm-card-control-selected);
@@ -896,18 +896,18 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-app-glass-shadow:0 1px 2px rgba(20,45,36,.02),0 7px 20px rgba(20,45,36,.06)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.09),rgba(3,27,20,.025));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(9,52,39,.13),rgba(5,34,25,.045));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.06),rgba(3,27,20,.018));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(9,52,39,.085),rgba(5,34,25,.028));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.045),rgba(4,31,23,.015));
-  --tm-card-bg-compact:rgba(10,48,36,.025);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.03),rgba(4,31,23,.01));
+  --tm-card-bg-compact:rgba(10,48,36,.018);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
   --tm-card-border:rgba(205,239,224,.11);
   --tm-card-border-hover:rgba(205,239,224,.18);
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 12px rgba(0,0,0,.08);
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.03),0 2px 6px rgba(0,0,0,.05);
   --tm-card-control:rgba(219,239,230,.02);
-  --tm-card-control-selected:rgba(61,139,106,.08)
+  --tm-card-control-selected:rgba(61,139,106,.07)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
@@ -954,7 +954,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .tri
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact button{border:1px solid var(--tm-card-control-border);background:var(--tm-card-control);color:var(--tm-card-control-text);box-shadow:var(--tm-card-shadow-compact);-webkit-backdrop-filter:none;backdrop-filter:none}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a i{font-size:16px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions>div p{margin:0 0 2px;font-size:11px}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions h2{margin:0;font-size:19px;line-height:1.25}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions h2{margin:0;font-size:19px;line-height:1.25;font-weight:750;color:var(--tm-card-heading)}
 @media(max-width:650px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-overview-summary,
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{margin-top:10px}
@@ -1044,27 +1044,27 @@ html body.tm-new-design .ai-panel .ai-composer textarea{
 
 /* Three reference components: material comes only from the shared tm-card tokens. */
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.06),rgba(188,224,207,.015));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.04),rgba(188,224,207,.01));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.035),rgba(195,228,213,.01));
-  --tm-card-bg-compact:rgba(227,245,236,.025);
-  --tm-card-border:rgba(255,255,255,.14);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 4px 12px rgba(0,40,28,.035);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.09),0 2px 6px rgba(0,40,28,.025);
-  --tm-card-control:rgba(243,252,247,.03);
-  --tm-card-control-selected:rgba(116,194,159,.10);
-  --tm-card-blur:blur(3px) saturate(108%)
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.025),rgba(195,228,213,.006));
+  --tm-card-bg-compact:rgba(227,245,236,.02);
+  --tm-card-border:rgba(255,255,255,.11);
+  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 3px 10px rgba(0,40,28,.025);
+  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.07),0 1px 4px rgba(0,40,28,.018);
+  --tm-card-control:rgba(243,252,247,.025);
+  --tm-card-control-selected:rgba(116,194,159,.08);
+  --tm-card-blur:blur(1px) saturate(104%)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.09),rgba(3,27,20,.025));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.06),rgba(3,27,20,.018));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.045),rgba(4,31,23,.015));
-  --tm-card-bg-compact:rgba(10,48,36,.025);
+  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.03),rgba(4,31,23,.01));
+  --tm-card-bg-compact:rgba(10,48,36,.018);
   --tm-card-border:rgba(205,239,224,.11);
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 12px rgba(0,0,0,.08);
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.03),0 2px 6px rgba(0,0,0,.05);
   --tm-card-control:rgba(219,239,230,.02);
-  --tm-card-control-selected:rgba(61,139,106,.08)
+  --tm-card-control-selected:rgba(61,139,106,.07)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] main.content>section#places{
   border:0;
@@ -1166,12 +1166,12 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
   left:auto;
   width:min(64%,260px);
   padding:14px 16px;
-  background:linear-gradient(135deg,rgba(3,25,18,.13),rgba(5,42,30,.04));
+  background:linear-gradient(135deg,rgba(3,25,18,.10),rgba(5,42,30,.03));
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 4px 12px rgba(0,24,17,.09);
-  -webkit-backdrop-filter:blur(3px) saturate(108%);
-  backdrop-filter:blur(3px) saturate(108%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 3px 9px rgba(0,24,17,.065);
+  -webkit-backdrop-filter:blur(1px) saturate(104%);
+  backdrop-filter:blur(1px) saturate(104%);
   text-shadow:0 1px 5px rgba(0,0,0,.36)
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy,
