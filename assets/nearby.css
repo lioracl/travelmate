@@ -19,3 +19,24 @@
 .nearby-panel[data-nearby-initialized="true"] .nearby-controls label:has([data-nearby-category]){display:none}
 .nearby-location-selector{display:grid;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--tm-card-border,var(--line))}.nearby-location-heading{display:flex;align-items:end;justify-content:space-between;gap:10px;color:var(--tm-card-heading,#20362e)}.nearby-location-heading small{color:var(--tm-card-muted,var(--muted));font-size:11px}.nearby-location-selector .nearby-mode-bar{margin-top:0}.nearby-location-selector .nearby-free-search{margin:0}.nearby-execute-search{width:100%;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:8px}.nearby-panel[data-nearby-initialized="true"] .nearby-controls>[data-nearby-search],.nearby-panel[data-nearby-initialized="true"] .nearby-controls>.nearby-map-button:not([data-nearby-map-button]){display:none}
 @media(max-width:760px){.nearby-location-heading{align-items:start;flex-direction:column;gap:3px}.nearby-location-selector .nearby-mode-bar button{min-width:0;padding-inline:5px;font-size:12px}.nearby-location-selector .nearby-free-search{grid-template-columns:1fr}}
+
+/* Places category drawer geometry: stable mobile cells for long RTL labels. */
+.nearby-category-drawer section,
+.nearby-category-drawer section>div{min-width:0}
+.nearby-category-drawer section>div{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px
+}
+.nearby-category-drawer section>div>button{
+  width:100%;
+  min-width:0;
+  min-height:50px;
+  justify-content:flex-start;
+  padding:8px 10px;
+  text-align:start;
+  line-height:1.35;
+  white-space:normal;
+  overflow-wrap:anywhere
+}
+.nearby-category-drawer section>div>button i{flex:0 0 auto}

@@ -879,8 +879,10 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-card-border-hover:rgba(255,255,255,.19);
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 3px 10px rgba(0,40,28,.025);
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.07),0 1px 4px rgba(0,40,28,.018);
-  --tm-card-control:rgba(243,252,247,.025);
-  --tm-card-control-selected:rgba(116,194,159,.08);
+  --tm-card-control:rgba(243,252,247,.06);
+  --tm-card-control-border:rgba(14,97,75,.3);
+  --tm-card-control-placeholder:#596f66;
+  --tm-card-control-selected:rgba(116,194,159,.11);
   --tm-card-blur:blur(1px) saturate(104%);
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
@@ -906,8 +908,11 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-card-border-hover:rgba(205,239,224,.18);
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 12px rgba(0,0,0,.08);
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.03),0 2px 6px rgba(0,0,0,.05);
-  --tm-card-control:rgba(219,239,230,.02);
-  --tm-card-control-selected:rgba(61,139,106,.07)
+  --tm-card-control:rgba(219,239,230,.055);
+  --tm-card-control-border:rgba(190,229,212,.3);
+  --tm-card-control-text:#e6f3ed;
+  --tm-card-control-placeholder:#b8cbc2;
+  --tm-card-control-selected:rgba(61,139,106,.1)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
@@ -950,7 +955,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .tri
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:transparent;--tm-card-elevation:none;--tm-card-blur:none;--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow);display:grid;gap:10px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;gap:6px}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{--tm-card-surface:transparent;--tm-card-elevation:none;--tm-card-blur:none;min-width:0;gap:7px;padding:10px;font-size:13px}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{--tm-card-surface:var(--tm-card-control);--tm-card-elevation:none;--tm-card-blur:none;min-width:0;gap:7px;padding:10px;border:1px solid var(--tm-card-control-border);font-size:13px;font-weight:600}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact button{border:1px solid var(--tm-card-control-border);background:var(--tm-card-control);color:var(--tm-card-control-text);box-shadow:var(--tm-card-shadow-compact);-webkit-backdrop-filter:none;backdrop-filter:none}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a i{font-size:16px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions>div p{margin:0 0 2px;font-size:11px}
@@ -1051,8 +1056,11 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-card-border:rgba(255,255,255,.11);
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 3px 10px rgba(0,40,28,.025);
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.07),0 1px 4px rgba(0,40,28,.018);
-  --tm-card-control:rgba(243,252,247,.025);
-  --tm-card-control-selected:rgba(116,194,159,.08);
+  --tm-card-control:rgba(243,252,247,.06);
+  --tm-card-control-border:rgba(14,97,75,.3);
+  --tm-card-control-placeholder:#596f66;
+  --tm-card-border-hover:rgba(18,105,79,.42);
+  --tm-card-control-selected:rgba(116,194,159,.11);
   --tm-card-blur:blur(1px) saturate(104%)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
@@ -1063,8 +1071,12 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-card-border:rgba(205,239,224,.11);
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 12px rgba(0,0,0,.08);
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.03),0 2px 6px rgba(0,0,0,.05);
-  --tm-card-control:rgba(219,239,230,.02);
-  --tm-card-control-selected:rgba(61,139,106,.07)
+  --tm-card-control:rgba(219,239,230,.055);
+  --tm-card-control-border:rgba(190,229,212,.3);
+  --tm-card-control-text:#e6f3ed;
+  --tm-card-control-placeholder:#b8cbc2;
+  --tm-card-border-hover:rgba(158,223,195,.42);
+  --tm-card-control-selected:rgba(61,139,106,.1)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] main.content>section#places{
   border:0;
@@ -1124,6 +1136,9 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
 ):-webkit-autofill{
   -webkit-background-clip:text;
   background-clip:text;
+  -webkit-box-shadow:0 0 0 1000px rgba(243,252,247,.06) inset;
+  box-shadow:0 0 0 1000px rgba(243,252,247,.06) inset;
+  transition:background-color 9999s ease-out 0s;
   -webkit-text-fill-color:var(--tm-card-control-text);
   caret-color:var(--tm-card-control-text)
 }
@@ -1179,6 +1194,8 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy :
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor
 }
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy h2{font-weight:750}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy p{font-weight:500}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-edit-dates,.trip-delete){
   border:1px solid rgba(255,255,255,.24);
   background:rgba(4,31,23,.10);
@@ -1192,3 +1209,25 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-ed
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-edit-dates{border-color:rgba(255,174,119,.38)}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-delete{border-color:rgba(255,150,143,.34);background:rgba(72,18,14,.10)}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-edit-dates,.trip-delete) :is(i,span){color:inherit;-webkit-text-fill-color:currentColor}
+
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-category-search input,.nearby-category-chips button,.nearby-category-drawer button,
+  .nearby-category-search-results button,.nearby-mode-bar button,
+  .nearby-controls select,.nearby-controls .nearby-map-button,.nearby-free-search input
+){font-weight:600}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-category-search input,.nearby-free-search input
+)::placeholder{
+  color:var(--tm-card-control-placeholder);
+  -webkit-text-fill-color:currentColor;
+  opacity:1
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-category-search input,.nearby-category-chips button,.nearby-category-drawer button,
+  .nearby-category-search-results button,.nearby-mode-bar button,
+  .nearby-controls select,.nearby-controls .nearby-map-button,.nearby-free-search input
+):focus-visible{
+  border-color:var(--tm-card-control-focus);
+  outline:2px solid color-mix(in srgb,var(--tm-card-control-focus) 28%,transparent);
+  outline-offset:2px
+}

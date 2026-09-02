@@ -305,31 +305,31 @@ body.tm-new-design[data-trip-view="places"] #places > .section-head .tm-collapse
 body.tm-new-design[data-trip-view="places"] #places .nearby-panel{
   padding:var(--tm-card-padding);
 }
-body.tm-new-design[data-trip-view="places"] #places :where(
+body.tm-new-design:not([data-trip-kind="custom"])[data-trip-view="places"] #places :where(
   h1,h2,h3,h4,p,span,small,strong,b,label,.nearby-status,.place-planner-note
 ):not(.nearby-category-drawer *):not(.nearby-map-detail *){
   color:var(--tm-card-text)!important;
   -webkit-text-fill-color:var(--tm-card-text)!important;
 }
-body.tm-new-design[data-trip-view="places"] #places .place-planner-note{
+body.tm-new-design:not([data-trip-kind="custom"])[data-trip-view="places"] #places .place-planner-note{
   border:0!important;
   background:var(--tm-card-bg-compact)!important;
 }
-body.tm-new-design[data-trip-view="places"] #places :where(input,select,textarea){
+body.tm-new-design:not([data-trip-kind="custom"])[data-trip-view="places"] #places :where(input,select,textarea){
   border-color:var(--tm-card-control-border)!important;
   background:var(--tm-card-control)!important;
   color:var(--tm-card-control-text)!important;
   -webkit-text-fill-color:var(--tm-card-control-text)!important;
 }
-body.tm-new-design[data-trip-view="places"] #places :where(input,textarea)::placeholder{
+body.tm-new-design:not([data-trip-kind="custom"])[data-trip-view="places"] #places :where(input,textarea)::placeholder{
   color:var(--tm-card-control-placeholder)!important;
   -webkit-text-fill-color:var(--tm-card-control-placeholder)!important;
 }
-body.tm-new-design[data-trip-view="places"] #places select option{
+body.tm-new-design:not([data-trip-kind="custom"])[data-trip-view="places"] #places select option{
   color:#414846;
   background:#fff;
 }
-body.tm-new-design[data-trip-view="places"] #places :where(
+body.tm-new-design:not([data-trip-kind="custom"])[data-trip-view="places"] #places :where(
   .nearby-search,.nearby-map-button,[data-nearby-map-search]
 ){
   color:#fff!important;
@@ -433,7 +433,7 @@ body.tm-new-design[data-trip-view="places"] #places .auto-place-launch small{
   color:inherit!important;
 }
 /* 1.39 — readable weather-style glass across every non-hero trip screen. */
-body.tm-new-design .content>section:not(.hero):not(#places),
+body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) .content>section:not(.hero):not(#places),
 body.tm-new-design :where(.expense-workspace,.budget-charts,.currency-converter,.transport-card,.fare-guide,.travel-service-card,.external-resources,.group-card,.album-card,.memory-card,.trip-summary-card,.document-vault-panel){
   border:1px solid rgba(181,232,211,.42)!important;
   background:linear-gradient(145deg,rgba(8,48,37,.84),rgba(18,74,56,.72))!important;
@@ -442,11 +442,11 @@ body.tm-new-design :where(.expense-workspace,.budget-charts,.currency-converter,
   backdrop-filter:blur(22px) saturate(130%)!important;
   -webkit-backdrop-filter:blur(22px) saturate(130%)!important;
 }
-body.tm-new-design .content>section:not(.hero):not(#places) :where(h1,h2,h3,h4,strong,b),
+body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) .content>section:not(.hero):not(#places) :where(h1,h2,h3,h4,strong,b),
 body.tm-new-design :where(.expense-workspace,.budget-charts,.transport-card,.fare-guide,.travel-service-card,.external-resources,.group-card,.album-card,.memory-card,.trip-summary-card) :where(h1,h2,h3,h4,strong,b){color:#f7fffb!important;-webkit-text-fill-color:#f7fffb!important;text-shadow:none!important}
-body.tm-new-design .content>section:not(.hero):not(#places) :where(p,small,span,label),
+body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) .content>section:not(.hero):not(#places) :where(p,small,span,label),
 body.tm-new-design :where(.expense-workspace,.budget-charts,.transport-card,.fare-guide,.travel-service-card,.external-resources,.group-card,.album-card,.memory-card,.trip-summary-card) :where(p,small,span,label){color:rgba(238,255,248,.82)!important;-webkit-text-fill-color:rgba(238,255,248,.82)!important}
-body.tm-new-design .content>section:not(.hero):not(#places) :where(input,select,textarea){border-color:rgba(188,226,211,.62)!important;background:rgba(248,255,252,.94)!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important}
+body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) .content>section:not(.hero):not(#places) :where(input,select,textarea){border-color:rgba(188,226,211,.62)!important;background:rgba(248,255,252,.94)!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important}
 body.tm-new-design .content>section:not(.hero):not(#places) :where(a,button){text-shadow:none}
 
 /* Critical plan media sizing: prevents full-size images before feature CSS arrives. */

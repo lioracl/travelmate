@@ -364,7 +364,7 @@ body.tm-new-design #trip-home-actions-title{
 /* Keep all trip-page typography bright over destination photography. */
 body.tm-new-design .content :where(
   h1,h2,h3,h4,h5,h6,p,small,strong,span,label,legend,a,button,li,dt,dd,time
-):not(.weather-top-widget):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-home-actions *):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *),
+):not(.weather-top-widget):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .weather-top-widget *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-overview-summary *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-home-actions *):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *),
 body.tm-new-design .sidebar :where(a,button,span,small,strong){
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
@@ -3145,8 +3145,8 @@ html body.tm-new-design[data-trip-view="transport"] main.content section#transpo
 html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport p.transport-note.transport-note{background:linear-gradient(135deg,#315d4d,#21493b)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 
 /* Avoid GPU backdrop-filter tile seams that appeared as a flashing vertical band. */
-html body.tm-new-design main.content :is(section:not(#places),.section-head,.service-card,.transport-card,.expense-workspace,.budget-columns-editor,.budget-category-editor,.document-vault,.ai-notes-archive,.doc-row,.about-dialog){backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-html body.tm-new-design main.content>section:not(.hero):not(#places){background:rgba(224,236,230,.96)!important}
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content :is(section:not(#places),.section-head,.service-card,.transport-card,.expense-workspace,.budget-columns-editor,.budget-category-editor,.document-vault,.ai-notes-archive,.doc-row,.about-dialog){backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places){background:rgba(224,236,230,.96)!important}
 html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#getaways)>.section-head .mark{display:none!important}
 html body.tm-new-design main.content #transport .transport-empty{background:#edf7f2!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important;border-color:#8fc2ab!important}
 html body.tm-new-design main.content #transport .transport-empty *{color:#315d4d!important;-webkit-text-fill-color:#315d4d!important}
@@ -3164,8 +3164,8 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
  * filled actions keep white copy.
  */
 @media(max-width:900px){
-  html body.tm-new-design main.content>section:not(.hero):not(#places),
-  html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places),
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
     .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
     .nearby,.summary-card,.auto-card,.generated-day,.service-card,
     .transport-card,.external-resources,.planned-activity,.saved-place,
@@ -3179,7 +3179,7 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
     -webkit-text-fill-color:#173f32!important;
     text-shadow:none!important
   }
-  html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
     .section-head,.card,.panel,.module,.plan-card,.place-card,.doc-row,
     .expense,.tip-card,.nearby,.summary-card,.auto-card,.generated-day,
     .service-card,.transport-card,.external-resources,.planned-activity,
@@ -3192,7 +3192,7 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
     text-shadow:none!important;
     opacity:1!important
   }
-  html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
     input,select,textarea,[contenteditable="true"]
   ){
     background:#fff!important;
@@ -3201,7 +3201,7 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
     -webkit-text-fill-color:#173f32!important;
     opacity:1!important
   }
-  html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
     button[type="submit"],.primary,.pill-btn,.planner-action.primary,
     .service-link:not(.secondary),.official-fares,.transport-note,
     .smart-hub-now,.safe
@@ -3211,7 +3211,7 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
     color:#fff!important;
     -webkit-text-fill-color:#fff!important
   }
-  html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
     button[type="submit"],.primary,.pill-btn,.planner-action.primary,
     .service-link:not(.secondary),.official-fares,.transport-note,
     .smart-hub-now,.safe
@@ -3219,7 +3219,7 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
     color:#fff!important;
     -webkit-text-fill-color:#fff!important
   }
-  html body.tm-new-design main.content>section:not(.hero):not(#places) .section-head{
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) .section-head{
     background:linear-gradient(135deg,#f7fcf9,#deeee6)!important;
     border:1px solid #a6cbbb!important;
     color:#173f32!important
@@ -3239,7 +3239,7 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
   html body.tm-new-design[data-trip-view] main.content section#getaways#getaways :is(
     .service-card.service-card,.getaway-result.getaway-result
   ),
-  html body.tm-new-design main.content section.trip-home-actions.trip-home-actions a{
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content section.trip-home-actions.trip-home-actions a{
     background:linear-gradient(145deg,#f8fcfa,#e2f0e9)!important;
     border:1px solid #9fc8b6!important;
     color:#173f32!important;
@@ -3256,13 +3256,13 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
   html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#getaways) :is(
     .service-card,.getaway-result
   ) :is(h1,h2,h3,h4,p,strong,b,small,span,label,a,i),
-  html body.tm-new-design main.content section.trip-home-actions.trip-home-actions a *{
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content section.trip-home-actions.trip-home-actions a *{
     color:#173f32!important;
     -webkit-text-fill-color:#173f32!important;
     text-shadow:none!important;
     opacity:1!important
   }
-  html body.tm-new-design[data-trip-view][data-trip-view] main.content section.trip-home-actions.trip-home-actions a[href]{
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"])[data-trip-view][data-trip-view] main.content section.trip-home-actions.trip-home-actions a[href]{
     background:linear-gradient(145deg,#f8fcfa,#e2f0e9)!important;
     border:1px solid #9fc8b6!important;
     color:#173f32!important;
@@ -3270,7 +3270,7 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
     text-shadow:none!important;
     opacity:1!important
   }
-  html body.tm-new-design[data-trip-view][data-trip-view] main.content section.trip-home-actions.trip-home-actions a[href] *{
+  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"])[data-trip-view][data-trip-view] main.content section.trip-home-actions.trip-home-actions a[href] *{
     color:#173f32!important;
     -webkit-text-fill-color:#173f32!important;
     text-shadow:none!important;
@@ -4575,8 +4575,8 @@ html body.tm-new-design main.content #budget .budget-limit-mode input[type="radi
 }
 
 /* 1.50.2 absolute final authority: no light text on light weather glass. */
-html body.tm-new-design main.content>section:not(.hero):not(#places):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places),
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
   .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
   .nearby-result,.auto-place-launch,.auto-place-dialog,.planner-toolbar,
   .planner-composer,.trip-anchor,.doc-row,.document-vault,.expense-workspace,
@@ -4595,7 +4595,7 @@ html body.tm-new-design :is(
   -webkit-text-fill-color:#26332e!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.86),0 14px 34px rgba(12,42,32,.14)!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li):not(.maplibregl-map *):not(.nearby-category-drawer *),
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li):not(.maplibregl-map *):not(.nearby-category-drawer *),
 html body.tm-new-design :is(
   .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
   .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
@@ -4605,7 +4605,7 @@ html body.tm-new-design :is(
   -webkit-text-fill-color:#26332e!important;
   text-shadow:none!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(input,select,textarea),
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(input,select,textarea),
 html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal) :is(input,select,textarea){
   border-color:rgba(38,79,64,.42)!important;
   background:#fff!important;
@@ -4613,20 +4613,20 @@ html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-c
   -webkit-text-fill-color:#17231f!important;
   caret-color:#17231f!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(input,textarea)::placeholder,
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(input,textarea)::placeholder,
 html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal) :is(input,textarea)::placeholder{
   color:#748079!important;
   -webkit-text-fill-color:#748079!important;
   opacity:1!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(.primary,.nearby-search,.lodging-actions button,.trip-anchor>a),
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(.primary,.nearby-search,.lodging-actions button,.trip-anchor>a),
 html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog) :is(.primary,button[type="submit"]){
   border-color:#0e614b!important;
   background:#0e614b!important;
   color:#fff!important;
   -webkit-text-fill-color:#fff!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(.primary,.nearby-search,.lodging-actions button,.trip-anchor>a) *,
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(.primary,.nearby-search,.lodging-actions button,.trip-anchor>a) *,
 html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog) :is(.primary,button[type="submit"]) *{
   color:#fff!important;
   -webkit-text-fill-color:#fff!important
@@ -4648,8 +4648,8 @@ html body.tm-new-design{
   --tm-weather-unified-muted:var(--tm-card-muted);
   --tm-weather-unified-shadow:var(--tm-card-shadow)
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places),
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places),
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
   .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
   .nearby-result,.auto-place-launch,.auto-place-dialog,.planner-toolbar,
   .planner-composer,.trip-anchor,.doc-row,.document-vault,.expense-workspace,
@@ -4672,7 +4672,7 @@ html body.tm-new-design :is(
   text-shadow:0 1px 7px rgba(0,24,18,.42)!important;
   opacity:1!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
   .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
   .nearby-result,.auto-place-launch,.auto-place-dialog,.planner-toolbar,
   .planner-composer,.trip-anchor,.doc-row,.document-vault,.expense-workspace,
@@ -4690,7 +4690,7 @@ html body.tm-new-design :is(
   -webkit-text-fill-color:var(--tm-card-text)!important;
   opacity:1!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(input,select,textarea),
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(input,select,textarea),
 html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal) :is(input,select,textarea){
   border:1px solid rgba(212,242,229,.72)!important;
   background:rgba(248,255,252,.95)!important;
@@ -4699,13 +4699,13 @@ html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-c
   caret-color:#173c31!important;
   text-shadow:none!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(input,textarea)::placeholder,
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(input,textarea)::placeholder,
 html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal) :is(input,textarea)::placeholder{
   color:#64786f!important;
   -webkit-text-fill-color:#64786f!important;
   opacity:1!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
 ):not(.maplibregl-map *):not(.trip-home-actions a):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border-color:rgba(210,241,228,.78)!important;
@@ -4714,13 +4714,13 @@ html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
   -webkit-text-fill-color:#15523f!important;
   text-shadow:none!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
 ):not(.maplibregl-map *):not(.trip-home-actions a):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) *{
   color:inherit!important;
   -webkit-text-fill-color:inherit!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
   .primary,button[type="submit"],.nearby-search,.official-fares,.lodging-actions button,.trip-anchor>a,
   .lodging-navigate,.airport-navigate
 ),
@@ -4731,7 +4731,7 @@ html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-c
   -webkit-text-fill-color:#fff!important;
   text-shadow:0 1px 4px rgba(0,30,21,.45)!important
 }
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
+html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
   .primary,button[type="submit"],.nearby-search,.official-fares,.lodging-actions button,.trip-anchor>a,
   .lodging-navigate,.airport-navigate
 ) *,
