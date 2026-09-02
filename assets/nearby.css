@@ -45,3 +45,20 @@
   overflow-wrap:anywhere
 }
 .nearby-category-drawer section>div>button i{flex:0 0 auto}
+
+/* Places reference flow: selection summary, shared planning defaults and compact result actions. */
+.nearby-selected-category{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.nearby-selected-category p{min-width:0;margin:0;line-height:1.5}
+.nearby-selected-category [data-nearby-clear-categories],.nearby-reset-results{flex:0 0 auto;min-height:34px;padding:5px 10px;border:1px solid var(--tm-card-control-border,var(--line));border-radius:999px;background:var(--tm-card-control,transparent);color:var(--tm-card-text,#242a27);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.nearby-selected-category [data-nearby-clear-categories]:disabled,.nearby-reset-results:disabled{opacity:.48;cursor:not-allowed}
+.nearby-execute-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}
+.nearby-planning-defaults{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,1fr);gap:12px;align-items:end;padding:12px;border:1px solid var(--tm-card-border,var(--line));border-radius:14px}
+.nearby-planning-defaults>div:first-child{display:grid;gap:2px}
+.nearby-planning-defaults small{color:var(--tm-card-secondary,var(--muted));font-size:11px}
+.nearby-planning-fields{display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:8px}
+.nearby-planning-fields label{display:grid;gap:5px;color:var(--tm-card-secondary,var(--muted));font-size:11px;font-weight:700}
+.nearby-planning-fields :is(select,input){width:100%;min-width:0;min-height:42px;padding-inline:10px;border:1px solid var(--tm-card-control-border,var(--line));border-radius:11px;font:inherit}
+.nearby-planning-meta{align-self:center;color:var(--tm-card-secondary,var(--muted));font-size:11px;line-height:1.45}
+.nearby-result h3{font-weight:750}
+.nearby-result :is(.nearby-type,.nearby-distance){font-weight:650}
+@media(max-width:760px){.nearby-selected-category{align-items:stretch;flex-direction:column}.nearby-selected-category [data-nearby-clear-categories]{align-self:flex-start}.nearby-execute-actions{grid-template-columns:1fr}.nearby-planning-defaults{grid-template-columns:1fr}.nearby-planning-fields{grid-template-columns:minmax(0,1fr) 104px}}
