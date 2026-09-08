@@ -1192,7 +1192,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .nearby-search :is(i,span){color:inherit;-webkit-text-fill-color:currentColor}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
-  .nearby-result-schedule,.nearby-result,.nearby-google-summary,.nearby-result-tools
+  .nearby-result,.nearby-google-summary,.nearby-result-tools
 ){
   border-color:var(--tm-card-border);
   background:var(--tm-card-bg-nested);
@@ -1224,8 +1224,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
 ){color:var(--tm-card-secondary);-webkit-text-fill-color:currentColor}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
   .nearby-category-chips button.active,.nearby-category-drawer button.active,
-  .nearby-category-search-results button.active,.nearby-mode-bar button.active,
-  .nearby-type,.nearby-distance,.nearby-links a,.nearby-links button
+  .nearby-category-search-results button.active,.nearby-mode-bar button.active
 ){color:var(--tm-card-link);-webkit-text-fill-color:currentColor}
 
 html body.home-page.is-authenticated #active-trips>.trip-card-shell{
