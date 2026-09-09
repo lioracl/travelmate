@@ -1,5 +1,6 @@
-const CACHE_NAME='travelmate-smart-v122';
-const CORE=[
+const CACHE_NAME='travelmate-smart-v123';
+const ASSET_VERSION='20260909-4';
+const CORE_PATHS=[
   './',
   './index.html',
   './trip/custom/index.html',
@@ -52,8 +53,9 @@ const CORE=[
   './assets/app-icon.svg',
   './manifest.webmanifest'
 ];
+const CORE=CORE_PATHS.map(path=>/\.(?:js|css|json)$/i.test(path)?path+'?v='+ASSET_VERSION:path);
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>/^travelmate-smart-v\d+$/.test(key)&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting()});
 async function networkFirst(request){
   try{
@@ -61,7 +63,7 @@ async function networkFirst(request){
     if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(request,copy))}
     return response;
   }catch(error){
-    return caches.match(request).then(hit=>hit||caches.match(request,{ignoreSearch:true})).then(hit=>hit||Promise.reject(error));
+    return caches.match(request).then(hit=>hit||Promise.reject(error));
   }
 }
 self.addEventListener('fetch',event=>{
@@ -78,6 +80,6 @@ self.addEventListener('fetch',event=>{
         caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));
       }
       return response;
-    }).catch(()=>caches.match(event.request,{ignoreSearch:true})))
+    }).catch(()=>caches.match(event.request)))
   );
 });
