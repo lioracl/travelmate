@@ -753,7 +753,7 @@ html body.tm-new-design main.content :is(
   .transport-card,.external-resources,.planned-activity,.saved-place,.planner-toolbar,
   .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
   .smart-tool-panel,.day-tab,.day-item,.forecast-day,.resource-link,
-  .nearby-result,.auto-place-launch,.auto-place-preview-item,.lodging-day-card,
+  .auto-place-launch,.auto-place-preview-item,.lodging-day-card,
   .airport-day-card,.expense-workspace,.expense-record,.receipt-card,.budget-charts,
   .budget-chart-card,.currency-converter,.currency-converter-result,.fare-guide,
   .fare-card,.getaway-result,.getaway-card,.car-rental-card,.transport-result,
@@ -1350,9 +1350,11 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   --tm-card-surface:var(--tm-card-bg);
   --tm-card-elevation:var(--tm-card-shadow);
   border-color:var(--tm-card-border);
-  background:var(--tm-card-bg);
+  background:rgba(16,30,34,.16);
   color:var(--tm-card-text);
-  box-shadow:var(--tm-card-shadow)
+  box-shadow:var(--tm-card-shadow-compact);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
   .nearby-google-summary,.nearby-result-tools
