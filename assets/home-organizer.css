@@ -274,9 +274,9 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 @media(max-width:800px){
   .trip-edit-dates{top:66px;left:18px}
   .trip-delete{top:116px;left:18px}
-  .home-page.is-authenticated .home-sidebar{background:#0a2d23!important;color:#fff!important;box-shadow:0 8px 28px rgba(0,0,0,.24)}
+  .home-page.is-authenticated .home-sidebar{background:#12383F!important;color:#fff!important;box-shadow:0 8px 28px rgba(0,0,0,.24)}
   .home-page.is-authenticated .home-sidebar nav :is(a,button),.home-page.is-authenticated .home-sidebar>.trip-logout,.home-page.is-authenticated .home-sidebar-logo{color:#fff!important}
-  .home-page.is-authenticated .home-sidebar nav a.active{color:#ffad70!important}
+  .home-page.is-authenticated .home-sidebar nav a.active{color:#fff!important}
 }
 @media(max-width:520px){
   .trip-date-editor{grid-template-columns:1fr;padding:22px 16px}.trip-date-editor label{grid-column:1/-1}
@@ -505,3 +505,22 @@ html body.home-page.is-authenticated [data-archive-list] .trip-date-state{
 }
 html body.home-page.is-authenticated [data-archive-list] .trip-activity-toggle :is(i,span),
 html body.home-page.is-authenticated [data-archive-list] .trip-date-state :is(i,span){color:#702a24!important;-webkit-text-fill-color:#702a24!important}
+
+/* Authenticated All Trips V2.1 material source. */
+html body.home-page.is-authenticated .home-landing{
+  background:radial-gradient(circle at 50% 78%,rgba(20,125,146,.2),transparent 30%),linear-gradient(145deg,#12383F,#0B272C 72%);
+}
+html body.home-page.is-authenticated .home-sidebar-logo{
+  background:transparent;
+  color:var(--tm-brand-soft,var(--tm-brand-primary,#147D92))
+}
+html body.home-page.is-authenticated .home-sidebar nav a.active{
+  color:var(--tm-text-on-brand,#fff);
+  background:var(--tm-brand-primary,#147D92);
+  box-shadow:none
+}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-activity-toggle.active{
+  background:var(--tm-brand-primary,#147D92);
+  border-color:var(--tm-brand-primary,#147D92);
+  color:var(--tm-text-on-brand,#fff)
+}

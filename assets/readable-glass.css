@@ -293,22 +293,38 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
 
 /* Legacy Overview layout bridge. Surfaces now resolve through the canonical glass material below. */
 html body.tm-new-design[data-trip-view="overview"]{
-  --tm-overview-card:var(--tm-card-bg);
-  --tm-overview-card-soft:var(--tm-card-bg-nested);
-  --tm-overview-border:var(--tm-card-border);
-  --tm-overview-border-hover:var(--tm-card-border-hover);
-  --tm-overview-text:var(--tm-card-text);
-  --tm-overview-muted:var(--tm-card-secondary);
-  --tm-overview-green:#0e614b;
-  --tm-overview-green-soft:var(--tm-card-control-selected);
+  --tm-overview-card:linear-gradient(135deg,rgba(244,243,239,.82),rgba(255,255,255,.68));
+  --tm-overview-card-soft:rgba(255,255,255,.76);
+  --tm-overview-border:var(--tm-border-subtle);
+  --tm-overview-border-hover:var(--tm-brand-primary);
+  --tm-overview-text:var(--tm-text-primary);
+  --tm-overview-muted:var(--tm-text-secondary);
+  --tm-overview-green:var(--tm-brand-primary);
+  --tm-overview-green-soft:var(--tm-surface-selected);
   --tm-overview-shadow:var(--tm-card-shadow);
-  --tm-overview-shadow-hover:var(--tm-card-shadow-hover)
+  --tm-overview-shadow-hover:0 8px 22px rgba(24,35,38,.12);
+  --tm-card-radius:18px;
+  --tm-card-radius-featured:18px;
+  --tm-card-radius-compact:12px;
+  --tm-card-radius-control:12px;
+  --tm-card-text:var(--tm-text-primary);
+  --tm-card-heading:var(--tm-text-primary);
+  --tm-card-secondary:var(--tm-text-secondary);
+  --tm-card-muted:var(--tm-text-muted);
+  --tm-card-link:var(--tm-brand-primary-dark);
+  --tm-card-icon:var(--tm-brand-primary);
+  --tm-card-control:var(--tm-surface-control);
+  --tm-card-control-border:var(--tm-border-control);
+  --tm-card-control-text:var(--tm-text-primary);
+  --tm-card-control-placeholder:var(--tm-text-muted);
+  --tm-card-control-selected:var(--tm-surface-selected);
+  --tm-card-focus:var(--tm-brand-primary);
+  --tm-card-control-focus:var(--tm-brand-primary)
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .trip-overview-summary>.card,
   .trip-home-actions,
-  .trip-home-actions a,
   .quick-grid>.card,
   .dashboard>.panel,
   .dashboard>.right-stack>.panel,
@@ -363,7 +379,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actio
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions a:first-child{
-  border-color:#a9c9ba!important;
+  border-color:var(--tm-brand-primary)!important;
   background:var(--tm-overview-green-soft)!important;
   box-shadow:inset 3px 0 0 var(--tm-overview-green)!important
 }
@@ -466,7 +482,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .modules>.module,
   .quick-grid>button.card
 ):focus-visible{
-  outline:3px solid rgba(14,97,75,.24)!important;
+  outline:3px solid var(--tm-focus-ring)!important;
   outline-offset:3px!important
 }
 
@@ -640,7 +656,33 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-card-control-selected:#dcefe6;
   --tm-card-focus:#258b68;
   --tm-card-photo-copy:linear-gradient(135deg,rgba(5,29,22,.72),rgba(8,47,35,.46));
-  --tm-card-text-on-photo:#fff
+  --tm-card-text-on-photo:#fff;
+  --tm-brand-primary:#147D92;
+  --tm-brand-primary-dark:#0B5869;
+  --tm-brand-primary-strong:#0F6F82;
+  --tm-brand-soft:#A9DCE7;
+  --tm-accent-warm:#D89B55;
+  --tm-text-primary:#182326;
+  --tm-text-secondary:#5A666A;
+  --tm-text-muted:#707B7F;
+  --tm-text-on-brand:#fff;
+  --tm-surface-neutral:#F4F3EF;
+  --tm-surface-control:#fff;
+  --tm-surface-selected:rgba(169,220,231,.35);
+  --tm-border-subtle:rgba(24,35,38,.14);
+  --tm-border-control:rgba(24,35,38,.26);
+  --tm-focus-ring:rgba(20,125,146,.32);
+  --tm-error:#B42318;
+  --tm-surface-dark-glass:rgba(16,30,34,.38);
+  --tm-surface-dark-glass-strong:rgba(16,30,34,.48);
+  --tm-surface-dark-glass-soft:rgba(16,30,34,.28);
+  --tm-border-on-dark:rgba(255,255,255,.16);
+  --tm-border-on-dark-strong:rgba(255,255,255,.2);
+  --tm-text-on-photo:#F7FAFA;
+  --tm-text-on-photo-secondary:rgba(247,250,250,.72);
+  --tm-text-on-photo-muted:rgba(247,250,250,.62);
+  --tm-control-text:#182326;
+  --tm-control-surface:rgba(255,255,255,.88)
 }
 html[data-theme="dark"]{
   --tm-readable-surface:linear-gradient(135deg,rgba(7,39,30,.76),rgba(5,28,22,.62));
@@ -675,7 +717,33 @@ html[data-theme="dark"]{
   --tm-card-control-placeholder:#60756c;
   --tm-card-control-selected:#cfe8dc;
   --tm-card-photo-copy:linear-gradient(135deg,rgba(2,19,14,.8),rgba(4,34,25,.58));
-  --tm-card-text-on-photo:#fff
+  --tm-card-text-on-photo:#fff;
+  --tm-brand-primary:#147D92;
+  --tm-brand-primary-dark:#0B5869;
+  --tm-brand-primary-strong:#0F6F82;
+  --tm-brand-soft:#79BFCB;
+  --tm-accent-warm:#D89B55;
+  --tm-text-primary:#F4F7F7;
+  --tm-text-secondary:#CFD9DA;
+  --tm-text-muted:#AEBABD;
+  --tm-text-on-brand:#fff;
+  --tm-surface-neutral:#263033;
+  --tm-surface-control:#F4F7F7;
+  --tm-surface-selected:rgba(121,191,203,.22);
+  --tm-border-subtle:rgba(244,247,247,.18);
+  --tm-border-control:rgba(244,247,247,.3);
+  --tm-focus-ring:rgba(121,191,203,.42);
+  --tm-error:#F59A92;
+  --tm-surface-dark-glass:rgba(16,30,34,.46);
+  --tm-surface-dark-glass-strong:rgba(16,30,34,.58);
+  --tm-surface-dark-glass-soft:rgba(16,30,34,.34);
+  --tm-border-on-dark:rgba(255,255,255,.18);
+  --tm-border-on-dark-strong:rgba(255,255,255,.24);
+  --tm-text-on-photo:#F7FAFA;
+  --tm-text-on-photo-secondary:rgba(247,250,250,.76);
+  --tm-text-on-photo-muted:rgba(247,250,250,.64);
+  --tm-control-text:#182326;
+  --tm-control-surface:rgba(255,255,255,.9)
 }
 
 html body :is(.tm-card-surface),
@@ -869,21 +937,38 @@ html body.tm-new-design[data-trip-view="overview"] .assistant-actions button{min
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-mobile-header-height:72px;
   --tm-overview-weather-height:118px;
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.04),rgba(188,224,207,.01));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(240,251,246,.06),rgba(194,229,213,.018));
+  --tm-photo-scrim-start:rgba(18,56,63,.28);
+  --tm-photo-scrim-mid:rgba(18,56,63,.34);
+  --tm-photo-scrim-end:rgba(18,56,63,.4);
+  --tm-overview-card:var(--tm-weather-card-bg);
+  --tm-overview-card-soft:var(--tm-surface-dark-glass-soft);
+  --tm-overview-border:var(--tm-border-on-dark);
+  --tm-overview-text:var(--tm-text-on-photo);
+  --tm-overview-muted:var(--tm-text-on-photo-secondary);
+  --tm-overview-green:var(--tm-brand-primary);
+  --tm-overview-green-soft:rgba(169,220,231,.48);
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.48),rgba(16,30,34,.56));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.52),rgba(16,30,34,.6));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.025),rgba(195,228,213,.006));
-  --tm-card-bg-compact:rgba(227,245,236,.02);
+  --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
+  --tm-card-bg-compact:rgba(16,30,34,.42);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
-  --tm-card-border:rgba(255,255,255,.11);
-  --tm-card-border-hover:rgba(255,255,255,.19);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 3px 10px rgba(0,40,28,.025);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.07),0 1px 4px rgba(0,40,28,.018);
-  --tm-card-control:rgba(243,252,247,.06);
-  --tm-card-control-border:rgba(14,97,75,.3);
-  --tm-card-control-placeholder:#596f66;
-  --tm-card-control-selected:rgba(116,194,159,.11);
-  --tm-card-blur:blur(1px) saturate(104%);
+  --tm-card-text:var(--tm-text-on-photo);
+  --tm-card-heading:var(--tm-text-on-photo);
+  --tm-card-secondary:var(--tm-text-on-photo-secondary);
+  --tm-card-muted:var(--tm-text-on-photo-muted);
+  --tm-card-link:var(--tm-brand-soft);
+  --tm-card-icon:var(--tm-brand-soft);
+  --tm-card-border:var(--tm-border-on-dark);
+  --tm-card-border-hover:var(--tm-brand-primary);
+  --tm-card-shadow:0 8px 22px rgba(0,0,0,.18);
+  --tm-card-shadow-compact:0 3px 10px rgba(0,0,0,.14);
+  --tm-card-control:var(--tm-control-surface);
+  --tm-card-control-border:rgba(24,35,38,.26);
+  --tm-card-control-text:var(--tm-control-text);
+  --tm-card-control-placeholder:#5A666A;
+  --tm-card-control-selected:rgba(169,220,231,.48);
+  --tm-card-blur:blur(14px) saturate(110%);
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-overview-green-soft:var(--tm-card-control-selected);
@@ -891,28 +976,87 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-app-glass-screen:var(--tm-custom-overview-surface);
   --tm-app-glass-card:var(--tm-custom-overview-subtle);
   --tm-app-glass-card-strong:var(--tm-custom-overview-subtle);
-  --tm-app-glass-border:rgba(79,119,102,.2);
-  --tm-app-glass-border-soft:rgba(79,119,102,.16);
-  --tm-app-glass-text:#20362e;
-  --tm-app-glass-muted:#667a72;
-  --tm-app-glass-shadow:0 1px 2px rgba(20,45,36,.02),0 7px 20px rgba(20,45,36,.06)
+  --tm-app-glass-border:var(--tm-border-subtle);
+  --tm-app-glass-border-soft:var(--tm-border-subtle);
+  --tm-app-glass-text:var(--tm-text-on-photo);
+  --tm-app-glass-muted:var(--tm-text-on-photo-secondary);
+  --tm-app-glass-shadow:var(--tm-card-shadow)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .custom-hero :is(h1,p,.hero-country-line,.hero-back,.share){
+  color:var(--tm-text-on-photo);
+  -webkit-text-fill-color:currentColor
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .custom-hero .hero-country-line,
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .custom-hero .hero-copy>p{
+  color:var(--tm-text-on-photo-secondary);
+  -webkit-text-fill-color:currentColor
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar{
+  border:1px solid var(--tm-border-on-dark);
+  background:var(--tm-surface-dark-glass-strong);
+  color:var(--tm-text-on-photo);
+  -webkit-text-fill-color:currentColor;
+  -webkit-backdrop-filter:blur(14px) saturate(110%);
+  backdrop-filter:blur(14px) saturate(110%)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar nav a.active{
+  border-color:var(--tm-brand-primary);
+  background:var(--tm-brand-primary);
+  color:var(--tm-text-on-brand)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar .brand-dot{
+  background:var(--tm-brand-primary);
+  color:var(--tm-text-on-brand)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header{
+  border:1px solid var(--tm-border-on-dark);
+  background:var(--tm-surface-dark-glass-strong);
+  color:var(--tm-text-on-photo);
+  -webkit-text-fill-color:currentColor;
+  -webkit-backdrop-filter:blur(14px) saturate(110%);
+  backdrop-filter:blur(14px) saturate(110%)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
+  color:var(--tm-text-on-photo);
+  -webkit-text-fill-color:currentColor
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .ai-orb-badge{
+  background:var(--tm-accent-warm);
+  color:var(--tm-control-text)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.06),rgba(3,27,20,.018));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(9,52,39,.085),rgba(5,34,25,.028));
+  --tm-photo-scrim-start:rgba(18,56,63,.3);
+  --tm-photo-scrim-mid:rgba(18,56,63,.38);
+  --tm-photo-scrim-end:rgba(18,56,63,.46);
+  --tm-overview-card:var(--tm-weather-card-bg);
+  --tm-overview-card-soft:var(--tm-surface-dark-glass-soft);
+  --tm-overview-border:var(--tm-border-on-dark);
+  --tm-overview-text:var(--tm-text-on-photo);
+  --tm-overview-muted:var(--tm-text-on-photo-secondary);
+  --tm-overview-green:var(--tm-brand-primary);
+  --tm-overview-green-soft:rgba(169,220,231,.52);
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.48),rgba(16,30,34,.58));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.5),rgba(16,30,34,.6));
+  --tm-card-text:var(--tm-text-on-photo);
+  --tm-card-heading:var(--tm-text-on-photo);
+  --tm-card-secondary:var(--tm-text-on-photo-secondary);
+  --tm-card-muted:var(--tm-text-on-photo-muted);
+  --tm-card-link:var(--tm-brand-soft);
+  --tm-card-icon:var(--tm-brand-soft);
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.03),rgba(4,31,23,.01));
-  --tm-card-bg-compact:rgba(10,48,36,.018);
+  --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
+  --tm-card-bg-compact:rgba(16,30,34,.34);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
-  --tm-card-border:rgba(205,239,224,.11);
-  --tm-card-border-hover:rgba(205,239,224,.18);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 12px rgba(0,0,0,.08);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.03),0 2px 6px rgba(0,0,0,.05);
-  --tm-card-control:rgba(219,239,230,.055);
-  --tm-card-control-border:rgba(190,229,212,.3);
-  --tm-card-control-text:#e6f3ed;
-  --tm-card-control-placeholder:#b8cbc2;
-  --tm-card-control-selected:rgba(61,139,106,.1)
+  --tm-card-border:var(--tm-border-on-dark);
+  --tm-card-border-hover:var(--tm-brand-primary);
+  --tm-card-shadow:0 8px 22px rgba(0,0,0,.24);
+  --tm-card-shadow-compact:0 3px 10px rgba(0,0,0,.16);
+  --tm-card-control:var(--tm-control-surface);
+  --tm-card-control-border:rgba(24,35,38,.3);
+  --tm-card-control-text:var(--tm-control-text);
+  --tm-card-control-placeholder:#5A666A;
+  --tm-card-control-selected:rgba(169,220,231,.52);
+  --tm-card-blur:blur(14px) saturate(110%)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
@@ -1049,44 +1193,52 @@ html body.tm-new-design .ai-panel .ai-composer textarea{
 
 /* Three reference components: material comes only from the shared tm-card tokens. */
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-card-text:#242a27;
-  --tm-card-heading:#171c1a;
-  --tm-card-secondary:#4d5752;
-  --tm-card-muted:#65706b;
-  --tm-card-control-text:#242a27;
-  --tm-card-link:#0e614b;
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(235,249,242,.04),rgba(188,224,207,.01));
+  --tm-photo-scrim-start:rgba(24,35,38,.28);
+  --tm-photo-scrim-mid:rgba(24,35,38,.34);
+  --tm-photo-scrim-end:rgba(24,35,38,.4);
+  --tm-card-text:var(--tm-text-on-photo);
+  --tm-card-heading:var(--tm-text-on-photo);
+  --tm-card-secondary:var(--tm-text-on-photo-secondary);
+  --tm-card-muted:var(--tm-text-on-photo-muted);
+  --tm-card-control-text:var(--tm-control-text);
+  --tm-card-link:var(--tm-brand-primary);
+  --tm-card-icon:var(--tm-brand-primary);
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.36),rgba(16,30,34,.44));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(240,251,246,.025),rgba(195,228,213,.006));
-  --tm-card-bg-compact:rgba(227,245,236,.02);
-  --tm-card-border:rgba(255,255,255,.11);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 3px 10px rgba(0,40,28,.025);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.07),0 1px 4px rgba(0,40,28,.018);
-  --tm-card-control:rgba(235,249,242,.12);
-  --tm-card-control-border:rgba(14,97,75,.42);
-  --tm-card-control-placeholder:#596f66;
-  --tm-card-border-hover:rgba(18,105,79,.42);
-  --tm-card-control-selected:rgba(116,194,159,.18);
-  --tm-places-control-blur:blur(3px) saturate(108%);
-  --tm-places-picker-bg:linear-gradient(145deg,rgba(210,237,224,.86),rgba(171,213,194,.80));
-  --tm-card-blur:blur(1px) saturate(104%)
+  --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
+  --tm-card-bg-compact:rgba(16,30,34,.3);
+  --tm-card-border:var(--tm-border-on-dark);
+  --tm-card-shadow:0 8px 22px rgba(0,0,0,.18);
+  --tm-card-shadow-compact:0 3px 10px rgba(24,35,38,.07);
+  --tm-card-control:var(--tm-control-surface);
+  --tm-card-control-border:rgba(24,35,38,.26);
+  --tm-card-control-placeholder:#5A666A;
+  --tm-card-border-hover:var(--tm-brand-primary);
+  --tm-card-control-selected:rgba(169,220,231,.48);
+  --tm-card-control-focus:var(--tm-brand-primary);
+  --tm-places-control-blur:none;
+  --tm-places-picker-bg:var(--tm-surface-neutral);
+  --tm-card-blur:blur(14px) saturate(110%)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(6,42,31,.06),rgba(3,27,20,.018));
+  --tm-photo-scrim-start:rgba(24,35,38,.32);
+  --tm-photo-scrim-mid:rgba(24,35,38,.4);
+  --tm-photo-scrim-end:rgba(24,35,38,.48);
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.42),rgba(16,30,34,.52));
   --tm-card-bg:var(--tm-weather-card-bg);
-  --tm-card-bg-nested:linear-gradient(135deg,rgba(10,50,38,.03),rgba(4,31,23,.01));
-  --tm-card-bg-compact:rgba(10,48,36,.018);
-  --tm-card-border:rgba(205,239,224,.11);
-  --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 12px rgba(0,0,0,.08);
-  --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.03),0 2px 6px rgba(0,0,0,.05);
-  --tm-card-control:rgba(219,239,230,.11);
-  --tm-card-control-border:rgba(190,229,212,.42);
-  --tm-card-control-text:#e6f3ed;
-  --tm-card-control-placeholder:#b8cbc2;
-  --tm-card-border-hover:rgba(158,223,195,.42);
-  --tm-card-control-selected:rgba(61,139,106,.17);
-  --tm-places-control-blur:blur(3px) saturate(108%);
-  --tm-places-picker-bg:linear-gradient(145deg,rgba(15,57,43,.90),rgba(8,39,30,.86))
+  --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
+  --tm-card-bg-compact:rgba(16,30,34,.34);
+  --tm-card-border:var(--tm-border-on-dark);
+  --tm-card-shadow:0 8px 22px rgba(0,0,0,.24);
+  --tm-card-shadow-compact:0 3px 10px rgba(0,0,0,.16);
+  --tm-card-control:var(--tm-control-surface);
+  --tm-card-control-border:rgba(24,35,38,.3);
+  --tm-card-control-text:var(--tm-control-text);
+  --tm-card-control-placeholder:#5A666A;
+  --tm-card-border-hover:var(--tm-brand-primary);
+  --tm-card-control-selected:rgba(169,220,231,.52);
+  --tm-places-control-blur:none;
+  --tm-places-picker-bg:var(--tm-surface-neutral)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] main.content>section#places{
   border:0;
@@ -1110,17 +1262,17 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   .lodging-setup,.nearby-free-search
 ){
   border:1px solid var(--tm-card-border);
-  background:var(--tm-card-bg-nested);
+  background:var(--tm-card-bg);
   color:var(--tm-card-text);
   box-shadow:var(--tm-card-shadow-compact);
   -webkit-backdrop-filter:var(--tm-card-blur);
   backdrop-filter:var(--tm-card-blur)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .nearby-category-drawer{
-  background:var(--tm-places-picker-bg);
+  background:var(--tm-card-control);
   box-shadow:0 16px 40px rgba(8,49,36,.18),inset 0 1px 0 rgba(255,255,255,.28);
-  -webkit-backdrop-filter:blur(8px) saturate(110%);
-  backdrop-filter:blur(8px) saturate(110%)
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
   .lodging-setup header>span,.place-planner-note
@@ -1181,21 +1333,29 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   caret-color:var(--tm-card-control-text)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .nearby-search{
-  border:1px solid rgba(99,190,151,.42);
-  background:linear-gradient(135deg,rgba(15,116,83,.90),rgba(11,91,67,.86));
+  border:1px solid var(--tm-brand-primary-dark);
+  background:var(--tm-brand-primary);
   color:#fff;
   -webkit-text-fill-color:currentColor;
-  box-shadow:0 3px 9px rgba(0,44,31,.10);
+  box-shadow:0 3px 9px rgba(0,44,31,.18);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
   text-shadow:0 1px 3px rgba(0,30,21,.34)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .nearby-search :is(i,span){color:inherit;-webkit-text-fill-color:currentColor}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
-  .nearby-result,.nearby-google-summary,.nearby-result-tools
+  .nearby-result
 ){
   border-color:var(--tm-card-border);
-  background:var(--tm-card-bg-nested);
+  background:var(--tm-card-bg);
+  color:var(--tm-card-text);
+  box-shadow:var(--tm-card-shadow)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-google-summary,.nearby-result-tools
+){
+  border-color:var(--tm-card-border);
+  background:var(--tm-card-bg-compact);
   color:var(--tm-card-text);
   box-shadow:var(--tm-card-shadow-compact)
 }
@@ -1219,16 +1379,96 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
 ){color:var(--tm-card-text);-webkit-text-fill-color:currentColor;text-shadow:none}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
   .nearby-copy span,.nearby-copy p,.nearby-category-search,.nearby-category-heading small,
-  .nearby-location-heading small,.nearby-selected-category span,.nearby-result p,
+  .nearby-location-heading small,.nearby-selected-category span,.nearby-free-search label span,.nearby-result p,
   .nearby-result-schedule label
 ){color:var(--tm-card-secondary);-webkit-text-fill-color:currentColor}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-result .nearby-type,.nearby-result .nearby-distance,.nearby-map-footer span,
+  .nearby-status,.nearby-result-tools,.nearby-google-summary
+){color:var(--tm-card-secondary);-webkit-text-fill-color:currentColor}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
+  .nearby-links a,.nearby-links button,.nearby-google-summary>a,.nearby-map-button
+){
+  border-color:var(--tm-card-control-border);
+  background:var(--tm-card-control);
+  color:var(--tm-card-link);
+  -webkit-text-fill-color:currentColor
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .nearby-map-button.active{
+  border-color:var(--tm-card-border-hover);
+  background:var(--tm-card-control-selected)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .tm-place-card__primary-actions>button{
+  border-color:var(--tm-card-control-border);
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
+  -webkit-text-fill-color:currentColor
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .tm-place-card__primary-actions>.nearby-save-schedule{
+  border-color:var(--tm-brand-primary);
+  background:var(--tm-brand-primary);
+  color:var(--tm-text-on-brand);
+  -webkit-text-fill-color:currentColor
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .tm-place-card__primary-actions>button.saved{
+  border-color:var(--tm-card-control-border);
+  background:var(--tm-card-control-selected);
+  color:var(--tm-card-control-text);
+  -webkit-text-fill-color:currentColor
+}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
   .nearby-category-chips button.active,.nearby-category-drawer button.active,
   .nearby-category-search-results button.active,.nearby-mode-bar button.active
 ){color:var(--tm-card-link);-webkit-text-fill-color:currentColor}
 
+html body.home-page.is-authenticated{
+  --tm-card-radius:18px;
+  --tm-card-border:var(--tm-border-on-dark);
+  --tm-card-border-hover:var(--tm-brand-primary);
+  --tm-card-shadow:0 8px 22px rgba(0,0,0,.16);
+  --tm-card-text:var(--tm-text-on-photo);
+  --tm-card-secondary:var(--tm-text-on-photo-secondary);
+  --tm-card-link:var(--tm-brand-soft);
+  --tm-card-control:var(--tm-control-surface);
+  --tm-card-control-border:rgba(24,35,38,.26);
+  --tm-card-control-text:var(--tm-control-text);
+  --tm-card-control-selected:rgba(169,220,231,.48);
+  --tm-material-surface-start:rgba(16,30,34,.38);
+  --tm-material-surface-end:rgba(16,30,34,.28);
+  --tm-material-blur:blur(14px) saturate(110%);
+  background:
+    linear-gradient(rgba(24,35,38,.28),rgba(24,35,38,.4)),
+    url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=2000&q=88") center/cover fixed;
+  color:var(--tm-text-on-brand)
+}
+html body.home-page.is-authenticated .home-sidebar-logo{
+  background:transparent;
+  border:1px solid var(--tm-border-on-dark);
+  color:var(--tm-brand-soft)
+}
+html body.home-page.is-authenticated .ai-orb{
+  background:linear-gradient(145deg,var(--tm-brand-primary),var(--tm-brand-primary-dark) 58%,#163f59);
+  color:var(--tm-text-on-brand);
+  box-shadow:0 18px 42px rgba(11,88,105,.34)
+}
+html body.home-page.is-authenticated .ai-orb-ring{border-color:rgba(20,125,146,.38)}
+html body.home-page.is-authenticated .ai-orb-badge{background:var(--tm-accent-warm);color:var(--tm-control-text)}
+html body.home-page.is-authenticated .home-sidebar nav a.active{
+  color:var(--tm-text-on-brand);
+  background:var(--tm-brand-primary);
+  border-color:var(--tm-brand-primary)
+}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-activity-toggle.active{
+  background:var(--tm-brand-primary);
+  border-color:var(--tm-brand-primary);
+  color:var(--tm-text-on-brand)
+}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-date-state.now{
+  background:var(--tm-surface-selected);
+  color:var(--tm-text-primary)
+}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell{
-  border:1px solid rgba(255,255,255,.18);
+  border:1px solid rgba(244,247,247,.2);
   border-radius:var(--tm-card-radius);
   background:transparent;
   color:var(--tm-card-text);
@@ -1244,7 +1484,7 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-card{
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-card::after{display:none}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-overlay{
-  background:linear-gradient(180deg,rgba(5,20,16,.01),rgba(5,20,16,.22))
+  background:linear-gradient(180deg,rgba(24,35,38,.02),rgba(24,35,38,.34))
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
   border:1px solid rgba(255,255,255,.14);
@@ -1254,12 +1494,12 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
   left:auto;
   width:min(64%,260px);
   padding:14px 16px;
-  background:linear-gradient(135deg,rgba(3,25,18,.10),rgba(5,42,30,.03));
+  background:rgba(24,35,38,.48);
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 3px 9px rgba(0,24,17,.065);
-  -webkit-backdrop-filter:blur(1px) saturate(104%);
-  backdrop-filter:blur(1px) saturate(104%);
+  box-shadow:0 8px 22px rgba(0,0,0,.16);
+  -webkit-backdrop-filter:var(--tm-material-blur);
+  backdrop-filter:var(--tm-material-blur);
   text-shadow:0 1px 5px rgba(0,0,0,.36)
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy,
@@ -1270,17 +1510,25 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy :
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy h2{font-weight:750}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy p{font-weight:500}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-edit-dates,.trip-delete){
-  border:1px solid rgba(255,255,255,.24);
-  background:rgba(4,31,23,.10);
+  border:1px solid rgba(244,247,247,.42);
+  background:rgba(24,35,38,.36);
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 7px rgba(0,24,17,.08);
+  box-shadow:0 2px 7px rgba(0,0,0,.12);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
   text-shadow:0 1px 4px rgba(0,0,0,.42)
 }
-html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-edit-dates{border-color:rgba(255,174,119,.38)}
-html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-delete{border-color:rgba(255,150,143,.34);background:rgba(72,18,14,.10)}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-activity-toggle{
+  min-height:36px;
+  border:1px solid var(--tm-card-control-border);
+  background:var(--tm-card-control);
+  color:var(--tm-control-text);
+  -webkit-text-fill-color:currentColor;
+  box-shadow:0 2px 7px rgba(0,0,0,.12)
+}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-edit-dates{border-color:var(--tm-card-control-border)}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-delete{border-color:rgba(244,247,247,.34);background:rgba(24,35,38,.28)}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-edit-dates,.trip-delete) :is(i,span){color:inherit;-webkit-text-fill-color:currentColor}
 
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
