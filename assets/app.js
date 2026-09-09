@@ -1,6 +1,6 @@
 var appScript=document.currentScript;
 (function(){
-  var version='20260909-2',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
+  var version='20260909-3',loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
   var finalStyle='readable-glass.css';
   var structureStyles=['travel-services.css','trip-experience.css','transport-planner.css','collaboration.css','chat-place-sharing.css','place-directions.css','activity-contrast.css','about.css'];
   var structureScripts=['travel-services.js','trip-experience.js','transport-planner.js','place-directions.js','collaboration.js','about.js'];

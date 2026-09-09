@@ -1648,7 +1648,7 @@ body.home-page .cloud-account-split .cloud-account-close{
     margin-bottom:8px!important;
     border:0!important;
     border-radius:16px!important;
-    background:var(--tm-card-bg)!important;
+    background:var(--tm-surface-dark-glass-strong)!important;
     box-shadow:0 5px 16px rgba(13,68,50,.12)!important
   }
   body:not(.home-page) .network-usage-meter.in-trip{
@@ -2355,9 +2355,9 @@ html body.tm-new-design .ai-orb :is(i,svg){
 body.home-page.is-authenticated .home-sidebar{
   border:0!important;
   border-radius:0 0 18px 18px!important;
-  background:rgba(16,30,34,.62)!important;
-  backdrop-filter:blur(14px) saturate(110%);
-  -webkit-backdrop-filter:blur(14px) saturate(110%);
+  background:rgba(18,56,63,.46)!important;
+  backdrop-filter:blur(12px) saturate(108%);
+  -webkit-backdrop-filter:blur(12px) saturate(108%);
   box-shadow:0 12px 34px rgba(0,0,0,.24)!important
 }
 body.home-page.is-authenticated .home-sidebar nav :is(a,button),

@@ -673,9 +673,9 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-border-control:rgba(24,35,38,.26);
   --tm-focus-ring:rgba(20,125,146,.32);
   --tm-error:#B42318;
-  --tm-surface-dark-glass:rgba(16,30,34,.38);
-  --tm-surface-dark-glass-strong:rgba(16,30,34,.48);
-  --tm-surface-dark-glass-soft:rgba(16,30,34,.28);
+  --tm-surface-dark-glass:rgba(16,30,34,.36);
+  --tm-surface-dark-glass-strong:rgba(18,56,63,.46);
+  --tm-surface-dark-glass-soft:rgba(16,30,34,.3);
   --tm-border-on-dark:rgba(255,255,255,.16);
   --tm-border-on-dark-strong:rgba(255,255,255,.2);
   --tm-text-on-photo:#F7FAFA;
@@ -734,9 +734,9 @@ html[data-theme="dark"]{
   --tm-border-control:rgba(244,247,247,.3);
   --tm-focus-ring:rgba(121,191,203,.42);
   --tm-error:#F59A92;
-  --tm-surface-dark-glass:rgba(16,30,34,.46);
-  --tm-surface-dark-glass-strong:rgba(16,30,34,.58);
-  --tm-surface-dark-glass-soft:rgba(16,30,34,.34);
+  --tm-surface-dark-glass:rgba(16,30,34,.38);
+  --tm-surface-dark-glass-strong:rgba(18,56,63,.48);
+  --tm-surface-dark-glass-soft:rgba(16,30,34,.3);
   --tm-border-on-dark:rgba(255,255,255,.18);
   --tm-border-on-dark-strong:rgba(255,255,255,.24);
   --tm-text-on-photo:#F7FAFA;
@@ -947,11 +947,12 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-overview-muted:var(--tm-text-on-photo-secondary);
   --tm-overview-green:var(--tm-brand-primary);
   --tm-overview-green-soft:rgba(169,220,231,.48);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.48),rgba(16,30,34,.56));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.52),rgba(16,30,34,.6));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.36),rgba(16,30,34,.38));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.38),rgba(16,30,34,.4));
+  --tm-weather-card-text:var(--tm-text-on-photo);
   --tm-card-bg:var(--tm-weather-card-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
-  --tm-card-bg-compact:rgba(16,30,34,.42);
+  --tm-card-bg-compact:rgba(16,30,34,.34);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
   --tm-card-text:var(--tm-text-on-photo);
   --tm-card-heading:var(--tm-text-on-photo);
@@ -968,7 +969,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-control-placeholder:#5A666A;
   --tm-card-control-selected:rgba(169,220,231,.48);
-  --tm-card-blur:blur(14px) saturate(110%);
+  --tm-card-blur:blur(11px) saturate(108%);
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-overview-green-soft:var(--tm-card-control-selected);
@@ -996,8 +997,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sid
   background:var(--tm-surface-dark-glass-strong);
   color:var(--tm-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  -webkit-backdrop-filter:blur(14px) saturate(110%);
-  backdrop-filter:blur(14px) saturate(110%)
+  -webkit-backdrop-filter:blur(12px) saturate(108%);
+  backdrop-filter:blur(12px) saturate(108%)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar nav a.active{
   border-color:var(--tm-brand-primary);
@@ -1013,8 +1014,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header{
   background:var(--tm-surface-dark-glass-strong);
   color:var(--tm-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  -webkit-backdrop-filter:blur(14px) saturate(110%);
-  backdrop-filter:blur(14px) saturate(110%)
+  -webkit-backdrop-filter:blur(12px) saturate(108%);
+  backdrop-filter:blur(12px) saturate(108%)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
   color:var(--tm-text-on-photo);
@@ -1035,8 +1036,8 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-overview-muted:var(--tm-text-on-photo-secondary);
   --tm-overview-green:var(--tm-brand-primary);
   --tm-overview-green-soft:rgba(169,220,231,.52);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.48),rgba(16,30,34,.58));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.5),rgba(16,30,34,.6));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.38),rgba(16,30,34,.4));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.4),rgba(16,30,34,.42));
   --tm-card-text:var(--tm-text-on-photo);
   --tm-card-heading:var(--tm-text-on-photo);
   --tm-card-secondary:var(--tm-text-on-photo-secondary);
@@ -1056,16 +1057,16 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-control-placeholder:#5A666A;
   --tm-card-control-selected:rgba(169,220,231,.52);
-  --tm-card-blur:blur(14px) saturate(110%)
+  --tm-card-blur:blur(11px) saturate(108%)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
     border:1px solid var(--tm-card-border);
-    background:var(--tm-card-bg);
+    background:var(--tm-surface-dark-glass-strong);
     color:var(--tm-card-text);
     box-shadow:var(--tm-card-shadow-compact);
-    -webkit-backdrop-filter:var(--tm-card-blur);
-    backdrop-filter:var(--tm-card-blur)
+    -webkit-backdrop-filter:blur(12px) saturate(108%);
+    backdrop-filter:blur(12px) saturate(108%)
   }
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
     color:var(--tm-card-text);
@@ -1203,7 +1204,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-link:var(--tm-brand-primary);
   --tm-card-icon:var(--tm-brand-primary);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.36),rgba(16,30,34,.44));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.38),rgba(16,30,34,.4));
   --tm-card-bg:var(--tm-weather-card-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
   --tm-card-bg-compact:rgba(16,30,34,.3);
@@ -1218,13 +1219,13 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-card-control-focus:var(--tm-brand-primary);
   --tm-places-control-blur:none;
   --tm-places-picker-bg:var(--tm-surface-neutral);
-  --tm-card-blur:blur(14px) saturate(110%)
+  --tm-card-blur:blur(11px) saturate(108%)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-photo-scrim-start:rgba(24,35,38,.32);
   --tm-photo-scrim-mid:rgba(24,35,38,.4);
   --tm-photo-scrim-end:rgba(24,35,38,.48);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.42),rgba(16,30,34,.52));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.38),rgba(16,30,34,.4));
   --tm-card-bg:var(--tm-weather-card-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
   --tm-card-bg-compact:rgba(16,30,34,.34);
@@ -1346,6 +1347,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(
   .nearby-result
 ){
+  --tm-card-surface:var(--tm-card-bg);
+  --tm-card-elevation:var(--tm-card-shadow);
   border-color:var(--tm-card-border);
   background:var(--tm-card-bg);
   color:var(--tm-card-text);
@@ -1433,9 +1436,9 @@ html body.home-page.is-authenticated{
   --tm-card-control-border:rgba(24,35,38,.26);
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-control-selected:rgba(169,220,231,.48);
-  --tm-material-surface-start:rgba(16,30,34,.38);
-  --tm-material-surface-end:rgba(16,30,34,.28);
-  --tm-material-blur:blur(14px) saturate(110%);
+  --tm-material-surface-start:rgba(16,30,34,.32);
+  --tm-material-surface-end:rgba(16,30,34,.26);
+  --tm-material-blur:blur(9px) saturate(108%);
   background:
     linear-gradient(rgba(24,35,38,.28),rgba(24,35,38,.4)),
     url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=2000&q=88") center/cover fixed;
@@ -1494,7 +1497,7 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
   left:auto;
   width:min(64%,260px);
   padding:14px 16px;
-  background:rgba(24,35,38,.48);
+  background:var(--tm-surface-dark-glass-soft);
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
   box-shadow:0 8px 22px rgba(0,0,0,.16);
