@@ -38,7 +38,20 @@
     var sidebar = document.querySelector('.home-sidebar');
     var menu = sidebar && sidebar.querySelector('[data-home-more-menu]');
     var toggle = sidebar && sidebar.querySelector('[data-home-more-toggle]');
+    var navigation = sidebar && sidebar.querySelector('nav');
+    var archive = navigation && navigation.querySelector('.home-archive-action');
+    var mobileHeader = window.matchMedia('(max-width:600px)');
     if (!sidebar || !menu || !toggle) return;
+
+    function syncArchivePlacement() {
+      if (!archive || !navigation) return;
+      if (mobileHeader.matches) {
+        var aboutAction = menu.querySelector('[data-about-open]');
+        menu.insertBefore(archive, aboutAction || menu.querySelector('.trip-logout'));
+      } else {
+        navigation.insertBefore(archive, toggle);
+      }
+    }
 
     function collectInjectedUtilities() {
       sidebar.querySelectorAll(':scope > .security-center-launcher, :scope > .admin-center-launcher, :scope > .trip-logout').forEach(function (action) {
@@ -48,6 +61,7 @@
         '[data-cloud-account-open]',
         '.admin-center-launcher',
         '.security-center-launcher',
+        '.home-archive-action',
         '[data-about-open]',
         '.trip-logout'
       ];
@@ -78,10 +92,12 @@
       closeMenu();
       toggle.focus();
     });
-    window.addEventListener('resize', function () {
-      if (window.innerWidth > 600) closeMenu();
+    mobileHeader.addEventListener('change', function () {
+      syncArchivePlacement();
+      closeMenu();
     });
 
+    syncArchivePlacement();
     collectInjectedUtilities();
     new MutationObserver(collectInjectedUtilities).observe(sidebar, { childList: true });
   })();

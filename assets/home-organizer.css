@@ -256,15 +256,16 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
   .home-page.is-authenticated .home-sidebar nav{
     width:100%;
     min-width:0;
-    justify-content:space-between;
+    justify-content:flex-start;
     gap:8px
   }
   .home-page.is-authenticated .home-sidebar nav :is(a,button){
-    flex:0 0 48px;
-    width:48px;
+    flex:0 1 auto;
+    width:auto;
     min-width:48px;
     height:48px;
-    padding:0;
+    padding:0 12px;
+    gap:8px;
     border-radius:14px
   }
   .home-page.is-authenticated .home-sidebar nav .home-current-view{
@@ -275,8 +276,9 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
     padding-inline:13px;
     gap:8px
   }
-  .home-page.is-authenticated .home-sidebar nav .tip{display:none}
-  .home-page.is-authenticated .home-sidebar nav .home-current-view .tip{display:inline}
+  .home-page.is-authenticated .home-sidebar nav .tip{display:inline}
+  .home-page.is-authenticated .home-sidebar nav .home-new-trip-action{min-width:104px}
+  .home-page.is-authenticated .home-sidebar nav .home-more-toggle{min-width:72px}
   .home-page.is-authenticated .home-sidebar nav .home-more-toggle{display:flex}
   .home-page.is-authenticated .home-sidebar-utilities{
     position:absolute;
