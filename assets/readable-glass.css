@@ -1482,6 +1482,10 @@ html body.home-page.is-authenticated .home-sidebar nav a.active{
   background:var(--tm-brand-primary);
   border-color:var(--tm-brand-primary)
 }
+html body.home-page.is-authenticated .home-sidebar nav .home-new-trip-action{
+  background:var(--tm-brand-primary);
+  color:var(--tm-text-on-brand)
+}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-activity-toggle.active{
   background:var(--tm-brand-primary);
   border-color:var(--tm-brand-primary);

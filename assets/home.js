@@ -34,6 +34,58 @@
   var staticActivityKey = 'travelmate-static-trip-activity';
   var pendingShortcut = new URLSearchParams(location.search).get('shortcut') || '';
 
+  (function initHomeHeaderUtilities() {
+    var sidebar = document.querySelector('.home-sidebar');
+    var menu = sidebar && sidebar.querySelector('[data-home-more-menu]');
+    var toggle = sidebar && sidebar.querySelector('[data-home-more-toggle]');
+    if (!sidebar || !menu || !toggle) return;
+
+    function collectInjectedUtilities() {
+      sidebar.querySelectorAll(':scope > .security-center-launcher, :scope > .admin-center-launcher, :scope > .trip-logout').forEach(function (action) {
+        menu.appendChild(action);
+      });
+      var utilityOrder = [
+        '.security-center-launcher',
+        '.admin-center-launcher',
+        '[data-cloud-account-open]',
+        '[data-about-open]',
+        '.trip-logout'
+      ];
+      utilityOrder.forEach(function (selector) {
+        var action = menu.querySelector(selector);
+        if (action) menu.appendChild(action);
+      });
+    }
+
+    function closeMenu() {
+      menu.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    toggle.addEventListener('click', function () {
+      var opening = !menu.classList.contains('is-open');
+      menu.classList.toggle('is-open', opening);
+      toggle.setAttribute('aria-expanded', String(opening));
+    });
+    menu.addEventListener('click', function (event) {
+      if (event.target.closest('button, a')) closeMenu();
+    });
+    document.addEventListener('click', function (event) {
+      if (!sidebar.contains(event.target)) closeMenu();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Escape' || !menu.classList.contains('is-open')) return;
+      closeMenu();
+      toggle.focus();
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 600) closeMenu();
+    });
+
+    collectInjectedUtilities();
+    new MutationObserver(collectInjectedUtilities).observe(sidebar, { childList: true });
+  })();
+
   function handlePwaShortcut(trips) {
     if (!pendingShortcut) return;
     var shortcut = pendingShortcut;
