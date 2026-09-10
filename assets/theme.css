@@ -201,8 +201,8 @@ body.home-page.is-authenticated :where(.trip-archive,.home-about){
   margin-top:24px!important
 }
 body.home-page.is-authenticated .home-sidebar nav i{
-  font-size:17px!important;
-  font-weight:400!important;
+  font-size:19px!important;
+  font-weight:900!important;
   -webkit-text-stroke:0!important;
   opacity:.88
 }

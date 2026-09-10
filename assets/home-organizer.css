@@ -70,7 +70,7 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 .home-page.is-authenticated .home-sidebar nav :is(a,button),
 .home-page.is-authenticated .home-sidebar>.trip-logout{
   width:auto;
-  height:42px;
+  height:44px;
   display:flex;
   align-items:center;
   gap:7px;
@@ -245,20 +245,21 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 }
 @media(max-width:700px){
   .home-page.is-authenticated .home-sidebar{
-    gap:10px;
+    gap:6px;
     overflow-x:auto
   }
   .home-page.is-authenticated .home-sidebar nav{
     min-width:max-content;
-    gap:14px
+    gap:6px
   }
   .home-page.is-authenticated .home-sidebar nav :is(a,button),
   .home-page.is-authenticated .home-sidebar>.trip-logout{
-    width:auto
+    width:44px;
+    min-width:44px
   }
   .home-page.is-authenticated .home-sidebar nav .tip,
   .home-page.is-authenticated .home-sidebar>.trip-logout .tip{
-    display:inline
+    display:none
   }
 }
 
@@ -270,7 +271,7 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 .trip-date-editor{position:relative;width:min(480px,100%);padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:24px;background:#fff;color:#18392f;box-shadow:0 30px 90px rgba(0,0,0,.34)}
 .trip-date-editor>div,.trip-date-editor-error,.trip-date-editor-save{grid-column:1/-1}.trip-date-editor h2{margin:4px 0 2px}.trip-date-editor p{margin:0}.trip-date-editor>div small{color:#237a5a;font-weight:900}.trip-date-editor label{display:grid;gap:7px;font-weight:800}.trip-date-editor input{width:100%;min-height:48px;box-sizing:border-box;padding:0 12px;border:1px solid #bdd5ca;border-radius:13px;background:#fff;color:#18392f;font:inherit}
 .trip-date-editor-close{position:absolute;top:16px;left:16px;width:42px;height:42px;border:1px solid #d7e4de;border-radius:50%;background:#fff;color:#173e31;font-size:18px}.trip-date-editor-error{min-height:20px;color:#b42318}.trip-date-editor-save{min-height:50px;border:0;border-radius:14px;background:#176b50;color:#fff;font:inherit;font-weight:900}
-.home-page.is-authenticated .home-sidebar-logo i,.home-page.is-authenticated .home-sidebar nav i,.home-page.is-authenticated .home-sidebar>.trip-logout i{display:inline-block!important;color:currentColor!important;-webkit-text-stroke:0!important}
+.home-page.is-authenticated .home-sidebar-logo i,.home-page.is-authenticated .home-sidebar nav i,.home-page.is-authenticated .home-sidebar>.trip-logout i{display:inline-block!important;color:currentColor!important;-webkit-text-stroke:0!important;font-size:19px;font-weight:900}
 @media(max-width:800px){
   .trip-edit-dates{top:66px;left:18px}
   .trip-delete{top:116px;left:18px}
