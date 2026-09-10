@@ -1,9 +1,9 @@
 .security-center-launcher{position:relative;display:flex;align-items:center;justify-content:center;gap:.55rem;border:0;cursor:pointer;color:inherit;background:transparent;font:inherit}
 .home-sidebar>.security-center-launcher,.sidebar>.security-center-launcher{flex:0 0 auto;width:44px;min-height:44px;margin-top:auto;border:1px solid rgba(184,222,207,.78);border-radius:14px;color:#125b46;background:rgba(239,250,245,.94);box-shadow:0 7px 20px rgba(1,40,29,.14)}
 .sidebar>.security-center-launcher{width:54px;margin-inline:auto}.security-center-launcher i{font-size:18px}
-.security-center-launcher .security-launcher-label{display:block;min-width:0;overflow:visible;color:#125b46!important;-webkit-text-fill-color:#125b46!important;font-size:.78rem;font-weight:900;white-space:nowrap}
-.security-center-launcher,.home-sidebar>.security-center-launcher,.sidebar>.security-center-launcher{color:#125b46!important;-webkit-text-fill-color:#125b46!important;background:rgba(239,250,245,.96)!important;border-color:rgba(58,127,101,.48)!important}
-.security-center-launcher i{color:#125b46!important;-webkit-text-fill-color:#125b46!important}
+.security-center-launcher .security-launcher-label{display:block;min-width:0;overflow:visible;color:var(--tm-security-launcher-color,#125b46)!important;-webkit-text-fill-color:var(--tm-security-launcher-color,#125b46)!important;font-size:.78rem;font-weight:900;white-space:nowrap}
+.security-center-launcher,.home-sidebar>.security-center-launcher,.sidebar>.security-center-launcher{color:var(--tm-security-launcher-color,#125b46)!important;-webkit-text-fill-color:var(--tm-security-launcher-color,#125b46)!important;background:var(--tm-security-launcher-background,rgba(239,250,245,.96))!important;border-color:var(--tm-security-launcher-border,rgba(58,127,101,.48))!important}
+.security-center-launcher i{color:var(--tm-security-launcher-color,#125b46)!important;-webkit-text-fill-color:var(--tm-security-launcher-color,#125b46)!important}
 .security-center-backdrop{position:fixed;inset:0;z-index:10050;display:grid;place-items:center;padding:18px;background:rgba(2,20,16,.74);backdrop-filter:blur(10px)}
 .security-center-backdrop[hidden]{display:none}.security-center-open{overflow:hidden}
 .security-center{width:min(680px,100%);max-height:min(850px,92dvh);overflow:auto;border:1px solid rgba(208,239,226,.78);border-radius:28px;background:linear-gradient(145deg,rgba(247,255,251,.98),rgba(223,242,233,.96));box-shadow:0 28px 80px rgba(0,20,15,.36);color:#153e33;padding:24px;direction:inherit}

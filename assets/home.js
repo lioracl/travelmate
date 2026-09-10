@@ -45,9 +45,9 @@
         menu.appendChild(action);
       });
       var utilityOrder = [
-        '.security-center-launcher',
-        '.admin-center-launcher',
         '[data-cloud-account-open]',
+        '.admin-center-launcher',
+        '.security-center-launcher',
         '[data-about-open]',
         '.trip-logout'
       ];

@@ -2369,7 +2369,7 @@ body.home-page.is-authenticated .home-sidebar-logo{
 }
 body.home-page.is-authenticated .home-sidebar nav a.active{
   color:var(--tm-brand-soft,#A9DCE7)!important;
-  background:rgba(20,125,146,.16)!important;
+  background:rgba(20,125,146,.09)!important;
   box-shadow:none!important
 }
 body.home-page.is-authenticated .home-sidebar .home-new-trip-action{

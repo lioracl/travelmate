@@ -20,7 +20,7 @@
 
 /* Account panel: keep authenticated and signed-out states readable over the photo. */
 html body.home-page .landing-nav [data-cloud-account-open],
-html body.home-page .home-sidebar [data-cloud-account-open]{color:#fff!important;-webkit-text-fill-color:#fff!important;background:rgba(5,49,38,.88)!important;border:1px solid rgba(255,255,255,.28)!important}
+html body.home-page .home-sidebar [data-cloud-account-open]{color:var(--tm-account-launcher-color,#fff)!important;-webkit-text-fill-color:var(--tm-account-launcher-color,#fff)!important;background:var(--tm-account-launcher-background,rgba(5,49,38,.88))!important;border:1px solid var(--tm-account-launcher-border,rgba(255,255,255,.28))!important}
 html body.home-page .cloud-account-backdrop .cloud-account-split{background-image:linear-gradient(to left,rgba(4,45,34,.96) 0 51%,rgba(4,38,30,.24) 51% 100%),url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1400&q=86')!important;box-shadow:0 34px 90px rgba(0,0,0,.5)}
 html body.home-page .cloud-account-split .cloud-account-copy h2,
 html body.home-page .cloud-account-split .cloud-account-copy small,
