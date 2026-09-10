@@ -937,9 +937,13 @@ html body.tm-new-design[data-trip-view="overview"] .assistant-actions button{min
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-mobile-header-height:72px;
   --tm-overview-weather-height:118px;
-  --tm-photo-scrim-start:rgba(18,56,63,.28);
-  --tm-photo-scrim-mid:rgba(18,56,63,.34);
-  --tm-photo-scrim-end:rgba(18,56,63,.4);
+  --tm-surface-dark-glass-strong:rgba(18,56,63,.22);
+  --tm-surface-dark-glass-soft:rgba(16,30,34,.04);
+  --tm-control-surface:rgba(244,243,239,.78);
+  --tm-material-blur:blur(7px) saturate(104%);
+  --tm-photo-scrim-start:rgba(18,56,63,.08);
+  --tm-photo-scrim-mid:rgba(18,56,63,.11);
+  --tm-photo-scrim-end:rgba(18,56,63,.14);
   --tm-overview-card:var(--tm-weather-card-bg);
   --tm-overview-card-soft:var(--tm-surface-dark-glass-soft);
   --tm-overview-border:var(--tm-border-on-dark);
@@ -947,12 +951,12 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-overview-muted:var(--tm-text-on-photo-secondary);
   --tm-overview-green:var(--tm-brand-primary);
   --tm-overview-green-soft:rgba(169,220,231,.48);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.36),rgba(16,30,34,.38));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.38),rgba(16,30,34,.4));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.14),rgba(16,30,34,.16));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.16),rgba(16,30,34,.18));
   --tm-weather-card-text:var(--tm-text-on-photo);
   --tm-card-bg:var(--tm-weather-card-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
-  --tm-card-bg-compact:rgba(16,30,34,.34);
+  --tm-card-bg-compact:rgba(16,30,34,.06);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
   --tm-card-text:var(--tm-text-on-photo);
   --tm-card-heading:var(--tm-text-on-photo);
@@ -962,14 +966,14 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-card-icon:var(--tm-brand-soft);
   --tm-card-border:var(--tm-border-on-dark);
   --tm-card-border-hover:var(--tm-brand-primary);
-  --tm-card-shadow:0 8px 22px rgba(0,0,0,.18);
-  --tm-card-shadow-compact:0 3px 10px rgba(0,0,0,.14);
+  --tm-card-shadow:0 6px 18px rgba(0,0,0,.12);
+  --tm-card-shadow-compact:0 2px 8px rgba(0,0,0,.08);
   --tm-card-control:var(--tm-control-surface);
   --tm-card-control-border:rgba(24,35,38,.26);
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-control-placeholder:#5A666A;
   --tm-card-control-selected:rgba(169,220,231,.48);
-  --tm-card-blur:blur(11px) saturate(108%);
+  --tm-card-blur:blur(7px) saturate(104%);
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-overview-green-soft:var(--tm-card-control-selected);
@@ -997,8 +1001,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sid
   background:var(--tm-surface-dark-glass-strong);
   color:var(--tm-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  -webkit-backdrop-filter:blur(12px) saturate(108%);
-  backdrop-filter:blur(12px) saturate(108%)
+  -webkit-backdrop-filter:blur(8px) saturate(104%);
+  backdrop-filter:blur(8px) saturate(104%)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar nav a.active{
   border-color:var(--tm-brand-primary);
@@ -1014,8 +1018,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header{
   background:var(--tm-surface-dark-glass-strong);
   color:var(--tm-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  -webkit-backdrop-filter:blur(12px) saturate(108%);
-  backdrop-filter:blur(12px) saturate(108%)
+  -webkit-backdrop-filter:blur(8px) saturate(104%);
+  backdrop-filter:blur(8px) saturate(104%)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
   color:var(--tm-text-on-photo);
@@ -1026,9 +1030,13 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .ai-orb-badge{
   color:var(--tm-control-text)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-photo-scrim-start:rgba(18,56,63,.3);
-  --tm-photo-scrim-mid:rgba(18,56,63,.38);
-  --tm-photo-scrim-end:rgba(18,56,63,.46);
+  --tm-surface-dark-glass-strong:rgba(18,56,63,.24);
+  --tm-surface-dark-glass-soft:rgba(16,30,34,.06);
+  --tm-control-surface:rgba(244,243,239,.8);
+  --tm-material-blur:blur(7px) saturate(104%);
+  --tm-photo-scrim-start:rgba(18,56,63,.1);
+  --tm-photo-scrim-mid:rgba(18,56,63,.13);
+  --tm-photo-scrim-end:rgba(18,56,63,.16);
   --tm-overview-card:var(--tm-weather-card-bg);
   --tm-overview-card-soft:var(--tm-surface-dark-glass-soft);
   --tm-overview-border:var(--tm-border-on-dark);
@@ -1036,8 +1044,8 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-overview-muted:var(--tm-text-on-photo-secondary);
   --tm-overview-green:var(--tm-brand-primary);
   --tm-overview-green-soft:rgba(169,220,231,.52);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.38),rgba(16,30,34,.4));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.4),rgba(16,30,34,.42));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.15),rgba(16,30,34,.17));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.17),rgba(16,30,34,.19));
   --tm-card-text:var(--tm-text-on-photo);
   --tm-card-heading:var(--tm-text-on-photo);
   --tm-card-secondary:var(--tm-text-on-photo-secondary);
@@ -1046,18 +1054,18 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-card-icon:var(--tm-brand-soft);
   --tm-card-bg:var(--tm-weather-card-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
-  --tm-card-bg-compact:rgba(16,30,34,.34);
+  --tm-card-bg-compact:rgba(16,30,34,.06);
   --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
   --tm-card-border:var(--tm-border-on-dark);
   --tm-card-border-hover:var(--tm-brand-primary);
-  --tm-card-shadow:0 8px 22px rgba(0,0,0,.24);
-  --tm-card-shadow-compact:0 3px 10px rgba(0,0,0,.16);
+  --tm-card-shadow:0 6px 18px rgba(0,0,0,.16);
+  --tm-card-shadow-compact:0 2px 8px rgba(0,0,0,.1);
   --tm-card-control:var(--tm-control-surface);
   --tm-card-control-border:rgba(24,35,38,.3);
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-control-placeholder:#5A666A;
   --tm-card-control-selected:rgba(169,220,231,.52);
-  --tm-card-blur:blur(11px) saturate(108%)
+  --tm-card-blur:blur(7px) saturate(104%)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
@@ -1065,8 +1073,8 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
     background:var(--tm-surface-dark-glass-strong);
     color:var(--tm-card-text);
     box-shadow:var(--tm-card-shadow-compact);
-    -webkit-backdrop-filter:blur(12px) saturate(108%);
-    backdrop-filter:blur(12px) saturate(108%)
+    -webkit-backdrop-filter:blur(8px) saturate(104%);
+    backdrop-filter:blur(8px) saturate(104%)
   }
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
     color:var(--tm-card-text);
@@ -1097,7 +1105,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .tri
   -webkit-backdrop-filter:var(--tm-card-blur);
   backdrop-filter:var(--tm-card-blur)
 }
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:transparent;--tm-card-elevation:none;--tm-card-blur:none;--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:transparent;--tm-card-elevation:none;--tm-card-blur:none;--tm-material-blur:none;--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow);display:grid;gap:10px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;gap:6px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{--tm-card-surface:var(--tm-card-control);--tm-card-elevation:none;--tm-card-blur:none;min-width:0;gap:7px;padding:10px;border:1px solid var(--tm-card-control-border);font-size:13px;font-weight:600}
@@ -1194,9 +1202,13 @@ html body.tm-new-design .ai-panel .ai-composer textarea{
 
 /* Three reference components: material comes only from the shared tm-card tokens. */
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-photo-scrim-start:rgba(24,35,38,.28);
-  --tm-photo-scrim-mid:rgba(24,35,38,.34);
-  --tm-photo-scrim-end:rgba(24,35,38,.4);
+  --tm-surface-dark-glass-strong:rgba(18,56,63,.22);
+  --tm-surface-dark-glass-soft:rgba(16,30,34,.04);
+  --tm-control-surface:rgba(244,243,239,.78);
+  --tm-material-blur:blur(8px) saturate(104%);
+  --tm-photo-scrim-start:rgba(24,35,38,.08);
+  --tm-photo-scrim-mid:rgba(24,35,38,.11);
+  --tm-photo-scrim-end:rgba(24,35,38,.14);
   --tm-card-text:var(--tm-text-on-photo);
   --tm-card-heading:var(--tm-text-on-photo);
   --tm-card-secondary:var(--tm-text-on-photo-secondary);
@@ -1204,13 +1216,13 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-link:var(--tm-brand-primary);
   --tm-card-icon:var(--tm-brand-primary);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.38),rgba(16,30,34,.4));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.16),rgba(16,30,34,.18));
   --tm-card-bg:var(--tm-weather-card-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
-  --tm-card-bg-compact:rgba(16,30,34,.3);
+  --tm-card-bg-compact:rgba(16,30,34,.06);
   --tm-card-border:var(--tm-border-on-dark);
-  --tm-card-shadow:0 8px 22px rgba(0,0,0,.18);
-  --tm-card-shadow-compact:0 3px 10px rgba(24,35,38,.07);
+  --tm-card-shadow:0 6px 18px rgba(0,0,0,.12);
+  --tm-card-shadow-compact:0 2px 8px rgba(24,35,38,.06);
   --tm-card-control:var(--tm-control-surface);
   --tm-card-control-border:rgba(24,35,38,.26);
   --tm-card-control-placeholder:#5A666A;
@@ -1219,16 +1231,20 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-card-control-focus:var(--tm-brand-primary);
   --tm-places-control-blur:none;
   --tm-places-picker-bg:var(--tm-surface-neutral);
-  --tm-card-blur:blur(11px) saturate(108%)
+  --tm-card-blur:blur(8px) saturate(104%)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-photo-scrim-start:rgba(24,35,38,.32);
-  --tm-photo-scrim-mid:rgba(24,35,38,.4);
-  --tm-photo-scrim-end:rgba(24,35,38,.48);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.38),rgba(16,30,34,.4));
+  --tm-surface-dark-glass-strong:rgba(18,56,63,.24);
+  --tm-surface-dark-glass-soft:rgba(16,30,34,.06);
+  --tm-control-surface:rgba(244,243,239,.8);
+  --tm-material-blur:blur(8px) saturate(104%);
+  --tm-photo-scrim-start:rgba(24,35,38,.1);
+  --tm-photo-scrim-mid:rgba(24,35,38,.13);
+  --tm-photo-scrim-end:rgba(24,35,38,.16);
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.17),rgba(16,30,34,.19));
   --tm-card-bg:var(--tm-weather-card-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
-  --tm-card-bg-compact:rgba(16,30,34,.34);
+  --tm-card-bg-compact:rgba(16,30,34,.06);
   --tm-card-border:var(--tm-border-on-dark);
   --tm-card-shadow:0 8px 22px rgba(0,0,0,.24);
   --tm-card-shadow-compact:0 3px 10px rgba(0,0,0,.16);
@@ -1263,11 +1279,11 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   .lodging-setup,.nearby-free-search
 ){
   border:1px solid var(--tm-card-border);
-  background:var(--tm-card-bg);
+  background:rgba(16,30,34,.04);
   color:var(--tm-card-text);
   box-shadow:var(--tm-card-shadow-compact);
-  -webkit-backdrop-filter:var(--tm-card-blur);
-  backdrop-filter:var(--tm-card-blur)
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .nearby-category-drawer{
   background:var(--tm-card-control);
@@ -1350,7 +1366,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   --tm-card-surface:var(--tm-card-bg);
   --tm-card-elevation:var(--tm-card-shadow);
   border-color:var(--tm-card-border);
-  background:rgba(16,30,34,.16);
+  background:rgba(16,30,34,.04);
   color:var(--tm-card-text);
   box-shadow:var(--tm-card-shadow-compact);
   -webkit-backdrop-filter:none;
@@ -1427,6 +1443,9 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
 ){color:var(--tm-card-link);-webkit-text-fill-color:currentColor}
 
 html body.home-page.is-authenticated{
+  --tm-surface-dark-glass-strong:rgba(18,56,63,.22);
+  --tm-surface-dark-glass-soft:rgba(16,30,34,.04);
+  --tm-control-surface:rgba(244,243,239,.78);
   --tm-card-radius:18px;
   --tm-card-border:var(--tm-border-on-dark);
   --tm-card-border-hover:var(--tm-brand-primary);
@@ -1438,11 +1457,11 @@ html body.home-page.is-authenticated{
   --tm-card-control-border:rgba(24,35,38,.26);
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-control-selected:rgba(169,220,231,.48);
-  --tm-material-surface-start:rgba(16,30,34,.32);
-  --tm-material-surface-end:rgba(16,30,34,.26);
+  --tm-material-surface-start:rgba(16,30,34,.16);
+  --tm-material-surface-end:rgba(16,30,34,.12);
   --tm-material-blur:blur(9px) saturate(108%);
   background:
-    linear-gradient(rgba(24,35,38,.28),rgba(24,35,38,.4)),
+    linear-gradient(rgba(24,35,38,.08),rgba(24,35,38,.14)),
     url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=2000&q=88") center/cover fixed;
   color:var(--tm-text-on-brand)
 }
@@ -1489,22 +1508,22 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-card{
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-card::after{display:none}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-overlay{
-  background:linear-gradient(180deg,rgba(24,35,38,.02),rgba(24,35,38,.34))
+  background:linear-gradient(180deg,rgba(24,35,38,0) 46%,rgba(24,35,38,.2))
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:var(--tm-card-radius);
+  border:0;
+  border-radius:0;
   right:18px;
   bottom:18px;
   left:auto;
   width:min(64%,260px);
   padding:14px 16px;
-  background:var(--tm-surface-dark-glass-soft);
+  background:transparent;
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  box-shadow:0 8px 22px rgba(0,0,0,.16);
-  -webkit-backdrop-filter:var(--tm-material-blur);
-  backdrop-filter:var(--tm-material-blur);
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
   text-shadow:0 1px 5px rgba(0,0,0,.36)
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy,
@@ -1515,25 +1534,27 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy :
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy h2{font-weight:750}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy p{font-weight:500}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-edit-dates,.trip-delete){
-  border:1px solid rgba(244,247,247,.42);
-  background:rgba(24,35,38,.36);
-  color:var(--tm-card-text-on-photo);
+  border:1px solid var(--tm-card-control-border);
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
   -webkit-text-fill-color:currentColor;
   box-shadow:0 2px 7px rgba(0,0,0,.12);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
-  text-shadow:0 1px 4px rgba(0,0,0,.42)
+  text-shadow:none
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-activity-toggle{
   min-height:36px;
   border:1px solid var(--tm-card-control-border);
   background:var(--tm-card-control);
-  color:var(--tm-control-text);
+  color:var(--tm-card-control-text);
   -webkit-text-fill-color:currentColor;
-  box-shadow:0 2px 7px rgba(0,0,0,.12)
+  box-shadow:0 2px 7px rgba(0,0,0,.12);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-edit-dates{border-color:var(--tm-card-control-border)}
-html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-delete{border-color:rgba(244,247,247,.34);background:rgba(24,35,38,.28)}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-delete{border-color:rgba(180,35,24,.3);background:var(--tm-card-control);color:var(--tm-error)}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-edit-dates,.trip-delete) :is(i,span){color:inherit;-webkit-text-fill-color:currentColor}
 
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner :is(

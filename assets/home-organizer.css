@@ -322,8 +322,8 @@ body.home-page main.content{max-width:none!important;margin:0!important;padding:
 }
 .home-page.is-authenticated .trip-activity-toggle:not(.active){
   max-width:164px;
-  color:#173f33!important;
-  -webkit-text-fill-color:#173f33!important
+  color:#182326!important;
+  -webkit-text-fill-color:#182326!important
 }
 .home-page.is-authenticated .trip-activity-toggle:not(.active) span{
   overflow:hidden;
