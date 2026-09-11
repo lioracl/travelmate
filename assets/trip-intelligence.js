@@ -133,7 +133,7 @@
     var backdrop = document.createElement('section');
     backdrop.className = 'navo-intelligence-backdrop';
     backdrop.hidden = true;
-    backdrop.innerHTML = '<div class="navo-intelligence-sheet" role="dialog" aria-modal="true" aria-labelledby="navo-intelligence-title"><header><span class="navo-intelligence-icon"><i class="fa-solid fa-compass"></i></span><div><h2 id="navo-intelligence-title">המלצות Navo</h2><p data-navo-context></p></div><button type="button" data-navo-close aria-label="סגירת המלצות Navo"><i class="fa-solid fa-xmark"></i></button></header><div class="navo-intelligence-status" data-navo-stale hidden><i class="fa-solid fa-triangle-exclamation"></i><span>הפרטים השתנו מאז יצירת ההמלצות</span><button type="button" data-navo-refresh>רענן המלצות</button></div><div class="navo-intelligence-content" data-navo-content></div><footer><button type="button" data-navo-save><i class="fa-solid fa-file-circle-plus"></i> שמור למסמכים</button><button type="button" data-navo-ask><i class="fa-solid fa-comments"></i> שאל את נבו עוד</button></footer></div>';
+    backdrop.innerHTML = '<div class="navo-intelligence-sheet" role="dialog" aria-modal="true" aria-labelledby="navo-intelligence-title"><header><span class="navo-intelligence-icon"><i class="fa-solid fa-compass"></i></span><div><h2 id="navo-intelligence-title">המלצות Navo</h2><p data-navo-context></p></div><button type="button" data-navo-close aria-label="סגירת המלצות Navo"><i class="fa-solid fa-xmark"></i></button></header><div class="navo-intelligence-status" data-navo-stale hidden><i class="fa-solid fa-triangle-exclamation"></i><span>הפרטים השתנו מאז יצירת ההמלצות</span><button type="button" data-navo-refresh>רענן המלצות</button></div><div class="navo-intelligence-content" data-navo-content tabindex="0"></div><footer><button type="button" data-navo-save><i class="fa-solid fa-file-circle-plus"></i> שמור למסמכים</button><button type="button" data-navo-ask><i class="fa-solid fa-comments"></i> שאל את נבו עוד</button></footer></div>';
     document.body.appendChild(backdrop);
     ui.backdrop = backdrop;
     ui.sheet = backdrop.firstElementChild;
@@ -250,6 +250,21 @@
     function render() { controls.querySelectorAll('button').forEach(function (button) { var selected = button.dataset.tripType === select.value; button.classList.toggle('is-selected', selected); button.setAttribute('aria-pressed', String(selected)); }); }
     select.addEventListener('change', render); render();
   }
+  function formatHebrewDate(value) {
+    var match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return match ? match[3] + '.' + match[2] + '.' + match[1] : '';
+  }
+  function enhanceDateDisplays(form) {
+    ['start', 'end'].forEach(function (name) {
+      var input = form.elements[name];
+      if (!input || input.dataset.navoDateDisplay) return;
+      input.dataset.navoDateDisplay = 'true'; input.lang = 'he-IL'; input.dir = 'ltr';
+      var display = document.createElement('small'); display.className = 'navo-date-display'; display.hidden = true; display.setAttribute('aria-live', 'polite');
+      input.insertAdjacentElement('afterend', display);
+      function render() { var date = formatHebrewDate(input.value); display.textContent = date ? 'התאריך שנבחר: ' + date : ''; display.hidden = !date; }
+      input.addEventListener('input', render); input.addEventListener('change', render); render();
+    });
+  }
   function initNewTrip() {
     var form = document.querySelector('[data-destination-form]');
     if (!form || form.dataset.navoIntelligence) return;
@@ -258,6 +273,7 @@
     var countryField = form.elements.country.closest('label');
     if (cityField && countryField) form.insertBefore(cityField, countryField);
     enhanceTripType(form);
+    enhanceDateDisplays(form);
     var banner = document.createElement('aside'); banner.className = 'navo-trip-banner'; banner.hidden = true; banner.innerHTML = '<span><i class="fa-solid fa-compass"></i></span><div><strong></strong><p></p></div><button type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> לצפייה בהמלצות</button>';
     var submit = form.querySelector('[type="submit"]'); form.insertBefore(banner, submit); ui.banner = banner;
     banner.querySelector('button').addEventListener('click', function () { openSheet(formContext(form)); });

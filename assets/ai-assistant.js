@@ -122,11 +122,40 @@
     quickPrompts().forEach(function (prompt) { var button = document.createElement('button'); button.type = 'button'; button.textContent = prompt; button.addEventListener('click', function () { sendMessage(prompt); }); ui.prompts.appendChild(button); });
   }
 
+  function renderAssistantText(content) {
+    var lines = String(content || '').replace(/\r\n?/g, '\n').split('\n');
+    var html = [];
+    var listOpen = false;
+    function inline(value) {
+      return escapeText(value)
+        .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/__([^_\n]+)__/g, '<strong>$1</strong>')
+        .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+    }
+    function closeList() { if (listOpen) { html.push('</ul>'); listOpen = false; } }
+    lines.forEach(function (line) {
+      var heading = line.match(/^#{1,3}\s+(.+)$/);
+      var bullet = line.match(/^\s*[-*\u2022]\s+(.+)$/);
+      if (bullet) {
+        if (!listOpen) { html.push('<ul>'); listOpen = true; }
+        html.push('<li>' + inline(bullet[1]) + '</li>');
+      } else if (heading) {
+        closeList(); html.push('<h3>' + inline(heading[1]) + '</h3>');
+      } else if (line.trim()) {
+        closeList(); html.push('<p>' + inline(line) + '</p>');
+      } else closeList();
+    });
+    closeList();
+    return html.join('');
+  }
+
   function addMessage(role, content, options) {
     var row = document.createElement('div'); row.className = 'ai-message ' + role;
     var avatar = document.createElement('span'); avatar.className = 'ai-message-avatar'; avatar.innerHTML = role === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-compass"></i>';
     var bubble = document.createElement('div'); bubble.className = 'ai-bubble';
-    if (options && options.html) bubble.innerHTML = content; else bubble.textContent = content;
+    if (options && options.html) bubble.innerHTML = content;
+    else if (role === 'assistant') bubble.innerHTML = renderAssistantText(content);
+    else bubble.textContent = content;
     row.appendChild(avatar); row.appendChild(bubble); ui.chat.appendChild(row);
     if (role === 'assistant' && !(options && options.temporary)) addMessageTools(bubble, content);
     ui.chat.scrollTop = ui.chat.scrollHeight;
@@ -140,7 +169,9 @@
     var copy = document.createElement('button'); copy.type = 'button'; copy.innerHTML = '<i class="fa-regular fa-copy"></i> העתקה';
     copy.addEventListener('click', function () { navigator.clipboard && navigator.clipboard.writeText(content); copy.textContent = 'הועתק'; });
     tools.appendChild(speak); tools.appendChild(copy);
-    if (tripContext && tripContext.id) {
+    var tripId = tripContext && (tripContext.id || tripContext.tripId);
+    var activeTrip = tripId && readTrips().find(function (item) { return String(item.id) === String(tripId); });
+    if (activeTrip) {
       var saveNote = document.createElement('button');
       saveNote.type = 'button';
       saveNote.innerHTML = '<i class="fa-solid fa-file-circle-plus"></i> \u05e9\u05de\u05d5\u05e8 \u05d1\u05de\u05e1\u05de\u05db\u05d9\u05dd';
@@ -151,7 +182,7 @@
         }
         if (!question) { saveNote.textContent = '\u05e9\u05d0\u05dc \u05e9\u05d0\u05dc\u05d4 \u05ea\u05d7\u05d9\u05dc\u05d4'; return; }
         if (saveAiNote(question, content)) {
-          saveNote.innerHTML = '<i class="fa-solid fa-check"></i> \u05e0\u05e9\u05de\u05e8 \u05d1\u05de\u05e1\u05de\u05db\u05d9\u05dd';
+          saveNote.innerHTML = '<i class="fa-solid fa-check"></i> \u05e0\u05e9\u05de\u05e8 \u05d1\u05de\u05e1\u05de\u05db\u05d9 \u05d4\u05d8\u05d9\u05d5\u05dc';
           saveNote.disabled = true;
         } else saveNote.textContent = '\u05db\u05d1\u05e8 \u05e0\u05e9\u05de\u05e8';
       });
@@ -166,7 +197,8 @@
 
   function saveAiNote(question, answer) {
     var trips = readTrips();
-    var trip = trips.find(function (item) { return item.id === tripContext.id; });
+    var tripId = tripContext && (tripContext.id || tripContext.tripId);
+    var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
     if (!appendAiNote(trip, question, answer)) return false;
     localStorage.setItem('travelmate-trips', JSON.stringify(trips));
     if (window.TravelMateCloud) window.TravelMateCloud.queueTripSave(trip);
@@ -175,7 +207,8 @@
   }
 
   function renderAiNotesArchive() {
-    if (!tripContext || !tripContext.id) return;
+    var tripId = tripContext && (tripContext.id || tripContext.tripId);
+    if (!tripId) return;
     var documents = document.getElementById('documents');
     if (!documents) return;
     var archive = documents.querySelector('[data-ai-notes-archive]');
@@ -187,7 +220,7 @@
       host.parentNode.insertBefore(archive, host.nextSibling);
     }
     var trips = readTrips();
-    var trip = trips.find(function (item) { return item.id === tripContext.id; });
+    var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
     var notes = trip && Array.isArray(trip.aiNotes) ? trip.aiNotes : [];
     archive.innerHTML = '<header><span><i class="fa-solid fa-compass"></i></span><div><small>\u05e0\u05d1\u05d5 \u00b7 \u05e0\u05d2\u05d9\u05e9 \u05ea\u05de\u05d9\u05d3 \u05d5\u05dc\u05dc\u05d0 \u05db\u05e1\u05e4\u05ea</small><h3>\u05e9\u05d0\u05dc\u05d5\u05ea \u05d5\u05ea\u05e9\u05d5\u05d1\u05d5\u05ea \u05e9\u05de\u05d5\u05e8\u05d5\u05ea</h3><p>\u05e0\u05e9\u05de\u05e8 \u05d1\u05e0\u05e4\u05e8\u05d3 \u05de\u05d4\u05de\u05e1\u05de\u05db\u05d9\u05dd \u05d4\u05de\u05d5\u05e6\u05e4\u05e0\u05d9\u05dd. \u05db\u05dc \u05e9\u05d5\u05e8\u05d4 \u05e0\u05e4\u05ea\u05d7\u05ea \u05d5\u05e0\u05e1\u05d2\u05e8\u05ea \u05d1\u05dc\u05d7\u05d9\u05e6\u05d4.</p></div><b>' + notes.length + '</b></header><div class="ai-notes-list">' +
       (notes.length ? notes.map(function (note, index) {
