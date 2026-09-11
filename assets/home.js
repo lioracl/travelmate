@@ -703,6 +703,7 @@
       if (days < 1) { error.textContent = 'תאריך החזרה חייב להיות אחרי תאריך היציאה.'; return; }
       if (days > 60) { error.textContent = 'אפשר לבנות כרגע טיול של עד 60 ימים.'; return; }
       var trip = { id: String(Date.now()), country: form.elements.country.value.trim(), city: form.elements.city.value.trim(), start: form.elements.start.value, end: form.elements.end.value, budget: Number(form.elements.budget.value || 2500), type: form.elements.type.value, days: days, savedPlaces: [], activities: [], dayNotes: {} };
+      if (window.TravelMateTripIntelligence) window.TravelMateTripIntelligence.attachPendingToTrip(trip);
       cloud.upsertLocalTrip(trip);
       if (currentSession) {
         try { await cloud.saveTrip(trip); }

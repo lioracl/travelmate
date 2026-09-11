@@ -12,7 +12,8 @@
 
   function conversationStorageKey(userId) {
     var owner = userId || localStorage.getItem('travelmate-active-user') || 'guest';
-    return 'travelmate-ai-chat:' + owner + ':' + (tripContext && tripContext.id ? tripContext.id : 'general');
+    var contextId = tripContext && (tripContext.id || tripContext.tripId || tripContext.sessionId);
+    return 'travelmate-ai-chat:' + owner + ':' + (contextId || 'general');
   }
 
   function escapeText(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
@@ -166,10 +167,7 @@
   function saveAiNote(question, answer) {
     var trips = readTrips();
     var trip = trips.find(function (item) { return item.id === tripContext.id; });
-    if (!trip) return false;
-    trip.aiNotes = Array.isArray(trip.aiNotes) ? trip.aiNotes : [];
-    if (trip.aiNotes.some(function (note) { return note.question === question && note.answer === answer; })) return false;
-    trip.aiNotes.unshift({ id: 'navo-note-' + Date.now(), question: question, answer: answer, createdAt: new Date().toISOString() });
+    if (!appendAiNote(trip, question, answer)) return false;
     localStorage.setItem('travelmate-trips', JSON.stringify(trips));
     if (window.TravelMateCloud) window.TravelMateCloud.queueTripSave(trip);
     renderAiNotesArchive();
@@ -218,8 +216,8 @@
     return text.length > 650 && !/[.!?\u05c3\u2026\u201d"')\]}]$/.test(text);
   }
 
-  async function invokeAssistant(client, messages) {
-    var invokeRequest = client.functions.invoke('travel-assistant', { body: { messages: messages, context: tripContext, locale: document.documentElement.lang || 'he' } });
+  async function invokeAssistant(client, messages, contextOverride) {
+    var invokeRequest = client.functions.invoke('travel-assistant', { body: { messages: messages, context: contextOverride || tripContext, locale: document.documentElement.lang || 'he' } });
     return Promise.race([invokeRequest, new Promise(function (resolve, reject) { setTimeout(function () { reject(new Error('AI_TIMEOUT')); }, 30000); })]);
   }
 
@@ -275,6 +273,26 @@
     if (/429|limit|rate/i.test(message)) return 'הגעת למגבלת השימוש היומית בעוזר. אפשר לחזור ולשאול אותי מחר.';
     if (/404|FunctionsHttpError|Failed to send/i.test(message)) return 'שירות ה־AI עדיין לא הופעל ב־Supabase. הממשק כבר מוכן, ונדרשת הפעלה חד־פעמית של הפונקציה.';
     return 'לא הצלחתי להתחבר כרגע. אפשר לנסות שוב בעוד רגע.';
+  }
+
+  function appendAiNote(trip, question, answer, metadata) {
+    if (!trip) return false;
+    trip.aiNotes = Array.isArray(trip.aiNotes) ? trip.aiNotes : [];
+    if (trip.aiNotes.some(function (note) { return note.question === question && note.answer === answer; })) return false;
+    trip.aiNotes.unshift(Object.assign({ id: 'navo-note-' + Date.now(), question: question, answer: answer, createdAt: new Date().toISOString() }, metadata || {}));
+    return true;
+  }
+
+  async function requestWithContext(messages, context) {
+    var session = await getSession();
+    if (!session || !session.user) throw new Error('NAVO_AUTH_REQUIRED');
+    var service = activeCloud();
+    var client = await service.getClient();
+    var result = await invokeAssistant(client, messages, context);
+    if (result.error) throw result.error;
+    var answer = trimText(result.data && result.data.answer, 16000);
+    if (!answer) throw new Error('EMPTY_AI_RESPONSE');
+    return { answer: answer, data: result.data || {} };
   }
 
   function showInlineLogin(content) {
@@ -369,6 +387,18 @@
   ui.input.addEventListener('keydown', function (event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });
   window.addEventListener('travelmate:ask-ai', function (event) {
     var prompt = trimText(event.detail && event.detail.prompt, 4000);
+    if (event.detail && event.detail.context) {
+      tripContext = event.detail.context;
+      var nextKey = conversationStorageKey(state.session && state.session.user ? state.session.user.id : undefined);
+      if (nextKey !== storageKey) {
+        storageKey = nextKey;
+        state.messages = [];
+        restoreMessages();
+        renderHistory();
+      }
+      ui.panel.querySelector('[data-ai-context]').textContent = contextLabel();
+      renderPrompts();
+    }
     setOpen(true);
     if (prompt) { ui.input.value = prompt; autoGrow(); }
     ui.input.focus();
@@ -386,4 +416,22 @@
     window.visualViewport.addEventListener('scroll', syncVisualViewport);
   } else window.addEventListener('resize', syncVisualViewport);
   syncVisualViewport();
+  window.TravelMateNavo = {
+    request: requestWithContext,
+    friendlyError: friendlyError,
+    appendNote: appendAiNote,
+    saveNoteForTrip: function (tripId, question, answer, metadata) {
+      var trips = readTrips();
+      var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
+      if (!appendAiNote(trip, question, answer, metadata)) return false;
+      localStorage.setItem('travelmate-trips', JSON.stringify(trips));
+      if (window.TravelMateCloud) window.TravelMateCloud.queueTripSave(trip);
+      renderAiNotesArchive();
+      return true;
+    },
+    openConversation: function (prompt, context) {
+      window.dispatchEvent(new CustomEvent('travelmate:ask-ai', { detail: { prompt: prompt, context: context } }));
+    }
+  };
+  window.dispatchEvent(new CustomEvent('travelmate:navo-ready'));
 })();
