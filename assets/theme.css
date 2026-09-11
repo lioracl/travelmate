@@ -886,11 +886,11 @@ html body.home-page.is-authenticated main.content :is(
 html body.tm-new-design :where(
   button:not(.weather-top-widget):not(.map-pin),
   .pill-btn,.mini-btn,.planner-action,.service-link
-):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *),
+):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *):not(.about-dialog *),
 html body.home-page :where(
   button:not(.weather-top-widget):not(.trip-activity-toggle),
   .pill-btn,.mini-btn
-):not(#active-trips>.trip-card-shell *):not(.home-sidebar *){
+):not(#active-trips>.trip-card-shell *):not(.home-sidebar *):not(.about-dialog *){
   border:1px solid var(--tm-readable-border)!important;
   border-radius:14px!important;
   background:var(--tm-readable-glass)!important;
@@ -904,11 +904,11 @@ html body.home-page :where(
 html body.tm-new-design :where(
   button:not(.weather-top-widget):not(.map-pin),
   .pill-btn,.mini-btn,.planner-action,.service-link
-):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *):is(:hover,:focus-visible),
+):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *):not(.about-dialog *):is(:hover,:focus-visible),
 html body.home-page :where(
   button:not(.weather-top-widget):not(.trip-activity-toggle),
   .pill-btn,.mini-btn
-):not(#active-trips>.trip-card-shell *):not(.home-sidebar *):is(:hover,:focus-visible){
+):not(#active-trips>.trip-card-shell *):not(.home-sidebar *):not(.about-dialog *):is(:hover,:focus-visible){
   border-color:rgba(20,101,75,.42)!important;
   background:var(--tm-readable-glass-hover)!important;
   box-shadow:inset 0 1px 0 #fff,0 12px 30px rgba(6,42,31,.16)!important
