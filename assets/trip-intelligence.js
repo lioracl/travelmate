@@ -12,7 +12,7 @@
   };
   var newTripSessionId = String(Date.now());
   var states = {};
-  function emptyState(key) { return { key: key, context: null, fingerprint: '', answer: '', prompt: '', pendingSave: false, stale: false, busy: false, returnFocus: null, status: 'new' }; }
+  function emptyState(key) { return { key: key, context: null, fingerprint: '', answer: '', prompt: '', responseData: null, responseId: '', pendingSave: false, stale: false, busy: false, returnFocus: null, status: 'new' }; }
   var state = emptyState('NEW_TRIP:' + newTripSessionId);
   states[state.key] = state;
   var ui = {};
@@ -140,6 +140,7 @@
     backdrop.querySelector('[data-navo-refresh]').addEventListener('click', generate);
     ui.save.addEventListener('click', saveResponse);
     backdrop.querySelector('[data-navo-ask]').addEventListener('click', askMore);
+    ui.content.addEventListener('click', function (event) { if (event.target.closest('[data-navo-continue]')) continueAnswer(); });
     backdrop.addEventListener('click', function (event) { if (event.target === backdrop) closeSheet(); });
     document.addEventListener('keydown', function (event) {
       if (backdrop.hidden) return;
@@ -170,6 +171,9 @@
   function renderState() {
     ui.stale.hidden = !state.stale;
     ui.content.innerHTML = state.answer ? renderAnswer(state.answer) : '<div class="navo-intelligence-empty"><i class="fa-solid fa-compass"></i><p>נבו יכין המלצות מותאמות לפרטי הטיול שבחרת.</p></div>';
+    if (state.answer && window.TravelMateNavo && window.TravelMateNavo.responseIncomplete(state.responseData)) {
+      ui.content.insertAdjacentHTML('beforeend', '<button type="button" class="navo-intelligence-continue" data-navo-continue><i class="fa-solid fa-forward-step"></i> המשך תשובה</button>');
+    }
     ui.save.disabled = !state.answer || state.stale || state.busy;
   }
   async function generate() {
@@ -181,12 +185,32 @@
     try {
       state.prompt = promptFor(state.context);
       var result = await navo.request([{ role: 'user', content: state.prompt }], state.context);
-      state.answer = result.answer; state.fingerprint = fingerprint(state.context); state.status = 'new'; renderState(); updateBannerState();
+      state.answer = result.answer; state.responseData = result.data || {}; state.responseId = 'navo-intelligence-' + Date.now(); state.fingerprint = fingerprint(state.context); state.status = 'new'; renderState(); updateBannerState();
     } catch (error) {
       state.answer = '';
       var message = /NAVO_AUTH_REQUIRED/.test(String(error && error.message)) ? 'כדי לקבל המלצות מנבו צריך להתחבר לחשבון TravelMate.' : navo.friendlyError(error);
       ui.content.innerHTML = '<p class="navo-intelligence-error">' + escapeHtml(message) + '</p>';
     } finally { state.busy = false; ui.save.disabled = !state.answer || state.stale; }
+  }
+  async function continueAnswer() {
+    if (state.busy || !state.answer || !state.context) return;
+    var activeState = state; var responseId = state.responseId; var contextFingerprint = fingerprint(state.context);
+    var button = ui.content.querySelector('[data-navo-continue]');
+    state.busy = true;
+    if (button) { button.disabled = true; button.textContent = 'ממשיך…'; }
+    var failure = '';
+    try {
+      var result = await window.TravelMateNavo.continueResponse(state.answer, [{ role: 'user', content: state.prompt }], state.context);
+      if (state !== activeState || state.responseId !== responseId || fingerprint(state.context) !== contextFingerprint) return;
+      state.answer = result.answer; state.responseData = result.data || {}; state.responseId = 'navo-intelligence-' + Date.now();
+    } catch (error) {
+      failure = window.TravelMateNavo.friendlyError(error);
+    } finally {
+      if (state === activeState) {
+        state.busy = false; renderState();
+        if (failure) ui.content.insertAdjacentHTML('beforeend', '<p class="navo-intelligence-error">' + escapeHtml(failure) + '</p>');
+      }
+    }
   }
   function noteMetadata(context) {
     return { title: 'סיכום יעד — ' + context.destination + ' — ' + context.tripType, destination: context.destination, country: context.country, tripType: context.tripType, startDate: context.startDate, endDate: context.endDate, source: 'Navo', generatedAt: new Date().toISOString() };

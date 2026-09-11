@@ -166,7 +166,7 @@ Deno.serve(async (request) => {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: instructions }] },
         contents: geminiContents(messages),
-        generationConfig: { maxOutputTokens: 1200 }
+        generationConfig: { maxOutputTokens: 4096 }
       })
     });
 
@@ -180,7 +180,18 @@ Deno.serve(async (request) => {
     const response = await geminiResponse.json();
     const answer = outputText(response);
     if (!answer) return respond({ error: 'EMPTY_AI_RESPONSE' }, 502);
-    return respond({ answer, model, provider: 'gemini', remaining: usage.remaining });
+    const finishReason = String(response?.candidates?.[0]?.finishReason || '');
+    const truncated = finishReason === 'MAX_TOKENS';
+    const complete = finishReason === 'STOP';
+    return respond({
+      answer,
+      model,
+      provider: 'gemini',
+      remaining: usage.remaining,
+      finishReason,
+      truncated,
+      complete
+    });
   } catch (error) {
     console.error('Travel assistant error', error instanceof Error ? error.message : String(error));
     return respond({ error: 'ASSISTANT_FAILED' }, 500);

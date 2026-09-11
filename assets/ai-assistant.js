@@ -166,12 +166,13 @@
     else if (role === 'assistant') bubble.innerHTML = formatAssistantText(content);
     else bubble.textContent = content;
     row.appendChild(avatar); row.appendChild(bubble); ui.chat.appendChild(row);
-    if (role === 'assistant' && !(options && options.temporary)) addMessageTools(bubble, content);
+    if (role === 'assistant' && !(options && options.temporary)) addMessageTools(bubble, options && options.responseState || { content: content });
     ui.chat.scrollTop = ui.chat.scrollHeight;
     return row;
   }
 
-  function addMessageTools(bubble, content) {
+  function addMessageTools(bubble, responseState) {
+    var content = responseState.content;
     var tools = document.createElement('div'); tools.className = 'ai-message-tools';
     var speak = document.createElement('button'); speak.type = 'button'; speak.innerHTML = '<i class="fa-solid fa-volume-high"></i> הקראה';
     speak.addEventListener('click', function () { if (!window.speechSynthesis) return; speechSynthesis.cancel(); var utterance = new SpeechSynthesisUtterance(content); utterance.lang = 'he-IL'; speechSynthesis.speak(utterance); });
@@ -197,6 +198,29 @@
       });
       tools.appendChild(saveNote);
     }
+    if (responseIncomplete(responseState.data) && responseState.messages && responseState.context !== undefined) {
+      var continueButton = document.createElement('button');
+      continueButton.type = 'button';
+      continueButton.className = 'ai-continue-response';
+      continueButton.innerHTML = '<i class="fa-solid fa-forward-step"></i> המשך תשובה';
+      continueButton.addEventListener('click', async function () {
+        if (responseState.continuing) return;
+        responseState.continuing = true; continueButton.disabled = true; continueButton.textContent = 'ממשיך…';
+        try {
+          var continued = await continueResponse(responseState.content, responseState.messages, responseState.context);
+          responseState.content = continued.answer; responseState.data = continued.data;
+          if (responseState.message) responseState.message.content = responseState.content;
+          persistMessages();
+          bubble.innerHTML = formatAssistantText(responseState.content);
+          addMessageTools(bubble, responseState);
+          ui.chat.scrollTop = ui.chat.scrollHeight;
+        } catch (error) {
+          continueButton.disabled = false; continueButton.innerHTML = '<i class="fa-solid fa-forward-step"></i> המשך תשובה';
+          setStatus(friendlyError(error));
+        } finally { responseState.continuing = false; }
+      });
+      tools.appendChild(continueButton);
+    }
     bubble.appendChild(tools);
   }
 
@@ -220,8 +244,7 @@
     var tripId = currentTripId();
     var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
     if (!appendAiNote(trip, question, answer)) return false;
-    localStorage.setItem('travelmate-trips', JSON.stringify(trips));
-    if (window.TravelMateCloud) window.TravelMateCloud.queueTripSave(trip);
+    persistTripWithNote(trips, trip);
     renderAiNotesArchive();
     return true;
   }
@@ -261,12 +284,8 @@
     };
   }
 
-  function responseNeedsContinuation(answer, data) {
-    var finish = String(data && (data.finishReason || data.finish_reason || data.stopReason) || '');
-    if (data && (data.truncated === true || data.complete === false)) return true;
-    if (/MAX_TOKENS|LENGTH|INCOMPLETE/i.test(finish)) return true;
-    var text = String(answer || '').trim();
-    return text.length > 650 && !/[.!?\u05c3\u2026\u201d"')\]}]$/.test(text);
+  function responseIncomplete(data) {
+    return Boolean(data && (data.truncated === true || data.complete === false));
   }
 
   async function invokeAssistant(client, messages, contextOverride) {
@@ -336,6 +355,41 @@
     return true;
   }
 
+  function persistTripWithNote(trips, trip) {
+    var service = activeCloud();
+    if (service && service.upsertLocalTrip) service.upsertLocalTrip(trip);
+    else localStorage.setItem('travelmate-trips', JSON.stringify(trips));
+    if (service && service.queueTripSave) service.queueTripSave(trip);
+  }
+
+  function mergeContinuation(original, continuation) {
+    var first = String(original || '').trim();
+    var next = String(continuation || '').trim();
+    if (!next || first.indexOf(next) !== -1) return first;
+    var maxOverlap = Math.min(800, first.length, next.length);
+    for (var length = maxOverlap; length >= 12; length -= 1) {
+      if (first.slice(-length) === next.slice(0, length)) return first + next.slice(length);
+    }
+    return first + '\n\n' + next;
+  }
+
+  async function continueResponse(previousAnswer, messages, context) {
+    var session = await getSession();
+    if (!session || !session.user) throw new Error('NAVO_AUTH_REQUIRED');
+    var service = activeCloud();
+    var client = await service.getClient();
+    var continuationAnchor = String(previousAnswer || '').slice(-3500);
+    var continuationMessages = (messages || []).concat([
+      { role: 'assistant', content: continuationAnchor },
+      { role: 'user', content: 'התשובה הקודמת נקטעה. המשך בדיוק מהמקום שבו נעצרת, ללא חזרה על כותרות או מידע שכבר נכתב.' }
+    ]);
+    var result = await invokeAssistant(client, continuationMessages, context);
+    if (result.error) throw result.error;
+    var extra = String(result.data && result.data.answer || '').trim();
+    if (!extra) throw new Error('EMPTY_AI_RESPONSE');
+    return { answer: mergeContinuation(previousAnswer, extra), data: result.data || {} };
+  }
+
   async function requestWithContext(messages, context) {
     var session = await getSession();
     if (!session || !session.user) throw new Error('NAVO_AUTH_REQUIRED');
@@ -343,7 +397,7 @@
     var client = await service.getClient();
     var result = await invokeAssistant(client, messages, context);
     if (result.error) throw result.error;
-    var answer = trimText(result.data && result.data.answer, 16000);
+    var answer = String(result.data && result.data.answer || '').trim();
     if (!answer) throw new Error('EMPTY_AI_RESPONSE');
     return { answer: answer, data: result.data || {} };
   }
@@ -390,19 +444,10 @@
         try { var errorBody = await result.error.context.clone().json(); result.error.travelMateCode = [errorBody && errorBody.error, errorBody && errorBody.providerCode, errorBody && errorBody.providerStatus].filter(Boolean).join(':'); } catch (parseError) {}
         throw result.error;
       }
-      var answer = trimText(result.data && result.data.answer, 10000) || 'לא התקבלה תשובה. נסה לנסח את השאלה מחדש.';
-      if (responseNeedsContinuation(answer, result.data)) {
-        setStatus('\u05de\u05d5\u05d5\u05d3\u05d0 \u05e9\u05d4\u05ea\u05e9\u05d5\u05d1\u05d4 \u05d4\u05d5\u05e9\u05dc\u05de\u05d4\u2026');
-        var continuation = await invokeAssistant(client, state.messages.slice(-10).concat([
-          { role: 'assistant', content: answer },
-          { role: 'user', content: '\u05d4\u05ea\u05e9\u05d5\u05d1\u05d4 \u05d4\u05e7\u05d5\u05d3\u05de\u05ea \u05e0\u05e7\u05d8\u05e2\u05d4. \u05d4\u05de\u05e9\u05da \u05d1\u05d3\u05d9\u05d5\u05e7 \u05de\u05d4\u05de\u05e7\u05d5\u05dd \u05e9\u05d1\u05d5 \u05e0\u05e2\u05e6\u05e8\u05ea, \u05dc\u05dc\u05d0 \u05dc\u05d7\u05d6\u05d5\u05e8 \u05e2\u05dc \u05de\u05d4 \u05e9\u05db\u05d1\u05e8 \u05e0\u05db\u05ea\u05d1.' }
-        ]));
-        if (!continuation.error) {
-          var extra = trimText(continuation.data && continuation.data.answer, 7000);
-          if (extra && answer.indexOf(extra) === -1) answer = trimText(answer + '\n\n' + extra, 16000);
-        }
-      }
-      typing.remove(); state.messages.push({ role: 'assistant', content: answer }); state.messages = state.messages.slice(-16); persistMessages(); addMessage('assistant', answer); setStatus('מחובר · ההקשר של הטיול פעיל');
+      var answer = String(result.data && result.data.answer || '').trim() || 'לא התקבלה תשובה. נסה לנסח את השאלה מחדש.';
+      var assistantMessage = { role: 'assistant', content: answer };
+      var responseState = { id: 'navo-response-' + Date.now(), content: answer, data: result.data || {}, messages: state.messages.slice(-12), context: tripContext ? JSON.parse(JSON.stringify(tripContext)) : null, message: assistantMessage };
+      typing.remove(); state.messages.push(assistantMessage); state.messages = state.messages.slice(-16); persistMessages(); addMessage('assistant', answer, { responseState: responseState }); setStatus('מחובר · ההקשר של הטיול פעיל');
     } catch (error) {
       console.error('TravelMate AI request failed', error); typing.remove(); addMessage('assistant', '<div class="ai-login-card ai-error-card">' + escapeText(friendlyError(error)) + '</div>', { html: true, temporary: true }); setStatus('החיבור ל־AI אינו זמין');
     } finally { setBusy(false); ui.input.focus(); }
@@ -473,13 +518,14 @@
     request: requestWithContext,
     friendlyError: friendlyError,
     formatResponse: formatAssistantText,
+    responseIncomplete: responseIncomplete,
+    continueResponse: continueResponse,
     appendNote: appendAiNote,
     saveNoteForTrip: function (tripId, question, answer, metadata) {
       var trips = readTrips();
       var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
       if (!appendAiNote(trip, question, answer, metadata)) return false;
-      localStorage.setItem('travelmate-trips', JSON.stringify(trips));
-      if (window.TravelMateCloud) window.TravelMateCloud.queueTripSave(trip);
+      persistTripWithNote(trips, trip);
       renderAiNotesArchive();
       return true;
     },
