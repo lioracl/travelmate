@@ -120,14 +120,8 @@
     ].filter(Boolean).join('\n');
   }
   function renderAnswer(answer) {
-    return escapeHtml(answer).split(/\n{2,}/).map(function (block) {
-      var lines = block.split('\n').filter(Boolean);
-      if (lines.length > 1 && lines.slice(1).every(function (line) { return /^[-•*\d]/.test(line.trim()); })) {
-        return '<section><h3>' + escapeHtml(lines[0].replace(/^#+\s*/, '')) + '</h3><ul>' + lines.slice(1).map(function (line) { return '<li>' + escapeHtml(line.replace(/^[-•*\d.)\s]+/, '')) + '</li>'; }).join('') + '</ul></section>';
-      }
-      if (lines.length === 1 && (/^#{1,4}\s/.test(lines[0]) || /:$/.test(lines[0]))) return '<h3>' + escapeHtml(lines[0].replace(/^#+\s*/, '').replace(/:$/, '')) + '</h3>';
-      return '<p>' + lines.map(escapeHtml).join('<br>') + '</p>';
-    }).join('');
+    var navo = window.TravelMateNavo;
+    return navo && navo.formatResponse ? navo.formatResponse(answer) : '<p>' + escapeHtml(answer).replace(/\n/g, '<br>') + '</p>';
   }
   function createSheet() {
     var backdrop = document.createElement('section');

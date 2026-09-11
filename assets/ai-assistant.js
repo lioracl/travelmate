@@ -21,8 +21,7 @@
 
   function collectTripContext() {
     var id = new URLSearchParams(location.search).get('id');
-    var trips = [];
-    try { trips = JSON.parse(localStorage.getItem('travelmate-trips') || '[]'); } catch (error) {}
+    var trips = readTrips();
     var trip = trips.find(function (item) { return String(item.id) === String(id); });
     if (trip) {
       return {
@@ -122,8 +121,18 @@
     quickPrompts().forEach(function (prompt) { var button = document.createElement('button'); button.type = 'button'; button.textContent = prompt; button.addEventListener('click', function () { sendMessage(prompt); }); ui.prompts.appendChild(button); });
   }
 
-  function renderAssistantText(content) {
-    var lines = String(content || '').replace(/\r\n?/g, '\n').split('\n');
+  function decodeTextEntities(content) {
+    var named = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>' };
+    return String(content || '')
+      .replace(/&(amp|quot|apos|lt|gt);/gi, function (match, name) { return named[name.toLowerCase()]; })
+      .replace(/&#(x[0-9a-f]+|\d+);/gi, function (match, value) {
+        var code = /^x/i.test(value) ? parseInt(value.slice(1), 16) : parseInt(value, 10);
+        try { return code >= 0 && code <= 1114111 ? String.fromCodePoint(code) : match; } catch (error) { return match; }
+      });
+  }
+
+  function formatAssistantText(content) {
+    var lines = decodeTextEntities(content).replace(/\r\n?/g, '\n').split('\n');
     var html = [];
     var listOpen = false;
     function inline(value) {
@@ -154,7 +163,7 @@
     var avatar = document.createElement('span'); avatar.className = 'ai-message-avatar'; avatar.innerHTML = role === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-compass"></i>';
     var bubble = document.createElement('div'); bubble.className = 'ai-bubble';
     if (options && options.html) bubble.innerHTML = content;
-    else if (role === 'assistant') bubble.innerHTML = renderAssistantText(content);
+    else if (role === 'assistant') bubble.innerHTML = formatAssistantText(content);
     else bubble.textContent = content;
     row.appendChild(avatar); row.appendChild(bubble); ui.chat.appendChild(row);
     if (role === 'assistant' && !(options && options.temporary)) addMessageTools(bubble, content);
@@ -169,7 +178,7 @@
     var copy = document.createElement('button'); copy.type = 'button'; copy.innerHTML = '<i class="fa-regular fa-copy"></i> העתקה';
     copy.addEventListener('click', function () { navigator.clipboard && navigator.clipboard.writeText(content); copy.textContent = 'הועתק'; });
     tools.appendChild(speak); tools.appendChild(copy);
-    var tripId = tripContext && (tripContext.id || tripContext.tripId);
+    var tripId = currentTripId();
     var activeTrip = tripId && readTrips().find(function (item) { return String(item.id) === String(tripId); });
     if (activeTrip) {
       var saveNote = document.createElement('button');
@@ -192,12 +201,23 @@
   }
 
   function readTrips() {
+    var service = activeCloud();
+    if (service && service.getLocalTrips) {
+      try {
+        var cloudTrips = service.getLocalTrips();
+        if (Array.isArray(cloudTrips) && cloudTrips.length) return cloudTrips;
+      } catch (error) {}
+    }
     try { return JSON.parse(localStorage.getItem('travelmate-trips') || '[]'); } catch (error) { return []; }
+  }
+
+  function currentTripId() {
+    return new URLSearchParams(location.search).get('id') || tripContext && (tripContext.id || tripContext.tripId);
   }
 
   function saveAiNote(question, answer) {
     var trips = readTrips();
-    var tripId = tripContext && (tripContext.id || tripContext.tripId);
+    var tripId = currentTripId();
     var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
     if (!appendAiNote(trip, question, answer)) return false;
     localStorage.setItem('travelmate-trips', JSON.stringify(trips));
@@ -207,7 +227,7 @@
   }
 
   function renderAiNotesArchive() {
-    var tripId = tripContext && (tripContext.id || tripContext.tripId);
+    var tripId = currentTripId();
     if (!tripId) return;
     var documents = document.getElementById('documents');
     if (!documents) return;
@@ -452,6 +472,7 @@
   window.TravelMateNavo = {
     request: requestWithContext,
     friendlyError: friendlyError,
+    formatResponse: formatAssistantText,
     appendNote: appendAiNote,
     saveNoteForTrip: function (tripId, question, answer, metadata) {
       var trips = readTrips();
