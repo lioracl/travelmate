@@ -1186,15 +1186,32 @@ html[data-theme][data-theme] body.tm-new-design main.content .section-head{paddi
 }
 /* Keep assistant content in the same translucent surface family as the host panel. */
 html body.tm-new-design .ai-panel .ai-context-bar,
-html body.tm-new-design .ai-panel .ai-bubble,
-html body.tm-new-design .ai-panel .ai-composer,
-html body.tm-new-design .ai-panel .ai-composer-row,
-html body.tm-new-design .ai-panel .ai-quick-prompts button{
+html body.tm-new-design .ai-panel .ai-composer{
   border-color:var(--tm-card-control-border);
-  background:var(--tm-card-bg-nested);
+  background:rgba(244,243,239,.76);
   color:var(--tm-card-text);
   box-shadow:var(--tm-card-shadow-compact);
 }
+html body.tm-new-design .ai-panel .ai-message.assistant .ai-bubble{
+  border-color:rgba(20,125,146,.24);
+  background:rgba(229,241,239,.86);
+  color:var(--tm-control-text,#182326);
+  box-shadow:0 5px 16px rgba(18,56,63,.1);
+}
+html body.tm-new-design .ai-panel .ai-composer-row,
+html body.tm-new-design .ai-panel .ai-quick-prompts button{
+  border-color:rgba(20,125,146,.24);
+  background:rgba(235,243,240,.82);
+  color:var(--tm-control-text,#182326);
+  box-shadow:none;
+}
+html body.tm-new-design .ai-panel .ai-message-tools{gap:6px}
+html body.tm-new-design .ai-panel .ai-message-tools button{color:var(--tm-brand-dark,#0b5869)}
+html body.tm-new-design .ai-panel .ai-composer button[data-ai-send]{
+  background:var(--tm-brand-primary,#147d92);
+  color:#fff;
+}
+html body.tm-new-design .ai-panel .ai-composer button.ai-voice{color:var(--tm-brand-dark,#0b5869)}
 html body.tm-new-design .ai-panel .ai-composer textarea{
   background:transparent;
   color:var(--tm-card-control-text);
