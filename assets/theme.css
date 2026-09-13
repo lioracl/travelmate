@@ -364,7 +364,7 @@ body.tm-new-design #trip-home-actions-title{
 /* Keep all trip-page typography bright over destination photography. */
 body.tm-new-design .content :where(
   h1,h2,h3,h4,h5,h6,p,small,strong,span,label,legend,a,button,li,dt,dd,time
-):not(.weather-top-widget):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .weather-top-widget *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-overview-summary *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-home-actions *):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *),
+):not(.weather-top-widget):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .weather-top-widget *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-overview-summary *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-home-actions *):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *):not(.ai-notes-archive *),
 body.tm-new-design .sidebar :where(a,button,span,small,strong){
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
@@ -923,7 +923,7 @@ html body :where(
   -webkit-text-fill-color:#fff!important;
   text-shadow:none!important
 }
-html body :where(button.danger,.danger,.mini-btn.danger,[data-delete],[data-delete-saved-place]):not(#active-trips>.trip-card-shell *):not(.home-sidebar *){
+html body :where(button.danger,.danger,.mini-btn.danger,[data-delete],[data-delete-saved-place],[data-delete-ai-note]):not(#active-trips>.trip-card-shell *):not(.home-sidebar *){
   border-color:rgba(180,35,24,.28)!important;
   background:linear-gradient(135deg,rgba(255,249,248,.96),rgba(255,229,226,.9))!important;
   color:#a52b22!important;
@@ -1486,7 +1486,7 @@ html body.tm-new-design #budget .budget-hero{
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(button,.pill-btn,.service-link){
+) :where(button:not([data-copy-ai-note]):not([data-delete-ai-note]),.pill-btn,.service-link){
   min-height:42px!important;
   border:1px solid rgba(20,101,75,.2)!important;
   border-radius:13px!important;
@@ -1814,7 +1814,7 @@ body.tm-new-design .ai-panel-header{
   color:var(--tm-text-on-photo)!important;
   -webkit-text-fill-color:var(--tm-text-on-photo)!important
 }
-body.tm-new-design .ai-panel-title small{color:#507567!important}
+body.tm-new-design .ai-panel-title small{color:#d9eee7!important}
 body.tm-new-design .ai-avatar,
 body.tm-new-design .ai-icon-button{
   border:1px solid rgba(20,101,75,.16)!important;
@@ -2278,7 +2278,7 @@ html body.tm-new-design main.content>section:is(
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(button,.button,.btn,.icon-button,.pill-btn,a[class*="button"]){
+) :where(button:not([data-copy-ai-note]):not([data-delete-ai-note]),.button,.btn,.icon-button,.pill-btn,a[class*="button"]){
   border:1px solid var(--tm-control-border)!important;
   background:var(--tm-control-bg)!important;
   color:var(--tm-control-text)!important;
@@ -2287,7 +2287,7 @@ html body.tm-new-design main.content>section:is(
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(button,.button,.btn,.icon-button,.pill-btn) :where(i,svg){
+) :where(button:not([data-copy-ai-note]):not([data-delete-ai-note]),.button,.btn,.icon-button,.pill-btn) :where(i,svg){
   color:currentColor!important;
   fill:currentColor!important;
   stroke:currentColor!important
@@ -3534,33 +3534,70 @@ html body.tm-new-design[data-trip-view="documents"] main.content #documents .vau
   -webkit-text-fill-color:inherit!important
 }
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list details{
-  background:rgba(20,48,39,.88)!important;
-  border-color:rgba(255,255,255,.25)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  --tm-navo-surface:#f4f7f5;
+  --tm-navo-surface-soft:#e8f1ee;
+  --tm-navo-text:#182326;
+  --tm-navo-text-secondary:#4d5f63;
+  --tm-navo-accent:#0b5869;
+  --tm-navo-danger:#a2261d;
+  background:var(--tm-navo-surface)!important;
+  border-color:rgba(18,88,105,.28)!important;
+  color:var(--tm-navo-text)!important;
+  -webkit-text-fill-color:var(--tm-navo-text)!important
 }
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list summary,
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-note-answer,
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer{
   background:transparent!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
+  color:var(--tm-navo-text)!important;
+  -webkit-text-fill-color:var(--tm-navo-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list :is(summary,.ai-note-answer) :is(strong,small,span){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important
 }
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list summary small{
-  color:rgba(255,255,255,.76)!important;
-  -webkit-text-fill-color:rgba(255,255,255,.76)!important
+  color:var(--tm-navo-text-secondary)!important;
+  -webkit-text-fill-color:var(--tm-navo-text-secondary)!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list summary strong,
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-note-answer :is(h3,strong,b){
+  color:var(--tm-navo-accent)!important;
+  -webkit-text-fill-color:var(--tm-navo-accent)!important
 }
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button{
-  background:rgba(255,255,255,.95)!important;
-  border-color:rgba(255,255,255,.55)!important;
-  color:#17664e!important;
-  -webkit-text-fill-color:#17664e!important;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  background:var(--tm-navo-surface-soft)!important;
+  border-color:rgba(11,88,105,.36)!important;
+  color:var(--tm-navo-accent)!important;
+  -webkit-text-fill-color:var(--tm-navo-accent)!important;
   text-shadow:none!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button[data-delete-ai-note]{
+  background:#fff1ef!important;
+  border-color:rgba(162,38,29,.46)!important;
+  color:var(--tm-navo-danger)!important;
+  -webkit-text-fill-color:var(--tm-navo-danger)!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button:hover{
+  background:#dbeae6!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button[data-delete-ai-note]:hover{
+  background:#ffe3df!important
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button:active{transform:translateY(1px)}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button:focus-visible{
+  outline:3px solid rgba(20,125,146,.34);
+  outline-offset:2px
+}
+html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button:disabled{
+  opacity:.55;
+  cursor:not-allowed
 }
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button *{
   color:inherit!important;
@@ -3864,7 +3901,7 @@ html body.tm-new-design main.content :is(
 html body.tm-new-design :is(
   .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
   .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
-  .floating-logout-dialog,.ai-panel,.smart-hub-modal,.cloud-account-split
+  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split
 ) :is(h1,h2,h3,h4,h5,strong,b,time,label,legend,p,small,span,li){
   color:var(--tm-weather-unified-text)!important;
   -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
@@ -4104,6 +4141,7 @@ html body.tm-new-design main.content :is(button,a[href],[role="button"],summary)
   align-items:center;
   justify-content:center
 }
+html body.tm-new-design main.content :is([data-copy-ai-note],[data-delete-ai-note]){min-height:44px}
 html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):not(:disabled):not([aria-disabled="true"]){
   cursor:pointer
 }
@@ -4142,7 +4180,7 @@ html body.tm-new-design main.content :is(button,a[href],[role="button"],summary)
 /* Destructive controls remain unmistakable instead of inheriting pale glass. */
 html body.tm-new-design main.content :is(
   button.danger,.danger button,[data-delete],[data-remove],[data-delete-expense],
-  [data-delete-saved-place],[data-delete-memory],[data-delete-document]
+  [data-delete-saved-place],[data-delete-memory],[data-delete-document],[data-delete-ai-note]
 ){
   border-color:rgba(255,185,180,.8)!important;
   background:rgba(132,34,39,.9)!important;
@@ -4606,7 +4644,7 @@ html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]
 html body.tm-new-design :is(
   .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
   .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
-  .floating-logout-dialog,.ai-panel,.smart-hub-modal,.cloud-account-split
+  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split
 ) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li){
   color:#26332e!important;
   -webkit-text-fill-color:#26332e!important;
@@ -4691,7 +4729,7 @@ html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]
 html body.tm-new-design :is(
   .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
   .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
-  .floating-logout-dialog,.ai-panel,.smart-hub-modal,.cloud-account-split
+  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split
 ) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li){
   color:var(--tm-card-text)!important;
   -webkit-text-fill-color:var(--tm-card-text)!important;
@@ -4713,7 +4751,7 @@ html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-c
   opacity:1!important
 }
 html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  button:not(.primary):not([type="submit"]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
+  button:not(.primary):not([type="submit"]):not([data-delete-ai-note]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
 ):not(.maplibregl-map *):not(.trip-home-actions a):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border-color:rgba(210,241,228,.78)!important;
   background:rgba(244,255,250,.94)!important;
@@ -4722,7 +4760,7 @@ html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]
   text-shadow:none!important
 }
 html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  button:not(.primary):not([type="submit"]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
+  button:not(.primary):not([type="submit"]):not([data-delete-ai-note]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
 ):not(.maplibregl-map *):not(.trip-home-actions a):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) *{
   color:inherit!important;
   -webkit-text-fill-color:inherit!important
