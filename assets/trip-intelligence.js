@@ -11,13 +11,19 @@
     'חברים': { icon: 'fa-user-group', prompt: 'דגש על חוויות משותפות, אוכל, בילוי ופעילויות לקבוצה.' }
   };
   var newTripSessionId = String(Date.now());
+  var responseSequence = 0;
   var states = {};
-  function emptyState(key) { return { key: key, context: null, fingerprint: '', recommendation: null, prompt: '', responseData: null, responseId: '', pendingSave: false, stale: false, busy: false, returnFocus: null, status: 'new' }; }
+  function emptyState(key) { return { key: key, context: null, fingerprint: '', recommendation: null, prompt: '', responseData: null, responseId: '', requestId: 0, pendingSave: false, stale: false, busy: false, returnFocus: null, status: 'new' }; }
   var state = emptyState('NEW_TRIP:' + newTripSessionId);
   states[state.key] = state;
   var ui = {};
 
   function contextKey(context) { return context.contextMode + ':' + (context.tripId || context.sessionId || 'general'); }
+  function newResponseId() {
+    responseSequence += 1;
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') return 'navo-intelligence-' + window.crypto.randomUUID();
+    return 'navo-intelligence-' + Date.now().toString(36) + '-' + responseSequence.toString(36);
+  }
   function bindContext(context) {
     var key = contextKey(context);
     if (!states[key]) states[key] = emptyState(key);
@@ -198,17 +204,27 @@
     if (state.busy || !state.context) return;
     var navo = window.TravelMateNavo;
     if (!navo || !navo.request) { ui.content.innerHTML = '<p class="navo-intelligence-error">נבו עדיין נטען. נסה שוב בעוד רגע.</p>'; return; }
-    state.busy = true; state.stale = false; state.pendingSave = false;
+    var activeState = state; var activeContext = state.context; var contextFingerprint = fingerprint(activeContext); var requestId = ++activeState.requestId;
+    activeState.busy = true; activeState.stale = false; activeState.pendingSave = false;
     ui.stale.hidden = true; ui.content.innerHTML = '<div class="navo-intelligence-loading"><i class="fa-solid fa-spinner fa-spin"></i><p>נבו מכין המלצות שמתאימות לטיול שלך…</p></div>';
     try {
-      state.prompt = promptFor(state.context);
-      var result = await navo.request([{ role: 'user', content: state.prompt }], state.context);
-      state.recommendation = recommendationFor(state.context, result.answer); state.responseData = result.data || {}; state.responseId = 'navo-intelligence-' + Date.now(); state.fingerprint = fingerprint(state.context); state.status = 'new'; renderState(); updateBannerState();
+      activeState.prompt = promptFor(activeContext);
+      var result = await navo.request([{ role: 'user', content: activeState.prompt }], activeContext);
+      if (activeState.requestId !== requestId || fingerprint(activeState.context) !== contextFingerprint) {
+        if (state === activeState) { activeState.recommendation = null; renderState(); }
+        return;
+      }
+      activeState.recommendation = recommendationFor(activeContext, result.answer); activeState.responseData = result.data || {}; activeState.responseId = newResponseId(); activeState.fingerprint = contextFingerprint; activeState.status = 'new';
+      if (state === activeState) { renderState(); updateBannerState(); }
     } catch (error) {
-      state.recommendation = null;
+      if (activeState.requestId !== requestId) return;
+      activeState.recommendation = null;
       var message = /NAVO_AUTH_REQUIRED/.test(String(error && error.message)) ? 'כדי לקבל המלצות מנבו צריך להתחבר לחשבון TravelMate.' : navo.friendlyError(error);
-      ui.content.innerHTML = '<p class="navo-intelligence-error">' + escapeHtml(message) + '</p>';
-    } finally { state.busy = false; ui.save.disabled = !(state.recommendation && state.recommendation.body) || state.stale; }
+      if (state === activeState) ui.content.innerHTML = '<p class="navo-intelligence-error">' + escapeHtml(message) + '</p>';
+    } finally {
+      if (activeState.requestId === requestId) activeState.busy = false;
+      if (state === activeState) ui.save.disabled = !(activeState.recommendation && activeState.recommendation.body) || activeState.stale;
+    }
   }
   async function continueAnswer() {
     if (state.busy || !state.recommendation || !state.recommendation.body || !state.context) return;
@@ -220,7 +236,7 @@
     try {
       var result = await window.TravelMateNavo.continueResponse(state.recommendation.body, [{ role: 'user', content: state.prompt }], state.context);
       if (state !== activeState || state.responseId !== responseId || fingerprint(state.context) !== contextFingerprint) return;
-      state.recommendation = recommendationFor(state.context, result.answer, state.recommendation.generatedAt); state.responseData = result.data || {}; state.responseId = 'navo-intelligence-' + Date.now();
+      state.recommendation = recommendationFor(state.context, result.answer, state.recommendation.generatedAt); state.responseData = result.data || {}; state.responseId = newResponseId();
     } catch (error) {
       failure = window.TravelMateNavo.friendlyError(error);
     } finally {
@@ -230,14 +246,14 @@
       }
     }
   }
-  function noteMetadata(context, recommendation) {
-    return { title: recommendation.title, subtitle: recommendation.subtitle, type: recommendation.type, destination: context.destination, country: context.country, tripType: context.tripType, startDate: context.startDate, endDate: context.endDate, source: 'Navo', generatedAt: recommendation.generatedAt };
+  function noteMetadata(context, recommendation, responseId) {
+    return { title: recommendation.title, subtitle: recommendation.subtitle, type: recommendation.type, destination: context.destination, country: context.country, tripId: context.tripId || null, tripType: context.tripType, startDate: context.startDate, endDate: context.endDate, source: 'Navo', generatedAt: recommendation.generatedAt, responseId: responseId || '' };
   }
   function saveResponse() {
     var recommendation = state.recommendation;
     if (!recommendation || !recommendation.body || state.stale || !state.context) return;
     if (state.context.tripId) {
-      var saved = window.TravelMateNavo.saveNoteForTrip(state.context.tripId, recommendation.title, recommendation.body, noteMetadata(state.context, recommendation));
+      var saved = window.TravelMateNavo.saveNoteForTrip(state.context.tripId, recommendation.title, recommendation.body, noteMetadata(state.context, recommendation, state.responseId));
       ui.save.innerHTML = saved ? '<i class="fa-solid fa-check"></i> נשמר במסמכי הטיול' : '<i class="fa-solid fa-check"></i> כבר נשמר';
       state.status = 'saved'; updateBannerState();
       ui.save.disabled = true;
@@ -257,7 +273,7 @@
     var context = normalizeContext(Object.assign({}, state.context || {}, trip), MODE.NEW_TRIP);
     context.tripId = String(trip.id);
     var recommendation = recommendationFor(context, state.recommendation.body, state.recommendation.generatedAt);
-    var added = window.TravelMateNavo && window.TravelMateNavo.appendNote(trip, recommendation.title, recommendation.body, noteMetadata(context, recommendation));
+    var added = window.TravelMateNavo && window.TravelMateNavo.appendNote(trip, recommendation.title, recommendation.body, noteMetadata(context, recommendation, state.responseId));
     if (added) state.pendingSave = false;
     return Boolean(added);
   }

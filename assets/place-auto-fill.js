@@ -4,14 +4,14 @@
   var featureScript = document.currentScript;
   var featureStyle = document.createElement('link');
   featureStyle.rel = 'stylesheet';
-  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260803-1';
+  featureStyle.href = new URL('place-auto-fill-v2.css', featureScript.src).href + '?v=20260913-3';
   document.head.appendChild(featureStyle);
   var smartStyle = document.createElement('link');
   smartStyle.rel = 'stylesheet';
-  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260728-3';
+  smartStyle.href = new URL('smart-plan-tools.css', featureScript.src).href + '?v=20260913-3';
   document.head.appendChild(smartStyle);
   var smartScript = document.createElement('script');
-  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260728-3';
+  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260913-3';
   document.head.appendChild(smartScript);
 
   var STORAGE_KEY = 'travelmate-trips';

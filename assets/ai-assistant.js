@@ -352,7 +352,9 @@
   function appendAiNote(trip, question, answer, metadata) {
     if (!trip) return false;
     trip.aiNotes = Array.isArray(trip.aiNotes) ? trip.aiNotes : [];
-    if (trip.aiNotes.some(function (note) { return note.question === question && note.answer === answer; })) return false;
+    var responseId = metadata && metadata.responseId ? String(metadata.responseId) : '';
+    if (responseId && trip.aiNotes.some(function (note) { return String(note.responseId || '') === responseId; })) return false;
+    if (!responseId && trip.aiNotes.some(function (note) { return note.question === question && note.answer === answer; })) return false;
     trip.aiNotes.unshift(Object.assign({ id: 'navo-note-' + Date.now(), question: question, answer: answer, createdAt: new Date().toISOString() }, metadata || {}));
     return true;
   }
