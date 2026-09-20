@@ -638,6 +638,7 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.12),0 4px 12px rgba(0,0,0,.1);
   --tm-card-shadow-hover:inset 0 1px 0 rgba(255,255,255,.24),0 13px 30px rgba(0,0,0,.18);
   --tm-card-blur:blur(10px) saturate(108%);
+  --tm-large-surface-blur:blur(5px) saturate(103%);
   --tm-material-blur:var(--tm-card-blur);
   --tm-card-padding:20px;
   --tm-card-padding-compact:14px;
@@ -678,9 +679,9 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-action-primary:#147D92;
   --tm-action-primary-hover:#0F6F82;
   --tm-action-primary-active:#0B5869;
-  --tm-action-secondary:rgba(244,243,239,.9);
-  --tm-action-secondary-hover:#FFFFFF;
-  --tm-action-secondary-active:#E7ECEB;
+  --tm-action-secondary:#D7ECEF;
+  --tm-action-secondary-hover:#C7E4E8;
+  --tm-action-secondary-active:#B4D7DC;
   --tm-action-ghost:transparent;
   --tm-action-ghost-hover:rgba(169,220,231,.18);
   --tm-action-danger:#B42318;
@@ -757,9 +758,9 @@ html[data-theme="dark"]{
   --tm-action-primary:#147D92;
   --tm-action-primary-hover:#0F6F82;
   --tm-action-primary-active:#0B5869;
-  --tm-action-secondary:#F4F3EF;
-  --tm-action-secondary-hover:#FFFFFF;
-  --tm-action-secondary-active:#DCE4E3;
+  --tm-action-secondary:#B9DDE2;
+  --tm-action-secondary-hover:#C9E7EA;
+  --tm-action-secondary-active:#A8CED4;
   --tm-action-ghost:transparent;
   --tm-action-ghost-hover:rgba(121,191,203,.18);
   --tm-action-danger:#B42318;
@@ -845,6 +846,10 @@ html body.tm-new-design main.content :is(
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):not(:disabled):not([aria-disabled="true"]):hover{
   --tm-control-current-bg:var(--tm-action-secondary-hover);
   --tm-control-current-border:var(--tm-card-border-hover)
+}
+html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(.ghost,.tertiary,[data-variant="ghost"]):not(:disabled):not([aria-disabled="true"]):hover{
+  --tm-control-current-bg:var(--tm-action-ghost-hover);
+  --tm-control-current-border:var(--tm-brand-primary)
 }
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(.primary,button[type="submit"],.pill-btn:not(.secondary):not(.ghost):not(.danger),.service-link:not(.secondary),.auto-place-build,.smart-hub-now,.safe):not(:disabled):hover{--tm-control-current-bg:var(--tm-action-primary-hover)}
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button.danger,.danger button,[data-delete],[data-remove],[data-delete-ai-note]):not(:disabled):hover{--tm-control-current-bg:var(--tm-action-danger-hover)}
@@ -1004,6 +1009,19 @@ html body.tm-new-design main.content :is(
   --tm-card-blur:none
 }
 
+/* Wide desktop surfaces sample a larger photo area, so they use a restrained
+   structural blur. Compact Weather Glass, overlays and nested content keep
+   their existing material roles. */
+@media(min-width:901px){
+  html body.tm-new-design main.content>section.section:not(.hero):not(#places),
+  html body.tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner,
+  html body.tm-new-design[data-trip-view="overview"] main.content :is(
+    .trip-overview-summary>.card,.quick-grid>.card,.trip-home-actions
+  ){
+    --tm-card-blur:var(--tm-large-surface-blur)
+  }
+}
+
 html body.tm-new-design main.content :is(
   .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,.nearby,
   .summary-card,.auto-card,.generated-day>div,.service-card,.travel-service-card,.transport-card,
@@ -1103,6 +1121,10 @@ html body.tm-new-design .weather-top-widget .weather-top-icon{
   color:var(--tm-card-icon)
 }
 html body.tm-new-design .weather-top-widget :is(.weather-top-copy small,.weather-top-chevron){color:var(--tm-card-muted)}
+html body.tm-new-design .hero .share{
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
 
 html body.tm-new-design[data-trip-view="overview"] .budget-card{align-items:stretch;flex-direction:column;gap:10px}
 html body.tm-new-design[data-trip-view="overview"] .budget-card>div:first-child{display:grid;grid-template-columns:1fr auto;align-items:end;gap:2px 12px}
@@ -1513,12 +1535,9 @@ html body.tm-new-design[data-trip-view="places"] #places>.nearby-panel :is(
   --tm-card-elevation:var(--tm-card-shadow-compact)
 }
 html body.tm-new-design[data-trip-view="places"] #places>.nearby-panel :is(
-  .nearby-category-search input,.nearby-category-chips button,.nearby-category-drawer button,
-  .nearby-category-search-results button,.nearby-mode-bar button,
-  .nearby-controls select,.nearby-controls .nearby-map-button,.nearby-free-search input,
+  .nearby-category-search input,.nearby-controls select,.nearby-free-search input,
   .lodging-fields input,.nearby-manual-name input,.gps-place-name input,
-  .nearby-result-schedule select,.nearby-result-schedule input,
-  .nearby-selected-category [data-nearby-clear-categories],.nearby-reset-results
+  .nearby-result-schedule select,.nearby-result-schedule input
 ){
   border:1px solid var(--tm-card-control-border);
   background:var(--tm-card-control);
@@ -1530,6 +1549,21 @@ html body.tm-new-design[data-trip-view="places"] #places>.nearby-panel :is(
   backdrop-filter:var(--tm-places-control-blur)
 }
 html body.tm-new-design[data-trip-view="places"] #places>.nearby-panel :is(
+  .nearby-category-chips button,.nearby-category-drawer button,
+  .nearby-category-search-results button,.nearby-mode-bar button,
+  .nearby-controls .nearby-map-button,
+  .nearby-selected-category [data-nearby-clear-categories],.nearby-reset-results
+){
+  border:1px solid var(--tm-card-control-border);
+  background:var(--tm-action-secondary);
+  color:var(--tm-card-control-text);
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none;
+  box-shadow:var(--tm-card-shadow-compact);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+html body.tm-new-design[data-trip-view="places"] #places>.nearby-panel :is(
   .nearby-category-chips button.active,.nearby-category-drawer button.active,
   .nearby-category-search-results button.active,.nearby-mode-bar button.active
 ){
@@ -1537,6 +1571,10 @@ html body.tm-new-design[data-trip-view="places"] #places>.nearby-panel :is(
   background:var(--tm-card-control-selected);
   color:var(--tm-card-link)
 }
+html body.tm-new-design[data-trip-view="places"] #places#places>.nearby-panel :is(
+  .nearby-category-chips button,.nearby-category-drawer button,.nearby-category-search-results button,
+  .nearby-mode-bar button
+),
 html body.tm-new-design[data-trip-view="places"] #places#places>.nearby-panel :is(
   .nearby-category-chips button,.nearby-category-drawer button,.nearby-category-search-results button,
   .nearby-mode-bar button

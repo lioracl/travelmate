@@ -1,5 +1,5 @@
-const CACHE_NAME='travelmate-smart-v137';
-const ASSET_VERSION='20260920-1';
+const CACHE_NAME='travelmate-smart-v138';
+const ASSET_VERSION='20260920-2';
 const CORE_PATHS=[
   './',
   './index.html',
