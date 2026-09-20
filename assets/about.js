@@ -2,7 +2,7 @@
   'use strict';
 
   var release = {
-    version: '1.53.0',
+    version: '1.54.0',
     label: 'אמינות שמירה וסנכרון',
     date: '13 בספטמבר 2026',
     highlights: [
@@ -307,9 +307,11 @@
   function modalHtml() {
     return '<section class="about-backdrop" data-about-modal aria-hidden="true"><div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"><header><div class="about-brand"><span><i class="fa-solid fa-route"></i></span><div><small>TravelMate</small><h2 id="about-title">אודות האפליקציה</h2></div></div><button class="about-close" type="button" data-about-close aria-label="סגירת אודות"><i class="fa-solid fa-xmark"></i></button></header><div class="about-content"><div class="about-version"><span>גרסה</span><strong>' + release.version + '</strong><small>' + release.label + ' · ' + release.date + '</small></div><section><h3>הטיול שלך, במקום אחד</h3><p>TravelMate מרכזת את תכנון הטיול, המסלול, המקומות, התחבורה, המסמכים, התקציב והשיחה הקבוצתית בחוויה אחת שמסתנכרנת בין המכשירים.</p></section><section><h3>מה כלול בגרסה הזו?</h3><ul>' + releaseGroupsHtml() + '</ul></section><section class="about-rights"><h3><i class="fa-solid fa-copyright"></i> בעלות וזכויות שימוש</h3><p>© 2026 TravelMate. כל הזכויות שמורות לבעלי האפליקציה: <strong>ליאור אחלאו</strong> ו־<strong>נטלי ציינ׳י</strong>.</p><p>אין להעתיק, לשכפל, להפיץ, לפרסם, לשנות, למסחר או לעשות שימוש בקוד, בעיצוב, בתוכן, במאגרי המידע או במותג ללא אישור מראש ובכתב מבעלי האפליקציה. השימוש באפליקציה מותר בהתאם להרשאה ולתנאים שניתנו על ידי הבעלים.</p><p class="about-third-party">שמות, סמלים ושירותים של ספקים חיצוניים המופיעים באפליקציה שייכים לבעליהם, והשימוש בהם כפוף לתנאים של אותם ספקים.</p></section><section class="about-versioning"><h3>איך מספר הגרסה מתעדכן?</h3><div><span><b>1.0.1</b> תיקון נקודתי</span><span><b>1.1</b> פיצ׳ר או שיפור משמעותי</span><span><b>2.0</b> שינוי עמוק באפליקציה</span></div></section></div><footer><span><i class="fa-solid fa-shield-halved"></i> נבנה כדי לשמור את הטיול פרטי, נגיש ומסודר.</span><button type="button" data-about-close aria-label="סגירת אודות">סגירה</button></footer></div></section>';
   }
+  var aboutReturnFocus = null;
   function openAbout() {
     var modal = document.querySelector('[data-about-modal]');
     if (!modal) return;
+    aboutReturnFocus = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('about-open');
@@ -318,10 +320,12 @@
   }
   function closeAbout() {
     var modal = document.querySelector('[data-about-modal]');
-    if (!modal) return;
+    if (!modal || !modal.classList.contains('open')) return;
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('about-open');
+    if (aboutReturnFocus && aboutReturnFocus.isConnected) aboutReturnFocus.focus();
+    aboutReturnFocus = null;
   }
   function addSidebarEntry() {
     var nav = document.querySelector('.sidebar nav');

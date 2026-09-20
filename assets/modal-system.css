@@ -1,89 +1,144 @@
-:root{--tm-popup-glass:linear-gradient(145deg,rgba(8,18,16,.9),rgba(0,0,0,.76));--tm-popup-line:rgba(255,255,255,.22);--tm-popup-card:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.07))}
-.modal-backdrop,.about-backdrop,.trip-calendar-backdrop,.invite-dialog,.chat-place-dialog,.vault-preview-backdrop,.place-directions-backdrop,.place-share-backdrop,.trip-map-dialog,.trip-logout-dialog,.floating-logout-dialog,.cloud-account-backdrop{background:rgba(0,0,0,.72)!important;backdrop-filter:blur(15px) saturate(110%)!important;-webkit-backdrop-filter:blur(15px) saturate(110%)!important}
-.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,.place-directions-dialog,.place-share-dialog,.trip-map-dialog>div,.trip-logout-dialog>div,.floating-logout-dialog>div,.cloud-account-backdrop .cloud-account-split{border:1px solid var(--tm-popup-line)!important;border-radius:22px!important;color:#fff!important;box-shadow:0 30px 90px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.13)!important;backdrop-filter:blur(26px) saturate(125%)!important;-webkit-backdrop-filter:blur(26px) saturate(125%)!important}
-html body .modal,html body .about-dialog,html body .trip-calendar-dialog,html body .invite-card,html body .chat-place-picker,html body .vault-preview,html body .place-directions-dialog,html body .place-share-dialog,html body .trip-map-dialog>div,html body .trip-logout-dialog>div,html body .floating-logout-dialog>div{border-radius:22px!important;background:var(--tm-popup-glass)!important;color:#fff!important}
-.modal :is(h1,h2,h3,h4,p,span,strong,small,label,legend),.about-dialog :is(h1,h2,h3,h4,p,span,strong,small,label),.trip-calendar-dialog :is(h1,h2,h3,h4,p,span,strong,small,label),.invite-card :is(h1,h2,h3,h4,p,span,strong,small,label),.chat-place-picker :is(h1,h2,h3,h4,p,span,strong,small,label),.vault-preview :is(h1,h2,h3,h4,p,span,strong,small,label),.place-directions-dialog :is(h1,h2,h3,h4,p,span,strong,small,label,legend),.place-share-dialog :is(h1,h2,h3,h4,p,span,strong,small,label,legend),.trip-map-dialog :is(h1,h2,h3,h4,p,span,strong,small,label),.trip-logout-dialog :is(h1,h2,h3,h4,p,span,strong,small,label),.floating-logout-dialog :is(h1,h2,h3,h4,p,span,strong,small,label){color:#fff!important}
-.modal :is(input,select,textarea),.invite-card :is(input,select,textarea),.chat-place-picker :is(input,select,textarea),.place-directions-dialog :is(input,select,textarea),.place-share-dialog :is(input,select,textarea){border:1px solid rgba(255,255,255,.24)!important;background:rgba(255,255,255,.11)!important;color:#fff!important}
-.modal :is(input,textarea)::placeholder,.invite-card :is(input,textarea)::placeholder,.chat-place-picker :is(input,textarea)::placeholder,.place-directions-dialog :is(input,textarea)::placeholder,.place-share-dialog :is(input,textarea)::placeholder{color:rgba(255,255,255,.62)!important}
-.modal option,.invite-card option,.place-directions-dialog option,.place-share-dialog option{background:#12201d;color:#fff}
-.modal :is(.forecast-day,.day-item,.action-options button,.weather-live-day,.weather-insight),.trip-calendar-dialog :is(article,.trip-calendar-agenda),.invite-card :is(.invite-result,.invite-hero-icon),.chat-place-picker :is(.chat-place-list>button,.chat-place-hero),.place-directions-dialog :is(.directions-origin-options span,.direction-mode,.directions-address-needed),.place-share-dialog :is(.shared-place-card,.place-share-checklist,.place-share-checklist span){border:1px solid rgba(255,255,255,.2)!important;border-radius:14px!important;background:var(--tm-popup-card)!important;color:#fff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important}
-.modal-close,.invite-close,.trip-calendar-dialog>header button,.place-directions-dialog header button,.place-share-dialog header button,.vault-preview header button,.trip-map-dialog header button{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;display:grid!important;place-items:center!important;padding:0!important;border:1px solid rgba(255,255,255,.25)!important;border-radius:50%!important;background:rgba(255,255,255,.13)!important;color:#fff!important;line-height:1!important}
-.modal-close i,.about-close i,.invite-close i,.trip-calendar-dialog>header button i,.place-directions-dialog header button i,.place-share-dialog header button i,.vault-preview header button i,.trip-map-dialog header button i{display:grid;place-items:center;width:100%;height:100%;margin:0!important;line-height:1!important}
-.place-directions-dialog>header,.place-directions-dialog>footer,.vault-preview header,.vault-preview footer{background:rgba(4,15,12,.76)!important;border-color:rgba(255,255,255,.16)!important}
+:root{
+  --tm-overlay-backdrop:rgba(0,0,0,.72);
+  --tm-overlay-backdrop-blur:blur(15px) saturate(110%);
+  --tm-overlay-surface:var(--tm-card-bg,linear-gradient(145deg,rgba(8,18,16,.9),rgba(0,0,0,.76)));
+  --tm-overlay-border:var(--tm-card-border,rgba(255,255,255,.22));
+  --tm-overlay-text:var(--tm-card-text,#f7fafa);
+  --tm-overlay-muted:var(--tm-card-muted,rgba(247,250,250,.76));
+  --tm-overlay-shadow:var(--tm-card-shadow,0 30px 90px rgba(0,0,0,.5));
+  --tm-overlay-radius:22px;
+  --tm-overlay-blur:blur(26px) saturate(125%);
+  --tm-overlay-nested:var(--tm-card-bg-hover,rgba(255,255,255,.1));
+  --tm-overlay-layer:2147482500
+}
+
+/* Shared overlay architecture. Feature styles may refine dimensions and content layout. */
+html body :is(
+  .modal-backdrop,.about-backdrop,.trip-calendar-backdrop,.invite-dialog,.chat-place-dialog,
+  .vault-preview-backdrop,.place-directions-backdrop,.place-share-backdrop,.trip-map-dialog,
+  .trip-logout-dialog,.floating-logout-dialog,.cloud-account-backdrop,.auto-place-backdrop
+){
+  position:fixed;
+  inset:0;
+  z-index:var(--tm-overlay-layer);
+  background:var(--tm-overlay-backdrop)!important;
+  -webkit-backdrop-filter:var(--tm-overlay-backdrop-blur)!important;
+  backdrop-filter:var(--tm-overlay-backdrop-blur)!important;
+  overscroll-behavior:contain
+}
+html body :is(
+  .modal-backdrop,.about-backdrop,.trip-calendar-backdrop,.invite-dialog,.chat-place-dialog,
+  .vault-preview-backdrop,.place-directions-backdrop,.place-share-backdrop,.trip-map-dialog,
+  .trip-logout-dialog,.floating-logout-dialog,.cloud-account-backdrop,.auto-place-backdrop
+)[hidden]{display:none}
+
+:where(
+  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
+  .place-directions-dialog,.place-share-dialog,.trip-map-dialog>div,.trip-logout-dialog>div,
+  .floating-logout-dialog>div,.cloud-account-backdrop .cloud-account-split,.auto-place-dialog,
+  .document-preview-modal,.smart-hub-modal,.ai-panel
+){
+  border:1.5px solid var(--tm-overlay-border)!important;
+  border-radius:var(--tm-overlay-radius)!important;
+  background:var(--tm-overlay-surface)!important;
+  color:var(--tm-overlay-text)!important;
+  -webkit-text-fill-color:var(--tm-overlay-text)!important;
+  box-shadow:var(--tm-overlay-shadow)!important;
+  -webkit-backdrop-filter:var(--tm-overlay-blur)!important;
+  backdrop-filter:var(--tm-overlay-blur)!important;
+  text-shadow:none!important;
+  opacity:1!important
+}
+.ai-panel{--tm-overlay-blur:blur(18px) saturate(125%)}
+
+:where(
+  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
+  .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
+  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split,.auto-place-dialog,
+  .document-preview-modal,.ai-panel
+) :where(h1,h2,h3,h4,h5,h6,strong,b,time,label,legend){
+  color:var(--tm-overlay-text)!important;
+  -webkit-text-fill-color:var(--tm-overlay-text)!important
+}
+:where(
+  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
+  .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
+  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split,.auto-place-dialog,
+  .document-preview-modal,.ai-panel
+) :where(p,small,li){
+  color:var(--tm-overlay-muted)!important;
+  -webkit-text-fill-color:var(--tm-overlay-muted)!important
+}
+
+/* Nested overlay content is a non-blurred surface; the shell is the single Glass layer. */
+.modal :is(.forecast-day,.day-item,.action-options button,.weather-live-day,.weather-insight),
+.trip-calendar-dialog :is(article,.trip-calendar-agenda),
+.invite-card :is(.invite-result,.invite-hero-icon),
+.chat-place-picker :is(.chat-place-list>button,.chat-place-hero),
+.place-directions-dialog :is(.directions-origin-options span,.direction-mode,.directions-address-needed),
+.place-share-dialog :is(.shared-place-card,.place-share-checklist,.place-share-checklist span){
+  border:1px solid var(--tm-overlay-border)!important;
+  border-radius:14px!important;
+  background:var(--tm-overlay-nested)!important;
+  color:var(--tm-overlay-text)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important
+}
+
+.modal option,.invite-card option,.place-directions-dialog option,.place-share-dialog option{
+  background:#12201d;
+  color:#fff
+}
+
+.modal-close,.invite-close,.trip-calendar-dialog>header button,.place-directions-dialog header button,
+.place-share-dialog header button,.vault-preview header button,.trip-map-dialog header button,
+.cloud-account-close{
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border-radius:50%!important;
+  line-height:1!important
+}
+.modal-close i,.about-close i,.invite-close i,.trip-calendar-dialog>header button i,
+.place-directions-dialog header button i,.place-share-dialog header button i,
+.vault-preview header button i,.trip-map-dialog header button i,.cloud-account-close i{
+  display:grid!important;
+  place-items:center!important;
+  width:100%;
+  height:100%;
+  margin:0!important;
+  line-height:1!important
+}
+
+.place-directions-dialog>header,.place-directions-dialog>footer,.vault-preview header,.vault-preview footer{
+  border-color:var(--tm-overlay-border)!important;
+  background:var(--tm-overlay-nested)!important
+}
 .cloud-login-submit[aria-busy=true]{opacity:.68;cursor:wait}
-.cloud-account-close{display:grid!important;place-items:center!important;padding:0!important;line-height:1!important}.cloud-account-close i{display:grid!important;place-items:center!important;width:100%;height:100%;line-height:1!important}
-body:not(.home-page) .hero .weather-top-widget{row-gap:22px!important}
-
-/* One card language across TravelMate: match the live weather glass card. */
-body :where(
-  .card,.panel,.module,.trip-archive,
-  .home-about,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.generated-day,.service-card,
-  .transport-card,.external-resources,.planned-activity,.saved-place,
-  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
-  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,
-  .day-item,.forecast-day,.resource-link
-){
-  border:1px solid rgba(255,255,255,.3)!important;
-  border-radius:14px!important;
-  outline:0!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.52)!important;
-  backdrop-filter:blur(22px) saturate(145%)!important;
-  -webkit-backdrop-filter:blur(22px) saturate(145%)!important;
-}
-body :where(
-  .card,.panel,.module,.trip-archive,.home-about,.plan-card,.place-card,
-  .doc-row,.expense,.tip-card,.nearby,.summary-card,.auto-card,
-  .generated-day,.service-card,.transport-card,.external-resources,
-  .planned-activity,.saved-place,.planner-toolbar,.planner-composer,
-  .group-card,.album-card,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,
-  .forecast-day,.resource-link
-){
-  background:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.2))!important;
-  color:#414846!important;
-}
-body :where(
-  .card,.panel,.module,.trip-archive,.home-about,.plan-card,
-  .place-card,.doc-row,.expense,.tip-card,.nearby,.summary-card,
-  .auto-card,.generated-day,.service-card,.transport-card,
-  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
-  .planner-composer,.group-card,.album-card,.memory-card,
-  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,
-  .day-item,.forecast-day,.resource-link
-):hover{
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.62)!important;
-}
-
-.home-page.is-authenticated #active-trips>.add-destination,
-.home-page.is-authenticated .trip-archive,
-.home-page.is-authenticated .home-about{
-  border:1px solid rgba(255,255,255,.3)!important;
-  border-radius:14px!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.52)!important;
-  backdrop-filter:blur(22px) saturate(145%)!important;
-  -webkit-backdrop-filter:blur(22px) saturate(145%)!important;
-}
-.home-page.is-authenticated #active-trips>.add-destination,
-.home-page.is-authenticated .trip-archive,
-.home-page.is-authenticated .home-about{
-  background:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.2))!important;
-}
-.home-page.is-authenticated .add-destination{color:#414846!important}
-.home-page.is-authenticated .add-destination small{color:#69716e!important}
-.home-page.is-authenticated .add-destination .icon{
-  border-color:rgba(14,97,75,.16)!important;
-  background:rgba(255,255,255,.2)!important;
-  color:#0e614b!important;
-}
 
 /* The floating network control stays visible without a filled disc. */
 .network-usage-meter{
   background:transparent!important;
   box-shadow:none!important;
-  backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important
 }
-body:not(.home-page) .hero .weather-top-copy{align-self:end}
-body:not(.home-page) .hero .weather-top-temperature,body:not(.home-page) .hero .weather-top-chevron{bottom:13px!important}
-@media(max-width:640px){.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,.place-directions-dialog,.place-share-dialog,.trip-map-dialog>div,.trip-logout-dialog>div,.floating-logout-dialog>div,.cloud-account-backdrop .cloud-account-split{border-radius:18px!important}}
+
+@media(max-width:640px){
+  :root{--tm-overlay-radius:18px}
+  :where(
+    .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
+    .place-directions-dialog,.place-share-dialog,.trip-map-dialog>div,.trip-logout-dialog>div,
+    .floating-logout-dialog>div,.cloud-account-backdrop .cloud-account-split,.auto-place-dialog,
+    .document-preview-modal,.smart-hub-modal,.ai-panel
+  ){
+    max-width:calc(100vw - 20px);
+    max-height:calc(100dvh - max(20px,env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+    box-sizing:border-box
+  }
+}

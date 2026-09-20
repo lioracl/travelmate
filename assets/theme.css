@@ -43,37 +43,6 @@ html[data-theme="light"] body.tm-new-design .sidebar :is(a,button):not(.theme-to
   -webkit-text-stroke-color:rgba(255,255,255,.94)!important
 }
 
-body.tm-new-design :where(
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,
-  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
-  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.day-tab,.day-item,.forecast-day,.resource-link
-),
-body.home-page.is-authenticated :where(
-  .trip-area-head,.add-destination,.trip-archive,.home-about
-){
-  border:0!important;
-  background:linear-gradient(135deg,var(--tm-material-surface-start,rgba(255,255,255,.24)),var(--tm-material-surface-end,rgba(255,255,255,.1)))!important;
-  -webkit-backdrop-filter:var(--tm-material-blur,blur(28px) saturate(165%))!important;
-  backdrop-filter:var(--tm-material-blur,blur(28px) saturate(165%))!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.58),0 12px 38px rgba(14,97,75,.08)!important
-}
-body.tm-new-design :where(
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,
-  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
-  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.day-tab,.day-item,.forecast-day,.resource-link,
-  .currency-insight
-),
-body.home-page.is-authenticated :where(
-  .trip-archive,.home-about
-){
-  border:0!important;
-  outline:0!important
-}
-
 html[data-theme="dark"] body{
   --text:#f3f5f4;--muted:#c0c7c4;--dark:#f3f5f4;
   --line:rgba(255,255,255,.16);color:#f3f5f4
@@ -91,20 +60,6 @@ html[data-theme="dark"] .theme-toggle{
 }
 html[data-theme="dark"] .theme-toggle:hover{
   background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.13))
-}
-html[data-theme="dark"] body.tm-new-design :where(
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,
-  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
-  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,.forecast-day,.resource-link
-){
-  border-color:rgba(255,255,255,.16)!important;
-  background:linear-gradient(135deg,rgba(12,29,25,.48),rgba(5,17,14,.24))!important;
-  color:#f3f5f4!important;
-  -webkit-backdrop-filter:blur(28px) saturate(150%)!important;
-  backdrop-filter:blur(28px) saturate(150%)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 14px 42px rgba(0,0,0,.16)!important
 }
 html[data-theme="dark"] body.tm-new-design :where(h1,h2,h3,h4,strong,label,legend,p,small,span){color:inherit}
 html[data-theme="dark"] body.tm-new-design :where(input,select,textarea){
@@ -227,60 +182,6 @@ body.tm-new-design .sidebar .brand-dot i{
   -webkit-text-stroke:0!important;
   font-size:18px!important
 }
-body.tm-new-design[data-trip-view="overview"] .hero .weather-top-widget{
-  min-height:var(--tm-overview-weather-height,78px)!important;
-  padding:14px 16px!important;
-  display:flex!important;
-  text-align:right!important
-}
-body.tm-new-design[data-trip-view="overview"] .hero .weather-top-copy{
-  position:static!important;
-  top:auto!important;
-  right:auto!important;
-  left:auto!important;
-  display:grid!important;
-  flex-direction:column!important;
-  align-items:flex-start!important;
-  gap:5px!important;
-  text-align:right!important
-}
-body.tm-new-design[data-trip-view="overview"] .hero .weather-top-copy small,
-body.tm-new-design[data-trip-view="overview"] .hero .weather-top-copy strong{
-  width:100%!important;
-  display:block!important;
-  text-align:right!important
-}
-body.tm-new-design[data-trip-view="overview"] .hero .weather-top-copy strong{
-  white-space:normal!important;
-  overflow:visible!important;
-  text-overflow:clip!important;
-  line-height:1.25!important
-}
-body.tm-new-design[data-trip-view="overview"] .hero .weather-top-icon{
-  position:static!important;
-  top:auto!important;
-  right:auto!important;
-  left:auto!important;
-  width:34px!important;
-  height:34px!important;
-  border:0!important;
-  background:transparent!important
-}
-body.tm-new-design[data-trip-view="overview"] .hero .weather-top-temperature{
-  position:static!important;
-  left:auto!important;
-  bottom:auto!important;
-  margin-inline-start:auto!important;
-  font-size:28px!important;
-  line-height:1!important
-}
-body.tm-new-design[data-trip-view="overview"] .hero .weather-top-chevron{
-  position:static!important;
-  left:auto!important;
-  bottom:auto!important;
-  font-size:10px!important;
-  transform:none!important
-}
 body.tm-new-design .trip-home-actions nav{
   grid-template-columns:repeat(5,minmax(0,1fr))!important;
   gap:12px!important
@@ -314,45 +215,6 @@ body.tm-new-design .trip-home-actions a i{
 
 body.tm-new-design .sidebar>.theme-toggle{display:none!important}
 
-/* Keep typography readable and consistent across every glass card. */
-body.tm-new-design :where(
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,
-  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
-  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,.forecast-day,.resource-link
-),
-body.home-page.is-authenticated :where(
-  .trip-area-head,.trip-archive,.home-about
-){
-  color:rgba(255,255,255,.96)!important;
-  text-shadow:0 1px 10px rgba(0,0,0,.24)
-}
-body.tm-new-design :where(
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,
-  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
-  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,.forecast-day,.resource-link
-) :where(h1,h2,h3,h4,p,small,strong,span,label),
-body.home-page.is-authenticated :where(
-  .trip-area-head,.trip-archive,.home-about
-) :where(h1,h2,h3,h4,p,small,strong,span,label){
-  color:inherit!important
-}
-body.home-page.is-authenticated .trip-archive :where(h1,h2,h3,h4,p,small,strong,span,label),
-body.home-page.is-authenticated .home-about :where(h1,h2,h3,h4,p,small,strong,span,label){
-  color:rgba(255,255,255,.96)!important
-}
-
-body.home-page.is-authenticated :is(
-  .trip-archive,.home-about
-){
-  border:0!important;
-  outline:0!important
-}
-
-
 body.tm-new-design #trip-home-actions-title{
   color:var(--tm-card-heading)!important;
   -webkit-text-fill-color:var(--tm-card-heading)!important;
@@ -363,138 +225,12 @@ body.tm-new-design #trip-home-actions-title{
 
 /* Keep all trip-page typography bright over destination photography. */
 body.tm-new-design .content :where(
-  h1,h2,h3,h4,h5,h6,p,small,strong,span,label,legend,a,button,li,dt,dd,time
-):not(.weather-top-widget):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .weather-top-widget *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-overview-summary *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-home-actions *):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *):not(.ai-notes-archive *),
+  h1,h2,h3,h4,h5,h6,p,small,strong,span,label,legend,li,dt,dd,time
+):not(button *):not(a *):not(.weather-top-widget):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .weather-top-widget *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-overview-summary *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-home-actions *):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *):not(.ai-notes-archive *),
 body.tm-new-design .sidebar :where(a,button,span,small,strong){
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
   text-shadow:0 1px 10px rgba(0,0,0,.3)
-}
-body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) .content :where(input,select,textarea,option){
-  color:#26302d!important;
-  -webkit-text-fill-color:#26302d!important;
-  text-shadow:none
-}
-body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) .content :where(input,textarea)::placeholder{
-  color:rgba(38,48,45,.62)!important;
-  -webkit-text-fill-color:rgba(38,48,45,.62)!important
-}
-
-/* Controls on light surfaces inherit a dark, readable icon color. */
-body.tm-new-design :where(
-  button,.btn,.action-button,.secondary,.outline,.auto-place-launch,
-  .saved-place-actions button,.planned-activity-actions button,.planner-toolbar button
-) :where(i,svg){
-  color:currentColor!important;
-  -webkit-text-fill-color:currentColor!important;
-  -webkit-text-stroke:0!important;
-  filter:none!important
-}
-body.tm-new-design :where(
-  .auto-place-dialog,.trip-date-editor,.modal,.document-preview-modal,
-  .saved-place-editor,.activity-editor
-) :where(h1,h2,h3,h4,p,small,strong,span,label,button){
-  color:#213d34!important;
-  -webkit-text-fill-color:#213d34!important;
-  text-shadow:none!important
-}
-body.tm-new-design :where(.auto-place-build,.primary,.create-trip,.trip-date-editor-save){
-  color:#fff!important;-webkit-text-fill-color:#fff!important
-}
-
-/* Functional content uses an opaque surface and dark ink; photography stays in the hero. */
-html[data-theme="light"] body.tm-new-design .content :where(
-  .generated-day,.planned-activity,.saved-place,.planner-toolbar,.planner-composer,
-  .auto-card,.doc-row,.expense,.group-card,.album-card,.memory-card,
-  .service-card,.transport-card,.external-resources,.resource-link,.smart-tool-panel,
-  .trip-home-actions a,.auto-place-launch
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-home-actions *
-){
-  background:rgba(255,255,255,.94)!important;
-  color:#173a30!important;
-  border:1px solid rgba(18,91,68,.14)!important;
-  box-shadow:0 10px 30px rgba(8,47,36,.11)!important;
-  text-shadow:none!important
-}
-html[data-theme="light"] body.tm-new-design .content :where(
-  .generated-day,.planned-activity,.saved-place,.planner-toolbar,.planner-composer,
-  .auto-card,.doc-row,.expense,.group-card,.album-card,.memory-card,
-  .service-card,.transport-card,.external-resources,.resource-link,.smart-tool-panel,
-  .trip-home-actions a,.auto-place-launch
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-home-actions *
-) :where(h1,h2,h3,h4,p,small,strong,span,label,li,dt,dd,time,a,button){
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important;
-  text-shadow:none!important
-}
-html[data-theme="light"] body.tm-new-design .content :where(
-  .generated-day,.planned-activity,.saved-place,.planner-toolbar,.planner-composer,
-  .auto-card,.doc-row,.expense,.group-card,.album-card,.memory-card,
-  .service-card,.transport-card,.external-resources,.resource-link,.smart-tool-panel,
-  .trip-home-actions a,.auto-place-launch
-) :where(.primary,.btn.primary,.nearby-save button,.planned-activity-actions button,.saved-place-actions button){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-
-/* Accessible light surfaces: no transparent or white-on-white functional cards. */
-html[data-theme="light"] body.tm-new-design :where(
-  .auto-place-dialog,.auto-place-dialog form>section,.auto-place-preview-day,
-  .auto-place-preview-item,.auto-place-details,.auto-place-map,.auto-place-switches span,
-  .budget-card,.budget-hero,.expense-workspace,.receipt-form,.expense-live-summary,
-  .expense-records article,.currency-insight,.trip-calendar-dialog,
-  .trip-calendar-agenda article,.trip-calendar-editor,.about-dialog,.about-content section,
-  .about-version,.smart-hub-modal,.smart-hub-intro,.smart-tool,.smart-tool-panel,
-  .group-message,.group-composer,.chat-place-picker,.memory-file-selection,
-  .weather-forecast-panel,.transport-search-panel
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *
-){
-  background:#fff!important;
-  color:#173a30!important;
-  border-color:rgba(18,91,68,.18)!important;
-  box-shadow:0 10px 30px rgba(8,47,36,.11)!important;
-  text-shadow:none!important
-}
-html[data-theme="light"] body.tm-new-design :where(
-  .auto-place-dialog,.auto-place-dialog form>section,.auto-place-preview-day,
-  .auto-place-preview-item,.auto-place-details,.auto-place-map,
-  .budget-card,.budget-hero,.expense-workspace,.receipt-form,.expense-live-summary,
-  .expense-records article,.currency-insight,.trip-calendar-dialog,
-  .trip-calendar-agenda article,.trip-calendar-editor,.about-dialog,.about-content section,
-  .about-version,.smart-hub-modal,.smart-hub-intro,.smart-tool,.smart-tool-panel,
-  .group-message,.group-composer,.chat-place-picker,.memory-file-selection,
-  .weather-forecast-panel,.transport-search-panel
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *
-) :where(h1,h2,h3,h4,p,small,strong,span,label,legend,li,dt,dd,time,a,button){
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important;
-  text-shadow:none!important
-}
-html[data-theme="light"] body.tm-new-design :where(
-  .auto-place-dialog,.expense-workspace,.trip-calendar-dialog,.smart-hub-modal,
-  .chat-place-picker,.weather-forecast-panel,.transport-search-panel
-) :where(input,select,textarea){
-  background:#fff!important;
-  color:#173a30!important;
-  -webkit-text-fill-color:#173a30!important;
-  border:1px solid rgba(18,91,68,.24)!important;
-  box-shadow:inset 0 1px 2px rgba(8,47,36,.04)!important
-}
-html[data-theme="light"] body.tm-new-design :where(
-  .auto-place-dialog,.expense-workspace,.trip-calendar-dialog,.smart-hub-modal,
-  .chat-place-picker,.weather-forecast-panel,.transport-search-panel
-) :where(input,textarea)::placeholder{
-  color:#647c74!important;
-  -webkit-text-fill-color:#647c74!important;
-  opacity:1!important
-}
-html[data-theme="light"] body.tm-new-design :where(
-  .auto-place-build,.auto-place-preview-actions button[type="submit"],
-  .receipt-actions button[type="submit"],.smart-tool button.primary
-){
-  background:#176f51!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
 }
 html[data-theme="light"] body.tm-new-design .auto-place-preview-item.excluded{
   opacity:.58!important;
@@ -565,72 +301,6 @@ body.tm-new-design .auto-place-preview-item.excluded .auto-place-preview-copy{
   opacity:.62
 }
 
-/* Weather card is the master card for every primary TravelMate surface. */
-:root{
-  --tm-weather-card-background:var(--tm-card-bg);
-  --tm-weather-card-shadow:var(--tm-card-shadow);
-  --tm-weather-card-text:var(--tm-card-text);
-  --tm-weather-card-radius:var(--tm-card-radius);
-}
-html body.tm-new-design[data-trip-view][class] main.content :is(
-
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.auto-place-launch,
-  .service-card,.transport-card,.external-resources,.planned-activity,.saved-place,
-  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
-  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,
-  .forecast-day,.resource-link,.getaway-result,.currency-insight,
-  .network-usage-panel,.gps-consent-card,.message-place-card,.shared-place-card,
-  .invite-card,.weather-insight,.weather-live-day
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *),
-html body.home-page.is-authenticated[class] main.content :is(
-  .module,.add-destination,.home-about,.trip-archive
-){
-  border:0!important;
-  border-radius:var(--tm-weather-card-radius)!important;
-  outline:0!important;
-  background:var(--tm-weather-card-background)!important;
-  color:var(--tm-weather-card-text)!important;
-  box-shadow:var(--tm-weather-card-shadow)!important;
-  -webkit-backdrop-filter:var(--tm-material-blur,blur(18px) saturate(135%))!important;
-  backdrop-filter:var(--tm-material-blur,blur(18px) saturate(135%))!important;
-  text-shadow:0 1px 10px rgba(0,0,0,.28)!important;
-}
-html body.tm-new-design[data-trip-view][class] main.content :is(
-
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.auto-place-launch,
-  .service-card,.transport-card,.external-resources,.planned-activity,.saved-place,
-  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
-  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,
-  .forecast-day,.resource-link,.getaway-result,.currency-insight,
-  .network-usage-panel,.gps-consent-card,.message-place-card,.shared-place-card,
-  .invite-card,.weather-insight,.weather-live-day
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *) :where(h1,h2,h3,h4,h5,h6,p,small,strong,span,label,time,i),
-html body.home-page.is-authenticated[class] main.content :is(
-  .module,.add-destination,.home-about,.trip-archive
-) :where(h1,h2,h3,h4,h5,h6,p,small,strong,span,label,time,i){
-  color:var(--tm-card-text)!important;
-  -webkit-text-fill-color:var(--tm-card-text)!important;
-}
-html body.tm-new-design[data-trip-view][class] main.content :is(
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.auto-place-launch,.service-card,
-  .transport-card,.planned-activity,.saved-place,.group-card,.album-card,
-  .memory-card,.trip-summary-card,.trip-home-actions a,.day-tab,.day-item,
-  .forecast-day,.resource-link,.getaway-result
-):hover{
-  transform:none!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 30px rgba(0,0,0,.08)!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #places .auto-place-launch{
-  border:0!important;
-  background:var(--tm-weather-card-background)!important;
-  box-shadow:var(--tm-weather-card-shadow)!important;
-  -webkit-backdrop-filter:blur(18px) saturate(135%)!important;
-  backdrop-filter:blur(18px) saturate(135%)!important;
-}
-
 /* Structural wrappers remain transparent instead of becoming nested cards. */
 body.tm-new-design[data-trip-view="plan"] #plan .generated-day,
 body.tm-new-design[data-trip-view="documents"] #documents,
@@ -645,7 +315,7 @@ body.tm-new-design[data-trip-view="documents"] #documents .document-vault{
 
 /* Icons stay unboxed across the product. */
 html body :where(
-  .icon,.mark,.forecast-icon,.weather-top-icon,.day-dot,.avatar-small,
+  .icon,.mark,.forecast-icon,.day-dot,.avatar-small,
   .memory-icon,.message-place-pin,.transport-result-icon,.invite-hero-icon,
   [class$="-icon"],[class*="-icon "]
 ):not(.maplibregl-map *),
@@ -792,144 +462,6 @@ html body.tm-new-design[data-trip-view="places"][class] main.content #places .ne
   }
 }
 
-/* Map-point button is the master action-button appearance across TravelMate. */
-:root{
-  --tm-button-background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.07));
-  --tm-button-background-hover:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.11));
-  --tm-button-border:rgba(255,255,255,.28);
-  --tm-button-border-hover:rgba(255,255,255,.48);
-  --tm-button-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 8px 20px rgba(0,0,0,.08);
-}
-html body.tm-new-design :where(
-  button:not([aria-label]):not(.weather-top-widget):not(.auto-place-launch):not(.day-tab):not(.map-pin),
-  .pill-btn,.mini-btn,.service-link
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *),
-html body.home-page.is-authenticated :where(
-  button:not([aria-label]):not(.trip-activity-toggle),
-  .pill-btn,.mini-btn
-):not(#active-trips>.trip-card-shell *):not(.home-sidebar *){
-  border:1px solid var(--tm-button-border)!important;
-  border-radius:14px!important;
-  background:var(--tm-button-background)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  box-shadow:var(--tm-button-shadow)!important;
-  -webkit-backdrop-filter:blur(14px) saturate(135%)!important;
-  backdrop-filter:blur(14px) saturate(135%)!important;
-  text-shadow:0 1px 8px rgba(0,0,0,.28)!important;
-}
-html body.tm-new-design :where(
-  button:not([aria-label]):not(.weather-top-widget):not(.auto-place-launch):not(.day-tab):not(.map-pin),
-  .pill-btn,.mini-btn,.service-link
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *):is(:hover,:focus-visible),
-html body.home-page.is-authenticated :where(
-  button:not([aria-label]):not(.trip-activity-toggle),
-  .pill-btn,.mini-btn
-):not(#active-trips>.trip-card-shell *):not(.home-sidebar *):is(:hover,:focus-visible){
-  border-color:var(--tm-button-border-hover)!important;
-  background:var(--tm-button-background-hover)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 24px rgba(0,0,0,.12)!important;
-}
-html body :where(button,.pill-btn,.mini-btn,.service-link):disabled{
-  opacity:.55!important;
-  cursor:not-allowed!important;
-}
-
-/* 1.28.9 — readable weather-glass system and resilient responsive layout. */
-:root{
-  --tm-readable-glass:linear-gradient(135deg,rgba(248,253,250,.92),rgba(226,241,234,.82));
-  --tm-readable-glass-hover:linear-gradient(135deg,rgba(255,255,255,.98),rgba(214,235,225,.92));
-  --tm-readable-border:rgba(20,101,75,.24);
-  --tm-readable-text:#173f32;
-  --tm-readable-muted:#557268;
-  --tm-readable-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 28px rgba(6,42,31,.12)
-}
-
-html body.tm-new-design[data-trip-view] main.content :is(
-
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.auto-place-launch,
-  .service-card,.transport-card,.external-resources,.planned-activity,.saved-place,
-  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
-  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,
-  .forecast-day,.resource-link,.getaway-result,.currency-insight,
-  .network-usage-panel,.gps-consent-card,.message-place-card,.shared-place-card,
-  .invite-card,.weather-insight,.weather-live-day
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *),
-html body.home-page.is-authenticated main.content :is(
-  .module,.add-destination,.home-about,.trip-archive
-){
-  border:1px solid var(--tm-readable-border)!important;
-  background:var(--tm-readable-glass)!important;
-  color:var(--tm-readable-text)!important;
-  box-shadow:var(--tm-readable-shadow)!important;
-  -webkit-backdrop-filter:blur(18px) saturate(125%)!important;
-  backdrop-filter:blur(18px) saturate(125%)!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view] main.content :is(
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.auto-place-launch,
-  .service-card,.transport-card,.external-resources,.planned-activity,.saved-place,
-  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
-  .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,
-  .forecast-day,.resource-link,.getaway-result,.currency-insight
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *) :where(h1,h2,h3,h4,h5,h6,p,small,strong,span,label,time,i),
-html body.home-page.is-authenticated main.content :is(
-  .module,.add-destination,.home-about,.trip-archive
-) :where(h1,h2,h3,h4,h5,h6,p,small,strong,span,label,time,i){
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important;
-  text-shadow:none!important
-}
-
-html body.tm-new-design :where(
-  button:not(.weather-top-widget):not(.map-pin),
-  .pill-btn,.mini-btn,.planner-action,.service-link
-):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *):not(.about-dialog *),
-html body.home-page :where(
-  button:not(.weather-top-widget):not(.trip-activity-toggle),
-  .pill-btn,.mini-btn
-):not(#active-trips>.trip-card-shell *):not(.home-sidebar *):not(.about-dialog *){
-  border:1px solid var(--tm-readable-border)!important;
-  border-radius:14px!important;
-  background:var(--tm-readable-glass)!important;
-  color:var(--tm-readable-text)!important;
-  -webkit-text-fill-color:var(--tm-readable-text)!important;
-  box-shadow:var(--tm-readable-shadow)!important;
-  -webkit-backdrop-filter:blur(14px) saturate(125%)!important;
-  backdrop-filter:blur(14px) saturate(125%)!important;
-  text-shadow:none!important
-}
-html body.tm-new-design :where(
-  button:not(.weather-top-widget):not(.map-pin),
-  .pill-btn,.mini-btn,.planner-action,.service-link
-):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="places"] *):not(.about-dialog *):is(:hover,:focus-visible),
-html body.home-page :where(
-  button:not(.weather-top-widget):not(.trip-activity-toggle),
-  .pill-btn,.mini-btn
-):not(#active-trips>.trip-card-shell *):not(.home-sidebar *):not(.about-dialog *):is(:hover,:focus-visible){
-  border-color:rgba(20,101,75,.42)!important;
-  background:var(--tm-readable-glass-hover)!important;
-  box-shadow:inset 0 1px 0 #fff,0 12px 30px rgba(6,42,31,.16)!important
-}
-html body :where(
-  button.primary,.primary,button[type="submit"],.create-trip,.auto-place-build,
-  .service-form button,.nearby-save button,.planner-action.primary
-):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *){
-  border-color:var(--tm-brand-primary)!important;
-  background:var(--tm-brand-primary)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  text-shadow:none!important
-}
-html body :where(button.danger,.danger,.mini-btn.danger,[data-delete],[data-delete-saved-place],[data-delete-ai-note]):not(#active-trips>.trip-card-shell *):not(.home-sidebar *){
-  border-color:rgba(180,35,24,.28)!important;
-  background:linear-gradient(135deg,rgba(255,249,248,.96),rgba(255,229,226,.9))!important;
-  color:#a52b22!important;
-  -webkit-text-fill-color:#a52b22!important
-}
-
 html body.tm-new-design[data-trip-view="plan"] #plan{
   display:block!important;
   width:100%!important;
@@ -946,17 +478,6 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-days{
   opacity:1!important;
   visibility:visible!important
 }
-html body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
-  color:var(--tm-readable-text)!important
-}
-html body.tm-new-design[data-trip-view="plan"] #plan .planned-activity,
-html body.tm-new-design[data-trip-view="plan"] #plan .saved-place{
-  background:var(--tm-readable-glass)!important;
-  border:1px solid var(--tm-readable-border)!important;
-  color:var(--tm-readable-text)!important;
-  box-shadow:var(--tm-readable-shadow)!important
-}
-
 @media(max-width:1000px){
   html,body{
     width:100%;
@@ -985,12 +506,12 @@ html body.tm-new-design[data-trip-view="plan"] #plan .saved-place{
   body:not(.home-page):not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) .mobile-header{
     width:100%;
     min-width:0;
-    background:var(--tm-readable-glass)!important;
-    border:1px solid var(--tm-readable-border)!important;
-    color:var(--tm-readable-text)!important;
-    box-shadow:var(--tm-readable-shadow)!important;
-    -webkit-backdrop-filter:blur(18px) saturate(125%)!important;
-    backdrop-filter:blur(18px) saturate(125%)!important
+    background:var(--tm-surface-dark-glass-strong)!important;
+    border:1px solid var(--tm-border-on-dark)!important;
+    color:var(--tm-text-on-photo)!important;
+    box-shadow:var(--tm-card-shadow-compact)!important;
+    -webkit-backdrop-filter:blur(8px) saturate(108%)!important;
+    backdrop-filter:blur(8px) saturate(108%)!important
   }
   body:not(.home-page):not([data-trip-kind="custom"][data-trip-view="overview"]) :where(.mobile-menu-button,.mobile-back){
     flex:0 0 40px;
@@ -1125,26 +646,11 @@ html body.tm-new-design[data-trip-view] main.content>section>.section-head{
   box-sizing:border-box!important;
   width:100%!important;
   margin:0 0 16px!important;
-  padding:16px 18px!important;
-  border:1px solid var(--tm-card-border)!important;
-  border-radius:var(--tm-card-radius)!important;
-  background:var(--tm-weather-card-background)!important;
-  color:#fff!important;
-  box-shadow:var(--tm-weather-card-shadow)!important;
-  backdrop-filter:blur(18px) saturate(125%)!important
-}
-html body.tm-new-design[data-trip-view] main.content>section>.section-head :where(h1,h2,p,span,small,i){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  padding:16px 18px!important
 }
 html body.tm-new-design[data-trip-view] main.content>section>.section-head :is(button,a,.pill-btn,.trip-action-back){
-  min-height:40px!important;
-  border:0!important;
-  border-radius:11px!important;
-  background:rgba(255,255,255,.18)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.28)!important
+  min-height:44px!important;
+  border-radius:11px!important
 }
 
 html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
@@ -1445,63 +951,28 @@ html body.tm-new-design[data-trip-view] #memories .section-head p{
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ){
-  --tm-page-card:linear-gradient(135deg,rgba(255,255,255,.94),rgba(230,242,236,.88));
-  --tm-page-line:rgba(20,101,75,.15);
   padding:22px!important;
-  border:1px solid rgba(255,255,255,.72)!important;
-  border-radius:24px!important;
-  background:var(--tm-page-card)!important;
-  color:#173f32!important;
-  box-shadow:0 18px 46px rgba(12,66,48,.15),inset 0 1px 0 #fff!important
+  border-radius:24px!important
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ) :is(.doc-row,.expense,.service-card,.transport-card,.group-card,.album-card,.memory-card,.trip-summary-card,.summary-card,.invite-card){
-  border:1px solid var(--tm-page-line)!important;
-  border-radius:17px!important;
-  background:rgba(255,255,255,.7)!important;
-  color:#173f32!important;
-  box-shadow:0 7px 18px rgba(20,89,65,.07)!important
+  border-radius:17px!important
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ) :is(.section-head,.panel-head){
   margin-bottom:16px!important;
-  padding-bottom:13px!important;
-  border-bottom:1px solid var(--tm-page-line)!important
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(h1,h2,h3,h4,strong,p,span,small,label,time){
-  color:#173f32!important;
-  -webkit-text-fill-color:#173f32!important;
-  text-shadow:none!important
+  padding-bottom:13px!important
 }
 html body.tm-new-design #budget .budget-hero{
-  border:1px solid var(--tm-page-line)!important;
-  border-radius:18px!important;
-  background:linear-gradient(135deg,#e4f2eb,#f9fcfa)!important;
-  color:#173f32!important;
-  box-shadow:none!important
+  border-radius:18px!important
 }
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ) :where(button:not([data-copy-ai-note]):not([data-delete-ai-note]),.pill-btn,.service-link){
   min-height:42px!important;
-  border:1px solid rgba(20,101,75,.2)!important;
-  border-radius:13px!important;
-  background:rgba(255,255,255,.9)!important;
-  color:#176f51!important;
-  -webkit-text-fill-color:#176f51!important;
-  box-shadow:none!important
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(button.primary,.service-form button,.service-link:not(.secondary)){
-  border-color:transparent!important;
-  background:linear-gradient(135deg,#237f60,#145941)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  border-radius:13px!important
 }
 
 html body.tm-new-design .ai-orb{
@@ -1550,47 +1021,8 @@ body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
 ){
   padding:20px!important;
-  border:0!important;
-  border-radius:22px!important;
-  background:linear-gradient(135deg,rgba(250,253,251,.95),rgba(226,240,233,.88))!important;
-  color:#173f32!important;
-  box-shadow:0 14px 36px rgba(16,75,57,.14)!important;
-  -webkit-backdrop-filter:blur(20px) saturate(125%)!important;
-  backdrop-filter:blur(20px) saturate(125%)!important
+  border-radius:22px!important
 }
-body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
-) :where(.section-head,.service-card,.transport-card,.group-card,.album-card,.memory-card,.trip-summary-card,.doc-row,.expense,.external-resources){
-  border-color:rgba(20,101,75,.16)!important;
-  background:rgba(255,255,255,.66)!important;
-  color:#173f32!important;
-  box-shadow:none!important
-}
-body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
-) :where(h1,h2,h3,h4,strong,p,span,small,label){
-  color:#173f32!important;
-  -webkit-text-fill-color:#173f32!important
-}
-body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
-) :where(button,.pill-btn,.service-link,a.resource-link){
-  border:1px solid rgba(20,101,75,.22)!important;
-  border-radius:13px!important;
-  background:rgba(249,253,251,.92)!important;
-  color:#176f51!important;
-  -webkit-text-fill-color:#176f51!important;
-  box-shadow:0 6px 15px rgba(20,89,65,.08)!important
-}
-body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
-) :where(button.primary,.service-form button,.service-link:not(.secondary)){
-  border-color:transparent!important;
-  background:linear-gradient(135deg,#237f60,#145941)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-
 body.home-page .cloud-account-backdrop .cloud-account-split{
   border:0!important;
   border-radius:24px!important;
@@ -1802,11 +1234,6 @@ body.tm-new-design .ai-orb{
 }
 body.tm-new-design .ai-orb-ring{
   border-color:rgba(20,125,146,.38)!important
-}
-body.tm-new-design .ai-panel{
-  border:0!important;
-  background:linear-gradient(145deg,rgba(252,254,253,.98),rgba(232,244,238,.97))!important;
-  box-shadow:0 24px 70px rgba(14,62,47,.27)!important
 }
 body.tm-new-design .ai-panel-header{
   border-bottom:1px solid var(--tm-border-on-dark,rgba(255,255,255,.16))!important;
@@ -2150,27 +1577,6 @@ html body.tm-new-design main.content>section:is(
   }
 }
 
-/* 1.29.3 final authority: readable controls in every weather-style module. */
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :is(button,.button,.btn,.icon-button,.pill-btn){
-  color:#146548!important;
-  -webkit-text-fill-color:#146548!important;
-  text-shadow:none!important;
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :is(button,.button,.btn,.icon-button,.pill-btn) :is(i,svg){
-  color:currentColor!important;
-  fill:currentColor!important;
-  stroke:currentColor;
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :is(button.primary,.button.primary,.btn.primary,[class*="primary"]){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-}
 @media(min-width:1001px){
   html body.tm-new-design .sidebar .trip-logout .tip,
   html body.tm-new-design .sidebar .trip-logout i{
@@ -2227,70 +1633,6 @@ html body.tm-new-design main.content>section:is(
     background:transparent!important;
     box-shadow:none!important
   }
-}
-
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-){
-  border:1px solid var(--tm-card-border)!important;
-  border-radius:var(--tm-card-radius-featured)!important;
-  background:var(--tm-card-bg)!important;
-  color:var(--tm-card-text)!important;
-  box-shadow:var(--tm-card-shadow)!important;
-  backdrop-filter:var(--tm-card-blur)!important;
-  -webkit-backdrop-filter:var(--tm-card-blur)!important
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(
-  .document-vault-panel,.doc-row,.vault-status,.expense,.summary-card,.service-card,
-  .transport-card,.getaway-result,.group-card,.album-card,.memory-card,.trip-summary-card,
-  .group-chat,.group-members,.invite-card,.car-rental-card,.album-panel,.receipt-card,
-  article[class*="-card"],div[class*="-card"]
-){
-  border:0!important;
-  border-radius:14px!important;
-  background:var(--tm-card-bg-nested)!important;
-  color:var(--tm-card-text)!important;
-  box-shadow:var(--tm-card-shadow-compact)!important
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(h1,h2,h3,h4,p,strong,span,small,label,i){
-  color:var(--tm-card-text)!important;
-  -webkit-text-fill-color:var(--tm-card-text)!important;
-  text-shadow:none!important
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(input,select,textarea){
-  border:1px solid var(--tm-control-border)!important;
-  background:var(--tm-control-bg)!important;
-  color:var(--tm-control-text)!important;
-  -webkit-text-fill-color:var(--tm-control-text)!important;
-  box-shadow:none!important
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(input,textarea)::placeholder{
-  color:var(--tm-control-placeholder)!important;
-  -webkit-text-fill-color:var(--tm-control-placeholder)!important
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(button:not([data-copy-ai-note]):not([data-delete-ai-note]),.button,.btn,.icon-button,.pill-btn,a[class*="button"]){
-  border:1px solid var(--tm-control-border)!important;
-  background:var(--tm-control-bg)!important;
-  color:var(--tm-control-text)!important;
-  -webkit-text-fill-color:var(--tm-control-text)!important;
-  box-shadow:none!important
-}
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :where(button:not([data-copy-ai-note]):not([data-delete-ai-note]),.button,.btn,.icon-button,.pill-btn) :where(i,svg){
-  color:currentColor!important;
-  fill:currentColor!important;
-  stroke:currentColor!important
 }
 
 html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
@@ -2445,54 +1787,6 @@ html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar button:is(
 body.home-page.is-authenticated .home-sidebar-utilities>.trip-logout,
 body.home-page.is-authenticated .home-sidebar-utilities>.trip-logout :is(i,.tip){color:#ffb4ab;-webkit-text-fill-color:#ffb4ab}
 
-html body.tm-new-design[data-trip-view] main.content>section#documents :is(
-  .vault-session,.vault-drop,article.doc-row,.doc-category-file
-),
-html body.tm-new-design[data-trip-view] main.content>section#budget :is(
-  .expense,.summary-card,.budget-card,.receipt-card,.budget-hero
-),
-html body.tm-new-design[data-trip-view] main.content>section#transport :is(
-  .transport-card,.service-card,.transport-result,.route-card
-),
-html body.tm-new-design[data-trip-view] main.content>section#car-rental :is(
-  .service-card,.car-rental-card,.car-result
-),
-html body.tm-new-design[data-trip-view] main.content>section#getaways :is(
-  .service-card,.getaway-result,.getaway-card
-),
-html body.tm-new-design[data-trip-view] main.content>section#group :is(
-  .group-card,.group-chat,.group-members,.invite-card,.group-message
-),
-html body.tm-new-design[data-trip-view] main.content>section#memories :is(
-  .album-card,.album-panel,.memory-card,.memory-item,.trip-summary-card,.summary-card
-){
-  border:0!important;
-  border-radius:14px!important;
-  background:var(--tm-weather-card-background)!important;
-  color:var(--tm-card-text)!important;
-  box-shadow:var(--tm-weather-card-shadow)!important
-}
-html body.tm-new-design[data-trip-view] main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :is(
-  .vault-session,.vault-drop,.doc-row,.doc-category-file,.expense,.summary-card,
-  .budget-card,.receipt-card,.budget-hero,.transport-card,.service-card,.transport-result,
-  .route-card,.car-rental-card,.car-result,.getaway-result,.getaway-card,.group-card,
-  .group-chat,.group-members,.invite-card,.group-message,.album-card,.album-panel,
-  .memory-card,.memory-item,.trip-summary-card
-) :where(h1,h2,h3,h4,p,strong,span,small,label,i){
-  color:var(--tm-card-text)!important;
-  -webkit-text-fill-color:var(--tm-card-text)!important
-}
-html body.tm-new-design[data-trip-view] main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :is(button,.button,.btn,.pill-btn){
-  border:0!important;
-  background:var(--tm-card-control)!important;
-  color:var(--tm-card-control-text)!important;
-  -webkit-text-fill-color:var(--tm-card-control-text)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.2)!important
-}
 html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar button[data-open-trip-calendar],
 html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar button[data-new-activity]{
   box-sizing:border-box!important;
@@ -2550,13 +1844,6 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolb
   html body:not(.home-page) .workspace>.sidebar::-webkit-scrollbar,
   html body:not(.home-page) .workspace>.sidebar nav::-webkit-scrollbar{display:none!important}
 }
-html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head{
-  border:0!important;
-  border-radius:14px!important;
-  background:var(--tm-weather-card-background)!important;
-  box-shadow:var(--tm-weather-card-shadow)!important
-}
-
 /* 1.35.3 — calmer daily planner controls and collapsible days. */
 html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar{
   display:grid!important;
@@ -2662,11 +1949,6 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapse
     font-size:12px!important;
   }
 }
-html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head :is(h1,p){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  text-shadow:0 1px 12px rgba(0,0,0,.22)!important
-}
 html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar{
   padding:0 0 12px!important;
   border:0!important;
@@ -2726,36 +2008,12 @@ html body.tm-new-design[data-trip-view="group"] main.content #group .group-messa
 html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head{
   min-height:58px!important;
   padding:12px 16px!important;
-  border:1px solid rgba(120,145,126,.28)!important;
-  border-radius:20px!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(232,239,232,.88))!important;
-  color:#173f32!important;
-  box-shadow:var(--shadow)!important;
-  backdrop-filter:blur(15px) saturate(120%)!important
-}
-html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head :is(h1,h2,strong){
-  color:#173f32!important;
-  -webkit-text-fill-color:#173f32!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head :is(p,small,span){
-  color:#60796e!important;
-  -webkit-text-fill-color:#60796e!important;
-  text-shadow:none!important
+  border-radius:20px!important
 }
 html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head :is(button,a,.pill-btn,.trip-action-back){
-  min-height:40px!important;
+  min-height:44px!important;
   padding:0 14px!important;
-  border:0!important;
-  border-radius:13px!important;
-  background:#176b50!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  box-shadow:0 7px 18px rgba(23,107,80,.2)!important
-}
-html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head :is(button,a,.pill-btn,.trip-action-back) :is(i,span){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  border-radius:13px!important
 }
 
 html body.tm-new-design[data-trip-view="group"] #group .group-chat{
@@ -2829,13 +2087,7 @@ html body.tm-new-design[data-trip-view] main.content section:is(
   #car-rental,#getaways,#group,#memories
 )>.section-head{
   min-height:58px!important;
-  padding:12px 16px!important;
-  border:1px solid rgba(120,145,126,.28)!important;
-  border-radius:20px!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(232,239,232,.88))!important;
-  color:#173f32!important;
-  box-shadow:var(--shadow)!important;
-  backdrop-filter:blur(15px) saturate(120%)!important
+  padding:12px 16px!important
 }
 html body.tm-new-design[data-trip-view] main.content section:is(
   #overview,#plan,#places,#documents,#budget,#destination-info,#transport,
@@ -2903,13 +2155,7 @@ html body.tm-new-design[data-trip-view] main.content section:is(
   display:flex!important;
   align-items:center!important;
   gap:12px!important;
-  padding:10px 14px!important;
-  border:1px solid rgba(120,145,126,.28)!important;
-  border-radius:20px!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(232,239,232,.86))!important;
-  color:#173f32!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.78),0 12px 34px rgba(14,97,75,.12)!important;
-  backdrop-filter:blur(15px) saturate(120%)!important
+  padding:10px 14px!important
 }
 html body.tm-new-design[data-trip-view] main.content section:is(
   #overview,#plan,#places,#documents,#budget,#transport,#car-rental,#getaways,#group,#memories
@@ -2941,16 +2187,6 @@ html body.tm-new-design[data-trip-view] main.content section#memories#memories>.
 html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head>div{
   min-width:0!important;
   flex:1 1 auto!important
-}
-html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head :is(h1,h2){
-  color:#173f32!important;
-  -webkit-text-fill-color:#173f32!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head :is(p,small){
-  color:#60796e!important;
-  -webkit-text-fill-color:#60796e!important;
-  text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="group"] main.content #group .group-message:not(.mine){
   border-inline-start:5px solid var(--sender-border)!important;
@@ -3051,7 +2287,6 @@ html body.tm-new-design .network-usage-meter::before,
 html body.tm-new-design .network-usage-meter::after{animation:none!important}
 html body.tm-new-design main.content{caret-color:transparent}
 html body.tm-new-design main.content :is(input,textarea,[contenteditable="true"]){caret-color:auto}
-html body.tm-new-design[data-trip-view] main.content section.section[id]>.section-head{background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(225,240,232,.94))!important;border-color:rgba(64,127,98,.3)!important;color:#173f32!important}
 html body.tm-new-design main.content :is(#budget,#transport,#car-rental,#getaways) :is(.expense-workspace,.budget-columns-editor,.receipt-form,.expense-live-summary,.transport-card,.service-card,.getaway-result){
   background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(229,241,235,.93))!important;
   border-color:rgba(72,130,103,.28)!important;
@@ -3143,161 +2378,17 @@ html body.tm-new-design #transport p.transport-note{
 /* Stable trip rendering and clear transport controls */
 html body.tm-new-design:not(.home-page)::before{display:none!important;content:none!important;animation:none!important}
 html body.tm-new-design .sidebar nav .sidebar-about{order:999!important}
-html body.tm-new-design main.content #transport :is(.transport-card,.transport-result,.transport-empty,.fare-row){color:#173f32!important;-webkit-text-fill-color:#173f32!important}
-html body.tm-new-design main.content #transport :is(.transport-card,.transport-result){background:linear-gradient(145deg,rgba(248,252,250,.98),rgba(228,240,234,.96))!important;border-color:#9fc8b6!important}
-html body.tm-new-design main.content #transport :is(input,select){background:#fff!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important;border-color:#9fc8b6!important}
-html body.tm-new-design main.content #transport :is(.transport-title p,.transport-empty span,.transport-result small,.fare-row p,.transport-results-head span){color:#46695b!important;-webkit-text-fill-color:#46695b!important}
-html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport .transport-card.transport-card,
-html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport .transport-result.transport-result{background:linear-gradient(145deg,rgba(248,252,250,.98),rgba(228,240,234,.96))!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important;border-color:#9fc8b6!important}
 html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport p.transport-note.transport-note{background:linear-gradient(135deg,#315d4d,#21493b)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 
-/* Avoid GPU backdrop-filter tile seams that appeared as a flashing vertical band. */
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content :is(section:not(#places),.section-head,.service-card,.transport-card,.expense-workspace,.budget-columns-editor,.budget-category-editor,.document-vault,.ai-notes-archive,.doc-row,.about-dialog){backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places){background:rgba(224,236,230,.96)!important}
 html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#getaways)>.section-head .mark{display:none!important}
-html body.tm-new-design main.content #transport .transport-empty{background:#edf7f2!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important;border-color:#8fc2ab!important}
-html body.tm-new-design main.content #transport .transport-empty *{color:#315d4d!important;-webkit-text-fill-color:#315d4d!important}
 html body.tm-new-design main.content #documents .ai-notes-archive{background:linear-gradient(145deg,#edf8f2,#fff)!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important}
 html body.tm-new-design main.content #documents .ai-notes-archive :is(h3,p,strong,small,summary,.ai-note-toggle){color:#173f32!important;-webkit-text-fill-color:#173f32!important}
 html body.tm-new-design main.content #documents .ai-notes-archive .ai-note-answer{color:#304c41!important;-webkit-text-fill-color:#304c41!important;background:#f8fcfa!important}
 
-html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
-
-/*
- * Mobile contrast system.
- * The old glass theme painted copy white because the cards used to be dark.
- * Once the unstable blur layer was removed, those declarations produced
- * white-on-white cards.  Light surfaces now always own dark copy; only real
- * filled actions keep white copy.
- */
 @media(max-width:900px){
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places),
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-    .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-    .nearby,.summary-card,.auto-card,.generated-day,.service-card,
-    .transport-card,.external-resources,.planned-activity,.saved-place,
-    .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
-    .trip-summary-card,.smart-tool-panel,.trip-home-actions a,.day-tab,
-    .day-item,.forecast-day,.resource-link,.transport-empty,.fare-row
-  ){
-    background:linear-gradient(145deg,#f8fcfa,#e4f1ea)!important;
-    border-color:#a6cbbb!important;
-    color:#173f32!important;
-    -webkit-text-fill-color:#173f32!important;
-    text-shadow:none!important
-  }
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-    .section-head,.card,.panel,.module,.plan-card,.place-card,.doc-row,
-    .expense,.tip-card,.nearby,.summary-card,.auto-card,.generated-day,
-    .service-card,.transport-card,.external-resources,.planned-activity,
-    .saved-place,.planner-toolbar,.planner-composer,.group-card,.album-card,
-    .memory-card,.trip-summary-card,.smart-tool-panel,.trip-home-actions a,
-    .day-tab,.day-item,.forecast-day,.resource-link,.transport-empty,.fare-row
-  ) :is(h1,h2,h3,h4,p,strong,b,small,span,label,li,a,i){
-    color:#173f32!important;
-    -webkit-text-fill-color:#173f32!important;
-    text-shadow:none!important;
-    opacity:1!important
-  }
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-    input,select,textarea,[contenteditable="true"]
-  ){
-    background:#fff!important;
-    border-color:#9fc8b6!important;
-    color:#173f32!important;
-    -webkit-text-fill-color:#173f32!important;
-    opacity:1!important
-  }
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-    button[type="submit"],.primary,.pill-btn,.planner-action.primary,
-    .service-link:not(.secondary),.official-fares,.transport-note,
-    .smart-hub-now,.safe
-  ){
-    background:linear-gradient(135deg,#126c51,#22865f)!important;
-    border-color:#126c51!important;
-    color:#fff!important;
-    -webkit-text-fill-color:#fff!important
-  }
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-    button[type="submit"],.primary,.pill-btn,.planner-action.primary,
-    .service-link:not(.secondary),.official-fares,.transport-note,
-    .smart-hub-now,.safe
-  ) *{
-    color:#fff!important;
-    -webkit-text-fill-color:#fff!important
-  }
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) .section-head{
-    background:linear-gradient(135deg,#f7fcf9,#deeee6)!important;
-    border:1px solid #a6cbbb!important;
-    color:#173f32!important
-  }
-
-  /* High-specificity mobile overrides for legacy dark-glass declarations. */
-  html body.tm-new-design[data-trip-view] main.content section#plan#plan :is(
-    .planner-toolbar.planner-toolbar,.planner-composer.planner-composer,
-    .generated-day.generated-day,.planned-activity.planned-activity,
-    .saved-place.saved-place
-  ),
-  html body.tm-new-design[data-trip-view] main.content section#transport#transport :is(
-    .external-resources.external-resources,.transport-card.transport-card,
-    .transport-result.transport-result,.transport-empty.transport-empty
-  ),
-  html body.tm-new-design[data-trip-view] main.content section#car-rental#car-rental .service-card.service-card,
-  html body.tm-new-design[data-trip-view] main.content section#getaways#getaways :is(
-    .service-card.service-card,.getaway-result.getaway-result
-  ),
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content section.trip-home-actions.trip-home-actions a{
-    background:linear-gradient(145deg,#f8fcfa,#e2f0e9)!important;
-    border:1px solid #9fc8b6!important;
-    color:#173f32!important;
-    -webkit-text-fill-color:#173f32!important;
-    text-shadow:none!important;
-    opacity:1!important
-  }
-  html body.tm-new-design[data-trip-view] main.content section#plan#plan :is(
-    .planner-toolbar,.planner-composer,.generated-day,.planned-activity,.saved-place
-  ) :is(h1,h2,h3,h4,p,strong,b,small,span,label,a,i),
-  html body.tm-new-design[data-trip-view] main.content section#transport#transport :is(
-    .external-resources,.transport-card,.transport-result,.transport-empty
-  ) :is(h1,h2,h3,h4,p,strong,b,small,span,label,a,i),
-  html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#getaways) :is(
-    .service-card,.getaway-result
-  ) :is(h1,h2,h3,h4,p,strong,b,small,span,label,a,i),
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content section.trip-home-actions.trip-home-actions a *{
-    color:#173f32!important;
-    -webkit-text-fill-color:#173f32!important;
-    text-shadow:none!important;
-    opacity:1!important
-  }
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"])[data-trip-view][data-trip-view] main.content section.trip-home-actions.trip-home-actions a[href]{
-    background:linear-gradient(145deg,#f8fcfa,#e2f0e9)!important;
-    border:1px solid #9fc8b6!important;
-    color:#173f32!important;
-    -webkit-text-fill-color:#173f32!important;
-    text-shadow:none!important;
-    opacity:1!important
-  }
-  html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"])[data-trip-view][data-trip-view] main.content section.trip-home-actions.trip-home-actions a[href] *{
-    color:#173f32!important;
-    -webkit-text-fill-color:#173f32!important;
-    text-shadow:none!important;
-    opacity:1!important
-  }
   html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport{
     color:#173f32!important;
     -webkit-text-fill-color:#173f32!important
-  }
-  html body.tm-new-design[data-trip-view] main.content :is(#plan,#transport,#car-rental,#getaways)>.section-head.section-head{
-    background:linear-gradient(135deg,#f7fcf9,#deeee6)!important;
-    border:1px solid #9fc8b6!important;
-    color:#173f32!important;
-    -webkit-text-fill-color:#173f32!important
-  }
-  html body.tm-new-design[data-trip-view] main.content :is(#plan,#transport,#car-rental,#getaways,#documents,#budget,#places)>.section-head.section-head *{
-    color:#173f32!important;
-    -webkit-text-fill-color:#173f32!important;
-    text-shadow:none!important;
-    opacity:1!important
   }
   html body.tm-new-design[data-trip-view="plan"] main.content section#plan#plan .planner-action.planner-action{
     background:#f8fcfa!important;
@@ -3321,127 +2412,6 @@ html body.tm-new-design .about-backdrop{background:rgba(17,43,36,.72)!important}
   }
 }
 
-/*
- * Unified light surface: identical to the weather card on the overview.
- * This final layer intentionally replaces the former mint panels while
- * preserving green only for primary actions.
- */
-html body.tm-new-design{
-  --tm-weather-surface:var(--tm-card-bg);
-  --tm-weather-border:var(--tm-card-border);
-  --tm-weather-text:var(--tm-card-text);
-  --tm-weather-muted:var(--tm-card-muted)
-}
-html body.tm-new-design main.content>section:not(.hero):not(#places),
-html body.tm-new-design main.content>section:not(.hero):not(#places)>.section-head,
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) main.content :is(
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.generated-day,.service-card,
-  .transport-card,.transport-result,.transport-empty,.external-resources,
-  .planned-activity,.saved-place,.planner-toolbar,.planner-composer,
-  .group-card,.album-card,.memory-card,.trip-summary-card,.smart-tool-panel,
-  .trip-home-actions a,.day-tab,.day-item,.forecast-day,.resource-link,
-  .expense-workspace,.budget-columns-editor,.budget-category-editor,
-  .document-vault,.ai-notes-archive,.fare-row
-){
-  background:var(--tm-weather-surface)!important;
-  background-color:rgba(24,39,35,.72)!important;
-  border:1px solid var(--tm-weather-border)!important;
-  border-radius:20px!important;
-  box-shadow:var(--shadow)!important;
-  color:var(--tm-weather-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-text)!important;
-  text-shadow:none!important;
-  opacity:1!important
-}
-html body.tm-new-design main.content :is(
-  .section-head,.card,.panel,.module,.plan-card,.place-card,.doc-row,
-  .expense,.tip-card,.nearby,.summary-card,.auto-card,.generated-day,
-  .service-card,.transport-card,.transport-result,.transport-empty,
-  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
-  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,.forecast-day,
-  .resource-link,.expense-workspace,.budget-columns-editor,
-  .budget-category-editor,.document-vault,.ai-notes-archive,.fare-row
-) :is(h1,h2,h3,h4,strong,b,label){
-  color:var(--tm-weather-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-text)!important;
-  text-shadow:none!important;
-  opacity:1!important
-}
-html body.tm-new-design main.content :is(
-  .section-head,.card,.panel,.module,.plan-card,.place-card,.doc-row,
-  .expense,.tip-card,.nearby,.summary-card,.auto-card,.generated-day,
-  .service-card,.transport-card,.transport-result,.transport-empty,
-  .external-resources,.planned-activity,.saved-place,.planner-toolbar,
-  .planner-composer,.group-card,.album-card,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.trip-home-actions a,.day-tab,.day-item,.forecast-day,
-  .resource-link,.expense-workspace,.budget-columns-editor,
-  .budget-category-editor,.document-vault,.ai-notes-archive,.fare-row
-) :is(p,small,span,li){
-  color:var(--tm-weather-muted)!important;
-  -webkit-text-fill-color:var(--tm-weather-muted)!important;
-  text-shadow:none!important;
-  opacity:1!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) main.content :is(input,select,textarea,[contenteditable="true"]){
-  background:rgba(255,255,255,.96)!important;
-  border-color:var(--tm-weather-border)!important;
-  color:var(--tm-weather-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-text)!important;
-  opacity:1!important
-}
-html body.tm-new-design main.content :is(
-  button[type="submit"],.primary,.pill-btn,.planner-action.primary,
-  .service-link:not(.secondary),.smart-hub-now,.safe
-){
-  background:linear-gradient(135deg,#126c51,#22865f)!important;
-  border-color:#126c51!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-html body.tm-new-design main.content :is(
-  button[type="submit"],.primary,.pill-btn,.planner-action.primary,
-  .service-link:not(.secondary),.smart-hub-now,.safe
-) *{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-
-/* Match the real overview weather glass, including legacy high-specificity views. */
-html body.tm-new-design[data-trip-view][data-trip-view] main.content section#plan#plan :is(
-  .planner-toolbar.planner-toolbar,.planner-composer.planner-composer,
-  .generated-day.generated-day,.planned-activity.planned-activity,
-  .saved-place.saved-place
-),
-html body.tm-new-design[data-trip-view][data-trip-view] main.content section#transport#transport :is(
-  .external-resources.external-resources,.transport-card.transport-card,
-  .transport-result.transport-result,.transport-empty.transport-empty,.fare-row.fare-row
-),
-html body.tm-new-design[data-trip-view][data-trip-view] main.content section#car-rental#car-rental .service-card.service-card,
-html body.tm-new-design[data-trip-view][data-trip-view] main.content section#getaways#getaways :is(
-  .service-card.service-card,.getaway-result.getaway-result
-),
-html body.tm-new-design[data-trip-view][data-trip-view] main.content section.trip-home-actions.trip-home-actions a[href],
-html body.tm-new-design[data-trip-view][data-trip-view] main.content :is(
-  #documents#documents,#budget#budget,#places#places,#memories#memories,#group#group
-) :is(
-  .section-head.section-head,.card.card,.doc-row.doc-row,.document-vault.document-vault,
-  .ai-notes-archive.ai-notes-archive,.expense-workspace.expense-workspace,
-  .budget-columns-editor.budget-columns-editor,.budget-category-editor.budget-category-editor,
-  .auto-card.auto-card,.group-card.group-card,.album-card.album-card,
-  .memory-card.memory-card,.trip-summary-card.trip-summary-card
-){
-  background:var(--tm-card-surface,var(--tm-card-bg))!important;
-  background-color:transparent!important;
-  border:1px solid var(--tm-card-border)!important;
-  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
-  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
-  color:var(--tm-card-text)!important;
-  -webkit-text-fill-color:var(--tm-card-text)!important;
-  text-shadow:none!important;
-  opacity:1!important
-}
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan :is(
   .day-heading.day-heading,.day-tab.day-tab
 ){
@@ -3461,32 +2431,9 @@ html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content sect
 }
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan .day-add.day-add{
   background:rgba(255,255,255,.94)!important;
-  border:1px solid var(--tm-weather-border)!important;
+  border:1px solid var(--tm-card-border)!important;
   color:#176b4e!important;
   -webkit-text-fill-color:#176b4e!important
-}
-html body.tm-new-design[data-trip-view][data-trip-view]:not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) main.content :is(
-  input:not([type="checkbox"]):not([type="radio"]),select,textarea,[contenteditable="true"]
-){
-  background:#fff!important;
-  border:1px solid rgba(120,145,126,.38)!important;
-  border-radius:12px!important;
-  box-shadow:none!important;
-  color:#243c32!important;
-  -webkit-text-fill-color:#243c32!important;
-  opacity:1!important
-}
-html body.tm-new-design[data-trip-view][data-trip-view] main.content :is(
-  #plan#plan,#transport#transport,#car-rental#car-rental,#getaways#getaways,
-  #documents#documents,#budget#budget,#places#places,#memories#memories,#group#group
-)>.section-head.section-head{
-  background:var(--tm-card-surface,var(--tm-card-bg))!important;
-  background-color:transparent!important;
-  border:1px solid var(--tm-card-border)!important;
-  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
-  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
-  color:var(--tm-card-text)!important;
-  -webkit-text-fill-color:var(--tm-card-text)!important
 }
 /* Keep pale controls readable inside the dark weather-card glass. */
 html body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
@@ -3824,16 +2771,6 @@ html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,
     white-space:normal!important;
     line-height:1.45!important
   }
-  html body.tm-new-design[data-trip-view="overview"] main.content #overview.custom-hero .weather-top-widget{
-    position:relative!important;
-    inset:auto!important;
-    order:5!important;
-    z-index:3!important;
-    width:100%!important;
-    max-width:none!important;
-    margin:0!important;
-    transform:none!important
-  }
   html body.tm-new-design .sidebar .destination-mini{
     border:2px solid rgba(77,151,120,.82)!important;
     background:linear-gradient(145deg,rgba(239,250,245,.8),rgba(205,233,220,.74))!important;
@@ -3854,109 +2791,6 @@ html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,
     line-height:1.45!important;
     white-space:normal!important
   }
-}
-
-/* 1.50.2 final contrast authority — match the light overview weather glass. */
-html body.tm-new-design{
-  --tm-weather-unified-bg:var(--tm-card-bg);
-  --tm-weather-unified-bg-strong:var(--tm-card-bg-hover);
-  --tm-weather-unified-border:var(--tm-card-border);
-  --tm-weather-unified-border-hover:var(--tm-card-border-hover);
-  --tm-weather-unified-text:var(--tm-card-text);
-  --tm-weather-unified-muted:var(--tm-card-muted);
-  --tm-weather-unified-shadow:var(--tm-card-shadow)
-}
-html body.tm-new-design main.content>section:not(.hero):not(#places),
-html body.tm-new-design main.content :is(
-  .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-  .auto-place-launch,.auto-place-dialog,.auto-place-preview-item,
-  .planner-toolbar,.planner-composer,.trip-anchors,.trip-anchor,.doc-row,.document-vault,
-  .document-vault-panel,.expense-workspace,.expense-record,.receipt-card,.budget-charts,
-  .currency-converter,.transport-card,.travel-service-card,.service-card,.fare-guide,
-  .getaway-result,.external-resources,.group-card,.album-card,.memory-card,.trip-summary-card,
-  .collaboration-signed-out,.group-composer,.chat-empty,.member-list,.invite-result,
-  .memory-list,.memory-attachments,.memory-file-selection,.trip-summary-text,.vault-auth,
-  .vault-drop,.vault-list,.vault-session,.vault-storage,.vault-summary,.ai-notes-archive,
-  .ai-notes-empty,.weather-live-day,.weather-insight,.resource-link,.day-item,.forecast-day
-),
-html body.tm-new-design :is(
-  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
-  .place-directions-dialog,.place-share-dialog,.trip-map-dialog>div,.trip-logout-dialog>div,
-  .floating-logout-dialog>div,.ai-panel,.smart-hub-modal,.cloud-account-split
-){
-  border-color:var(--tm-weather-unified-border)!important;
-  background:var(--tm-weather-unified-bg)!important;
-  color:var(--tm-weather-unified-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
-  box-shadow:var(--tm-weather-unified-shadow)!important
-}
-html body.tm-new-design main.content>section:not(.hero):not(#places) :is(h1,h2,h3,h4,h5,strong,b,time,label,legend,p,small,span):not(.nearby-category-drawer *):not(.maplibregl-map *),
-html body.tm-new-design main.content :is(
-  .card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-  .auto-place-dialog,.planner-toolbar,.planner-composer,.trip-anchor,.doc-row,.document-vault,
-  .expense-workspace,.expense-record,.receipt-card,.budget-charts,.currency-converter,
-  .transport-card,.travel-service-card,.service-card,.fare-guide,.getaway-result,
-  .external-resources,.group-card,.album-card,.memory-card,.trip-summary-card,.resource-link
-) :is(h1,h2,h3,h4,h5,strong,b,time,label,legend,p,small,span):not(.nearby-category-drawer *):not(.maplibregl-map *),
-html body.tm-new-design :is(
-  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
-  .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
-  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split
-) :is(h1,h2,h3,h4,h5,strong,b,time,label,legend,p,small,span,li){
-  color:var(--tm-weather-unified-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
-  text-shadow:none!important
-}
-html body.tm-new-design main.content :is(p,small,.muted,.nearby-status,.day-summary,.trip-calendar-hint):not(.nearby-category-drawer *):not(.maplibregl-map *),
-html body.tm-new-design :is(.about-dialog,.modal,.trip-calendar-dialog,.invite-card,.place-directions-dialog,.place-share-dialog) :is(p,small,li){
-  color:var(--tm-weather-unified-muted)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-muted)!important
-}
-html body.tm-new-design :is(
-  main.content>section:not(.hero):not(#places),.modal,.about-dialog,.trip-calendar-dialog,.invite-card,
-  .chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal
-) :is(input,select,textarea){
-  border-color:rgba(38,79,64,.38)!important;
-  background:rgba(255,255,255,.94)!important;
-  color:#17231f!important;
-  -webkit-text-fill-color:#17231f!important;
-  caret-color:#17231f!important
-}
-html body.tm-new-design :is(
-  main.content>section:not(.hero):not(#places),.modal,.about-dialog,.trip-calendar-dialog,.invite-card,
-  .chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal
-) :is(input,textarea)::placeholder{
-  color:#748079!important;
-  -webkit-text-fill-color:#748079!important;
-  opacity:1!important
-}
-html body.tm-new-design :is(.about-dialog,.modal,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog) :is(header,footer),
-html body.tm-new-design .about-content :is(section,.about-version,.about-release-category,.about-versioning span),
-html body.tm-new-design .modal :is(.forecast-day,.day-item,.action-options button,.weather-live-day,.weather-insight){
-  border-color:rgba(38,79,64,.2)!important;
-  background:var(--tm-weather-unified-bg-strong)!important;
-  color:var(--tm-weather-unified-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-text)!important
-}
-html body.tm-new-design :is(button,a).primary,
-html body.tm-new-design :is(.about-dialog,.modal,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog) :is(button.primary,button[type="submit"]),
-html body.tm-new-design main.content :is(.nearby-search,.lodging-actions button,.trip-anchor>a):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *){
-  border-color:#0e614b!important;
-  background:#0e614b!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-html body.tm-new-design :is(button,a).primary *,
-html body.tm-new-design :is(.about-dialog,.modal,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog) :is(button.primary,button[type="submit"]) *,
-html body.tm-new-design main.content :is(.nearby-search,.lodging-actions button,.trip-anchor>a):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *) *{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-html body.tm-new-design :is(.about-close,.modal-close,.invite-close,.trip-calendar-dialog>header button,.place-directions-dialog header button,.place-share-dialog header button){
-  border-color:rgba(38,79,64,.24)!important;
-  background:rgba(255,255,255,.82)!important;
-  color:#26332e!important;
-  -webkit-text-fill-color:#26332e!important
 }
 
 /* Places material is owned by readable-glass.css; feature CSS owns layout only. */
@@ -4010,210 +2844,6 @@ html body.tm-new-design :is(.about-close,.modal-close,.invite-close,.trip-calend
 @media(max-width:650px){
   .budget-limit-mode{grid-template-columns:1fr}
   .budget-limit-mode label>span{min-height:62px}
-}
-
-/* 1.43.1 — exhaustive weather-card surface and interaction audit. */
-:root{
-  --tm-weather-unified-bg:var(--tm-card-bg);
-  --tm-weather-unified-bg-strong:var(--tm-card-bg-hover);
-  --tm-weather-unified-border:var(--tm-card-border);
-  --tm-weather-unified-border-hover:var(--tm-card-border-hover);
-  --tm-weather-unified-text:var(--tm-card-text);
-  --tm-weather-unified-muted:var(--tm-card-muted);
-  --tm-weather-unified-shadow:var(--tm-card-shadow)
-}
-
-/* Dynamic cards that were not part of the first pass. */
-html body.tm-new-design main.content :is(
-  .auto-place-dialog,.auto-place-dialog-body,.auto-place-build,.auto-place-choice,
-  .auto-place-details,.auto-place-empty,.auto-place-preview,.auto-place-preview-day,
-  .auto-place-preview-empty-day,.auto-place-status,.auto-place-stay-dates,
-  .budget-columns-editor,.budget-category-editor,.budget-subcategories,
-  .budget-subcategory-row,.budget-chart-row,.budget-chart-summary,.budget-chart-empty,
-  .expense-record,.expense-record-body,.expense-record-empty,.expense-category-group,
-  .expense-category-items,.receipt-form,.receipt-grid,.receipt-preview,.receipt-source,
-  .currency-converter-grid,.currency-converter-result,
-  .transport-search-card,.transport-layout,.transport-empty,.transport-note,
-  .transport-results,.transport-results-head,.official-fares,.fare-row,
-  .service-section,.service-grid,.service-form,.service-status,.getaway-results,
-  .collaboration-grid,.collaboration-live,.collaboration-signed-out,.group-composer,
-  .chat-empty,.chat-place-dialog,.chat-place-hero,.chat-place-list,.chat-place-empty,
-  .member-list,.invite-dialog,.invite-result,.invite-status,
-  .memory-layout,.memory-list,.memory-attachments,.memory-file-selection,
-  .trip-summary-text,.trip-experience-empty,
-  .vault-auth,.vault-drop,.vault-list,.vault-session,.vault-storage,.vault-summary,
-  .vault-preview,.vault-preview-body,.vault-preview-unavailable,.vault-pdf-viewer,
-  .doc-category-file,.ai-notes-archive,.ai-notes-empty,
-  .trip-calendar-dialog,.trip-calendar-toolbar,.trip-calendar-days,.trip-calendar-empty,
-  .place-directions-dialog,.place-directions-body,.directions-origin-options,
-  .directions-custom-origin,.directions-note,.place-share-dialog,.place-share-checklist,
-  .place-share-note,.place-share-status,.smart-form,.smart-list,.smart-status,
-  .weather-live-modal,.weather-live-grid
-),
-html body.tm-new-design :is(
-  .modal,.about-dialog,.ai-panel,.cloud-account-split
-){
-  border:1.5px solid var(--tm-weather-unified-border)!important;
-  border-radius:18px!important;
-  outline:0!important;
-  background:var(--tm-weather-unified-bg)!important;
-  color:var(--tm-weather-unified-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
-  box-shadow:var(--tm-weather-unified-shadow)!important;
-  -webkit-backdrop-filter:blur(20px) saturate(140%)!important;
-  backdrop-filter:blur(20px) saturate(140%)!important
-}
-
-/* Bring the first-pass cards to the exact same, clearly edged recipe. */
-html body.tm-new-design main.content :is(
-  .section-head,.quick-grid>.card,.trip-home-actions a,
-  .card,.panel,.module,.plan-card,.place-card,.tip-card,.summary-card,.auto-card,
-  .auto-place-launch,.auto-place-preview-item,
-  .generated-day,.planner-toolbar,.planner-composer,.planned-activity,.saved-place,
-  .day-tab,.day-item,.past-days-strip,.trip-calendar-shell,
-  .document-vault,.document-vault-panel,.doc-row,.vault-status,.ai-notes-panel,
-  .budget-hero,.budget-overview,.budget-chart-card,.budget-category,.budget-category-row,
-  .expense-workspace,.expense-form,.expense,.expense-row,.expense-live-summary,
-  .receipt-card,.receipt-item,.currency-insight,.currency-converter,
-  .transport-card,.transport-search,.transport-result,.service-card,.fare-card,
-  .external-resources,.car-rental-card,.getaway-result,
-  .group-card,.group-chat,.group-members,.message,.message-place-card,.shared-place-card,
-  .invite-card,.album-card,.album-panel,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.resource-link,.network-usage-panel,.gps-consent-card,
-  .weather-insight,.weather-live-day
-){
-  border:1.5px solid var(--tm-weather-unified-border)!important;
-  background:var(--tm-weather-unified-bg)!important;
-  color:var(--tm-weather-unified-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
-  box-shadow:var(--tm-weather-unified-shadow)!important
-}
-
-html body.tm-new-design main.content :is(
-  .planned-activity,.saved-place,.auto-place-preview-item,.doc-row,
-  .expense-record,.receipt-card,.transport-result,.message,.memory-card,.weather-live-day
-){background:var(--tm-weather-unified-bg-strong)!important}
-
-/* Card copy inherits a single high-contrast hierarchy. */
-html body.tm-new-design main.content :is(
-  .auto-place-dialog,.auto-place-dialog-body,.auto-place-build,.auto-place-choice,
-  .auto-place-details,.auto-place-empty,.auto-place-preview,.auto-place-preview-day,
-  .auto-place-status,.budget-columns-editor,.budget-category-editor,.budget-subcategories,
-  .budget-subcategory-row,.budget-chart-row,.budget-chart-summary,.budget-chart-empty,
-  .expense-record,.expense-record-body,.expense-record-empty,.expense-category-group,
-  .receipt-form,.receipt-grid,.receipt-preview,.receipt-source,.currency-converter-grid,
-  .currency-converter-result,.transport-search-card,.transport-layout,.transport-empty,
-  .transport-note,.transport-results,.official-fares,.fare-row,.service-section,
-  .service-grid,.service-form,.service-status,.collaboration-grid,.collaboration-live,
-  .collaboration-signed-out,.group-composer,.chat-empty,.chat-place-dialog,
-  .chat-place-hero,.chat-place-list,.member-list,.invite-dialog,.invite-result,
-  .memory-layout,.memory-list,.memory-attachments,.trip-summary-text,
-  .trip-experience-empty,.vault-auth,.vault-drop,.vault-list,.vault-session,
-  .vault-storage,.vault-summary,.vault-preview,.vault-preview-body,
-  .vault-preview-unavailable,.doc-category-file,.ai-notes-archive,.ai-notes-empty,
-  .trip-calendar-dialog,.trip-calendar-toolbar,.trip-calendar-days,.trip-calendar-empty,
-  .place-directions-dialog,.place-directions-body,.directions-origin-options,
-  .directions-custom-origin,.directions-note,.place-share-dialog,.place-share-checklist,
-  .place-share-note,.place-share-status,.smart-form,.smart-list,.smart-status,
-  .weather-live-modal,.weather-live-grid
-) :where(h1,h2,h3,h4,h5,h6,strong,b,p,span,small,label,legend,time){
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important;
-  opacity:1!important
-}
-html body.tm-new-design main.content :is(
-  .auto-place-dialog,.budget-columns-editor,.budget-category-editor,.expense-record,
-  .receipt-form,.transport-search-card,.transport-result,.service-section,
-  .collaboration-grid,.group-composer,.memory-layout,.vault-auth,.vault-list,
-  .trip-calendar-dialog,.place-directions-dialog,.place-share-dialog,.smart-form
-) :where(small,.muted,[class*="note"],[class*="description"],[class*="status"]){
-  color:var(--tm-weather-unified-muted)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-muted)!important
-}
-
-/* Every interactive surface has an obvious target, focus state and readable label. */
-html body.tm-new-design :is(button,a[href],[role="button"],summary,label[for]){
-  touch-action:manipulation
-}
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *){
-  min-height:42px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center
-}
-html body.tm-new-design main.content :is([data-copy-ai-note],[data-delete-ai-note]){min-height:44px}
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):not(:disabled):not([aria-disabled="true"]){
-  cursor:pointer
-}
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):focus-visible{
-  outline:3px solid #f7c96b!important;
-  outline-offset:3px!important
-}
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):disabled,
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *)[aria-disabled="true"]{
-  opacity:.52!important;
-  cursor:not-allowed!important
-}
-html body.tm-new-design main.content :is(
-  .activity-buttons,.saved-place-actions,.nearby-links,.auto-place-detail-links,
-  .getaway-result-links,.message-place-actions,.shared-place-actions,.album-actions,
-  .trip-summary-actions,.receipt-actions,.doc-category-file-actions,.vault-file-actions
-) :is(button,a[href]){
-  border:1px solid rgba(216,244,232,.75)!important;
-  background:rgba(247,255,251,.94)!important;
-  color:#104f3b!important;
-  -webkit-text-fill-color:#104f3b!important;
-  box-shadow:0 5px 14px rgba(0,35,25,.14)!important
-}
-html body.tm-new-design main.content :is(
-  .activity-buttons,.saved-place-actions,.nearby-links,.auto-place-detail-links,
-  .getaway-result-links,.message-place-actions,.shared-place-actions,.album-actions,
-  .trip-summary-actions,.receipt-actions,.doc-category-file-actions,.vault-file-actions
-) :is(button,a[href]) *{
-  color:inherit!important;
-  -webkit-text-fill-color:inherit!important
-}
-html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):not(:disabled):not([aria-disabled="true"]):hover{
-  border-color:var(--tm-weather-unified-border-hover)!important
-}
-
-/* Destructive controls remain unmistakable instead of inheriting pale glass. */
-html body.tm-new-design main.content :is(
-  button.danger,.danger button,[data-delete],[data-remove],[data-delete-expense],
-  [data-delete-saved-place],[data-delete-memory],[data-delete-document],[data-delete-ai-note]
-){
-  border-color:rgba(255,185,180,.8)!important;
-  background:rgba(132,34,39,.9)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-
-/* Home-page cards use the same border and text rules. */
-html body.home-page.is-authenticated main.content :is(
-  .trip-area-head,.trip-archive,.home-about,.module,.add-destination
-){
-  border:1.5px solid var(--tm-weather-unified-border)!important;
-  background:var(--tm-weather-unified-bg)!important;
-  color:var(--tm-weather-unified-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
-  box-shadow:var(--tm-weather-unified-shadow)!important
-}
-
-@media(max-width:650px){
-  html body.tm-new-design main.content :is(button,a[href],[role="button"],summary):not(.maplibregl-map *){min-height:44px}
-  html body.tm-new-design main.content :is(
-    .auto-place-dialog,.trip-calendar-dialog,.place-directions-dialog,.place-share-dialog,
-    .invite-dialog,.weather-live-modal,.modal,.ai-panel
-  ){
-    border-width:2px!important;
-    border-radius:18px!important
-  }
-  html body.tm-new-design main.content :is(
-    .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-    .doc-row,.expense-record,.receipt-card,
-    .transport-card,.service-card,.getaway-result,.group-card,.album-card,.memory-card,
-    .auto-place-preview-item,.weather-live-day
-  ){border-width:2px!important}
 }
 
 html body.tm-new-design main.content #budget,
@@ -4387,195 +3017,10 @@ html body.tm-new-design main.content #budget .budget-hero-meter.is-unlimited>spa
   }
 }
 
-/* 1.43.0 — one clear weather-glass language across the application. */
-:root{
-  --tm-app-glass-screen:linear-gradient(145deg,rgba(12,57,44,.54),rgba(5,31,24,.34));
-  --tm-app-glass-card:linear-gradient(135deg,rgba(255,255,255,.19),rgba(255,255,255,.075));
-  --tm-app-glass-card-strong:linear-gradient(135deg,rgba(255,255,255,.25),rgba(255,255,255,.11));
-  --tm-app-glass-border:rgba(226,255,244,.43);
-  --tm-app-glass-border-soft:rgba(226,255,244,.29);
-  --tm-app-glass-text:#f7fff9;
-  --tm-app-glass-muted:#d7ebe2;
-  --tm-app-glass-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 14px 34px rgba(0,25,18,.18)
-}
-html body.tm-new-design main.content>section.section:not(.hero):not(#places),
-html body.tm-new-design main.content>.trip-home-actions{
-  border:1px solid var(--tm-app-glass-border-soft)!important;
-  border-radius:20px!important;
-  background:var(--tm-app-glass-screen)!important;
-  color:var(--tm-app-glass-text)!important;
-  box-shadow:var(--tm-app-glass-shadow)!important;
-  -webkit-backdrop-filter:blur(20px) saturate(135%)!important;
-  backdrop-filter:blur(20px) saturate(135%)!important
-}
-html body.tm-new-design main.content :is(
-  .section-head,.quick-grid>.card,.trip-home-actions a,
-  .card,.panel,.module,.plan-card,.place-card,.tip-card,.summary-card,.auto-card,
-  .auto-place-launch,.auto-place-preview-item,
-  .generated-day,.planner-toolbar,.planner-composer,.planned-activity,.saved-place,
-  .day-tab,.day-item,.past-days-strip,.trip-calendar-shell,
-  .document-vault,.document-vault-panel,.doc-row,.vault-status,.ai-notes-panel,
-  .budget-hero,.budget-overview,.budget-chart-card,.budget-category,.budget-category-row,
-  .expense-workspace,.expense-form,.expense,.expense-row,.expense-live-summary,
-  .receipt-card,.receipt-item,.currency-insight,.currency-converter,
-  .transport-card,.transport-search,.transport-result,.service-card,.fare-card,
-  .external-resources,.car-rental-card,.getaway-result,
-  .group-card,.group-chat,.group-members,.message,.message-place-card,.shared-place-card,
-  .invite-card,.album-card,.album-panel,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.resource-link,.network-usage-panel,.gps-consent-card,
-  .weather-insight,.weather-live-day
-){
-  border:1px solid var(--tm-app-glass-border)!important;
-  border-radius:16px!important;
-  outline:0!important;
-  background:var(--tm-app-glass-card)!important;
-  color:var(--tm-app-glass-text)!important;
-  box-shadow:var(--tm-app-glass-shadow)!important;
-  -webkit-backdrop-filter:var(--tm-material-blur,blur(18px) saturate(135%))!important;
-  backdrop-filter:var(--tm-material-blur,blur(18px) saturate(135%))!important
-}
-html body.tm-new-design main.content :is(
-  .section-head,.quick-grid>.card,.trip-home-actions a,
-  .card,.panel,.module,.plan-card,.place-card,.tip-card,.summary-card,.auto-card,
-  .auto-place-launch,.auto-place-preview-item,
-  .generated-day,.planner-toolbar,.planner-composer,.planned-activity,.saved-place,
-  .day-tab,.day-item,.past-days-strip,.trip-calendar-shell,
-  .document-vault,.document-vault-panel,.doc-row,.vault-status,.ai-notes-panel,
-  .budget-hero,.budget-overview,.budget-chart-card,.budget-category,.budget-category-row,
-  .expense-workspace,.expense-form,.expense,.expense-row,.expense-live-summary,
-  .receipt-card,.receipt-item,.currency-insight,.currency-converter,
-  .transport-card,.transport-search,.transport-result,.service-card,.fare-card,
-  .external-resources,.car-rental-card,.getaway-result,
-  .group-card,.group-chat,.group-members,.message,.message-place-card,.shared-place-card,
-  .invite-card,.album-card,.album-panel,.memory-card,.trip-summary-card,
-  .smart-tool-panel,.resource-link,.network-usage-panel,.gps-consent-card,
-  .weather-insight,.weather-live-day
-) :where(h1,h2,h3,h4,h5,h6,p,strong,b,span,small,label,time):not(.nearby-category-drawer *):not(.maplibregl-map *){
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important;
-  opacity:1
-}
-html body.tm-new-design main.content :is(
-  .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-  .doc-row,.expense,.expense-row,.transport-card,.service-card,.getaway-result,
-  .group-card,.album-card,.memory-card,.trip-summary-card
-) :where(.muted,[class*="subtitle"],[class*="description"],small){
-  color:var(--tm-app-glass-muted)!important;
-  -webkit-text-fill-color:var(--tm-app-glass-muted)!important
-}
-html body.tm-new-design main.content :is(
-  .planned-activity,.saved-place,.doc-row,.expense-row,
-  .receipt-card,.transport-result,.message,.memory-card
-){
-  background:var(--tm-app-glass-card-strong)!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) main.content :is(input,select,textarea){
-  border:1px solid rgba(214,241,230,.66)!important;
-  background:rgba(247,255,251,.91)!important;
-  color:#123f32!important;
-  -webkit-text-fill-color:#123f32!important;
-  box-shadow:inset 0 1px 0 #fff,0 5px 14px rgba(0,34,24,.09)!important
-}
-html body.tm-new-design main.content :is(input,textarea)::placeholder{
-  color:#5e746b!important;
-  -webkit-text-fill-color:#5e746b!important;
-  opacity:1!important
-}
 html body.tm-new-design main.content select option{
   background:#f7fffb!important;
   color:#123f32!important
 }
-html body.home-page.is-authenticated main.content :is(
-  .trip-area-head,.trip-archive,.home-about,.module,.add-destination
-){
-  border:1px solid var(--tm-app-glass-border)!important;
-  border-radius:18px!important;
-  background:var(--tm-app-glass-card)!important;
-  color:var(--tm-app-glass-text)!important;
-  box-shadow:var(--tm-app-glass-shadow)!important;
-  -webkit-backdrop-filter:blur(18px) saturate(135%)!important;
-  backdrop-filter:blur(18px) saturate(135%)!important
-}
-html body.home-page.is-authenticated main.content :is(
-  .trip-area-head,.trip-archive,.home-about,.module,.add-destination
-) :where(h1,h2,h3,p,strong,b,span,small,label){
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important;
-  opacity:1!important
-}
-@media(max-width:650px){
-  html body.tm-new-design main.content>section.section:not(.hero):not(#places){
-    border-radius:17px!important
-  }
-  html body.tm-new-design main.content :is(
-    .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-    .doc-row,.expense,.expense-row,.receipt-card,
-    .transport-card,.service-card,.getaway-result,.group-card,.album-card,.memory-card
-  ){
-    border-color:rgba(226,255,244,.5)!important;
-    border-radius:15px!important
-  }
-}
-
-/* 1.43.1 final authority — the clear weather edge wins over legacy layers. */
-html body.tm-new-design main.content :is(
-  .section-head,.quick-grid>.card,.trip-home-actions a,.card,.panel,.module,
-  .plan-card,.place-card,.tip-card,.summary-card,.auto-card,
-  .auto-place-launch,.auto-place-preview-item,.generated-day,
-  .planner-toolbar,.planner-composer,.planned-activity,.saved-place,.day-tab,.day-item,
-  .past-days-strip,.trip-calendar-shell,.document-vault,.document-vault-panel,.doc-row,
-  .vault-status,.ai-notes-panel,.budget-hero,.budget-overview,.budget-chart-card,
-  .budget-category,.budget-category-row,.expense-workspace,.expense-form,.expense,
-  .expense-row,.expense-live-summary,.receipt-card,.receipt-item,.currency-insight,
-  .currency-converter,.transport-card,.transport-search,.transport-result,.service-card,
-  .fare-card,.external-resources,.car-rental-card,.getaway-result,.group-card,.group-chat,
-  .group-members,.message,.message-place-card,.shared-place-card,.invite-card,.album-card,
-  .album-panel,.memory-card,.trip-summary-card,.smart-tool-panel,.resource-link,
-  .network-usage-panel,.gps-consent-card,.weather-insight,.weather-live-day,
-  .auto-place-dialog,.auto-place-dialog-body,.auto-place-build,.auto-place-choice,
-  .auto-place-details,.auto-place-empty,.auto-place-preview,.auto-place-preview-day,
-  .auto-place-preview-empty-day,.auto-place-status,.auto-place-stay-dates,
-  .budget-columns-editor,.budget-category-editor,.budget-subcategories,
-  .budget-subcategory-row,.budget-chart-row,.budget-chart-summary,.budget-chart-empty,
-  .expense-record,.expense-record-body,.expense-record-empty,.expense-category-group,
-  .expense-category-items,.receipt-form,.receipt-grid,.receipt-preview,.receipt-source,
-  .currency-converter-grid,.currency-converter-result,.transport-search-card,
-  .transport-layout,.transport-empty,.transport-note,.transport-results,
-  .transport-results-head,.official-fares,.fare-row,.service-section,.service-grid,
-  .service-form,.service-status,.getaway-results,.collaboration-grid,.collaboration-live,
-  .collaboration-signed-out,.group-composer,.chat-empty,.chat-place-dialog,
-  .chat-place-hero,.chat-place-list,.chat-place-empty,.member-list,.invite-dialog,
-  .invite-result,.invite-status,.memory-layout,.memory-list,.memory-attachments,
-  .memory-file-selection,.trip-summary-text,.trip-experience-empty,.vault-auth,
-  .vault-drop,.vault-list,.vault-session,.vault-storage,.vault-summary,.vault-preview,
-  .vault-preview-body,.vault-preview-unavailable,.vault-pdf-viewer,.doc-category-file,
-  .ai-notes-archive,.ai-notes-empty,.trip-calendar-dialog,.trip-calendar-toolbar,
-  .trip-calendar-days,.trip-calendar-empty,.place-directions-dialog,
-  .place-directions-body,.directions-origin-options,.directions-custom-origin,
-  .directions-note,.place-share-dialog,.place-share-checklist,.place-share-note,
-  .place-share-status,.smart-form,.smart-list,.smart-status,.weather-live-modal,
-  .weather-live-grid
-),
-html body.tm-new-design :is(.modal,.about-dialog,.ai-panel,.cloud-account-split),
-html body.home-page.is-authenticated main.content :is(
-  .trip-area-head,.trip-archive,.home-about,.module,.add-destination
-){
-  border:1.5px solid var(--tm-weather-unified-border)!important;
-  background:var(--tm-weather-unified-bg)!important;
-  color:var(--tm-weather-unified-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
-  box-shadow:var(--tm-weather-unified-shadow)!important
-}
-@media(max-width:650px){
-  html body.tm-new-design main.content :is(
-    .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-    .doc-row,.expense-record,.receipt-card,.transport-card,
-    .service-card,.getaway-result,.group-card,.album-card,.memory-card,
-    .auto-place-preview-item,.weather-live-day,.auto-place-dialog,.trip-calendar-dialog,
-    .place-directions-dialog,.place-share-dialog,.invite-dialog,.weather-live-modal
-  ){border-width:2px!important}
-}
-
 /* 1.44.1 final authority — budget controls stay inside the mobile viewport. */
 html body.tm-new-design main.content #budget .budget-limit-mode input[type="radio"]{
   position:absolute!important;
@@ -4617,178 +3062,4 @@ html body.tm-new-design main.content #budget .budget-limit-mode input[type="radi
     grid-column:1/-1!important;
     width:100%!important
   }
-}
-
-/* 1.50.2 absolute final authority: no light text on light weather glass. */
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places),
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-  .auto-place-launch,.auto-place-dialog,.planner-toolbar,
-  .planner-composer,.trip-anchor,.doc-row,.document-vault,.expense-workspace,
-  .expense-record,.receipt-card,.budget-charts,.currency-converter,.transport-card,
-  .travel-service-card,.service-card,.fare-guide,.getaway-result,.external-resources,
-  .group-card,.album-card,.memory-card,.trip-summary-card,.resource-link
-),
-html body.tm-new-design :is(
-  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
-  .place-directions-dialog,.place-share-dialog,.trip-map-dialog>div,.trip-logout-dialog>div,
-  .floating-logout-dialog>div,.ai-panel,.smart-hub-modal,.cloud-account-split
-){
-  border-color:rgba(255,255,255,.68)!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(232,240,234,.72))!important;
-  color:#26332e!important;
-  -webkit-text-fill-color:#26332e!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.86),0 14px 34px rgba(12,42,32,.14)!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li):not(.maplibregl-map *):not(.nearby-category-drawer *),
-html body.tm-new-design :is(
-  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
-  .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
-  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split
-) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li){
-  color:#26332e!important;
-  -webkit-text-fill-color:#26332e!important;
-  text-shadow:none!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(input,select,textarea),
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal) :is(input,select,textarea){
-  border-color:rgba(38,79,64,.42)!important;
-  background:#fff!important;
-  color:#17231f!important;
-  -webkit-text-fill-color:#17231f!important;
-  caret-color:#17231f!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(input,textarea)::placeholder,
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal) :is(input,textarea)::placeholder{
-  color:#748079!important;
-  -webkit-text-fill-color:#748079!important;
-  opacity:1!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(.primary,.nearby-search,.lodging-actions button,.trip-anchor>a),
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog) :is(.primary,button[type="submit"]){
-  border-color:#0e614b!important;
-  background:#0e614b!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(.primary,.nearby-search,.lodging-actions button,.trip-anchor>a) *,
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog) :is(.primary,button[type="submit"]) *{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-html body.tm-new-design :is(.about-close,.modal-close,.invite-close,.trip-calendar-dialog>header button,.place-directions-dialog header button,.place-share-dialog header button){
-  border-color:rgba(38,79,64,.28)!important;
-  background:#fff!important;
-  color:#26332e!important;
-  -webkit-text-fill-color:#26332e!important
-}
-
-/* 1.50.3 — restore the readable dark weather-glass language after the light-theme regression. */
-html body.tm-new-design{
-  --tm-weather-unified-bg:var(--tm-card-bg);
-  --tm-weather-unified-bg-strong:var(--tm-card-bg-hover);
-  --tm-weather-unified-border:var(--tm-card-border);
-  --tm-weather-unified-border-hover:var(--tm-card-border-hover);
-  --tm-weather-unified-text:var(--tm-card-text);
-  --tm-weather-unified-muted:var(--tm-card-muted);
-  --tm-weather-unified-shadow:var(--tm-card-shadow)
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places),
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-  .auto-place-launch,.auto-place-dialog,.planner-toolbar,
-  .planner-composer,.trip-anchor,.doc-row,.document-vault,.expense-workspace,
-  .expense-record,.receipt-card,.budget-charts,.currency-converter,.transport-card,
-  .travel-service-card,.service-card,.fare-guide,.getaway-result,.external-resources,
-  .group-card,.album-card,.memory-card,.trip-summary-card,.resource-link,
-  .day-heading,.day-tab,.lodging-day-card,.airport-day-card
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *
-),
-html body.tm-new-design :is(
-  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
-  .place-directions-dialog,.place-share-dialog,.trip-map-dialog>div,.trip-logout-dialog>div,
-  .floating-logout-dialog>div,.ai-panel,.smart-hub-modal,.cloud-account-split
-){
-  border:1.5px solid var(--tm-weather-unified-border)!important;
-  background:var(--tm-weather-unified-bg)!important;
-  color:var(--tm-weather-unified-text)!important;
-  -webkit-text-fill-color:var(--tm-weather-unified-text)!important;
-  box-shadow:var(--tm-weather-unified-shadow)!important;
-  text-shadow:0 1px 7px rgba(0,24,18,.42)!important;
-  opacity:1!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-  .auto-place-launch,.auto-place-dialog,.planner-toolbar,
-  .planner-composer,.trip-anchor,.doc-row,.document-vault,.expense-workspace,
-  .expense-record,.receipt-card,.budget-charts,.currency-converter,.transport-card,
-  .travel-service-card,.service-card,.fare-guide,.getaway-result,.external-resources,
-  .group-card,.album-card,.memory-card,.trip-summary-card,.resource-link,
-  .day-heading,.day-tab,.lodging-day-card,.airport-day-card
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li):not(.maplibregl-map *):not(.nearby-category-drawer *),
-html body.tm-new-design :is(
-  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
-  .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
-  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split
-) :is(h1,h2,h3,h4,h5,h6,p,small,span,strong,b,label,legend,time,li){
-  color:var(--tm-card-text)!important;
-  -webkit-text-fill-color:var(--tm-card-text)!important;
-  opacity:1!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(input,select,textarea),
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal) :is(input,select,textarea){
-  border:1px solid rgba(212,242,229,.72)!important;
-  background:rgba(248,255,252,.95)!important;
-  color:#173c31!important;
-  -webkit-text-fill-color:#173c31!important;
-  caret-color:#173c31!important;
-  text-shadow:none!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(input,textarea)::placeholder,
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal) :is(input,textarea)::placeholder{
-  color:#64786f!important;
-  -webkit-text-fill-color:#64786f!important;
-  opacity:1!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  button:not(.primary):not([type="submit"]):not([data-delete-ai-note]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
-):not(.maplibregl-map *):not(.trip-home-actions a):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
-  border-color:rgba(210,241,228,.78)!important;
-  background:rgba(244,255,250,.94)!important;
-  color:#15523f!important;
-  -webkit-text-fill-color:#15523f!important;
-  text-shadow:none!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  button:not(.primary):not([type="submit"]):not([data-delete-ai-note]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
-):not(.maplibregl-map *):not(.trip-home-actions a):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) *{
-  color:inherit!important;
-  -webkit-text-fill-color:inherit!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  .primary,button[type="submit"],.nearby-search,.official-fares,.lodging-actions button,.trip-anchor>a,
-  .lodging-navigate,.airport-navigate
-),
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog) :is(.primary,button[type="submit"]){
-  border-color:rgba(130,231,190,.82)!important;
-  background:linear-gradient(135deg,#087453,#0d6149)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  text-shadow:0 1px 4px rgba(0,30,21,.45)!important
-}
-html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  .primary,button[type="submit"],.nearby-search,.official-fares,.lodging-actions button,.trip-anchor>a,
-  .lodging-navigate,.airport-navigate
-) *,
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog) :is(.primary,button[type="submit"]) *{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-@media(max-width:650px){
-  html body.tm-new-design main.content>section:not(.hero):not(#places),
-  html body.tm-new-design main.content>section:not(.hero):not(#places) :is(
-    .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
-    .doc-row,.expense-record,.receipt-card,.transport-card,
-    .service-card,.getaway-result,.group-card,.album-card,.memory-card,.day-heading,.day-tab
-  ){border-width:2px!important}
 }

@@ -123,18 +123,3 @@ html body #modal-weather-live .modal-close{
     justify-content:flex-start!important
   }
 }
-
-html body .weather-top-icon{
-  position:relative!important;
-  grid-template-rows:1fr auto!important;
-  gap:0!important
-}
-html body .weather-top-icon small{
-  display:block!important;
-  margin-top:-3px!important;
-  font-size:9px!important;
-  font-weight:950!important;
-  line-height:1!important;
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important
-}
