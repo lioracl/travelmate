@@ -367,22 +367,6 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
   -webkit-backdrop-filter:none!important;
 }
 
-/* Places: match the automatic-fill launcher to the trip weather glass card. */
-body.tm-new-design[data-trip-view="places"] #places .auto-place-launch{
-  border:3px solid rgba(114,225,180,.95)!important;
-  outline:2px solid rgba(255,255,255,.58)!important;
-  outline-offset:3px!important;
-  border-radius:14px!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.2))!important;
-  color:#fff!important;
-  box-shadow:0 0 0 5px rgba(21,132,94,.22),0 16px 38px rgba(0,35,26,.26),inset 0 1px 0 rgba(255,255,255,.62)!important;
-  backdrop-filter:blur(22px) saturate(145%)!important;
-  -webkit-backdrop-filter:blur(22px) saturate(145%)!important;
-  text-shadow:0 1px 10px rgba(0,0,0,.24);
-}
-body.tm-new-design[data-trip-view="places"] #places .auto-place-launch small{
-  color:inherit!important;
-}
 /* Critical plan media sizing: prevents full-size images before feature CSS arrives. */
 #plan .saved-place-image,#plan .planned-activity img,#plan .activity-image{display:block;width:96px;height:96px;max-width:96px;max-height:96px;object-fit:cover;border-radius:12px;background:#dfeee6}
 @media(max-width:650px){#plan .saved-place-image,#plan .planned-activity img,#plan .activity-image{width:78px;height:78px;max-width:78px;max-height:78px}}

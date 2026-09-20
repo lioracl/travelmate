@@ -223,10 +223,7 @@ body.tm-new-design #trip-home-actions-title{
 }
 
 
-/* Keep all trip-page typography bright over destination photography. */
-body.tm-new-design .content :where(
-  h1,h2,h3,h4,h5,h6,p,small,strong,span,label,legend,li,dt,dd,time
-):not(button *):not(a *):not(.weather-top-widget):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .weather-top-widget *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-overview-summary *):not(body[data-trip-kind="custom"][data-trip-view="overview"] .trip-home-actions *):not(body[data-trip-kind="custom"][data-trip-view="places"] #places *):not(.ai-notes-archive *),
+/* Sidebar labels sit on the photo shell; page content follows its own material contract. */
 body.tm-new-design .sidebar :where(a,button,span,small,strong){
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
@@ -2629,10 +2626,6 @@ html body.tm-new-design[data-trip-view="memories"][data-trip-view] main.content 
   text-shadow:none!important
 }
 /* 1.35.8 — a calm card with an unmistakable edge. */
-html body.tm-new-design[data-trip-view="places"] main.content #places .auto-place-launch{
-  border:3px solid #0d7653!important;
-  box-shadow:0 0 0 1px rgba(255,255,255,.46),0 12px 30px rgba(0,43,31,.2),inset 0 1px 0 rgba(255,255,255,.72)!important
-}
 
 /* 1.39.1 — action labels stay readable over dark glass and photo backgrounds. */
 html body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button{
