@@ -436,7 +436,7 @@
   }
 
   function enqueueTripSave(snapshot, expectedUserId) {
-    var id = saveIdentity(snapshot);
+    var id = tripIdentity(snapshot, expectedUserId);
     if (isTripDeleted(snapshot, expectedUserId)) return Promise.resolve({ saved: false, reason: 'DELETED' });
     var previous = saveChains.get(id) || Promise.resolve();
     var current = previous.catch(function () {}).then(function () { return performTripSave(snapshot, expectedUserId); });
@@ -459,8 +459,8 @@
   }
 
   function deleteTrip(trip, expectedUserId) {
-    var id = saveIdentity(trip);
     expectedUserId = expectedUserId || activeUserId();
+    var id = tripIdentity(trip, expectedUserId);
     if (expectedUserId) assertActiveUser(expectedUserId);
     var deletionKey = deletionIdentity(trip, expectedUserId);
     var timerKey = tripIdentity(trip, expectedUserId);
