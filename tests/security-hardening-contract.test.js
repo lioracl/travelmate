@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const migration = fs.readFileSync(
-  path.join(root, 'supabase/migrations/20260921123000_safety_pack_3_mfa_permissions.sql'),
+  path.join(root, 'supabase/migrations/20260921124726_safety_pack_3_mfa_permissions.sql'),
   'utf8'
 );
 const adminCenter = fs.readFileSync(
