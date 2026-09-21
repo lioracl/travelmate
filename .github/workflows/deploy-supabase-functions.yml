@@ -1,19 +1,24 @@
 name: Deploy TravelMate Supabase Functions
 
 on:
-  push:
-    branches: [main, preview]
-    paths:
-      - 'supabase/functions/**'
-      - 'supabase/config.toml'
-      - '.github/workflows/deploy-supabase-functions.yml'
   workflow_dispatch:
+    inputs:
+      function:
+        description: Function to deploy to TravelMate production
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - travel-assistant
+          - admin-center
 
 permissions:
   contents: read
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/preview'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,7 +29,25 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy travel assistant
-        run: supabase functions deploy travel-assistant --project-ref hyaebqvwvdnbmvijnjcf
+      - name: Deploy selected function
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ inputs.function }}" in
+            travel-assistant)
+              supabase functions deploy travel-assistant --project-ref hyaebqvwvdnbmvijnjcf
+              ;;
+            admin-center)
+              supabase functions deploy admin-center --project-ref hyaebqvwvdnbmvijnjcf
+              ;;
+            all)
+              supabase functions deploy travel-assistant --project-ref hyaebqvwvdnbmvijnjcf
+              supabase functions deploy admin-center --project-ref hyaebqvwvdnbmvijnjcf
+              ;;
+            *)
+              echo "Unsupported function selection" >&2
+              exit 2
+              ;;
+          esac
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

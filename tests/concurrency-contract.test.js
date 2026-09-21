@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const { execFileSync } = require('node:child_process');
 
 const root = path.resolve(__dirname, '..');
-const migrationPath = path.join(root, 'supabase/migrations/20260913190000_trip_revision_and_tombstones.sql');
+const migrationPath = path.join(root, 'supabase/migrations/20260914041455_trip_revision_and_tombstones.sql');
 
 function revisionServer(initial) {
   let row = initial ? structuredClone(initial) : null;
