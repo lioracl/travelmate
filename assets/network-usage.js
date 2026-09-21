@@ -15,6 +15,7 @@
   var manualMode = localStorage.getItem(MODE_KEY) || 'auto';
   var meter;
   var panel;
+  var usageFlushTimer = null;
 
   function todayKey() {
     var now = new Date();
@@ -69,13 +70,26 @@
     return (bytes / 1024 / 1024 / 1024).toFixed(2) + ' GB';
   }
 
+  function flushUsage() {
+    if (usageFlushTimer) {
+      clearTimeout(usageFlushTimer);
+      usageFlushTimer = null;
+    }
+    saveUsage();
+    render();
+  }
+
+  function scheduleUsageFlush() {
+    if (usageFlushTimer) return;
+    usageFlushTimer = setTimeout(flushUsage, 350);
+  }
+
   function addBytes(bytes) {
     bytes = Number(bytes || 0);
     if (bytes <= 0) return;
     ensureToday();
     state.bytes += bytes;
-    saveUsage();
-    render();
+    scheduleUsageFlush();
   }
 
   function addEntry(entry) {
@@ -245,6 +259,10 @@
         return;
       }
       if (event.target.closest('[data-network-reset]')) {
+        if (usageFlushTimer) {
+          clearTimeout(usageFlushTimer);
+          usageFlushTimer = null;
+        }
         state = { date: todayKey(), bytes: 0 };
         saveUsage();
         render();
@@ -386,6 +404,7 @@
 
   window.addEventListener('online', render);
   window.addEventListener('offline', render);
+  window.addEventListener('pagehide', function () { if (usageFlushTimer) flushUsage(); });
   if (connection && connection.addEventListener) connection.addEventListener('change', render);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
   function init() {

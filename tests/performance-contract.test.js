@@ -40,3 +40,20 @@ test('place auto fill caches identical Overpass queries and aborts losing mirror
   assert.match(source, /overpassCache\.get\(query\)/);
   assert.match(source, /controllerIndex !== index[\s\S]*controller\.abort\(\)/);
 });
+
+
+test('legacy sidebar scroll work is coalesced to one animation frame', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.match(source, /function scheduleLegacySidebar\(\)/);
+  assert.match(source, /requestAnimationFrame\(function\(\)\{legacySidebarFrame=0;syncLegacySidebar\(\)\}\)/);
+  assert.match(source, /addEventListener\('scroll',scheduleLegacySidebar/);
+});
+
+test('network usage persistence is batched instead of writing on every resource', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/network-usage.js'), 'utf8');
+  assert.match(source, /var usageFlushTimer = null/);
+  assert.match(source, /function scheduleUsageFlush\(\)/);
+  assert.match(source, /usageFlushTimer = setTimeout\(flushUsage, 350\)/);
+  assert.match(source, /state\.bytes \+= bytes;\s*scheduleUsageFlush\(\)/);
+  assert.match(source, /addEventListener\('pagehide'[\s\S]*flushUsage\(\)/);
+});
