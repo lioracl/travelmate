@@ -1,6 +1,6 @@
 /* Final visual authority. This file is deliberately promoted to the end of <head>. */
 :root{
-  --tm-readable-surface:linear-gradient(135deg,rgba(16,30,34,.36),rgba(18,56,63,.3));
+  --tm-readable-surface:var(--tm-glass-large-bg);
   --tm-readable-surface-soft:rgba(16,30,34,.2);
   --tm-readable-border:rgba(255,255,255,.24);
   --tm-readable-text:#F7FAFA;
@@ -624,8 +624,8 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.36),rgba(18,56,63,.3));
   --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.4),rgba(18,56,63,.34));
   --tm-weather-card-text:#F7FAFA;
-  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.28),rgba(18,56,63,.22));
-  --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.32),rgba(18,56,63,.26));
+  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.22),rgba(18,56,63,.18));
+  --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.26),rgba(18,56,63,.22));
   --tm-card-bg:var(--tm-glass-large-bg);
   --tm-card-bg-nested:rgba(16,30,34,.08);
   --tm-card-bg-compact:rgba(16,30,34,.06);
@@ -705,7 +705,7 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-control-surface:rgba(255,255,255,.88)
 }
 html[data-theme="dark"]{
-  --tm-readable-surface:linear-gradient(135deg,rgba(16,30,34,.36),rgba(18,56,63,.3));
+  --tm-readable-surface:var(--tm-glass-large-bg);
   --tm-readable-surface-soft:rgba(16,30,34,.14);
   --tm-readable-border:rgba(244,247,247,.24);
   --tm-readable-text:#F7FAFA;
@@ -716,8 +716,8 @@ html[data-theme="dark"]{
   --tm-weather-card-text:#F7FAFA;
   --tm-weather-card-background:var(--tm-weather-card-bg);
   --tm-weather-card-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 30px rgba(0,0,0,.2);
-  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.36),rgba(18,56,63,.3));
-  --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.4),rgba(18,56,63,.34));
+  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.26),rgba(18,56,63,.22));
+  --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.3),rgba(18,56,63,.26));
   --tm-card-bg:var(--tm-glass-large-bg);
   --tm-card-bg-nested:rgba(16,30,34,.14);
   --tm-card-bg-compact:rgba(16,30,34,.1);
@@ -1148,7 +1148,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-photo-scrim-start:rgba(18,56,63,.08);
   --tm-photo-scrim-mid:rgba(18,56,63,.11);
   --tm-photo-scrim-end:rgba(18,56,63,.14);
-  --tm-overview-card:var(--tm-weather-card-bg);
+  --tm-overview-card:var(--tm-glass-large-bg);
   --tm-overview-card-soft:var(--tm-surface-dark-glass-soft);
   --tm-overview-border:var(--tm-border-on-dark);
   --tm-overview-text:var(--tm-text-on-photo);
@@ -1158,10 +1158,10 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.14),rgba(16,30,34,.16));
   --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.16),rgba(16,30,34,.18));
   --tm-weather-card-text:var(--tm-text-on-photo);
-  --tm-card-bg:var(--tm-weather-card-bg);
+  --tm-card-bg:var(--tm-glass-large-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
   --tm-card-bg-compact:rgba(16,30,34,.06);
-  --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
+  --tm-card-bg-hover:var(--tm-glass-large-bg-hover);
   --tm-card-text:var(--tm-text-on-photo);
   --tm-card-heading:var(--tm-text-on-photo);
   --tm-card-secondary:var(--tm-text-on-photo-secondary);
@@ -1179,7 +1179,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-card-control-selected:rgba(169,220,231,.48);
   --tm-card-blur:none;
   --tm-weather-card-blur:blur(7px) saturate(104%);
-  --tm-custom-overview-surface:var(--tm-weather-card-bg);
+  --tm-custom-overview-surface:var(--tm-glass-large-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-overview-green-soft:var(--tm-card-control-selected);
   --tm-card-bg:var(--tm-custom-overview-surface);
@@ -1253,7 +1253,7 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-photo-scrim-start:rgba(18,56,63,.1);
   --tm-photo-scrim-mid:rgba(18,56,63,.13);
   --tm-photo-scrim-end:rgba(18,56,63,.16);
-  --tm-overview-card:var(--tm-weather-card-bg);
+  --tm-overview-card:var(--tm-glass-large-bg);
   --tm-overview-card-soft:var(--tm-surface-dark-glass-soft);
   --tm-overview-border:var(--tm-border-on-dark);
   --tm-overview-text:var(--tm-text-on-photo);
@@ -1268,10 +1268,10 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-card-muted:var(--tm-text-on-photo-muted);
   --tm-card-link:var(--tm-brand-soft);
   --tm-card-icon:var(--tm-brand-soft);
-  --tm-card-bg:var(--tm-weather-card-bg);
+  --tm-card-bg:var(--tm-glass-large-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
   --tm-card-bg-compact:rgba(16,30,34,.06);
-  --tm-card-bg-hover:var(--tm-weather-card-bg-hover);
+  --tm-card-bg-hover:var(--tm-glass-large-bg-hover);
   --tm-card-border:var(--tm-border-on-dark);
   --tm-card-border-hover:var(--tm-brand-primary);
   --tm-card-shadow:0 6px 18px rgba(0,0,0,.16);
@@ -1450,7 +1450,6 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-link:var(--tm-brand-primary);
   --tm-card-icon:var(--tm-brand-primary);
-  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.12),rgba(16,30,34,.15));
   --tm-card-bg:var(--tm-glass-large-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
   --tm-card-bg-compact:rgba(16,30,34,.06);
@@ -1475,7 +1474,6 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-photo-scrim-start:rgba(24,35,38,.1);
   --tm-photo-scrim-mid:rgba(24,35,38,.13);
   --tm-photo-scrim-end:rgba(24,35,38,.16);
-  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.14),rgba(16,30,34,.17));
   --tm-card-bg:var(--tm-glass-large-bg);
   --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
   --tm-card-bg-compact:rgba(16,30,34,.06);
