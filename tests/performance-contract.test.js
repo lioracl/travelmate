@@ -100,3 +100,26 @@ test('collaboration keeps long realtime chat sessions bounded in memory', () => 
   assert.match(source, /listTripMessages[\s\S]*slice\(-MESSAGE_LIMIT\)/);
   assert.ok((source.match(/state\.messages = state\.messages\.slice\(-MESSAGE_LIMIT\)/g) || []).length >= 2);
 });
+
+test('trip feature loader inherits the active app asset version and defers noncritical structure', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.match(source, /new URL\(appScript\.src,location\.href\)\.searchParams\.get\('v'\)/);
+  assert.doesNotMatch(source, /var version='20260921-14'/);
+  assert.match(source, /deferredStructureScripts=\['trip-experience\.js','about\.js'\]/);
+  assert.match(source, /requestIdleCallback\(run,\{timeout:1800\}\)/);
+});
+
+test('Turnstile is armed on auth interaction instead of loading at startup', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/security-center.js'), 'utf8');
+  assert.match(source, /function armCaptcha\(\)/);
+  assert.match(source, /\[data-cloud-auth-form\],\[data-cloud-account-open\]/);
+  assert.match(source, /wire\(\); armCaptcha\(\)/);
+  assert.doesNotMatch(source, /wire\(\); setupCaptcha\(\)/);
+});
+
+test('getaway destination geocoding waits for the first search submit', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/travel-services.js'), 'utf8');
+  assert.match(source, /async function ensureCoords\(\)/);
+  assert.match(source, /form\.addEventListener\('submit'[\s\S]*await ensureCoords\(\)/);
+  assert.doesNotMatch(source, /coords=null;geocode\(trip\.city/);
+});
