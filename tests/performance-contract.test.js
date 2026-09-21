@@ -142,3 +142,18 @@ test('service worker precaches startup essentials and runtime-caches feature-onl
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/transport-planner\.js'/);
   assert.match(serviceWorker, /freshAsset[\s\S]*networkFirst\(event\.request\)/);
 });
+
+test('versioned local assets use cache-first because the version is part of the URL', () => {
+  assert.match(serviceWorker, /async function cacheFirstVersioned/);
+  assert.match(serviceWorker, /versionedAsset=freshAsset&&url\.searchParams\.has\('v'\)/);
+  assert.match(serviceWorker, /versionedAsset[\s\S]*cacheFirstVersioned\(event\.request\)/);
+});
+
+test('Overpass mirrors are hedged instead of both starting immediately', () => {
+  const autoFill = fs.readFileSync(path.join(root, 'assets/place-auto-fill.js'), 'utf8');
+  assert.match(nearby, /delayTimer=setTimeout\(start,900\*index\)/);
+  assert.match(autoFill, /delayTimer = setTimeout\(startRequest, 900 \* index\)/);
+  assert.match(nearby, /if\(index===0\)start\(\)/);
+  assert.match(autoFill, /if \(index === 0\) startRequest\(\)/);
+});
+
