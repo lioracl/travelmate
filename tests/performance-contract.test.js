@@ -76,3 +76,20 @@ test('network usage meter does not clone response bodies solely to measure unkno
   assert.match(source, /content-length/);
   assert.doesNotMatch(source, /response\.clone\(\)\.blob\(\)/);
 });
+
+test('nearby caps supplemental Wikipedia latency and bounds in-memory caches', () => {
+  assert.match(nearby, /wikipediaGroupsWithinBudget/);
+  assert.match(nearby, /budgetMs \|\| 1800/);
+  assert.match(nearby, /resultCacheLimit = 12/);
+  assert.match(nearby, /while \(resultCache\.size >= resultCacheLimit\)/);
+  assert.match(nearby, /placeMediaCacheLimit = 120/);
+  assert.match(nearby, /while \(placeMediaCache\.size >= placeMediaCacheLimit\)/);
+});
+
+test('place auto fill evicts expired and excess search and image cache entries', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/place-auto-fill.js'), 'utf8');
+  assert.match(source, /overpassCacheLimit = 12/);
+  assert.match(source, /while \(overpassCache\.size >= overpassCacheLimit\)/);
+  assert.match(source, /placeImageCacheLimit = 120/);
+  assert.match(source, /while \(placeImageCache\.size >= placeImageCacheLimit\)/);
+});
