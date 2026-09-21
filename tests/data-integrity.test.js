@@ -736,3 +736,149 @@ test('clear device data removes TravelMate local state and TravelMate caches but
   assert.deepEqual(removedSessionKeys, ['travelmate-pending-invite']);
   assert.deepEqual(deletedCaches.sort(), ['travelmate-smart-v145', 'travelmate-smart-v146']);
 });
+
+
+test('full sync removes a shared trip after membership access is revoked', async () => {
+  const shared = { id: 'revoked-shared', ownerId: 'owner-2', country: 'Test', city: 'Cached', start: '2026-01-01', end: '2026-01-02', days: 1, syncStatus: 'synced', cloudUpdatedAt: '2026-09-20T10:00:00.000Z' };
+  const storage = new Map([
+    ['travelmate-active-user', 'user-1'],
+    ['travelmate-trips', JSON.stringify([shared])]
+  ]);
+  const client = {
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }) },
+    from(table) {
+      assert.equal(table, 'travel_trips');
+      const query = { select() { return query; }, order: async () => ({ error: null, data: [] }) };
+      return query;
+    },
+    rpc: async (name) => {
+      if (name === 'list_travel_trip_tombstones') return { error: null, data: [] };
+      throw new Error('Unexpected RPC: ' + name);
+    }
+  };
+  const context = {
+    console, setTimeout, clearTimeout,
+    CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
+    localStorage: {
+      getItem: (key) => storage.has(key) ? storage.get(key) : null,
+      setItem: (key, value) => storage.set(key, value),
+      removeItem: (key) => storage.delete(key)
+    },
+    window: { __travelMateSupabaseClient: client, dispatchEvent() {}, addEventListener() {} },
+    document: {}
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  const synced = await context.window.TravelMateCloud.syncLocalTrips();
+  assert.equal(synced.length, 0);
+  assert.equal(JSON.parse(storage.get('travelmate-trips')).length, 0);
+});
+
+test('viewer downgrade discards a newer unauthorized local edit and restores the cloud trip', async () => {
+  const local = { id: 'viewer-trip', ownerId: 'owner-2', country: 'Test', city: 'Unauthorized local edit', start: '2026-01-01', end: '2026-01-02', days: 1, updatedAt: '2026-09-21T14:00:00.000Z', cloudUpdatedAt: '2026-09-21T12:00:00.000Z', cloudRevision: 4, syncStatus: 'failed' };
+  const cloudRow = { user_id: 'owner-2', id: 'viewer-trip', country: 'Test', city: 'Authoritative cloud', start_date: '2026-01-01', end_date: '2026-01-02', budget: 0, trip_type: 'solo', days: 1, payload: { city: 'Authoritative cloud', updatedAt: '2026-09-21T13:00:00.000Z' }, updated_at: '2026-09-21T13:00:00.000Z', revision: 5 };
+  const storage = new Map([
+    ['travelmate-active-user', 'user-1'],
+    ['travelmate-trips', JSON.stringify([local])]
+  ]);
+  let saveCalls = 0;
+  const client = {
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }) },
+    from(table) {
+      assert.equal(table, 'travel_trips');
+      const query = { select() { return query; }, order: async () => ({ error: null, data: [cloudRow] }) };
+      return query;
+    },
+    rpc: async (name) => {
+      if (name === 'list_travel_trip_tombstones') return { error: null, data: [] };
+      if (name === 'can_edit_trip') return { error: null, data: false };
+      if (name === 'save_travel_trip') { saveCalls += 1; return { error: null, data: [] }; }
+      throw new Error('Unexpected RPC: ' + name);
+    }
+  };
+  const context = {
+    console, setTimeout, clearTimeout,
+    CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
+    localStorage: {
+      getItem: (key) => storage.has(key) ? storage.get(key) : null,
+      setItem: (key, value) => storage.set(key, value),
+      removeItem: (key) => storage.delete(key)
+    },
+    window: { __travelMateSupabaseClient: client, dispatchEvent() {}, addEventListener() {} },
+    document: {}
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  const synced = await context.window.TravelMateCloud.syncLocalTrips();
+  assert.equal(saveCalls, 0);
+  assert.equal(synced.length, 1);
+  assert.equal(synced[0].city, 'Authoritative cloud');
+  assert.equal(JSON.parse(storage.get('travelmate-trips'))[0].city, 'Authoritative cloud');
+});
+
+test('pending MFA blocks full sync before a missing cloud row can be mistaken for revoked access', async () => {
+  const shared = { id: 'mfa-shared', ownerId: 'owner-2', country: 'Test', city: 'Keep me', start: '2026-01-01', end: '2026-01-02', days: 1, syncStatus: 'synced' };
+  const storage = new Map([
+    ['travelmate-active-user', 'user-1'],
+    ['travelmate-trips', JSON.stringify([shared])]
+  ]);
+  let tableReads = 0;
+  const client = {
+    auth: {
+      getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }),
+      mfa: {
+        getAuthenticatorAssuranceLevel: async () => ({ error: null, data: { currentLevel: 'aal1', nextLevel: 'aal2' } })
+      }
+    },
+    from() { tableReads += 1; throw new Error('personal data should not be read before MFA'); }
+  };
+  const context = {
+    console, setTimeout, clearTimeout,
+    CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
+    localStorage: {
+      getItem: (key) => storage.has(key) ? storage.get(key) : null,
+      setItem: (key, value) => storage.set(key, value),
+      removeItem: (key) => storage.delete(key)
+    },
+    window: { __travelMateSupabaseClient: client, dispatchEvent() {}, addEventListener() {} },
+    document: {}
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  await assert.rejects(context.window.TravelMateCloud.syncLocalTrips(), (error) => error && error.code === 'MFA_REQUIRED');
+  assert.equal(tableReads, 0);
+  assert.equal(JSON.parse(storage.get('travelmate-trips'))[0].city, 'Keep me');
+});
+
+test('getTrip purges a cached shared trip once the server no longer exposes it', async () => {
+  const shared = { id: 'revoked-read', ownerId: 'owner-2', country: 'Test', city: 'Cached', start: '2026-01-01', end: '2026-01-02', days: 1, syncStatus: 'synced' };
+  const storage = new Map([
+    ['travelmate-active-user', 'user-1'],
+    ['travelmate-trips', JSON.stringify([shared])]
+  ]);
+  const client = {
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }) },
+    from(table) {
+      assert.equal(table, 'travel_trips');
+      const query = {
+        select() { return query; },
+        eq() { return query; },
+        order() { return query; },
+        limit: async () => ({ error: null, data: [] })
+      };
+      return query;
+    }
+  };
+  const context = {
+    console, setTimeout, clearTimeout,
+    CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
+    localStorage: {
+      getItem: (key) => storage.has(key) ? storage.get(key) : null,
+      setItem: (key, value) => storage.set(key, value),
+      removeItem: (key) => storage.delete(key)
+    },
+    window: { __travelMateSupabaseClient: client, dispatchEvent() {}, addEventListener() {} },
+    document: {}
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  const trip = await context.window.TravelMateCloud.getTrip('revoked-read', 'owner-2');
+  assert.equal(trip, null);
+  assert.equal(JSON.parse(storage.get('travelmate-trips')).length, 0);
+});
