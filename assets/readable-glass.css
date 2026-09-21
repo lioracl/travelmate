@@ -624,8 +624,8 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.36),rgba(18,56,63,.3));
   --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.4),rgba(18,56,63,.34));
   --tm-weather-card-text:#F7FAFA;
-  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.22),rgba(18,56,63,.18));
-  --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.26),rgba(18,56,63,.22));
+  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.3),rgba(18,56,63,.26));
+  --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.34),rgba(18,56,63,.3));
   --tm-card-bg:var(--tm-glass-large-bg);
   --tm-card-bg-nested:rgba(16,30,34,.08);
   --tm-card-bg-compact:rgba(16,30,34,.06);
@@ -642,7 +642,7 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-card-blur:none;
   --tm-large-surface-blur:none;
   --tm-material-blur:none;
-  --tm-weather-card-blur:blur(8px) saturate(105%);
+  --tm-weather-card-blur:blur(4px) saturate(105%);
   --tm-card-padding:20px;
   --tm-card-padding-compact:14px;
   --tm-card-text:#F7FAFA;
@@ -716,8 +716,8 @@ html[data-theme="dark"]{
   --tm-weather-card-text:#F7FAFA;
   --tm-weather-card-background:var(--tm-weather-card-bg);
   --tm-weather-card-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 30px rgba(0,0,0,.2);
-  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.26),rgba(18,56,63,.22));
-  --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.3),rgba(18,56,63,.26));
+  --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.3),rgba(18,56,63,.26));
+  --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.34),rgba(18,56,63,.3));
   --tm-card-bg:var(--tm-glass-large-bg);
   --tm-card-bg-nested:rgba(16,30,34,.14);
   --tm-card-bg-compact:rgba(16,30,34,.1);
@@ -1178,7 +1178,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-card-control-placeholder:#5A666A;
   --tm-card-control-selected:rgba(169,220,231,.48);
   --tm-card-blur:none;
-  --tm-weather-card-blur:blur(7px) saturate(104%);
+  --tm-weather-card-blur:blur(4px) saturate(104%);
   --tm-custom-overview-surface:var(--tm-glass-large-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-overview-green-soft:var(--tm-card-control-selected);
@@ -1282,7 +1282,7 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-card-control-placeholder:#5A666A;
   --tm-card-control-selected:rgba(169,220,231,.52);
   --tm-card-blur:none;
-  --tm-weather-card-blur:blur(7px) saturate(104%)
+  --tm-weather-card-blur:blur(4px) saturate(104%)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
