@@ -12,7 +12,7 @@ const allSql = fs.readdirSync(migrationsDir)
   .join('\n');
 
 const inviteSql = fs.readFileSync(
-  path.join(migrationsDir, '20260921124726_safety_pack_3_mfa_permissions.sql'),
+  path.join(migrationsDir, '20260921134839_safety_pack_5_deleted_trip_collaboration.sql'),
   'utf8'
 );
 
