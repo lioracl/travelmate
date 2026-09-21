@@ -49,7 +49,7 @@ html body :is(
   text-shadow:none!important;
   opacity:1!important
 }
-.ai-panel{--tm-overlay-blur:blur(18px) saturate(125%)}
+.ai-panel{--tm-overlay-blur:none}
 
 :where(
   .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,

@@ -639,9 +639,10 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 26px rgba(0,0,0,.14);
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.12),0 4px 12px rgba(0,0,0,.1);
   --tm-card-shadow-hover:inset 0 1px 0 rgba(255,255,255,.24),0 13px 30px rgba(0,0,0,.18);
-  --tm-card-blur:blur(8px) saturate(105%);
-  --tm-large-surface-blur:blur(4px) saturate(102%);
-  --tm-material-blur:var(--tm-card-blur);
+  --tm-card-blur:none;
+  --tm-large-surface-blur:none;
+  --tm-material-blur:none;
+  --tm-weather-card-blur:blur(8px) saturate(105%);
   --tm-card-padding:20px;
   --tm-card-padding-compact:14px;
   --tm-card-text:#F7FAFA;
@@ -1013,19 +1014,6 @@ html body.tm-new-design main.content :is(
   --tm-card-blur:none
 }
 
-/* Wide desktop surfaces sample a larger photo area, so they use a restrained
-   structural blur. Compact Weather Glass, overlays and nested content keep
-   their existing material roles. */
-@media(min-width:901px){
-  html body.tm-new-design main.content>section.section:not(.hero):not(#places),
-  html body.tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner,
-  html body.tm-new-design[data-trip-view="overview"] main.content :is(
-    .trip-overview-summary>.card,.quick-grid>.card,.trip-home-actions
-  ){
-    --tm-card-blur:var(--tm-large-surface-blur)
-  }
-}
-
 html body.tm-new-design main.content :is(
   .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,.nearby,
   .summary-card,.auto-card,.generated-day>div,.service-card,.travel-service-card,.transport-card,
@@ -1113,8 +1101,8 @@ html body.tm-new-design .weather-top-widget{
   box-shadow:var(--tm-card-shadow);
   color:var(--tm-weather-card-text);
   -webkit-text-fill-color:var(--tm-weather-card-text);
-  -webkit-backdrop-filter:var(--tm-card-blur);
-  backdrop-filter:var(--tm-card-blur)
+  -webkit-backdrop-filter:var(--tm-weather-card-blur);
+  backdrop-filter:var(--tm-weather-card-blur)
 }
 html body.tm-new-design .weather-top-widget:hover{background:var(--tm-weather-card-bg-hover);box-shadow:var(--tm-card-shadow-hover)}
 html body.tm-new-design .weather-top-widget :is(strong,small,span,i){color:inherit;-webkit-text-fill-color:currentColor;text-shadow:none}
@@ -1156,7 +1144,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-surface-dark-glass-strong:rgba(18,56,63,.22);
   --tm-surface-dark-glass-soft:rgba(16,30,34,.04);
   --tm-control-surface:rgba(244,243,239,.78);
-  --tm-material-blur:blur(7px) saturate(104%);
+  --tm-material-blur:none;
   --tm-photo-scrim-start:rgba(18,56,63,.08);
   --tm-photo-scrim-mid:rgba(18,56,63,.11);
   --tm-photo-scrim-end:rgba(18,56,63,.14);
@@ -1189,7 +1177,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-control-placeholder:#5A666A;
   --tm-card-control-selected:rgba(169,220,231,.48);
-  --tm-card-blur:blur(7px) saturate(104%);
+  --tm-card-blur:none;
+  --tm-weather-card-blur:blur(7px) saturate(104%);
   --tm-custom-overview-surface:var(--tm-weather-card-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
   --tm-overview-green-soft:var(--tm-card-control-selected);
@@ -1260,7 +1249,7 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-surface-dark-glass-strong:rgba(18,56,63,.24);
   --tm-surface-dark-glass-soft:rgba(16,30,34,.06);
   --tm-control-surface:rgba(244,243,239,.8);
-  --tm-material-blur:blur(7px) saturate(104%);
+  --tm-material-blur:none;
   --tm-photo-scrim-start:rgba(18,56,63,.1);
   --tm-photo-scrim-mid:rgba(18,56,63,.13);
   --tm-photo-scrim-end:rgba(18,56,63,.16);
@@ -1292,7 +1281,8 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
   --tm-card-control-text:var(--tm-control-text);
   --tm-card-control-placeholder:#5A666A;
   --tm-card-control-selected:rgba(169,220,231,.52);
-  --tm-card-blur:blur(7px) saturate(104%)
+  --tm-card-blur:none;
+  --tm-weather-card-blur:blur(7px) saturate(104%)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
@@ -1449,7 +1439,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-surface-dark-glass-strong:rgba(18,56,63,.22);
   --tm-surface-dark-glass-soft:rgba(16,30,34,.04);
   --tm-control-surface:rgba(244,243,239,.78);
-  --tm-material-blur:blur(8px) saturate(104%);
+  --tm-material-blur:none;
   --tm-photo-scrim-start:rgba(24,35,38,.08);
   --tm-photo-scrim-mid:rgba(24,35,38,.11);
   --tm-photo-scrim-end:rgba(24,35,38,.14);
@@ -1475,13 +1465,13 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-card-control-focus:var(--tm-brand-primary);
   --tm-places-control-blur:none;
   --tm-places-picker-bg:var(--tm-surface-neutral);
-  --tm-card-blur:blur(7px) saturate(103%)
+  --tm-card-blur:none
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-surface-dark-glass-strong:rgba(18,56,63,.24);
   --tm-surface-dark-glass-soft:rgba(16,30,34,.06);
   --tm-control-surface:rgba(244,243,239,.8);
-  --tm-material-blur:blur(8px) saturate(104%);
+  --tm-material-blur:none;
   --tm-photo-scrim-start:rgba(24,35,38,.1);
   --tm-photo-scrim-mid:rgba(24,35,38,.13);
   --tm-photo-scrim-end:rgba(24,35,38,.16);

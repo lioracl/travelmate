@@ -1156,8 +1156,8 @@ body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
   border-radius:20px!important;
   background:linear-gradient(135deg,rgba(250,253,251,.96),rgba(226,240,233,.9))!important;
   box-shadow:0 12px 30px rgba(19,83,62,.13)!important;
-  -webkit-backdrop-filter:blur(18px) saturate(125%)!important;
-  backdrop-filter:blur(18px) saturate(125%)!important
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important
 }
 body.tm-new-design[data-trip-view="plan"] #plan .planner-action{
   min-height:42px!important;
