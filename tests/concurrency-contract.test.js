@@ -251,17 +251,35 @@ function clientContext(client, trips) {
   return { context, storage };
 }
 
-test('only a PGRST202 diagnostic naming the requested missing RPC permits legacy fallback', async () => {
+test('a missing save RPC fails closed and never falls back to direct table writes', async () => {
   let directWrites = 0;
   const trip = { id: 'fallback-trip', ownerId: 'user-1', country: 'Test', city: 'Fallback', start: '2026-01-01', end: '2026-01-02', days: 1 };
   const client = {
     auth: { getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }) },
     rpc: async () => ({ error: { code: 'PGRST202', message: 'Could not find the function public.save_travel_trip(p_owner_id, p_trip_id) in the schema cache' } }),
-    from() { directWrites += 1; return { upsert: async () => ({ error: null }) }; }
+    from() { directWrites += 1; throw new Error('direct writes must not run'); }
   };
-  const { context } = clientContext(client, []);
-  await context.window.TravelMateCloud.saveTrip(trip);
-  assert.equal(directWrites, 1);
+  const { context, storage } = clientContext(client, []);
+  await assert.rejects(context.window.TravelMateCloud.saveTrip(trip), (error) => error && error.code === 'TRIP_SYNC_RPC_UNAVAILABLE');
+  assert.equal(directWrites, 0);
+  assert.equal(JSON.parse(storage.get('travelmate-trips'))[0].syncStatus, 'failed');
+});
+
+test('a missing delete RPC fails closed and keeps the local trip retryable', async () => {
+  let directWrites = 0;
+  const trip = { id: 'missing-delete-rpc', ownerId: 'user-1', country: 'Test', city: 'Delete', start: '2026-01-01', end: '2026-01-02', days: 1, cloudRevision: 3 };
+  const client = {
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }) },
+    rpc: async () => ({ error: { code: 'PGRST202', message: 'Could not find the function public.delete_travel_trip(p_owner_id, p_trip_id) in the schema cache' } }),
+    from() { directWrites += 1; throw new Error('direct deletes must not run'); }
+  };
+  const { context, storage } = clientContext(client, [trip]);
+  await assert.rejects(context.window.TravelMateCloud.deleteTrip(trip), (error) => error && error.code === 'TRIP_SYNC_RPC_UNAVAILABLE');
+  assert.equal(directWrites, 0);
+  const stored = JSON.parse(storage.get('travelmate-trips'))[0];
+  assert.equal(stored.id, trip.id);
+  assert.equal(stored.syncStatus, 'failed');
+  assert.equal(stored.deletePending, true);
 });
 
 test('RPC permission, network, malformed, server and unrelated PGRST202 errors never use legacy writes', async () => {
