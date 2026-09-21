@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const sql = fs.readFileSync(
-  path.join(__dirname, '..', 'supabase/migrations/20260921172500_performance_pack_2_trip_invites_index.sql'),
+  path.join(__dirname, '..', 'supabase/migrations/20260921171928_performance_pack_2_trip_invites_index.sql'),
   'utf8'
 );
 
