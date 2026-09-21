@@ -453,6 +453,13 @@
 
   function saveTrip(trip, expectedUserId, reuseMutation) {
     expectedUserId = expectedUserId || activeUserId();
+    if (!expectedUserId && !trip.ownerId) {
+      return getSession().then(function (session) {
+        var resolvedUserId = session && session.user ? String(session.user.id) : '';
+        if (isTripDeleted(trip, resolvedUserId)) return { saved: false, reason: 'DELETED' };
+        return enqueueTripSave(prepareTripSave(trip, reuseMutation), resolvedUserId);
+      });
+    }
     if (isTripDeleted(trip, expectedUserId)) return Promise.resolve({ saved: false, reason: 'DELETED' });
     if (expectedUserId) assertActiveUser(expectedUserId);
     return enqueueTripSave(prepareTripSave(trip, reuseMutation), expectedUserId);
