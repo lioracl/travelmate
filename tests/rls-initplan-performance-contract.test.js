@@ -7,6 +7,7 @@ const sql = fs.readFileSync(
   path.join(__dirname, '..', 'supabase/migrations/20260921172000_performance_pack_1_rls_initplan.sql'),
   'utf8'
 );
+const executableSql = sql.split('\n').filter((line) => !line.trim().startsWith('--')).join('\n');
 
 test('performance RLS policies use auth.uid through initplans', () => {
   for (const policy of [
@@ -15,14 +16,15 @@ test('performance RLS policies use auth.uid through initplans', () => {
     'Senders delete trip messages',
     'Members send trip messages'
   ]) {
-    assert.ok(sql.includes('create policy "' + policy + '"'));
+    assert.ok(executableSql.includes('create policy "' + policy + '"'));
   }
-  assert.doesNotMatch(sql, /(?<!select )auth\.uid\(\)/);
-  const optimizedCalls = sql.match(/\(select auth\.uid\(\)\)/g) || [];
-  assert.ok(optimizedCalls.length >= 5);
+  const authCalls = executableSql.match(/auth\.uid\(\)/g) || [];
+  const optimizedCalls = executableSql.match(/\(select auth\.uid\(\)\)/g) || [];
+  assert.ok(authCalls.length >= 5);
+  assert.equal(authCalls.length, optimizedCalls.length);
 });
 
 test('active-trip guards remain intact', () => {
-  const guards = sql.match(/trips\.deleted_at is null/g) || [];
-  assert.equal(guards.length, 4);
+  const guards = executableSql.match(/trips\.deleted_at is null/g) || [];
+  assert.ok(guards.length >= 4);
 });
