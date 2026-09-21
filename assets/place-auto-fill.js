@@ -39,9 +39,11 @@
   };
   var dialog;
   var state = { trip: null, origin: null, candidates: [], proposal: [], replacementTarget: null };
-  var placeImageCache = {};
+  var placeImageCache = new Map();
+  var placeImageCacheLimit = 120;
   var overpassCache = new Map();
   var overpassCacheLifetime = 120000;
+  var overpassCacheLimit = 12;
   var representativeImages = {
     attractions: [
       'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=82',
@@ -189,7 +191,12 @@
 
   async function overpass(query) {
     var cached = overpassCache.get(query);
-    if (cached && Date.now() - cached.savedAt < overpassCacheLifetime) return cached.data;
+    if (cached && Date.now() - cached.savedAt < overpassCacheLifetime) {
+      overpassCache.delete(query);
+      overpassCache.set(query, cached);
+      return cached.data;
+    }
+    if (cached) overpassCache.delete(query);
 
     var controllers = endpoints.map(function () { return new AbortController(); });
     function abortAll() { controllers.forEach(function (controller) { controller.abort(); }); }
@@ -212,7 +219,13 @@
 
     try {
       var data = await Promise.any(requests);
-      overpassCache.set(query, { savedAt: Date.now(), data: data });
+      var now = Date.now();
+      overpassCache.forEach(function (entry, key) {
+        if (!entry || now - entry.savedAt >= overpassCacheLifetime) overpassCache.delete(key);
+      });
+      if (overpassCache.has(query)) overpassCache.delete(query);
+      while (overpassCache.size >= overpassCacheLimit) overpassCache.delete(overpassCache.keys().next().value);
+      overpassCache.set(query, { savedAt: now, data: data });
       return data;
     } catch (error) {
       throw new Error('לא הצלחנו לקבל כרגע מקומות מהאזור. בדוק את החיבור ונסה שוב.');
@@ -318,14 +331,15 @@
   async function resolvePlaceImage(place) {
     if (place.image && place.imageResolutionVersion === 2) return place.image;
     var cacheKey = [place.name, place.lat, place.lon].join('|').toLowerCase();
-    if (placeImageCache[cacheKey]) return placeImageCache[cacheKey];
+    if (placeImageCache.has(cacheKey)) { var cachedImage = placeImageCache.get(cacheKey); placeImageCache.delete(cacheKey); placeImageCache.set(cacheKey, cachedImage); return cachedImage; }
     var image = await wikipediaPlaceImage(place.wikipedia);
     if (!image) image = await wikidataPlaceImage(place.wikidata);
     if (!image) image = await commonsPlaceImage(place);
     if (!image) image = await wikipediaSearchImage(place, 'en');
     if (!image && state.trip && /צכ|czech/i.test(state.trip.country || '')) image = await wikipediaSearchImage(place, 'cs');
     image = image || representativeImage(place);
-    placeImageCache[cacheKey] = image;
+    while (placeImageCache.size >= placeImageCacheLimit) placeImageCache.delete(placeImageCache.keys().next().value);
+    placeImageCache.set(cacheKey, image);
     place.image = image;
     place.imageResolutionVersion = 2;
     return place.image;
