@@ -132,8 +132,7 @@
       request.then(function (response) {
         if (!cellularAtStart || !response) return;
         var statedLength = Number(response.headers && response.headers.get('content-length'));
-        if (statedLength > 0) { addBytes(statedLength); return; }
-        try { response.clone().blob().then(function (blob) { addBytes(blob.size); }).catch(function () {}); } catch (error) {}
+        if (statedLength > 0) addBytes(statedLength);
       }).catch(function () {});
       return request;
     }

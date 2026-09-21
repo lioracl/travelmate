@@ -64,3 +64,15 @@ test('nearby destination request removes its temporary listener on success and t
   assert.match(nearby, /timer=setTimeout\(function\(\)\{finish\(null\)\},7500\)/);
   assert.match(nearby, /function ready\(event\)\{finish\(event\.detail\|\|null\)\}/);
 });
+
+test('nearby result enhancement is event-driven without a broad panel mutation observer', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.match(source, /travelmate:nearby-results-rendered[\s\S]*enhanceResults/);
+  assert.doesNotMatch(source, /pendingResultRoots|resultEnhancementScheduled/);
+});
+
+test('network usage meter does not clone response bodies solely to measure unknown lengths', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/network-usage.js'), 'utf8');
+  assert.match(source, /content-length/);
+  assert.doesNotMatch(source, /response\.clone\(\)\.blob\(\)/);
+});
