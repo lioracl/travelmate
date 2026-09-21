@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const sql = fs.readFileSync(
-  path.join(__dirname, '..', 'supabase/migrations/20260921172000_performance_pack_1_rls_initplan.sql'),
+  path.join(__dirname, '..', 'supabase/migrations/20260921171437_performance_pack_1_rls_initplan.sql'),
   'utf8'
 );
 const executableSql = sql.split('\n').filter((line) => !line.trim().startsWith('--')).join('\n');
