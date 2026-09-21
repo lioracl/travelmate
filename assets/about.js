@@ -8,7 +8,7 @@
     highlights: [
       'ה־Service Worker שומר מראש רק את מעטפת TravelMate והקבצים שנדרשים למסכי הליבה, במקום להוריד בזמן התקנה את כל חבילות הפיצ׳רים.',
       'קבצי ליבה שנדרשים ל־Offline כמו Theme, Trip Redesign ו־Security Center נוספו במפורש ל־precache כדי שהמעטפת תהיה עקבית גם ללא רשת.',
-      'AI, Admin, Collaboration, Transport, Nearby ופיצ׳רים כבדים נוספים נשמרים אוטומטית ב־runtime cache לאחר שימוש ראשון ואינם חוסמים את התקנת ה־PWA.',
+      'AI, Admin, Collaboration, Transport, Nearby ופיצ׳רים כבדים נוספים נשמרים אוטומטית ב־runtime cache כשהאפליקציה מבקשת אותם, ואינם חוסמים את התקנת ה־PWA.',
       'מנהל ה־Lazy Load יורש כעת אוטומטית את גרסת ה־asset של app.js, כך שקבצים דינמיים אינם נשארים מאחור עם cache key ישן.',
       'Trip Experience ו־About נדחים ל־Idle במקום להיטען ולרוץ במסלול הפתיחה הקריטי; Transport ו־Collaboration נשארים זמינים מיד.',
       'Cloudflare Turnstile נטען רק כאשר המשתמש ניגש לטופס החשבון, וחיפוש טיולים מחוץ לעיר מאתר את מרכז היעד רק לאחר לחיצה על חיפוש.',
