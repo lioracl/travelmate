@@ -637,18 +637,25 @@
 
   async function updateTripMember(ownerId, tripId, userId, role) {
     var client = await getClient();
-    var result = await client.from('trip_members').update({ role: role === 'viewer' ? 'viewer' : 'editor' })
-      .eq('trip_owner_id', ownerId).eq('trip_id', String(tripId)).eq('user_id', userId);
+    var result = await client.rpc('update_trip_member_role', {
+      p_trip_owner_id: ownerId,
+      p_trip_id: String(tripId),
+      p_user_id: userId,
+      p_role: role === 'viewer' ? 'viewer' : 'editor'
+    });
     if (result.error) throw result.error;
-    return true;
+    return result.data;
   }
 
   async function removeTripMember(ownerId, tripId, userId) {
     var client = await getClient();
-    var result = await client.from('trip_members').delete()
-      .eq('trip_owner_id', ownerId).eq('trip_id', String(tripId)).eq('user_id', userId);
+    var result = await client.rpc('remove_trip_member', {
+      p_trip_owner_id: ownerId,
+      p_trip_id: String(tripId),
+      p_user_id: userId
+    });
     if (result.error) throw result.error;
-    return true;
+    return result.data === true;
   }
 
   async function listTripMessages(ownerId, tripId) {
