@@ -6,6 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const home = fs.readFileSync(path.join(root, 'assets/home.js'), 'utf8');
 const nearby = fs.readFileSync(path.join(root, 'assets/nearby.js'), 'utf8');
+const serviceWorker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 
 test('home carousel does not eagerly assign all generated Unsplash backgrounds', () => {
   assert.match(home, /slide\.dataset\.slideImage = "url\('https:\/\/images\.unsplash\.com\//);
@@ -122,4 +123,22 @@ test('getaway destination geocoding waits for the first search submit', () => {
   assert.match(source, /async function ensureCoords\(\)/);
   assert.match(source, /form\.addEventListener\('submit'[\s\S]*await ensureCoords\(\)/);
   assert.doesNotMatch(source, /coords=null;geocode\(trip\.city/);
+});
+
+test('service worker precaches startup essentials and runtime-caches feature-only bundles', () => {
+  assert.match(serviceWorker, /security-center\.js/);
+  assert.match(serviceWorker, /trip-redesign\.js/);
+  assert.match(serviceWorker, /theme\.js/);
+  assert.match(serviceWorker, /document-vault\.js/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/ai-assistant\.js'/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/smart-hub\.js'/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/trip-intelligence\.js'/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/trip-experience\.js'/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/about\.js'/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/admin-center\.js'/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/auto-planner\.js'/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/nearby\.js'/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/collaboration\.js'/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/transport-planner\.js'/);
+  assert.match(serviceWorker, /freshAsset[\s\S]*networkFirst\(event\.request\)/);
 });
