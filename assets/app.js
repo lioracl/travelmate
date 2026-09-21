@@ -1,6 +1,6 @@
 var appScript=document.currentScript;
 (function(){
-  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260921-19'}catch(error){return'20260921-19'}})(),loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
+  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260921-20'}catch(error){return'20260921-20'}})(),loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
   var finalStyle='readable-glass.css';
   var structureStyles=['travel-services.css','transport-planner.css','collaboration.css','chat-place-sharing.css','place-directions.css','activity-contrast.css'],deferredStructureStyles=['trip-experience.css','about.css'];
   var structureScripts=['travel-services.js','transport-planner.js','place-directions.js','collaboration.js'],deferredStructureScripts=['trip-experience.js','about.js'];
