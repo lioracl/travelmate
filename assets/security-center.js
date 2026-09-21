@@ -264,9 +264,14 @@
       await cloud.signOut('global'); location.reload();
     };
     document.querySelector('[data-security-clean]').onclick = async function () {
-      if (!window.confirm('פעולה זו תמחק מהמכשיר הזה עותקים מקומיים, מטמון והעדפות של TravelMate. מידע שסונכרן לענן יישאר בענן. להמשיך?')) return;
+      var unsyncedTrips = cloud && cloud.getLocalTrips ? cloud.getLocalTrips().filter(function (trip) {
+        return trip && (trip.deletePending || ['pending', 'failed', 'unknown', 'local', 'conflict'].includes(trip.syncStatus));
+      }) : [];
+      var warning = 'פעולה זו תמחק מהמכשיר הזה עותקים מקומיים, מטמון והעדפות של TravelMate. מידע שסונכרן לענן יישאר בענן.';
+      if (unsyncedTrips.length) warning += '\n\nאזהרה: קיימים ' + unsyncedTrips.length + ' טיולים עם שינויים מקומיים שלא אושרו כסנכרון מלא. ניקוי המכשיר עלול למחוק שינויים אלה לצמיתות.';
+      if (!window.confirm(warning + '\n\nלהמשיך?')) return;
       await cloud.signOut('local');
-      cloud.clearDeviceData();
+      await cloud.clearDeviceData();
       location.replace(location.pathname.indexOf('/trip/') >= 0 ? '../../index.html' : 'index.html');
     };
     if (cloud && cloud.onAuthChange) cloud.onAuthChange(function () { refresh(); });

@@ -862,7 +862,7 @@
     return client.auth.mfa.getAuthenticatorAssuranceLevel();
   }
 
-  function clearDeviceData() {
+  async function clearDeviceData() {
     var keys = [];
     for (var index = 0; index < localStorage.length; index += 1) {
       var key = localStorage.key(index);
@@ -870,6 +870,13 @@
     }
     keys.forEach(function (key) { localStorage.removeItem(key); });
     sessionStorage.removeItem('travelmate-pending-invite');
+
+    if (typeof caches !== 'undefined' && caches && typeof caches.keys === 'function' && typeof caches.delete === 'function') {
+      var cacheNames = await caches.keys();
+      await Promise.all(cacheNames.filter(function (name) {
+        return /^travelmate-smart-v\d+$/.test(name);
+      }).map(function (name) { return caches.delete(name); }));
+    }
     return keys.length;
   }
 

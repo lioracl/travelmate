@@ -661,3 +661,78 @@ test('signed-out reconnect does not claim that a pending trip was synchronized',
   assert.equal(events.some((event) => event.type === 'travelmate:sync-restored'), false);
   assert.equal(JSON.parse(storage.get('travelmate-trips'))[0].syncStatus, 'pending');
 });
+
+
+test('sign out preserves unsynced trips in the signed-in user snapshot before clearing the active view', async () => {
+  const trip = { id: 'pending-signout', ownerId: 'user-1', country: 'Test', city: 'Pending', start: '2026-01-01', end: '2026-01-02', days: 1, syncStatus: 'pending' };
+  const storage = new Map([
+    ['travelmate-active-user', 'user-1'],
+    ['travelmate-trips', JSON.stringify([trip])]
+  ]);
+  const localStorageMock = {
+    get length() { return storage.size; },
+    key(index) { return Array.from(storage.keys())[index] || null; },
+    getItem(key) { return storage.has(key) ? storage.get(key) : null; },
+    setItem(key, value) { storage.set(key, value); },
+    removeItem(key) { storage.delete(key); }
+  };
+  const client = {
+    auth: {
+      getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }),
+      signOut: async () => ({ error: null })
+    }
+  };
+  const context = {
+    console, setTimeout, clearTimeout,
+    CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
+    localStorage: localStorageMock,
+    sessionStorage: { removeItem() {} },
+    window: { __travelMateSupabaseClient: client, dispatchEvent() {}, addEventListener() {} },
+    document: {}
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  await context.window.TravelMateCloud.signOut('local');
+  assert.equal(storage.has('travelmate-active-user'), false);
+  assert.deepEqual(JSON.parse(storage.get('travelmate-trips')), []);
+  const snapshot = JSON.parse(storage.get('travelmate-trips-user:user-1'));
+  assert.equal(snapshot.length, 1);
+  assert.equal(snapshot[0].id, trip.id);
+  assert.equal(snapshot[0].syncStatus, 'pending');
+});
+
+test('clear device data removes TravelMate local state and TravelMate caches but preserves unrelated cache entries', async () => {
+  const storage = new Map([
+    ['travelmate-active-user', 'user-1'],
+    ['travelmate-trips', '[]'],
+    ['travelmate-theme', 'dark'],
+    ['unrelated-key', 'keep']
+  ]);
+  const removedSessionKeys = [];
+  const deletedCaches = [];
+  const localStorageMock = {
+    get length() { return storage.size; },
+    key(index) { return Array.from(storage.keys())[index] || null; },
+    getItem(key) { return storage.has(key) ? storage.get(key) : null; },
+    setItem(key, value) { storage.set(key, value); },
+    removeItem(key) { storage.delete(key); }
+  };
+  const context = {
+    console, setTimeout, clearTimeout,
+    CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
+    localStorage: localStorageMock,
+    sessionStorage: { removeItem(key) { removedSessionKeys.push(key); } },
+    caches: {
+      keys: async () => ['travelmate-smart-v145', 'travelmate-smart-v146', 'other-app-cache'],
+      delete: async (name) => { deletedCaches.push(name); return true; }
+    },
+    window: { dispatchEvent() {}, addEventListener() {} },
+    document: {}
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  const removed = await context.window.TravelMateCloud.clearDeviceData();
+  assert.equal(removed, 3);
+  assert.equal(storage.get('unrelated-key'), 'keep');
+  assert.equal(Array.from(storage.keys()).some((key) => key.startsWith('travelmate-')), false);
+  assert.deepEqual(removedSessionKeys, ['travelmate-pending-invite']);
+  assert.deepEqual(deletedCaches.sort(), ['travelmate-smart-v145', 'travelmate-smart-v146']);
+});
