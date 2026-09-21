@@ -2,8 +2,10 @@
   'use strict';
 
   var featureScript = document.currentScript;
+  var featureUrl = new URL(featureScript.src, location.href);
+  var featureVersion = featureUrl.searchParams.get('v');
   var smartScript = document.createElement('script');
-  smartScript.src = new URL('smart-plan-tools.js', featureScript.src).href + '?v=20260920-1';
+  smartScript.src = new URL('smart-plan-tools.js', featureUrl).href + (featureVersion ? '?v=' + encodeURIComponent(featureVersion) : '');
   document.head.appendChild(smartScript);
 
   var STORAGE_KEY = 'travelmate-trips';
@@ -38,6 +40,8 @@
   var dialog;
   var state = { trip: null, origin: null, candidates: [], proposal: [], replacementTarget: null };
   var placeImageCache = {};
+  var overpassCache = new Map();
+  var overpassCacheLifetime = 120000;
   var representativeImages = {
     attractions: [
       'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=82',
@@ -117,11 +121,19 @@
     return 2 * radius * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
   }
 
-  function fetchWithTimeout(url, options, timeout) {
+  function fetchWithTimeout(url, options, timeout, externalSignal) {
     var controller = new AbortController();
+    var abortFromOutside = function () { controller.abort(); };
     var timer = setTimeout(function () { controller.abort(); }, timeout || 16000);
+    if (externalSignal) {
+      if (externalSignal.aborted) controller.abort();
+      else externalSignal.addEventListener('abort', abortFromOutside, { once: true });
+    }
     return fetch(url, Object.assign({}, options || {}, { signal: controller.signal }))
-      .finally(function () { clearTimeout(timer); });
+      .finally(function () {
+        clearTimeout(timer);
+        if (externalSignal) externalSignal.removeEventListener('abort', abortFromOutside);
+      });
   }
 
   async function geocode(query) {
@@ -176,18 +188,36 @@
   }
 
   async function overpass(query) {
-    var requests = endpoints.map(function (endpoint) {
+    var cached = overpassCache.get(query);
+    if (cached && Date.now() - cached.savedAt < overpassCacheLifetime) return cached.data;
+
+    var controllers = endpoints.map(function () { return new AbortController(); });
+    function abortAll() { controllers.forEach(function (controller) { controller.abort(); }); }
+
+    var requests = endpoints.map(function (endpoint, index) {
       return fetchWithTimeout(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
         body: 'data=' + encodeURIComponent(query)
-      }, 18000).then(function (response) {
+      }, 18000, controllers[index].signal).then(function (response) {
         if (!response.ok) throw new Error('שירות המקומות אינו זמין.');
         return response.json();
+      }).then(function (data) {
+        controllers.forEach(function (controller, controllerIndex) {
+          if (controllerIndex !== index) controller.abort();
+        });
+        return data;
       });
     });
-    try { return await Promise.any(requests); } catch (error) {
+
+    try {
+      var data = await Promise.any(requests);
+      overpassCache.set(query, { savedAt: Date.now(), data: data });
+      return data;
+    } catch (error) {
       throw new Error('לא הצלחנו לקבל כרגע מקומות מהאזור. בדוק את החיבור ונסה שוב.');
+    } finally {
+      abortAll();
     }
   }
 

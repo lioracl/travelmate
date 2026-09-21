@@ -24,3 +24,19 @@ test('nearby delayed-init observer disconnects after a panel initializes', () =>
   assert.match(nearby, /if \(!nearbyInitializedCount\)/);
   assert.match(nearby, /if \(initialized\) nearbyInitObserver\.disconnect\(\)/);
 });
+
+
+test('place auto fill inherits the active asset version for smart plan tools', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/place-auto-fill.js'), 'utf8');
+  assert.match(source, /featureVersion = featureUrl\.searchParams\.get\('v'\)/);
+  assert.match(source, /smart-plan-tools\.js[\s\S]*featureVersion/);
+  assert.doesNotMatch(source, /20260920-1/);
+});
+
+test('place auto fill caches identical Overpass queries and aborts losing mirrors', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/place-auto-fill.js'), 'utf8');
+  assert.match(source, /var overpassCache = new Map\(\)/);
+  assert.match(source, /overpassCacheLifetime = 120000/);
+  assert.match(source, /overpassCache\.get\(query\)/);
+  assert.match(source, /controllerIndex !== index[\s\S]*controller\.abort\(\)/);
+});
