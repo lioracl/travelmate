@@ -1,0 +1,26 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const root = path.resolve(__dirname, '..');
+const home = fs.readFileSync(path.join(root, 'assets/home.js'), 'utf8');
+const nearby = fs.readFileSync(path.join(root, 'assets/nearby.js'), 'utf8');
+
+test('home carousel does not eagerly assign all generated Unsplash backgrounds', () => {
+  assert.match(home, /slide\.dataset\.slideImage = "url\('https:\/\/images\.unsplash\.com\//);
+  assert.match(home, /if \(distance <= 2\) ensureSlideImage\(slide\)/);
+  assert.doesNotMatch(home, /slide\.style\.setProperty\('--slide-image',[\s\S]{0,160}imageId/);
+});
+
+test('home carousel timer sleeps while hidden or authenticated', () => {
+  assert.match(home, /if \(document\.hidden \|\| document\.body\.classList\.contains\('is-authenticated'\)\) return/);
+  assert.match(home, /travelmate:home-auth/);
+  assert.match(home, /visibilitychange/);
+});
+
+test('nearby delayed-init observer disconnects after a panel initializes', () => {
+  assert.match(nearby, /var nearbyInitializedCount = initNearbyPanels\(document\)/);
+  assert.match(nearby, /if \(!nearbyInitializedCount\)/);
+  assert.match(nearby, /if \(initialized\) nearbyInitObserver\.disconnect\(\)/);
+});

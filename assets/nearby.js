@@ -283,18 +283,28 @@
     mapButton.addEventListener('click',async function(){var browseRequest=panel.dataset.mapOpenReason==='browse';delete panel.dataset.mapOpenReason;if(!mapShell.hidden){if(browseRequest)setManualMode(false);else setManualMode(true);return;}mapShell.hidden=false;status.classList.remove('is-error');status.textContent='מאתר את יעד הטיול ופותח מפה. לא תתבקש הרשאת GPS.';try{var pair=await Promise.all([loadMapLibrary(),requestDestination()]),MapLibre=pair[0],start=lastGps||pair[1]||{lat:31.7683,lon:35.2137};if(!map){map=new MapLibre.Map({container:mapElement,style:'https://tiles.openfreemap.org/styles/liberty',center:[start.lon,start.lat],zoom:14,attributionControl:false});panel._travelMateMap=map;map.addControl(new MapLibre.NavigationControl(),'top-left');map.addControl(new MapLibre.AttributionControl({compact:true}),'bottom-right');map.on('style.load',function(){keepHebrewOrEnglishLabels(map);panel.dataset.rtlPluginStatus=MapLibre.getRTLTextPluginStatus?MapLibre.getRTLTextPluginStatus():'unsupported';});map.on('click',function(event){if(manualMode)selectManualPoint(event.lngLat.lat,event.lngLat.lng);});map.on('moveend',function(){mapSearch.disabled=false;if(!manualMode)mapHint.textContent='המפה מוכנה. חפשו '+selectedCategoryLabel()+' באזור המוצג.';});}setTimeout(function(){map.resize();},50);if(browseRequest){setManualMode(false);status.textContent='הזיזו או הגדילו את המפה ולחצו „חיפוש באזור הזה”.';}else setManualMode(true);}catch(error){mapShell.hidden=true;status.classList.add('is-error');status.textContent=String(error&&error.message||error).replace('RTL_PLUGIN_FAILED:','לא הצלחנו לטעון תמיכה מלאה בעברית במפה: ');}});
     mapSearch.addEventListener('click',async function(){if(!map)return;var bounds=map.getBounds(),diagonal=distance(bounds.getSouth(),bounds.getWest(),bounds.getNorth(),bounds.getEast());if(map.getZoom()<12||diagonal>30000){status.classList.add('is-error');status.textContent='האזור המוצג גדול מדי. הגדילו את המפה לשכונה או למרכז עיר ונסו שוב.';return;}var requestId=++searchSequence;if(currentSearchController)currentSearchController.abort();currentSearchController=new AbortController();var searchController=currentSearchController,searchSignal=searchController.signal,center=map.getCenter(),categories=selectedCategoryKeys.slice(),primaryCategory=categories[0]||'all',freeTerm=placeNameSearchInput.value.trim(),kosher=panel.querySelector('[data-nearby-kosher]').checked;panel.dataset.lastQueryCategories=categories.join(',');panel.dataset.lastQueryCategory=primaryCategory;panel.dataset.searchExecutedWithCategories=categories.join(',');panel.dataset.searchExecutedWithCategory=primaryCategory;searchLocationContext={type:'map',label:'האזור המוצג במפה',point:{lat:center.lat,lon:center.lng}};panel.dataset.locationContext=searchLocationContext.type;mapSearch.disabled=true;clearPoiMarkers();detail.hidden=true;status.classList.remove('is-error');status.textContent='מחפש '+selectedCategoryLabel()+' באזור המפה…';results.innerHTML='';try{var data=await overpassPlaces(queryForBounds(categories,bounds,freeTerm,kosher),searchSignal);if(requestId!==searchSequence)return;currentPlaces=renderPlaces(data,[],center.lat,center.lng,status,results,0,[],freeTerm,primaryCategory,panel.dataset.destinationName)||[];renderMapMarkers(currentPlaces);controls.resetResults.disabled=!currentPlaces.length;mapHint.textContent='נמצאו '+currentPlaces.length+' מקומות. בחרו סמן או פריט ברשימה.';}catch(error){if(!isAbortError(error)&&requestId===searchSequence){status.classList.add('is-error');status.textContent=navigator.onLine===false?'אין חיבור לרשת. המפה נשארת זמינה, אך חיפוש מקומות דורש אינטרנט.':error.message;}}finally{if(currentSearchController===searchController)currentSearchController=null;if(requestId===searchSequence)mapSearch.disabled=false;}});
     panel.addEventListener('nearby:search', function (event) { var point = event.detail || {}; if (Number.isFinite(Number(point.lat)) && Number.isFinite(Number(point.lon))){searchLocationContext={type:'destination',label:panel.dataset.destinationName||'עיר היעד',point:{lat:Number(point.lat),lon:Number(point.lon)}};panel.dataset.locationContext=searchLocationContext.type;searchAt(Number(point.lat), Number(point.lon));} });
+    return true;
   }
   function initNearbyPanels(root) {
-    if (root.nodeType !== 1 && root.nodeType !== 9) return;
-    if (root.matches && root.matches('[data-nearby-places]')) initNearbyPanel(root);
-    if (root.querySelectorAll) root.querySelectorAll('[data-nearby-places]').forEach(initNearbyPanel);
-  }
-  initNearbyPanels(document);
-  new MutationObserver(function (mutations) {
-    mutations.forEach(function (mutation) {
-      mutation.addedNodes.forEach(function (node) { initNearbyPanels(node); });
+    if (root.nodeType !== 1 && root.nodeType !== 9) return 0;
+    var initialized = 0;
+    if (root.matches && root.matches('[data-nearby-places]') && initNearbyPanel(root)) initialized += 1;
+    if (root.querySelectorAll) root.querySelectorAll('[data-nearby-places]').forEach(function (panel) {
+      if (initNearbyPanel(panel)) initialized += 1;
     });
-  }).observe(document.documentElement, { childList: true, subtree: true });
+    return initialized;
+  }
+  var nearbyInitializedCount = initNearbyPanels(document);
+  if (!nearbyInitializedCount) {
+    var nearbyInitObserver = new MutationObserver(function (mutations) {
+      var initialized = 0;
+      mutations.forEach(function (mutation) {
+        mutation.addedNodes.forEach(function (node) { initialized += initNearbyPanels(node); });
+      });
+      if (initialized) nearbyInitObserver.disconnect();
+    });
+    nearbyInitObserver.observe(document.documentElement, { childList: true, subtree: true });
+  }
   window.TravelMateNearby = { categories: categoryRegistry, init: initNearbyPanels };
   window.TravelMateNearbyTest = { gpsSearchRadius: gpsSearchRadius, normalizePlaceName: normalizePlaceName, poiScore: poiScore, categoryCount: categoryRegistry.length };
 })();

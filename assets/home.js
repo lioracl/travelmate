@@ -137,7 +137,7 @@
       var slide = document.createElement('article');
       slide.className = 'destination-slide';
       slide.dataset.carouselSlide = '';
-      slide.style.setProperty('--slide-image', "url('https://images.unsplash.com/" + imageId + "?auto=format&fit=crop&w=900&q=84')");
+      slide.dataset.slideImage = "url('https://images.unsplash.com/" + imageId + "?auto=format&fit=crop&w=900&q=84')";
       track.appendChild(slide);
     });
     var slides = Array.from(carousel.querySelectorAll('[data-carousel-slide]'));
@@ -151,6 +151,11 @@
       dot.addEventListener('click', function () { showSlide(index); restart(); });
       dotsHost.appendChild(dot);
     });
+    function ensureSlideImage(slide) {
+      if (!slide.dataset.slideImage || slide.dataset.slideImageLoaded === 'true') return;
+      slide.style.setProperty('--slide-image', slide.dataset.slideImage);
+      slide.dataset.slideImageLoaded = 'true';
+    }
     function showSlide(index) {
       activeIndex = (index + slides.length) % slides.length;
       slides.forEach(function (slide, slideIndex) {
@@ -158,6 +163,7 @@
         if (offset > slides.length / 2) offset -= slides.length;
         if (offset < -slides.length / 2) offset += slides.length;
         var distance = Math.abs(offset);
+        if (distance <= 2) ensureSlideImage(slide);
         slide.style.setProperty('--slide-offset', offset);
         slide.style.setProperty('--slide-x', (offset * 118) + 'px');
         slide.style.setProperty('--slide-scale', slideIndex === activeIndex ? '1.12' : String(Math.max(.72, 1 - distance * .08)));
@@ -174,17 +180,23 @@
     }
     function restart() {
       clearInterval(timer);
+      timer = null;
+      if (document.hidden || document.body.classList.contains('is-authenticated')) return;
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        timer = setInterval(function () {
-          if (document.hidden || document.body.classList.contains('is-authenticated')) return;
-          showSlide(activeIndex + 1);
-        }, 3800);
+        timer = setInterval(function () { showSlide(activeIndex + 1); }, 3800);
       }
     }
     var previousButton = carousel.querySelector('[data-carousel-previous]');
     var nextButton = carousel.querySelector('[data-carousel-next]');
     if (previousButton) previousButton.addEventListener('click', function () { showSlide(activeIndex - 1); restart(); });
     if (nextButton) nextButton.addEventListener('click', function () { showSlide(activeIndex + 1); restart(); });
+    window.addEventListener('travelmate:home-auth', function (event) {
+      if (event.detail && event.detail.authenticated) {
+        clearInterval(timer);
+        timer = null;
+      } else restart();
+    });
+    document.addEventListener('visibilitychange', restart);
     showSlide(activeIndex);
     restart();
   })();
@@ -527,6 +539,7 @@
   function setSession(session) {
     currentSession = session;
     document.body.classList.toggle('is-authenticated', Boolean(session));
+    window.dispatchEvent(new CustomEvent('travelmate:home-auth', { detail: { authenticated: Boolean(session) } }));
     if (passwordChangeMode && session) return;
     authForm.hidden = Boolean(session);
     passwordForm.hidden = true;
