@@ -78,6 +78,12 @@
     return String(trip && trip.id || '');
   }
 
+  function deletionIdentity(trip, fallbackOwnerId) {
+    var ownerId = typeof trip === 'object' && trip ? trip.ownerId : fallbackOwnerId;
+    var tripId = typeof trip === 'object' && trip ? trip.id : trip;
+    return String(ownerId || fallbackOwnerId || activeUserId() || '') + ':' + String(tripId || '');
+  }
+
   function activeUserId() {
     return String(localStorage.getItem(ACTIVE_USER_KEY) || '');
   }
@@ -92,14 +98,14 @@
     if (activeUserId() !== String(userId || '')) throw authContextError();
   }
 
-  function isTripDeleted(trip) {
-    return deletedTripIds.has(typeof trip === 'object' ? saveIdentity(trip) : String(trip || ''));
+  function isTripDeleted(trip, fallbackOwnerId) {
+    return deletedTripIds.has(deletionIdentity(trip, fallbackOwnerId));
   }
 
   function acceptRemoteDeletion(trip, error, expectedUserId) {
     if (!error || error.code !== 'TRIP_DELETED') return false;
     if (expectedUserId && activeUserId() !== String(expectedUserId)) return false;
-    deletedTripIds.add(saveIdentity(trip));
+    deletedTripIds.add(deletionIdentity(trip, expectedUserId));
     removeLocalTrip(trip.id, trip.ownerId);
     return true;
   }
@@ -430,7 +436,7 @@
 
   function enqueueTripSave(snapshot, expectedUserId) {
     var id = saveIdentity(snapshot);
-    if (deletedTripIds.has(id)) return Promise.resolve({ saved: false, reason: 'DELETED' });
+    if (isTripDeleted(snapshot, expectedUserId)) return Promise.resolve({ saved: false, reason: 'DELETED' });
     var previous = saveChains.get(id) || Promise.resolve();
     var current = previous.catch(function () {}).then(function () { return performTripSave(snapshot, expectedUserId); });
     saveChains.set(id, current);
@@ -445,8 +451,8 @@
   }
 
   function saveTrip(trip, expectedUserId, reuseMutation) {
-    if (deletedTripIds.has(saveIdentity(trip))) return Promise.resolve({ saved: false, reason: 'DELETED' });
     expectedUserId = expectedUserId || activeUserId();
+    if (isTripDeleted(trip, expectedUserId)) return Promise.resolve({ saved: false, reason: 'DELETED' });
     if (expectedUserId) assertActiveUser(expectedUserId);
     return enqueueTripSave(prepareTripSave(trip, reuseMutation), expectedUserId);
   }
@@ -455,20 +461,22 @@
     var id = saveIdentity(trip);
     expectedUserId = expectedUserId || activeUserId();
     if (expectedUserId) assertActiveUser(expectedUserId);
+    var deletionKey = deletionIdentity(trip, expectedUserId);
+    var timerKey = tripIdentity(trip, expectedUserId);
     trip.deletePending = true;
     trip.deleteMutationId = trip.deleteMutationId || mutationId();
     trip.syncStatus = 'pending';
     upsertLocalTrip(cloneTrip(trip));
-    deletedTripIds.add(id);
-    clearTimeout(saveTimers.get(id));
-    saveTimers.delete(id);
+    deletedTripIds.add(deletionKey);
+    clearTimeout(saveTimers.get(timerKey));
+    saveTimers.delete(timerKey);
     var previous = saveChains.get(id) || Promise.resolve();
     var current = previous.catch(function () {}).then(async function () {
       var client = await getClient();
       var session = await getSession();
       if (expectedUserId && (!session || !session.user || String(session.user.id) !== String(expectedUserId))) throw authContextError();
       if (!session || !session.user) {
-        deletedTripIds.delete(id);
+        deletedTripIds.delete(deletionKey);
         return { deleted: false, reason: 'SIGNED_OUT' };
       }
       var ownerId = String(trip && trip.ownerId || session.user.id);
@@ -501,7 +509,7 @@
     });
     saveChains.set(id, current);
     current.then(function () { if (saveChains.get(id) === current) saveChains.delete(id); }, function (error) {
-      deletedTripIds.delete(id);
+      deletedTripIds.delete(deletionKey);
       updateLocalSyncState(trip, error && error.code === 'TRIP_CONFLICT' ? 'conflict'
         : error && error.code === 'TRIP_WRITE_TIMEOUT' ? 'unknown' : 'failed', null, expectedUserId, error && error.cloud && error.cloud.result_revision);
       if (saveChains.get(id) === current) saveChains.delete(id);
@@ -510,10 +518,10 @@
   }
 
   function queueTripSave(trip, delay) {
-    if (deletedTripIds.has(saveIdentity(trip))) return;
     var expectedUserId = activeUserId();
+    if (isTripDeleted(trip, expectedUserId)) return;
     var snapshot = prepareTripSave(trip);
-    var id = saveIdentity(snapshot);
+    var id = tripIdentity(snapshot, expectedUserId);
     clearTimeout(saveTimers.get(id));
     saveTimers.set(id, setTimeout(function () {
       saveTimers.delete(id);
@@ -525,18 +533,20 @@
   }
 
   async function getTrip(id, expectedOwnerId) {
-    if (isTripDeleted(id)) return null;
+    if (expectedOwnerId && isTripDeleted(id, expectedOwnerId)) return null;
     var session = await getSession();
     var local = findLocalTrip(id, expectedOwnerId);
     if (!session || !session.user) return local || null;
     var requestUserId = String(session.user.id);
+    var deletionOwnerId = expectedOwnerId || local && local.ownerId || requestUserId;
+    if (isTripDeleted(id, deletionOwnerId)) return null;
     var client = await getClient();
     var result = await client.from('travel_trips').select('*')
       .eq('id', String(id))
       .order('updated_at', { ascending: false })
       .limit(10);
     assertActiveUser(requestUserId);
-    if (isTripDeleted(id)) return null;
+    if (isTripDeleted(id, deletionOwnerId)) return null;
     if (result.error) throw result.error;
     local = findLocalTrip(id, expectedOwnerId);
     var rows = result.data || [];
@@ -556,6 +566,7 @@
       return local || null;
     }
     var cloud = fromRow(row);
+    if (isTripDeleted(cloud, requestUserId)) return null;
     if (local && !local.ownerId) {
       local.ownerId = cloud.ownerId;
       upsertLocalTrip(local);
@@ -566,7 +577,7 @@
     }
     try { await saveTrip(local, requestUserId, true); }
     catch (error) { if (acceptRemoteDeletion(local, error, requestUserId)) return null; throw error; }
-    if (isTripDeleted(id)) return null;
+    if (isTripDeleted(id, expectedOwnerId || local && local.ownerId || requestUserId)) return null;
     return localTripFor(local) || local;
   }
 
@@ -674,7 +685,7 @@
     assertActiveUser(syncUserId);
     var tombstoneIds = new Set(tombstones.map(function (trip) { return tripIdentity(trip, syncUserId); }));
     tombstones.forEach(function (trip) {
-      deletedTripIds.add(saveIdentity(trip));
+      deletedTripIds.add(deletionIdentity(trip, syncUserId));
       removeLocalTrip(trip.id, trip.ownerId);
     });
     localTrips = localTrips.filter(function (trip) { return !tombstoneIds.has(tripIdentity(trip, syncUserId)); });
