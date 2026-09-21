@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const sql = fs.readFileSync(
-  path.join(root, 'supabase/migrations/20260921142000_safety_pack_6_member_concurrency.sql'),
+  path.join(root, 'supabase/migrations/20260921142454_safety_pack_6_member_concurrency.sql'),
   'utf8'
 );
 const cloud = fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8');
