@@ -948,7 +948,16 @@
     });
   }
 
-  window.addEventListener('online', function () { retryPendingTrips().catch(function () {}); });
+  window.addEventListener('online', function () {
+    syncLocalTrips().then(function (trips) {
+      var unsynced = getLocalTrips().some(function (trip) {
+        return trip && (trip.syncStatus === 'pending' || trip.syncStatus === 'failed' || trip.syncStatus === 'unknown');
+      });
+      if (!unsynced) window.dispatchEvent(new CustomEvent('travelmate:sync-restored', { detail: { trips: trips } }));
+    }).catch(function (error) {
+      window.dispatchEvent(new CustomEvent('travelmate:sync-error', { detail: error }));
+    });
+  });
 
   window.TravelMateCloud = {
     getClient: getClient,

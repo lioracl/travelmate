@@ -3,7 +3,7 @@
 
   if (!window.travelMateTripReady || !window.TravelMateCloud) return;
   var cloud = window.TravelMateCloud;
-  var state = { trip: null, session: null, members: [], messages: [], unsubscribe: null, activated: false, activating: false };
+  var state = { trip: null, session: null, members: [], messages: [], unsubscribe: null, activated: false, activating: false, accessCheckPromise: null, lastAccessCheckAt: 0 };
   var ui;
   var PLACE_MESSAGE_PREFIX = '[[TM_PLACE_V1]]';
 
@@ -383,6 +383,56 @@
     }
   }
 
+  async function revalidateAccess(force) {
+    if (!state.session || !state.trip || isOwner()) return true;
+    if (state.accessCheckPromise) return state.accessCheckPromise;
+
+    var now = Date.now();
+    if (!force && now - state.lastAccessCheckAt < 15000) return true;
+    state.lastAccessCheckAt = now;
+
+    state.accessCheckPromise = (async function () {
+      var previous = currentMember();
+      state.members = await cloud.listTripMembers(state.trip.ownerId, state.trip.id);
+      renderMembers();
+      renderMessages();
+
+      var me = currentMember();
+      if (!me) {
+        document.body.classList.add('trip-viewer');
+        cloud.removeLocalTrip(state.trip.id, state.trip.ownerId);
+        state.messages = [];
+        renderMessages();
+        ui.chatStatus.textContent = 'הגישה לטיול הוסרה';
+        if (state.unsubscribe) {
+          var unsubscribe = state.unsubscribe;
+          state.unsubscribe = null;
+          unsubscribe();
+        }
+        toast('הגישה שלך לטיול הוסרה · חוזר לרשימת הטיולים');
+        setTimeout(function () {
+          location.replace(new URL('../../index.html', location.href).href);
+        }, 600);
+        return false;
+      }
+
+      if (previous && previous.role !== 'viewer' && me.role === 'viewer') {
+        document.body.classList.add('trip-viewer');
+        cloud.removeLocalTrip(state.trip.id, state.trip.ownerId);
+        try { await cloud.getTrip(state.trip.id, state.trip.ownerId); }
+        catch (error) { console.error('TravelMate viewer revalidation failed', error); }
+        toast('ההרשאה שלך השתנתה לצפייה בלבד · מרענן…');
+        setTimeout(function () { location.reload(); }, 600);
+        return false;
+      }
+
+      return true;
+    })();
+
+    try { return await state.accessCheckPromise; }
+    finally { state.accessCheckPromise = null; }
+  }
+
   async function startRealtime() {
     state.unsubscribe = await cloud.subscribeToSharedTrip(state.trip.ownerId, state.trip.id, {
       onMessage: function (message) {
@@ -436,7 +486,20 @@
 
   initialize();
   window.addEventListener('travelmate:viewchange', function (event) {
-    if (event.detail && event.detail.view === 'group') activateCollaboration();
+    if (!event.detail || event.detail.view !== 'group') return;
+    if (state.activated) revalidateAccess(true).catch(function (error) { console.error('TravelMate access revalidation failed', error); });
+    else activateCollaboration();
+  });
+  window.addEventListener('online', function () {
+    if (state.activated && isGroupView()) revalidateAccess(true).catch(function (error) { console.error('TravelMate online access check failed', error); });
+  });
+  window.addEventListener('focus', function () {
+    if (state.activated && isGroupView()) revalidateAccess(false).catch(function (error) { console.error('TravelMate focus access check failed', error); });
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && state.activated && isGroupView()) {
+      revalidateAccess(false).catch(function (error) { console.error('TravelMate visibility access check failed', error); });
+    }
   });
   addEventListener('beforeunload', function () { if (state.unsubscribe) state.unsubscribe(); });
 })();
