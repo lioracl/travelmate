@@ -406,12 +406,13 @@
         p_mutation_id: trip.syncMutationId,
         p_trip: trip
       }));
-      if (result.error && !isMissingRpc(result.error, 'save_travel_trip')) throw result.error;
-      if (!result.error) {
-        response = Array.isArray(result.data) ? result.data[0] : result.data;
-        if (!response || response.result_status === 'conflict') throw cloudError('TRIP_CONFLICT', response);
-        if (response.result_status === 'deleted') throw cloudError('TRIP_DELETED', response);
+      if (result.error) {
+        if (isMissingRpc(result.error, 'save_travel_trip')) throw cloudError('TRIP_SYNC_RPC_UNAVAILABLE', result.error);
+        throw result.error;
       }
+      response = Array.isArray(result.data) ? result.data[0] : result.data;
+      if (!response || response.result_status === 'conflict') throw cloudError('TRIP_CONFLICT', response);
+      if (response.result_status === 'deleted') throw cloudError('TRIP_DELETED', response);
     }
     if (!response) {
       if (String(row.user_id) === String(session.user.id)) {
@@ -491,11 +492,12 @@
           p_expected_updated_at: trip.cloudRevision ? null : (trip.cloudUpdatedAt || null),
           p_mutation_id: trip.deleteMutationId
         }));
-        if (result.error && !isMissingRpc(result.error, 'delete_travel_trip')) throw result.error;
-        if (!result.error) {
-          response = Array.isArray(result.data) ? result.data[0] : result.data;
-          if (response && response.result_status === 'conflict') throw cloudError('TRIP_CONFLICT', response);
+        if (result.error) {
+          if (isMissingRpc(result.error, 'delete_travel_trip')) throw cloudError('TRIP_SYNC_RPC_UNAVAILABLE', result.error);
+          throw result.error;
         }
+        response = Array.isArray(result.data) ? result.data[0] : result.data;
+        if (response && response.result_status === 'conflict') throw cloudError('TRIP_CONFLICT', response);
       }
       if (!response) {
         result = await runBoundedWrite(client.from('travel_trips').delete()
