@@ -296,14 +296,32 @@
       if (!window.turnstile) return;
       window.turnstile.render(host, { sitekey: config.turnstileSiteKey, theme: 'light', callback: function (token) { captchaToken = token; } });
     }
+    if (window.turnstile) { render(); return; }
+    if (document.querySelector('script[data-travelmate-turnstile]')) return;
     var script = document.createElement('script');
+    script.dataset.travelmateTurnstile = '';
     script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
     script.async = true; script.defer = true; script.onload = render;
     document.head.appendChild(script);
   }
 
+  function armCaptcha() {
+    var armed = true;
+    function start(event) {
+      if (!armed) return;
+      var target = event && event.target;
+      if (target && target.closest && !target.closest('[data-cloud-auth-form],[data-cloud-account-open]')) return;
+      armed = false;
+      document.removeEventListener('focusin', start, true);
+      document.removeEventListener('pointerdown', start, true);
+      setupCaptcha();
+    }
+    document.addEventListener('focusin', start, true);
+    document.addEventListener('pointerdown', start, true);
+  }
+
   window.TravelMateSecurity = { getCaptchaToken: function () { return captchaToken || undefined; }, open: openDialog };
   window.TravelMateSettings = { open: openDialog, close: closeDialog };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { wire(); setupCaptcha(); });
-  else { wire(); setupCaptcha(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { wire(); armCaptcha(); });
+  else { wire(); armCaptcha(); }
 })();
