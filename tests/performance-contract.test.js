@@ -93,3 +93,10 @@ test('place auto fill evicts expired and excess search and image cache entries',
   assert.match(source, /placeImageCacheLimit = 120/);
   assert.match(source, /while \(placeImageCache\.size >= placeImageCacheLimit\)/);
 });
+
+test('collaboration keeps long realtime chat sessions bounded in memory', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/collaboration.js'), 'utf8');
+  assert.match(source, /MESSAGE_LIMIT = 100/);
+  assert.match(source, /listTripMessages[\s\S]*slice\(-MESSAGE_LIMIT\)/);
+  assert.ok((source.match(/state\.messages = state\.messages\.slice\(-MESSAGE_LIMIT\)/g) || []).length >= 2);
+});

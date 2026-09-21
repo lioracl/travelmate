@@ -6,6 +6,7 @@
   var state = { trip: null, session: null, members: [], messages: [], unsubscribe: null, activated: false, activating: false, accessCheckPromise: null, lastAccessCheckAt: 0 };
   var ui;
   var PLACE_MESSAGE_PREFIX = '[[TM_PLACE_V1]]';
+  var MESSAGE_LIMIT = 100;
 
   function escapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function (character) {
@@ -174,7 +175,7 @@
   }
 
   async function loadMessages() {
-    state.messages = await cloud.listTripMessages(state.trip.ownerId, state.trip.id);
+    state.messages = (await cloud.listTripMessages(state.trip.ownerId, state.trip.id)).slice(-MESSAGE_LIMIT);
     renderMessages();
   }
 
@@ -269,6 +270,7 @@
     var message = await cloud.sendTripMessage(state.trip.ownerId, state.trip.id, body);
     if (!state.messages.some(function (item) { return String(item.id) === String(message.id); })) {
       state.messages.push(message);
+      state.messages = state.messages.slice(-MESSAGE_LIMIT);
       renderMessages();
     }
     return message;
@@ -438,6 +440,7 @@
       onMessage: function (message) {
         if (state.messages.some(function (item) { return String(item.id) === String(message.id); })) return;
         state.messages.push(message);
+        state.messages = state.messages.slice(-MESSAGE_LIMIT);
         renderMessages();
       },
       onMembersChange: function (payload) {
