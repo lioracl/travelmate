@@ -20,6 +20,16 @@ function json(body, status = 200, origin = 'https://lioracl.github.io') {
   });
 }
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 25000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function cleanText(value, limit) {
   return String(value || '').trim().slice(0, limit);
 }
@@ -117,7 +127,7 @@ Deno.serve(async (request) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
     if (!supabaseUrl || !supabaseAnonKey) return respond({ error: 'SUPABASE_ENV_MISSING' }, 500);
-    const usageResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/consume_travel_ai_request`, {
+    const usageResponse = await fetchWithTimeout(`${supabaseUrl}/rest/v1/rpc/consume_travel_ai_request`, {
       method: 'POST',
       headers: {
         'Authorization': authorization,
@@ -125,7 +135,7 @@ Deno.serve(async (request) => {
         'Content-Type': 'application/json'
       },
       body: '{}'
-    });
+    }, 8000);
     if (!usageResponse.ok) return respond({ error: 'USAGE_CHECK_FAILED' }, usageResponse.status === 401 ? 401 : 503);
     const usage = await usageResponse.json();
     if (!usage.allowed) return respond({ error: 'DAILY_LIMIT_REACHED', remaining: 0 }, 429);
@@ -144,7 +154,7 @@ Deno.serve(async (request) => {
     ].join('\n');
 
     if (receipt) {
-      const receiptResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash'}:generateContent`, {
+      const receiptResponse = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/${Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash'}:generateContent`, {
         method: 'POST',
         headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -152,7 +162,7 @@ Deno.serve(async (request) => {
           contents: [{ role: 'user', parts: [{ text: 'Read this receipt and return {"amount":number,"currency":"EUR","merchant":"","date":"","category":"אחר","confidence":number}.' }, { inlineData: receipt }] }],
           generationConfig: { temperature: 0, maxOutputTokens: 300, responseMimeType: 'application/json' }
         })
-      });
+      }, 25000);
       if (!receiptResponse.ok) return respond({ error: 'RECEIPT_SCAN_FAILED' }, receiptResponse.status === 429 ? 429 : 502);
       const receiptResult = await receiptResponse.json();
       const receiptText = receiptResult?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('') || '';
@@ -160,7 +170,7 @@ Deno.serve(async (request) => {
     }
 
     const model = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    const geminiResponse = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: 'POST',
       headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -168,7 +178,7 @@ Deno.serve(async (request) => {
         contents: geminiContents(messages),
         generationConfig: { maxOutputTokens: 4096 }
       })
-    });
+    }, 25000);
 
     if (!geminiResponse.ok) {
       const providerText = await geminiResponse.text();
@@ -193,6 +203,7 @@ Deno.serve(async (request) => {
       complete
     });
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') return respond({ error: 'AI_TIMEOUT' }, 504);
     console.error('Travel assistant error', error instanceof Error ? error.message : String(error));
     return respond({ error: 'ASSISTANT_FAILED' }, 500);
   }
