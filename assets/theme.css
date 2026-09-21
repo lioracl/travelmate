@@ -805,23 +805,6 @@ html body.tm-new-design[data-trip-view] #memories .section-head p{
   -webkit-text-fill-color:#173f32!important;
   text-shadow:none!important
 }
-@media(max-width:1000px){
-  html body:not(.home-page) main.content{
-    padding-top:94px!important
-  }
-  html body:not(.home-page) .mobile-header{
-    position:fixed!important;
-    top:max(8px,env(safe-area-inset-top))!important;
-    right:8px!important;
-    left:8px!important;
-    width:auto!important;
-    z-index:1250!important
-  }
-  html body:not(.home-page) .network-usage-meter.in-trip{
-    top:calc(max(8px,env(safe-area-inset-top)) + 84px)!important
-  }
-}
-
 /* 1.29.3 — modern desktop navigation and exact weather-card pages. */
 @media(min-width:1001px){
   html body:not(.home-page) .workspace>.sidebar{
@@ -1069,10 +1052,8 @@ body.home-page .cloud-account-split .cloud-account-close{
 }
 
 @media(max-width:1000px){
+  /* Visual styling only. Positioning is owned by the mobile layout authority below. */
   body:not(.home-page) .mobile-header{
-    position:sticky!important;
-    top:max(8px,env(safe-area-inset-top))!important;
-    z-index:1250!important;
     min-height:var(--tm-mobile-header-height,54px)!important;
     margin-bottom:8px!important;
     border:0!important;
@@ -1081,7 +1062,6 @@ body.home-page .cloud-account-split .cloud-account-close{
     box-shadow:0 5px 16px rgba(13,68,50,.12)!important
   }
   body:not(.home-page) .network-usage-meter.in-trip{
-    top:calc(max(8px,env(safe-area-inset-top)) + 72px)!important;
     z-index:1200!important
   }
   body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
@@ -1505,16 +1485,8 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
   }
 }
 
-/* Final mobile layout authority for the plan header and day rail. */
+/* Plan day-rail layout. Mobile header positioning is owned by the authority below. */
 @media(max-width:1000px){
-  html body:not(.home-page) .mobile-header{
-    position:sticky!important;
-    top:max(8px,env(safe-area-inset-top))!important;
-    z-index:1250!important
-  }
-  html body:not(.home-page) .network-usage-meter.in-trip{
-    top:calc(max(8px,env(safe-area-inset-top)) + 68px)!important
-  }
   html body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
     display:grid!important;
     grid-template-columns:minmax(0,1fr)!important;
@@ -1549,7 +1521,7 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
   }
 }
 
-/* Final 1.29.2 contrast and fixed mobile header. */
+/* Mobile layout authority: the single source of truth for trip header geometry. */
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
 ) :where(h1,h2,h3,h4,strong,p,span,small,label){
