@@ -157,3 +157,11 @@ test('Overpass mirrors are hedged instead of both starting immediately', () => {
   assert.match(autoFill, /if \(index === 0\) startRequest\(\)/);
 });
 
+test('mobile trip header has one high-specificity geometry authority', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/theme.css'), 'utf8');
+  const authorities = source.match(/html body:not\(\.home-page\) \.mobile-header\{\s*position:(?:fixed|sticky)!important;/g) || [];
+  assert.equal(authorities.length, 1);
+  assert.match(source, /Mobile layout authority: the single source of truth for trip header geometry/);
+  assert.doesNotMatch(source, /padding-top:94px!important/);
+  assert.doesNotMatch(source, /\+ 84px\)!important/);
+});
