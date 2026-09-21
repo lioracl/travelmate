@@ -57,3 +57,10 @@ test('network usage persistence is batched instead of writing on every resource'
   assert.match(source, /state\.bytes \+= bytes;\s*scheduleUsageFlush\(\)/);
   assert.match(source, /addEventListener\('pagehide'[\s\S]*flushUsage\(\)/);
 });
+
+
+test('nearby destination request removes its temporary listener on success and timeout', () => {
+  assert.match(nearby, /function requestDestination\(\)[\s\S]*function finish\(value\)[\s\S]*removeEventListener\('nearby:destination-ready',ready\)/);
+  assert.match(nearby, /timer=setTimeout\(function\(\)\{finish\(null\)\},7500\)/);
+  assert.match(nearby, /function ready\(event\)\{finish\(event\.detail\|\|null\)\}/);
+});
