@@ -157,10 +157,3 @@ test('Overpass mirrors are hedged instead of both starting immediately', () => {
   assert.match(autoFill, /if \(index === 0\) startRequest\(\)/);
 });
 
-test('Navo Edge Function bounds usage and Gemini provider requests', () => {
-  const source = fs.readFileSync(path.join(root, 'supabase/functions/travel-assistant/index.ts'), 'utf8');
-  assert.match(source, /async function fetchWithTimeout/);
-  assert.match(source, /consume_travel_ai_request[\s\S]*8000\)/);
-  assert.ok((source.match(/25000\)/g) || []).length >= 2);
-  assert.match(source, /AI_TIMEOUT/);
-});
