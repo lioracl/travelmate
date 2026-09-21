@@ -167,10 +167,20 @@ begin
     return;
   end if;
   if current_trip.last_mutation_id = p_mutation_id and current_trip.last_mutation_by = actor_id then
+    if current_trip.deleted_at is not null then
+      delete from public.trip_invites
+      where trip_owner_id = p_owner_id and trip_id = p_trip_id;
+      delete from public.trip_messages
+      where trip_owner_id = p_owner_id and trip_id = p_trip_id;
+    end if;
     return query select 'deleted'::text, current_trip.revision, current_trip.updated_at, current_trip.deleted_at;
     return;
   end if;
   if current_trip.deleted_at is not null then
+    delete from public.trip_invites
+    where trip_owner_id = p_owner_id and trip_id = p_trip_id;
+    delete from public.trip_messages
+    where trip_owner_id = p_owner_id and trip_id = p_trip_id;
     return query select 'deleted'::text, current_trip.revision, current_trip.updated_at, current_trip.deleted_at;
     return;
   end if;
