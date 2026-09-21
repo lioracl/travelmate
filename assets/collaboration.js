@@ -128,9 +128,11 @@
     });
     ui.inviteButton.hidden = !isOwner();
     var me = currentMember();
-    document.body.classList.toggle('trip-viewer', Boolean(me && me.role === 'viewer'));
+    var accessRevoked = Boolean(state.session && !isOwner() && !me);
+    document.body.classList.toggle('trip-viewer', Boolean(accessRevoked || me && me.role === 'viewer'));
     ui.composer.querySelector('textarea').disabled = !me;
     ui.composer.querySelectorAll('button').forEach(function (button) { button.disabled = !me; });
+    ui.sharePlaceButton.disabled = !me;
   }
 
   function messageNode(message) {
@@ -343,6 +345,44 @@
     });
   }
 
+  async function handleMembersChange(payload) {
+    var row = payload && (payload.new || payload.old);
+    var eventType = String(payload && payload.eventType || '').toUpperCase();
+    var currentUserId = state.session && state.session.user ? String(state.session.user.id) : '';
+    var affectsCurrentUser = Boolean(row && currentUserId && String(row.user_id || '') === currentUserId);
+
+    if (affectsCurrentUser && eventType === 'DELETE') {
+      document.body.classList.add('trip-viewer');
+      cloud.removeLocalTrip(state.trip.id, state.trip.ownerId);
+      state.members = [];
+      state.messages = [];
+      renderMembers();
+      renderMessages();
+      ui.chatStatus.textContent = 'הגישה לטיול הוסרה';
+      toast('הגישה שלך לטיול הוסרה · חוזר לרשימת הטיולים');
+      if (state.unsubscribe) {
+        var unsubscribe = state.unsubscribe;
+        state.unsubscribe = null;
+        unsubscribe();
+      }
+      setTimeout(function () {
+        location.replace(new URL('../../index.html', location.href).href);
+      }, 1200);
+      return;
+    }
+
+    await loadMembers();
+
+    if (affectsCurrentUser && eventType === 'UPDATE' && row.role === 'viewer') {
+      document.body.classList.add('trip-viewer');
+      cloud.removeLocalTrip(state.trip.id, state.trip.ownerId);
+      try { await cloud.getTrip(state.trip.id, state.trip.ownerId); }
+      catch (error) { console.error('TravelMate viewer refresh failed', error); }
+      toast('ההרשאה שלך השתנתה לצפייה בלבד · מרענן…');
+      setTimeout(function () { location.reload(); }, 900);
+    }
+  }
+
   async function startRealtime() {
     state.unsubscribe = await cloud.subscribeToSharedTrip(state.trip.ownerId, state.trip.id, {
       onMessage: function (message) {
@@ -350,7 +390,9 @@
         state.messages.push(message);
         renderMessages();
       },
-      onMembersChange: function () { loadMembers().catch(function () {}); },
+      onMembersChange: function (payload) {
+        handleMembersChange(payload).catch(function (error) { console.error('TravelMate member refresh failed', error); });
+      },
       onTripUpdate: function () {
         toast('חבר בקבוצה עדכן את הטיול · מרענן…');
         setTimeout(function () { location.reload(); }, 1200);
