@@ -11,7 +11,7 @@
 }
 
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places),
+html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#plan),
 html body.tm-new-design main.content>.external-resources{
   border:1.5px solid var(--tm-readable-border)!important;
   background:var(--tm-readable-surface)!important;
@@ -154,7 +154,7 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
 }
 
 @media(max-width:650px){
-  html body.tm-new-design main.content>section.section:not(.hero):not(#places),
+  html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#plan),
   html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
     .section-head,.card,.panel,.module,.planned-activity,.saved-place,.day-heading,
     .lodging-day-card,.airport-day-card,.nearby-result,.doc-row,
@@ -1360,7 +1360,7 @@ html[data-theme][data-theme] body.tm-new-design main.content :is(
   -webkit-text-fill-color:var(--tm-card-text)!important;
   box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important
 }
-html[data-theme][data-theme] body.tm-new-design main.content>section.section:not(.hero):not(#places),
+html[data-theme][data-theme] body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#plan),
 html[data-theme][data-theme] body.tm-new-design main.content>.trip-home-actions{
   border:1px solid var(--tm-card-border)!important;
   background:var(--tm-card-bg)!important;
@@ -1432,6 +1432,18 @@ html body.tm-new-design .ai-panel .ai-composer button.ai-voice{color:var(--tm-br
 html body.tm-new-design .ai-panel .ai-composer textarea{
   background:transparent;
   color:var(--tm-card-control-text);
+}
+
+/* Plan shares the restrained page scrim without turning its full document into a card. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"]{
+  --tm-photo-scrim-start:rgba(24,35,38,.08);
+  --tm-photo-scrim-mid:rgba(24,35,38,.11);
+  --tm-photo-scrim-end:rgba(24,35,38,.14)
+}
+html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"]{
+  --tm-photo-scrim-start:rgba(24,35,38,.1);
+  --tm-photo-scrim-mid:rgba(24,35,38,.13);
+  --tm-photo-scrim-end:rgba(24,35,38,.16)
 }
 
 /* Three reference components: material comes only from the shared tm-card tokens. */

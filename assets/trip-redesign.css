@@ -29,7 +29,7 @@ body:not(.home-page) .hero-back,body:not(.home-page) .hero .share{border:1px sol
 body:not(.home-page) .hero-country-flag{top:50%;left:calc(50% + 145px);width:auto;height:auto;border:0;border-radius:0;background:transparent;box-shadow:none;font-size:36px;transform:translateY(34px)}
 body:not(.home-page) .quick-grid{margin:18px 0;gap:14px}
 body:not(.home-page) .card,body:not(.home-page) .panel,body:not(.home-page) .module,body:not(.home-page) .plan-card,body:not(.home-page) .place-card,body:not(.home-page) .doc-row,body:not(.home-page) .expense,body:not(.home-page) .tip-card,body:not(.home-page) .nearby,body:not(.home-page) .summary-card,body:not(.home-page) .auto-card,body:not(.home-page) .service-card,body:not(.home-page) .transport-card,body:not(.home-page) .external-resources{border:1px solid var(--tm-card-border);border-radius:var(--tm-card-corner,var(--tm-card-radius));background:var(--tm-card-surface,var(--tm-card-bg));color:var(--tm-card-text);box-shadow:var(--tm-card-elevation,var(--tm-card-shadow));backdrop-filter:none}
-body:not(.home-page) .section:not(.hero):not(#places){scroll-margin-top:18px;margin-top:22px;padding:26px;border:1px solid var(--trip-line);border-radius:0;background:var(--trip-glass);box-shadow:0 20px 60px rgba(0,0,0,.2);backdrop-filter:none}
+body:not(.home-page) .section:not(.hero):not(#places):not(#plan){scroll-margin-top:18px;margin-top:22px;padding:26px;border:1px solid var(--trip-line);border-radius:0;background:var(--trip-glass);box-shadow:0 20px 60px rgba(0,0,0,.2);backdrop-filter:none}
 body:not(.home-page) .section-head h1,body:not(.home-page) .panel h2,body:not(.home-page) .auto-card h3,body:not(.home-page) .service-card h3{color:#fff;font-weight:400}
 body:not(.home-page) .section-head p,body:not(.home-page) .card small,body:not(.home-page) .card span,body:not(.home-page) .module small,body:not(.home-page) .plan-card p,body:not(.home-page) .place-card p,body:not(.home-page) .tip-card p,body:not(.home-page) .doc-row span,body:not(.home-page) .auto-card p,body:not(.home-page) .service-card p{color:var(--tm-card-secondary)}
 body:not(.home-page) .icon,body:not(.home-page) .mark,body:not(.home-page) .forecast-icon{border-radius:0;background:rgba(14,97,75,.72);color:#fff}
@@ -45,7 +45,28 @@ body:not(.home-page) .custom-hero{align-items:center;justify-content:flex-start;
 body:not(.home-page) .hero.custom-hero{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important}.hero.custom-hero:before{background:transparent!important}.hero.custom-hero .hero-back,.hero.custom-hero .share{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important}
 
 html[dir="rtl"] body:not(.home-page){background-color:#071611;background-image:linear-gradient(90deg,var(--tm-photo-scrim-start,rgba(0,0,0,.38)),var(--tm-photo-scrim-mid,rgba(0,0,0,.62)) 72%,var(--tm-photo-scrim-end,rgba(0,0,0,.7))),var(--trip-bg-image,linear-gradient(135deg,#0e614b,#071611));background-position:center;background-size:cover;background-attachment:fixed;background-repeat:no-repeat}body:not(.home-page):after{background:none}
-@media(max-width:900px){html[dir="rtl"] body:not(.home-page){background-attachment:scroll}}
+@media(max-width:900px){
+  html[dir="rtl"] body:not(.home-page){
+    position:relative;
+    isolation:isolate
+  }
+  html[dir="rtl"] body:not(.home-page)::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    background-color:#d8e0dc;
+    background-image:linear-gradient(90deg,var(--tm-photo-scrim-start,rgba(3,12,10,.3)),var(--tm-photo-scrim-mid,rgba(3,12,10,.4)) 72%,var(--tm-photo-scrim-end,rgba(3,12,10,.5))),var(--trip-bg-image,linear-gradient(135deg,#0e614b,#071611));
+    background-position:center;
+    background-size:cover;
+    background-repeat:no-repeat;
+    pointer-events:none
+  }
+  html[dir="rtl"] body:not(.home-page)>.workspace{
+    position:relative;
+    z-index:1
+  }
+}
 
 body:not(.home-page) .sidebar{border:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}body:not(.home-page) .sidebar nav a,body:not(.home-page) .sidebar nav a:hover,body:not(.home-page) .sidebar nav a.active,body:not(.home-page) .live-button,body:not(.home-page) .live-button:hover,body:not(.home-page) .sidebar-service,body:not(.home-page) .sidebar-service:hover{border:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}body:not(.home-page) .sidebar nav a i,body:not(.home-page) .live-button i,body:not(.home-page) .sidebar-service i{color:transparent;-webkit-text-stroke:1.25px rgba(255,255,255,.92);filter:drop-shadow(0 1px 3px rgba(0,0,0,.45))}body:not(.home-page) .sidebar nav a.active i{color:transparent;-webkit-text-stroke-color:#f97c22}body:not(.home-page) .trip-logout{border:0;background:transparent;box-shadow:none;color:transparent}body:not(.home-page) .trip-logout i{color:transparent;-webkit-text-stroke:1.25px #e40516;font-size:19px}body:not(.home-page) .weather-top-widget{margin:14px 0 0}
 
