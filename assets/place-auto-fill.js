@@ -202,18 +202,39 @@
     function abortAll() { controllers.forEach(function (controller) { controller.abort(); }); }
 
     var requests = endpoints.map(function (endpoint, index) {
-      return fetchWithTimeout(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-        body: 'data=' + encodeURIComponent(query)
-      }, 18000, controllers[index].signal).then(function (response) {
-        if (!response.ok) throw new Error('שירות המקומות אינו זמין.');
-        return response.json();
-      }).then(function (data) {
-        controllers.forEach(function (controller, controllerIndex) {
-          if (controllerIndex !== index) controller.abort();
-        });
-        return data;
+      return new Promise(function (resolve, reject) {
+        var started = false;
+        var delayTimer = null;
+        function abortBeforeStart() {
+          if (started) return;
+          clearTimeout(delayTimer);
+          reject(new DOMException('Mirror cancelled', 'AbortError'));
+        }
+        function startRequest() {
+          if (started) return;
+          started = true;
+          controllers[index].signal.removeEventListener('abort', abortBeforeStart);
+          if (controllers[index].signal.aborted) {
+            reject(new DOMException('Mirror cancelled', 'AbortError'));
+            return;
+          }
+          fetchWithTimeout(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+            body: 'data=' + encodeURIComponent(query)
+          }, 18000, controllers[index].signal).then(function (response) {
+            if (!response.ok) throw new Error('שירות המקומות אינו זמין.');
+            return response.json();
+          }).then(function (data) {
+            controllers.forEach(function (controller, controllerIndex) {
+              if (controllerIndex !== index) controller.abort();
+            });
+            resolve(data);
+          }, reject);
+        }
+        controllers[index].signal.addEventListener('abort', abortBeforeStart, { once: true });
+        if (index === 0) startRequest();
+        else delayTimer = setTimeout(startRequest, 900 * index);
       });
     });
 
