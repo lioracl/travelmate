@@ -35,5 +35,5 @@ test('membership uniqueness prevents duplicate rows across simultaneous accepts'
 });
 
 test('invite use count has a bounded maximum', () => {
-  assert.match(allSql, /max_uses[\s\S]*check[\s\S]*max_uses\s*>=\s*1[\s\S]*max_uses\s*<=\s*100/i);
+  assert.ok(allSql.includes('max_uses integer not null default 20 check (max_uses between 1 and 100)'));
 });
