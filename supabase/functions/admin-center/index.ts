@@ -63,7 +63,7 @@ Deno.serve(async (request) => {
   let body: Record<string, unknown> = {};
   try { body = await request.json(); } catch (_) {}
   const action = safeText(body.action, 80) || 'status';
-  const sensitive = new Set(['update-user', 'update-role', 'update-settings']);
+  const sensitive = new Set(['list-users', 'update-user', 'update-role', 'settings', 'update-settings', 'audit']);
   if (sensitive.has(action) && jwtPayload(token).aal !== 'aal2') {
     return reply(origin, { error: 'MFA_REQUIRED', message: 'יש לאמת קוד דו־שלבי לפני פעולה רגישה.' }, 403);
   }
