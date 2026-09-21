@@ -1,5 +1,5 @@
-const CACHE_NAME='travelmate-smart-v158';
-const ASSET_VERSION='20260921-19';
+const CACHE_NAME='travelmate-smart-v159';
+const ASSET_VERSION='20260921-20';
 const CORE_PATHS=[
   './',
   './index.html',
@@ -50,12 +50,22 @@ async function networkFirst(request){
     return caches.match(request).then(hit=>hit||Promise.reject(error));
   }
 }
+async function cacheFirstVersioned(request){
+  const hit=await caches.match(request);
+  if(hit)return hit;
+  const response=await fetch(request,{cache:'no-store'});
+  if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(request,copy))}
+  return response;
+}
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;
   const url=new URL(event.request.url);
   const freshAsset=/\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
+  const versionedAsset=freshAsset&&url.searchParams.has('v');
   event.respondWith(event.request.mode==='navigate'
     ?networkFirst(event.request).catch(()=>caches.match(event.request).then(hit=>hit||(url.pathname.includes('/trip/custom/')?caches.match('./trip/custom/index.html'):caches.match('./index.html'))))
+    :versionedAsset
+      ?cacheFirstVersioned(event.request)
     :freshAsset
       ?networkFirst(event.request)
     :caches.match(event.request).then(hit=>hit||fetch(event.request).then(response=>{
