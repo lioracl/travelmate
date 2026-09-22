@@ -37,3 +37,9 @@ test('place image enrichment keeps source attribution metadata', () => {
   assert.match(nearby, /data-place-image-source/);
   assert.match(nearby, /data-place-image-attribution/);
 });
+
+test('saved places persist image source attribution', () => {
+  const app = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.match(app, /imageSource:result\.dataset\.placeImageSource/);
+  assert.match(app, /imageAttribution:result\.dataset\.placeImageAttribution/);
+});
