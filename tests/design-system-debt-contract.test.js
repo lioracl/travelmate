@@ -44,3 +44,19 @@ test('document controls keep semantic design tokens instead of new white-on-whit
   assert.match(source, /\.doc-category-file-actions button\{[^}]*background:var\(--tm-card-control\)!important[^}]*color:var\(--tm-card-link\)!important/);
   assert.match(source, /\.doc-category-file-actions button\.danger\{color:var\(--tm-error,#b42318\)!important\}/);
 });
+
+test('readable glass remains the final CSS authority for dynamically loaded trip styles', () => {
+  const source = read(path.join(root, 'assets/app.js'));
+
+  assert.match(source, /var finalStyle='readable-glass\.css'/);
+  assert.match(source, /var finalLink=document\.querySelector\('link\[data-travelmate-style="'\+finalStyle\+'"\]'\)/);
+  assert.match(source, /if\(file!==finalStyle&&finalLink\)document\.head\.insertBefore\(style,finalLink\);else document\.head\.appendChild\(style\)/);
+});
+
+test('document vault is a base style and feature reloads reuse the existing style promise', () => {
+  const source = read(path.join(root, 'assets/app.js'));
+
+  assert.match(source, /baseStyles=\[[^\]]*'document-vault\.css'\]/);
+  assert.match(source, /documents:\{styles:\['document-vault\.css'\],scripts:\[\]\}/);
+  assert.match(source, /function loadStyle\(file\)\{\s*if\(loadedStyles\[file\]\)return loadedStyles\[file\]/);
+});
