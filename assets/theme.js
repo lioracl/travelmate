@@ -2,6 +2,8 @@
   'use strict';
 
   var STORAGE_KEY = 'travelmate-theme';
+  var ACCENT_KEY = 'travelmate-accent';
+  var ACCENTS = Object.freeze({ ocean: ['#147D92','#0F6F82','#0B5869','#A9DCE7'], forest: ['#176B52','#145D47','#0E4C3A','#A9D9C8'], violet: ['#6D5DA8','#5D4E95','#493D78','#C8BDEB'], coral: ['#B85F4A','#A34E3C','#843B2D','#E8B8AC'] });
   var root = document.documentElement;
 
   function readTheme() {
@@ -11,6 +13,25 @@
     } catch (error) {}
     return 'light';
   }
+
+  function readAccent() { try { var saved = localStorage.getItem(ACCENT_KEY); if (ACCENTS[saved]) return saved; } catch (error) {} return 'ocean'; }
+
+  function applyAccent(accent) {
+    accent = ACCENTS[accent] ? accent : 'ocean';
+    var palette = ACCENTS[accent];
+    root.dataset.accent = accent;
+    root.style.setProperty('--tm-brand-primary', palette[0]);
+    root.style.setProperty('--tm-brand-primary-strong', palette[1]);
+    root.style.setProperty('--tm-brand-primary-dark', palette[2]);
+    root.style.setProperty('--tm-brand-soft', palette[3]);
+    root.style.setProperty('--tm-action-primary', palette[0]);
+    root.style.setProperty('--tm-action-primary-hover', palette[1]);
+    root.style.setProperty('--tm-action-primary-active', palette[2]);
+    document.querySelectorAll('[data-accent-choice]').forEach(function (button) { var selected = button.dataset.accentChoice === accent; button.classList.toggle('active', selected); button.setAttribute('aria-pressed', String(selected)); });
+    window.dispatchEvent(new CustomEvent('travelmate:accent-change', { detail: { accent: accent } }));
+  }
+
+  function saveAccent(accent) { accent = ACCENTS[accent] ? accent : 'ocean'; try { localStorage.setItem(ACCENT_KEY, accent); } catch (error) {} applyAccent(accent); }
 
   function applyTheme(theme) {
     theme = theme === 'dark' ? 'dark' : 'light';
@@ -42,6 +63,7 @@
   }
 
   applyTheme(readTheme());
+  applyAccent(readAccent());
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       createToggle();
@@ -49,5 +71,6 @@
   } else {
     createToggle();
   }
-  window.TravelMateTheme = { get: readTheme, set: saveTheme };
+  document.addEventListener('click', function (event) { var choice = event.target.closest('[data-accent-choice]'); if (choice) saveAccent(choice.dataset.accentChoice); });
+  window.TravelMateTheme = { get: readTheme, set: saveTheme, getAccent: readAccent, setAccent: saveAccent, accents: ACCENTS };
 })();
