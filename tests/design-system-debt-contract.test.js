@@ -193,3 +193,11 @@ test('Icon-only modal close buttons have accessible names', () => {
     for (const button of closeButtons) assert.match(button, /aria-label="סגירת החלון"/);
   }
 });
+
+test('Blank-target links isolate the opener context', () => {
+  for (const file of ['trip/custom/index.html','trip/italy-2028/index.html','trip/japan-2027/index.html']) {
+    const source = read(path.join(root, file));
+    const links = source.match(/<a\b[^>]*target="_blank"[^>]*>/g) || [];
+    for (const link of links) assert.match(link, /rel="[^"]*noopener[^"]*"/, file + ': ' + link);
+  }
+});
