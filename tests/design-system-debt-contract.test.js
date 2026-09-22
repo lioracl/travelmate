@@ -144,3 +144,12 @@ test('Personalization reuses authenticated Supabase user identity', () => {
   assert.match(index, /data-user-avatar/);
   assert.doesNotMatch(home, /firstName\s*=\s*['"]ליאור['"]/);
 });
+
+test('Accent personalization changes only central semantic brand tokens', () => {
+  const theme = read(path.join(root, 'assets/theme.js'));
+  assert.match(theme, /travelmate-accent/);
+  assert.match(theme, /--tm-brand-primary/);
+  assert.match(theme, /--tm-action-primary/);
+  assert.match(theme, /data-accent-choice/);
+  assert.doesNotMatch(theme, /document\.querySelectorAll\(['"][.#](?:card|nearby|planner)/);
+});
