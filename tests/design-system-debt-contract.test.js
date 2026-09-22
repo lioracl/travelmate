@@ -162,3 +162,13 @@ test('Account settings expose the persisted accent choices accessibly', () => {
   assert.match(home, /aria-label="בחירת צבע ממשק"/);
   assert.match(theme, /localStorage\.setItem\(ACCENT_KEY, accent\)/);
 });
+
+test('Navo message contrast is semantic and theme-safe', () => {
+  const glass = read(path.join(root, 'assets/readable-glass.css'));
+  assert.match(glass, /Navo contrast contract/);
+  assert.match(glass, /\.ai-message\.assistant \.ai-bubble[\s\S]*--tm-card-bg-nested/);
+  assert.match(glass, /\.ai-message\.assistant \.ai-bubble[\s\S]*--tm-card-text/);
+  assert.match(glass, /\.ai-message\.user \.ai-bubble[\s\S]*--tm-action-primary/);
+  assert.match(glass, /\.ai-message\.user \.ai-bubble[\s\S]*--tm-text-on-action/);
+  assert.match(glass, /\.ai-message-tools button[\s\S]*--tm-card-control-text/);
+});
