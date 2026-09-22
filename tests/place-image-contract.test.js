@@ -21,3 +21,11 @@ test('nearby result keeps the resolved POI image available to the save flow', ()
   assert.match(nearby, /card\.dataset\.placeImage = place\.image/);
   assert.match(app, /result\.dataset\.placeImage\|\|''/);
 });
+
+test('POIs without OSM media metadata get a geospatially bounded Wikipedia image lookup', () => {
+  const nearby = read('assets/nearby.js');
+  assert.match(nearby, /async function fetchNamedPlaceThumbnail\(place\)/);
+  assert.match(nearby, /generator:'search'/);
+  assert.match(nearby, /distance\(Number\(place\.lat\), Number\(place\.lon\).*<= 1200/);
+  assert.match(nearby, /if \(!media\.image\) media\.image = await fetchNamedPlaceThumbnail\(place\)/);
+});
