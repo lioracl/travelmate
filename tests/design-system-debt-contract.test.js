@@ -237,3 +237,11 @@ test('Interactive Nearby result cards expose an accessible name and keyboard act
   assert.match(nearby, /event\.key==='Enter'\|\|event\.key===' '/);
   assert.match(nearby, /syncResultSelection\(event\)/);
 });
+
+test('Navo panel exposes dialog semantics and restores launcher focus', () => {
+  const ai = read(path.join(root, 'assets/ai-assistant.js'));
+  assert.match(ai, /panel\.setAttribute\('role', 'dialog'\)/);
+  assert.match(ai, /panel\.setAttribute\('aria-modal', 'true'\)/);
+  assert.match(ai, /orb\.setAttribute\('aria-controls', panel\.id\)/);
+  assert.match(ai, /ui\.orb\.focus\(\)/);
+});
