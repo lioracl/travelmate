@@ -86,3 +86,14 @@ test('document vault UI uses semantic surfaces while document paper may stay whi
   assert.match(source, /\.vault-pdf-toolbar button\{[^}]*background:var\(--tm-card-control\)[^}]*color:var\(--tm-card-control-text\)/);
   assert.match(source, /\.vault-preview header button\{[^}]*background:var\(--tm-card-control\)[^}]*color:var\(--tm-card-control-text\)/);
 });
+
+test('planner core surfaces use semantic tokens and legacy contrast patch stays retired', () => {
+  const autoPlanner = read(path.join(root, 'assets/auto-planner.css'));
+  const placePlanner = read(path.join(root, 'assets/place-planner.css'));
+  const activityContrast = read(path.join(root, 'assets/activity-contrast.css'));
+
+  assert.match(autoPlanner, /\.planner-action\{[^}]*background:var\(--tm-card-control\)[^}]*color:var\(--tm-card-control-text\)/);
+  assert.match(autoPlanner, /\.planner-action\.primary\{[^}]*background:var\(--tm-action-primary\)[^}]*color:var\(--tm-text-on-action\)/);
+  assert.match(placePlanner, /\.saved-place-actions button\{[^}]*background:var\(--tm-card-control\)/);
+  assert.doesNotMatch(activityContrast, /!important|#[0-9a-f]{3,8}|rgba?\(/i);
+});
