@@ -536,9 +536,36 @@
     return 'לא הצלחנו להשלים את הפעולה. נסו שוב בעוד רגע.';
   }
 
+  function personalizedUser(user) {
+    var metadata = user && user.user_metadata || {};
+    var email = String(user && user.email || '').trim();
+    var rawName = String(metadata.display_name || metadata.full_name || metadata.name || '').trim();
+    var emailName = email ? email.split('@')[0].replace(/[._-]+/g, ' ').trim() : '';
+    var name = rawName || emailName;
+    var firstName = name ? name.split(/\s+/)[0] : '';
+    var hour = new Date().getHours();
+    var greeting = hour < 5 ? 'לילה טוב' : hour < 12 ? 'בוקר טוב' : hour < 17 ? 'צהריים טובים' : 'ערב טוב';
+    var initials = name ? name.split(/\s+/).slice(0, 2).map(function (part) { return part.charAt(0); }).join('').toUpperCase() : (email ? email.charAt(0).toUpperCase() : '');
+    return { name: name, firstName: firstName, greeting: greeting, initials: initials };
+  }
+
+  function renderPersonalization(session) {
+    var user = session && session.user;
+    var profile = personalizedUser(user);
+    document.querySelectorAll('[data-account-label]').forEach(function (label) {
+      label.textContent = user ? profile.greeting + (profile.firstName ? ', ' + profile.firstName : '') : 'התחברות';
+    });
+    document.querySelectorAll('[data-user-avatar]').forEach(function (avatar) {
+      avatar.hidden = !user;
+      avatar.textContent = user ? profile.initials : '';
+      avatar.setAttribute('aria-label', user && profile.name ? 'משתמש: ' + profile.name : 'משתמש מחובר');
+    });
+  }
+
   function setSession(session) {
     currentSession = session;
     document.body.classList.toggle('is-authenticated', Boolean(session));
+    renderPersonalization(session);
     window.dispatchEvent(new CustomEvent('travelmate:home-auth', { detail: { authenticated: Boolean(session) } }));
     if (passwordChangeMode && session) return;
     authForm.hidden = Boolean(session);
@@ -549,7 +576,10 @@
       var label = session ? 'החשבון שלי' : 'התחברות';
       button.setAttribute('aria-label', label);
       button.setAttribute('title', label);
-      if (button.classList.contains('landing-login')) button.innerHTML = '<span>' + label + '</span>';
+      if (button.classList.contains('landing-login')) {
+        var accountLabel = button.querySelector('[data-account-label]');
+        if (accountLabel) accountLabel.textContent = session ? personalizedUser(session.user).greeting + (personalizedUser(session.user).firstName ? ', ' + personalizedUser(session.user).firstName : '') : label;
+      }
       else {
         var tip = button.querySelector('.tip');
         if (tip) tip.textContent = label;

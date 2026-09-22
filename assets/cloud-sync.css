@@ -363,3 +363,8 @@ html body.home-page .cloud-account-split .security-captcha-development i{flex:0 
   html body.home-page .cloud-account-split form .cloud-login-submit{height:52px;min-height:52px!important}
   html body.home-page .cloud-account-split .cloud-auth-secondary{gap:2px 12px}
 }
+
+/* Authenticated account personalization */
+.landing-login{display:inline-flex;align-items:center;justify-content:center;gap:9px}
+.landing-user-avatar{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border:1px solid var(--tm-card-control-border,var(--line));border-radius:50%;background:var(--tm-card-control-selected,var(--surface));color:var(--tm-card-control-text,var(--text));font-size:11px;font-weight:900;line-height:1;letter-spacing:.02em}
+.landing-user-avatar[hidden]{display:none}
