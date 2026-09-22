@@ -11,7 +11,7 @@ test('saved plan places never impersonate the destination image as a place photo
   assert.match(source, /image=safePlannerUrl\(place\.image\),links=''/);
   assert.doesNotMatch(source, /image=safePlannerUrl\(place\.image\)\|\|safePlannerUrl\(fallbackImage\)/);
   assert.match(source, /image\?'<img class="saved-place-image"/);
-  assert.match(source, /'אין תמונה זמינה עבור '/);
+  assert.match(source, /אין תמונה זמינה עבור/);
 });
 
 test('nearby result keeps the resolved POI image available to the save flow', () => {
