@@ -102,14 +102,7 @@ body:not(.home-page) .trip-home-actions a:hover,body:not(.home-page) .trip-home-
 body:not(.home-page) .trip-home-actions a i{font-size:24px;color:transparent;-webkit-text-stroke:1.2px var(--tm-card-link,#0e614b)}
 @media(max-width:900px){body:not(.home-page) .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){body:not(.home-page) .trip-home-actions{padding:18px}body:not(.home-page) .trip-home-actions nav{grid-template-columns:1fr}body:not(.home-page) .trip-home-actions a{min-height:76px;align-items:center;justify-content:center}}
-body:not(.home-page) .trip-overview-summary .budget-card{background:var(--tm-card-bg,rgba(255,255,255,.7));color:var(--tm-card-text,#111)}
-body:not(.home-page) .trip-overview-summary .budget-card small,
-body:not(.home-page) .trip-overview-summary .budget-card span,
-body:not(.home-page) .trip-overview-summary .budget-card p,
-body:not(.home-page) .trip-overview-summary .budget-card a{color:var(--tm-card-text,#111)}
-body:not(.home-page) .trip-overview-summary .budget-card strong,
-body:not(.home-page) .trip-overview-summary .budget-card b,
-body:not(.home-page) .trip-overview-summary .budget-card button{color:var(--tm-card-link,#0e614b)}
+/* Overview budget material and text hierarchy are owned by readable-glass.css. */
 body[data-trip-view="overview"] .custom-hero .hero-copy{width:min(340px,50%)}
 body[data-trip-view="overview"] .custom-hero h1{font-size:clamp(34px,4.5vw,59px)}
 body[data-trip-view="overview"] .custom-hero .hero-country-line{font-size:clamp(14px,1.2vw,15px)}

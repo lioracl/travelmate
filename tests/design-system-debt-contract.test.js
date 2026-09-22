@@ -108,3 +108,12 @@ test('Overview quick actions have one final visual owner', () => {
   assert.match(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions a\{[^}]*min-height:64px!important/);
   assert.match(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions nav\{[^}]*gap:10px!important/);
 });
+
+test('Overview budget material is owned by readable glass', () => {
+  const tripRedesign = read(path.join(root, 'assets/trip-redesign.css'));
+  const readableGlass = read(path.join(root, 'assets/readable-glass.css'));
+
+  assert.doesNotMatch(tripRedesign, /trip-overview-summary \.budget-card\{background:/);
+  assert.match(readableGlass, /\[data-trip-view="overview"\] \.budget-card\{align-items:stretch/);
+  assert.match(readableGlass, /\[data-trip-kind="custom"\].*\[data-trip-view="overview"\] \.trip-overview-summary \.budget-card\{/);
+});
