@@ -30,9 +30,9 @@ test('design-system CSS debt does not grow while ownership is being consolidated
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
   assert.ok(counts.theme <= 1600, `theme.css !important debt grew to ${counts.theme}`);
   assert.ok(counts.readableGlass <= 360, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
-  assert.ok(counts.tripRedesign <= 135, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
+  assert.ok(counts.tripRedesign <= 119, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
   assert.ok(
-    counts.theme + counts.readableGlass + counts.tripRedesign <= 2095,
+    counts.theme + counts.readableGlass + counts.tripRedesign <= 2080,
     `combined design-system !important debt grew to ${counts.theme + counts.readableGlass + counts.tripRedesign}`
   );
 });
@@ -59,4 +59,17 @@ test('document vault is a base style and feature reloads reuse the existing styl
   assert.match(source, /baseStyles=\[[^\]]*'document-vault\.css'\]/);
   assert.match(source, /documents:\{styles:\['document-vault\.css'\],scripts:\[\]\}/);
   assert.match(source, /function loadStyle\(file\)\{\s*if\(loadedStyles\[file\]\)return loadedStyles\[file\]/);
+});
+
+test('trip redesign stays structural while readable glass owns card material', () => {
+  const trip = read(cssFiles.tripRedesign);
+  const readable = read(cssFiles.readableGlass);
+  const start = trip.indexOf('/* Card structure only.');
+  const end = trip.indexOf('/* Authoritative trip theme.', start);
+  const cardOwnership = trip.slice(start, end);
+
+  assert.ok(start >= 0 && end > start, 'card ownership boundary must remain explicit');
+  assert.doesNotMatch(cardOwnership, /(?:background|border|box-shadow|backdrop-filter)\s*:/);
+  assert.match(readable, /\.section-head,\.card,\.panel,\.module/);
+  assert.match(readable, /background:var\(--tm-readable-surface-soft\)!important/);
 });

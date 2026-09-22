@@ -151,22 +151,7 @@ body[data-trip-view="plan"] #plan [data-open-trip-calendar] i,
 body[data-trip-view="plan"] #plan [data-new-activity] i{font-size:21px;color:transparent;-webkit-text-stroke:1.2px #0e614b}
 @media(max-width:850px){body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero{min-height:150px;flex-wrap:wrap;padding:16px 20px}body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero .hero-copy{order:1;width:calc(100% - 150px);flex-wrap:wrap}body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero .hero-back{order:0}body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero .share{order:2}body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero .weather-top-widget{order:3;width:100%}}
 
-/* Unified trip cards: use the same light glass language as the weather card. */
-body:not(.home-page) :where(
-  .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
-  .nearby,.summary-card,.auto-card,.service-card,.transport-card,
-  .external-resources,.generated-day,.planned-activity,.saved-place,
-  .planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,
-  .trip-summary-card,.smart-tool-panel,.trip-home-actions a
-){
-  border:1px solid var(--tm-card-border)!important;
-  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
-  background:var(--tm-card-surface,var(--tm-card-bg))!important;
-  color:var(--tm-card-text)!important;
-  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
-  backdrop-filter:var(--tm-card-blur)!important;
-  -webkit-backdrop-filter:var(--tm-card-blur)!important;
-}
+/* Card structure only. Visual material is owned by readable-glass.css, which is loaded last. */
 body:not(.home-page) :where(
   .card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,
   .nearby,.summary-card,.auto-card,.service-card,.transport-card,
@@ -201,16 +186,6 @@ body.tm-new-design{
   font-family:Rubik,Arial,'Noto Sans Hebrew',sans-serif;
 }
 body.tm-new-design::before{display:none!important}
-body.tm-new-design :where(.card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,.nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,.external-resources,.planned-activity,.saved-place,.planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,.smart-tool-panel,.day-tab,.day-item,.forecast-day,.resource-link){
-  border:1px solid var(--tm-card-border)!important;
-  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
-  outline:0!important;
-  background:var(--tm-card-surface,var(--tm-card-bg))!important;
-  color:var(--tm-card-text)!important;
-  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
-  backdrop-filter:var(--tm-card-blur)!important;
-  -webkit-backdrop-filter:var(--tm-card-blur)!important;
-}
 body.tm-new-design :where(.card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,.auto-card,.generated-day,.service-card,.day-tab,.day-item,.forecast-day,.resource-link):hover{
   transform:translateY(-1px)!important;
   box-shadow:var(--tm-card-shadow-hover)!important;
