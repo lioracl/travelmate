@@ -307,6 +307,7 @@
       history.pushState(overlayState, '', location.href);
     }
     if (!open && state.open && !fromHistory && history.state && history.state.travelMateOverlay === 'ai') {
+      if (document.contains(ui.orb)) ui.orb.focus();
       history.back();
       return;
     }
