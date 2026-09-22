@@ -245,3 +245,9 @@ test('Navo panel exposes dialog semantics and restores launcher focus', () => {
   assert.match(ai, /orb\.setAttribute\('aria-controls', panel\.id\)/);
   assert.match(ai, /ui\.orb\.focus\(\)/);
 });
+
+test('Navo announces status and busy state', () => {
+  const ai = read(path.join(root, 'assets/ai-assistant.js'));
+  assert.match(ai, /data-ai-status role="status" aria-live="polite"/);
+  assert.match(ai, /ui\.panel\.setAttribute\('aria-busy', String\(busy\)\)/);
+});
