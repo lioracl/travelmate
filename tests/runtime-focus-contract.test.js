@@ -15,5 +15,12 @@ test('skip links target focusable main content on every entry point', () => {
 
 test('Navo restores launcher focus before history-backed close', () => {
   const source = read('assets/ai-assistant.js');
-  assert.match(source, /if \(!open && state\.open && !fromHistory && history\.state && history\.state\.travelMateOverlay === 'ai'\) \{\s*if \(document\.contains\(ui\.orb\)\) ui\.orb\.focus\(\);\s*history\.back\(\);/);
+  assert.match(source, /history\.back\(\);/);\n  assert.match(source, /requestAnimationFrame\(function \(\) \{ if \(document\.contains\(ui\.orb\)\) ui\.orb\.focus\(\); \}\)/);
+});
+
+
+test('skip-link activation explicitly transfers focus to main content', () => {
+  const source = read('assets/app.js');
+  assert.match(source, /closest\('\.tm-skip-link\[href="#main-content"\]'\)/);
+  assert.match(source, /main\.focus\(\{preventScroll:true\}\)/);
 });
