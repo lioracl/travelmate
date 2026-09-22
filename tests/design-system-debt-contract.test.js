@@ -213,3 +213,11 @@ test('Modal backdrops expose dialog semantics', () => {
     }
   }
 });
+
+test('Trip modals manage keyboard focus on open and close', () => {
+  const app = read(path.join(root, 'assets/app.js'));
+  assert.match(app, /var lastModalTrigger=null/);
+  assert.match(app, /function focusModal\(modal\)/);
+  assert.match(app, /lastModalTrigger=trigger/);
+  assert.match(app, /lastModalTrigger\.focus\(\)/);
+});
