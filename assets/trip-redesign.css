@@ -186,16 +186,6 @@ body.tm-new-design{
   font-family:Rubik,Arial,'Noto Sans Hebrew',sans-serif;
 }
 body.tm-new-design::before{display:none!important}
-body.tm-new-design :where(.card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,.nearby,.summary-card,.auto-card,.generated-day,.service-card,.transport-card,.external-resources,.planned-activity,.saved-place,.planner-toolbar,.planner-composer,.group-card,.album-card,.memory-card,.smart-tool-panel,.day-tab,.day-item,.forecast-day,.resource-link){
-  border:1px solid var(--tm-card-border)!important;
-  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
-  outline:0!important;
-  background:var(--tm-card-surface,var(--tm-card-bg))!important;
-  color:var(--tm-card-text)!important;
-  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
-  backdrop-filter:var(--tm-card-blur)!important;
-  -webkit-backdrop-filter:var(--tm-card-blur)!important;
-}
 body.tm-new-design :where(.card,.panel,.module,.plan-card,.place-card,.doc-row,.expense,.tip-card,.auto-card,.generated-day,.service-card,.day-tab,.day-item,.forecast-day,.resource-link):hover{
   transform:translateY(-1px)!important;
   box-shadow:var(--tm-card-shadow-hover)!important;
