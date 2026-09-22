@@ -166,9 +166,10 @@ test('Account settings expose the persisted accent choices accessibly', () => {
 test('Navo message contrast is semantic and theme-safe', () => {
   const glass = read(path.join(root, 'assets/readable-glass.css'));
   assert.match(glass, /Navo contrast contract/);
-  assert.match(glass, /\.ai-message\.assistant \.ai-bubble[\s\S]*--tm-card-bg-nested/);
-  assert.match(glass, /\.ai-message\.assistant \.ai-bubble[\s\S]*--tm-card-text/);
-  assert.match(glass, /\.ai-message\.user \.ai-bubble[\s\S]*--tm-action-primary/);
-  assert.match(glass, /\.ai-message\.user \.ai-bubble[\s\S]*--tm-text-on-action/);
-  assert.match(glass, /\.ai-message-tools button[\s\S]*--tm-card-control-text/);
+  const navo = glass.slice(glass.indexOf('/* Navo contrast contract'));
+  assert.match(navo, /\.ai-message\.assistant \.ai-bubble[\s\S]*?background:var\(--tm-card-bg-nested\)!important/);
+  assert.match(navo, /\.ai-message\.assistant \.ai-bubble[\s\S]*?color:var\(--tm-card-text\)!important/);
+  assert.match(navo, /\.ai-message\.user \.ai-bubble[\s\S]*?background:var\(--tm-action-primary\)!important/);
+  assert.match(navo, /\.ai-message\.user \.ai-bubble[\s\S]*?color:var\(--tm-text-on-action\)!important/);
+  assert.match(navo, /\.ai-message-tools button[\s\S]*?color:var\(--tm-card-control-text\)!important/);
 });
