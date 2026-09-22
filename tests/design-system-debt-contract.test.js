@@ -260,3 +260,11 @@ test('Trip date editor traps focus and restores its opener', () => {
   assert.match(home, /opener\.focus\(\)/);
   assert.match(home, /editTripDates\(tripToEdit, editButton\)/);
 });
+
+test('Navo dialog contains keyboard focus while open', () => {
+  const ai = read(path.join(root, 'assets/ai-assistant.js'));
+  assert.match(ai, /if \(!state\.open\) return/);
+  assert.match(ai, /event\.key !== 'Tab'/);
+  assert.match(ai, /event\.shiftKey && document\.activeElement === first/);
+  assert.match(ai, /document\.activeElement === last/);
+});
