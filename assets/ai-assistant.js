@@ -508,7 +508,16 @@
   window.addEventListener('popstate', function () {
     if (state.open && !(history.state && history.state.travelMateOverlay === 'ai')) setOpen(false, true);
   });
-  document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && state.open) setOpen(false); });
+  document.addEventListener('keydown', function (event) {
+    if (!state.open) return;
+    if (event.key === 'Escape') { setOpen(false); return; }
+    if (event.key !== 'Tab') return;
+    var focusable = [].slice.call(ui.panel.querySelectorAll('button:not([disabled]):not([hidden]),a[href],input:not([disabled]):not([hidden]),select:not([disabled]):not([hidden]),textarea:not([disabled]):not([hidden]),[tabindex]:not([tabindex="-1"])')).filter(function (node) { return node.offsetParent !== null; });
+    if (!focusable.length) return;
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
   document.addEventListener('touchmove', function (event) {
     if (!state.open) return;
     if (!event.target.closest('.ai-chat, .ai-quick-prompts, .ai-composer textarea')) event.preventDefault();
