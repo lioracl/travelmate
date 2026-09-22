@@ -1936,27 +1936,27 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
 html body.tm-new-design .ai-panel .ai-message.assistant .ai-bubble,
 html body.tm-new-design .ai-panel .ai-login-card,
 html body.tm-new-design .ai-panel .ai-error-card{
-  background:var(--tm-card-bg-nested)!important;
-  border-color:var(--tm-card-border)!important;
-  color:var(--tm-card-text)!important;
-  -webkit-text-fill-color:var(--tm-card-text)!important
+  background:var(--tm-card-bg-nested);
+  border-color:var(--tm-card-border);
+  color:var(--tm-card-text);
+  -webkit-text-fill-color:var(--tm-card-text)
 }
 html body.tm-new-design .ai-panel .ai-message.assistant .ai-bubble :is(p,span,strong,b,em,li,h1,h2,h3,h4),
 html body.tm-new-design .ai-panel .ai-login-card :is(p,span,strong,small),
 html body.tm-new-design .ai-panel .ai-error-card :is(p,span,strong,small){
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important
+  color:inherit;
+  -webkit-text-fill-color:currentColor
 }
 html body.tm-new-design .ai-panel .ai-message.user .ai-bubble{
-  background:var(--tm-action-primary)!important;
-  border-color:var(--tm-action-primary-active)!important;
-  color:var(--tm-text-on-action)!important;
-  -webkit-text-fill-color:var(--tm-text-on-action)!important
+  background:var(--tm-action-primary);
+  border-color:var(--tm-action-primary-active);
+  color:var(--tm-text-on-action);
+  -webkit-text-fill-color:var(--tm-text-on-action)
 }
-html body.tm-new-design .ai-panel .ai-message.user .ai-bubble *{color:inherit!important;-webkit-text-fill-color:currentColor!important}
+html body.tm-new-design .ai-panel .ai-message.user .ai-bubble *{color:inherit;-webkit-text-fill-color:currentColor}
 html body.tm-new-design .ai-panel .ai-message-tools button{
-  background:var(--tm-card-control)!important;
-  border-color:var(--tm-card-control-border)!important;
-  color:var(--tm-card-control-text)!important;
-  -webkit-text-fill-color:var(--tm-card-control-text)!important
+  background:var(--tm-card-control);
+  border-color:var(--tm-card-control-border);
+  color:var(--tm-card-control-text);
+  -webkit-text-fill-color:var(--tm-card-control-text)
 }
