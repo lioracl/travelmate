@@ -15,7 +15,8 @@ test('skip links target focusable main content on every entry point', () => {
 
 test('Navo restores launcher focus before history-backed close', () => {
   const source = read('assets/ai-assistant.js');
-  assert.match(source, /history\.back\(\);/);\n  assert.match(source, /requestAnimationFrame\(function \(\) \{ if \(document\.contains\(ui\.orb\)\) ui\.orb\.focus\(\); \}\)/);
+  assert.match(source, /history\.back\(\);/);
+  assert.match(source, /requestAnimationFrame\(function \(\) \{ if \(document\.contains\(ui\.orb\)\) ui\.orb\.focus\(\); \}\)/);
 });
 
 
