@@ -507,7 +507,7 @@
     ui.input.focus();
   });
   window.addEventListener('popstate', function () {
-    if (state.open && !(history.state && history.state.travelMateOverlay === 'ai')) setOpen(false, true);
+    if (state.open && !(history.state && history.state.travelMateOverlay === 'ai')) { setOpen(false, true); requestAnimationFrame(function () { if (document.contains(ui.orb)) ui.orb.focus(); }); }
   });
   document.addEventListener('keydown', function (event) {
     if (!state.open) return;
