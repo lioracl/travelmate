@@ -117,3 +117,15 @@ test('Overview budget material is owned by readable glass', () => {
   assert.match(readableGlass, /\[data-trip-view="overview"\] \.budget-card\{align-items:stretch/);
   assert.match(readableGlass, /\[data-trip-kind="custom"\].*\[data-trip-view="overview"\] \.trip-overview-summary \.budget-card\{/);
 });
+
+test('Places app chrome uses semantic tokens while map markers remain isolated', () => {
+  const nearby = read(path.join(root, 'assets/nearby.css'));
+  const nearbyJs = read(path.join(root, 'assets/nearby.js'));
+
+  assert.match(nearby, /\.nearby-free-search\{[^}]*background:var\(--tm-card-bg-nested\)/);
+  assert.match(nearby, /\.nearby-free-search button\{[^}]*background:var\(--tm-action-primary\)[^}]*color:var\(--tm-text-on-action\)/);
+  assert.match(nearby, /\.nearby-result\[data-duplicate="true"\][^}]*var\(--tm-warning\)/);
+  assert.match(nearby, /\.nearby-map-shell \.maplibregl-map\{direction:ltr/);
+  assert.match(nearbyJs, /mapbox-gl-rtl-text@0\.3\.0/);
+  assert.match(nearbyJs, /enableRtlText\(MapLibre\)/);
+});
