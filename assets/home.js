@@ -498,7 +498,8 @@
     accountBackdrop.setAttribute('aria-hidden', 'false');
     document.body.classList.add('cloud-account-open');
     var firstField = accountPanel.querySelector('form:not([hidden]) input');
-    if (firstField) firstField.focus();
+    var firstControl = firstField || accountPanel.querySelector('[data-cloud-account-close]');
+    if (firstControl) firstControl.focus();
   }
 
   function closeAccountModal() {
@@ -516,7 +517,14 @@
     if (event.target === accountBackdrop) closeAccountModal();
   });
   document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape' && !accountBackdrop.hidden) closeAccountModal();
+    if (accountBackdrop.hidden) return;
+    if (event.key === 'Escape') { closeAccountModal(); return; }
+    if (event.key !== 'Tab') return;
+    var focusable = [].slice.call(accountPanel.querySelectorAll('button:not([disabled]):not([hidden]),a[href],input:not([disabled]):not([hidden]),select:not([disabled]):not([hidden]),textarea:not([disabled]):not([hidden]),[tabindex]:not([tabindex="-1"])')).filter(function (node) { return node.offsetParent !== null; });
+    if (!focusable.length) return;
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   });
 
   function setMessage(value, error) {

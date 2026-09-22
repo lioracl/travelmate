@@ -221,3 +221,12 @@ test('Trip modals manage keyboard focus on open and close', () => {
   assert.match(app, /lastModalTrigger=trigger/);
   assert.match(app, /lastModalTrigger\.focus\(\)/);
 });
+
+test('Account dialog traps keyboard focus and restores its opener', () => {
+  const home = read(path.join(root, 'assets/home.js'));
+  assert.match(home, /firstControl = firstField \|\| accountPanel\.querySelector/);
+  assert.match(home, /event\.key !== 'Tab'/);
+  assert.match(home, /event\.shiftKey && document\.activeElement === first/);
+  assert.match(home, /document\.activeElement === last/);
+  assert.match(home, /lastAccountOpenButton\.focus\(\)/);
+});
