@@ -251,3 +251,12 @@ test('Navo announces status and busy state', () => {
   assert.match(ai, /data-ai-status role="status" aria-live="polite"/);
   assert.match(ai, /ui\.panel\.setAttribute\('aria-busy', String\(busy\)\)/);
 });
+
+test('Trip date editor traps focus and restores its opener', () => {
+  const home = read(path.join(root, 'assets/home.js'));
+  assert.match(home, /function editTripDates\(trip, opener\)/);
+  assert.match(home, /event\.key === 'Escape'/);
+  assert.match(home, /event\.key !== 'Tab'/);
+  assert.match(home, /opener\.focus\(\)/);
+  assert.match(home, /editTripDates\(tripToEdit, editButton\)/);
+});
