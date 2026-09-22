@@ -27,10 +27,11 @@ test('POIs without OSM media metadata get a geospatially bounded Wikipedia image
   assert.match(nearby, /async function fetchNamedPlaceThumbnail\(place\)/);
   assert.match(nearby, /generator:'search'/);
   assert.match(nearby, /distance\(Number\(place\.lat\), Number\(place\.lon\).*<= 1200/);
-  assert.match(nearby, /if \(!media\.image\) media\.image = await fetchNamedPlaceThumbnail\(place\)/);
+  assert.match(nearby, /if \(!media\.image\) \{ var namedMedia = await fetchNamedPlaceThumbnail\(place\); if \(namedMedia\) Object\.assign\(media, namedMedia\); \}/);
 });
 
 test('place image enrichment keeps source attribution metadata', () => {
+  const nearby = read('assets/nearby.js');
   assert.match(nearby, /imageSource:'Wikipedia'/);
   assert.match(nearby, /imageAttribution:'Wikipedia \/ Wikimedia Commons'/);
   assert.match(nearby, /imageSource='Wikimedia Commons'/);
