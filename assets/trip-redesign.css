@@ -210,17 +210,7 @@ body.tm-new-design .custom-hero .hero-copy>p{
   font-size:16px;
   font-weight:300;
 }
-body.tm-new-design .trip-home-actions nav{
-  gap:14px;
-}
-body.tm-new-design .trip-home-actions a{
-  min-height:84px;
-  padding:11px 14px;
-  gap:9px;
-}
-body.tm-new-design .trip-home-actions a i{
-  font-size:21px;
-}
+/* Overview quick-action sizing is owned by readable-glass.css. */
 
 /* Places page: compact header and content directly over the destination image. */
 body.tm-new-design[data-trip-view="places"] .custom-hero .hero-copy > h1,

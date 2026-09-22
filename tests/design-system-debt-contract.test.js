@@ -97,3 +97,14 @@ test('planner core surfaces use semantic tokens and legacy contrast patch stays 
   assert.match(placePlanner, /\.saved-place-actions button\{[^}]*background:var\(--tm-card-control\)/);
   assert.doesNotMatch(activityContrast, /!important|#[0-9a-f]{3,8}|rgba?\(/i);
 });
+
+test('Overview quick actions have one final visual owner', () => {
+  const theme = read(path.join(root, 'assets/theme.css'));
+  const tripRedesign = read(path.join(root, 'assets/trip-redesign.css'));
+  const readableGlass = read(path.join(root, 'assets/readable-glass.css'));
+
+  assert.doesNotMatch(theme, /body\.tm-new-design \.trip-home-actions (?:nav|a)\{/);
+  assert.doesNotMatch(tripRedesign, /body\.tm-new-design \.trip-home-actions (?:nav|a)(?: i)?\{/);
+  assert.match(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions a\{[^}]*min-height:64px!important/);
+  assert.match(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions nav\{[^}]*gap:10px!important/);
+});

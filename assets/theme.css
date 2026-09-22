@@ -182,36 +182,7 @@ body.tm-new-design .sidebar .brand-dot i{
   -webkit-text-stroke:0!important;
   font-size:18px!important
 }
-body.tm-new-design .trip-home-actions nav{
-  grid-template-columns:repeat(5,minmax(0,1fr))!important;
-  gap:12px!important
-}
-body.tm-new-design .trip-home-actions a{
-  min-height:142px!important;
-  padding:20px 10px!important;
-  justify-content:center!important;
-  gap:16px!important;
-  color:rgba(255,255,255,.96)!important
-}
-body.tm-new-design .trip-home-actions a span{
-  color:rgba(255,255,255,.96)!important;
-  text-shadow:0 1px 10px rgba(0,0,0,.28)!important
-}
-body.tm-new-design .trip-home-actions a i{
-  color:#fff!important;
-  -webkit-text-stroke:0!important;
-  font-family:"Font Awesome 6 Free"!important;
-  font-size:25px!important
-}
-@media(max-width:900px){
-  body.tm-new-design .trip-home-actions nav{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-}
-@media(max-width:650px){
-  body.tm-new-design .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-}
-@media(max-width:520px){
-  body.tm-new-design:not([data-trip-kind="custom"]) .trip-home-actions nav{grid-template-columns:1fr!important}
-}
+/* Overview action-card material and responsive layout are owned by readable-glass.css. */
 
 body.tm-new-design .sidebar>.theme-toggle{display:none!important}
 
