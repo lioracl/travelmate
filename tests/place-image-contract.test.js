@@ -46,3 +46,10 @@ test('saved places persist image source attribution', () => {
   assert.match(app, /imageSource:result\.dataset\.placeImageSource/);
   assert.match(app, /imageAttribution:result\.dataset\.placeImageAttribution/);
 });
+
+
+test('initial Wikipedia result images carry provenance before lazy enrichment', () => {
+  const nearby = read('assets/nearby.js');
+  assert.match(nearby, /imageSource: page\.thumbnail && page\.thumbnail\.source \? 'Wikipedia' : ''/);
+  assert.match(nearby, /imageAttribution: page\.thumbnail && page\.thumbnail\.source \? 'Wikipedia \/ Wikimedia Commons' : ''/);
+});
