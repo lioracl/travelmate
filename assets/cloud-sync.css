@@ -368,3 +368,14 @@ html body.home-page .cloud-account-split .security-captcha-development i{flex:0 
 .landing-login{display:inline-flex;align-items:center;justify-content:center;gap:9px}
 .landing-user-avatar{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border:1px solid var(--tm-card-control-border,var(--line));border-radius:50%;background:var(--tm-card-control-selected,var(--surface));color:var(--tm-card-control-text,var(--text));font-size:11px;font-weight:900;line-height:1;letter-spacing:.02em}
 .landing-user-avatar[hidden]{display:none}
+
+.account-accent-picker{grid-column:1/-1;margin:2px 0 6px;padding:12px;border:1px solid var(--tm-card-control-border,rgba(255,255,255,.25));border-radius:14px}
+.account-accent-picker legend{padding-inline:6px;font-size:12px;font-weight:800}
+.account-accent-picker>div{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.cloud-account-split .cloud-account-session .account-accent-picker button{min-width:0;min-height:52px!important;display:grid;place-items:center;gap:4px;padding:6px!important;border:1px solid rgba(255,255,255,.3)!important;background:rgba(255,255,255,.08)!important;color:#fff!important}
+.account-accent-picker button i{width:22px;height:22px;border:2px solid rgba(255,255,255,.72);border-radius:50%;background:var(--accent-swatch)}
+.account-accent-picker button span{font-size:10px}
+.account-accent-picker [data-accent-choice="ocean"]{--accent-swatch:#147D92}.account-accent-picker [data-accent-choice="forest"]{--accent-swatch:#176B52}.account-accent-picker [data-accent-choice="violet"]{--accent-swatch:#6D5DA8}.account-accent-picker [data-accent-choice="coral"]{--accent-swatch:#B85F4A}
+.cloud-account-split .cloud-account-session .account-accent-picker button.active{border-color:#fff!important;box-shadow:0 0 0 2px var(--accent-swatch)}
+.cloud-account-split .cloud-account-session .account-accent-picker button:focus-visible{outline:3px solid rgba(255,255,255,.7);outline-offset:2px}
+@media(max-width:520px){.account-accent-picker>div{grid-template-columns:repeat(2,minmax(0,1fr))}}
