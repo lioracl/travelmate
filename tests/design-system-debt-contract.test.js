@@ -230,3 +230,10 @@ test('Account dialog traps keyboard focus and restores its opener', () => {
   assert.match(home, /document\.activeElement === last/);
   assert.match(home, /lastAccountOpenButton\.focus\(\)/);
 });
+
+test('Interactive Nearby result cards expose an accessible name and keyboard activation', () => {
+  const nearby = read(path.join(root, 'assets/nearby.js'));
+  assert.match(nearby, /role="button" aria-label="/);
+  assert.match(nearby, /event\.key==='Enter'\|\|event\.key===' '/);
+  assert.match(nearby, /syncResultSelection\(event\)/);
+});
