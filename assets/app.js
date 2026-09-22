@@ -43,7 +43,9 @@ var appScript=document.currentScript;
   document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
   window.TravelMateFeatures={load:loadFeature};
 })();
-function closeModal(){document.querySelectorAll('.modal-backdrop.open').forEach(function(modal){modal.classList.remove('open')})}
+var lastModalTrigger=null;
+function closeModal(){document.querySelectorAll('.modal-backdrop.open').forEach(function(modal){modal.classList.remove('open')});if(lastModalTrigger&&document.contains(lastModalTrigger)){lastModalTrigger.focus()}lastModalTrigger=null}
+function focusModal(modal){var target=modal.querySelector('[data-close],button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');if(target)requestAnimationFrame(function(){target.focus()})}
 function showDayToast(message){var toast=document.getElementById('day-toast');if(!toast)return;toast.textContent=message;toast.classList.add('show');clearTimeout(window.__dayToastTimer);window.__dayToastTimer=setTimeout(function(){toast.classList.remove('show')},2600)}
 function minutesFromTime(value){var parts=(value||'00:00').split(':').map(Number);return (parts[0]||0)*60+(parts[1]||0)}
 function checkDayConflicts(panel){if(!panel)return false;var items=[].slice.call(panel.querySelectorAll('.day-item'));var hasConflict=false;var previousStart=-1;var previousEnd=-1;items.forEach(function(item){var start=minutesFromTime(item.dataset.time);var duration=Number(item.dataset.duration||60);if(start<previousStart||start<previousEnd)hasConflict=true;previousStart=start;previousEnd=start+duration});if(hasConflict)showDayToast('יש חפיפה או סדר שעות לא רציף, אבל השינוי נשמר.');return hasConflict}
@@ -52,7 +54,7 @@ function initDayPlanner(){document.querySelectorAll('.day-panel').forEach(checkD
 
 document.addEventListener('click',function(event){
   var trigger=event.target.closest('[data-modal]');
-  if(trigger){var id='modal-'+trigger.dataset.modal;var modal=document.getElementById(id);if(trigger.dataset.alert){var title=document.getElementById('alert-title');if(title)title.textContent=trigger.dataset.alert}closeModal();if(modal){modal.classList.add('open');if(id==='modal-day')initDayPlanner()}}
+  if(trigger){var id='modal-'+trigger.dataset.modal;var modal=document.getElementById(id);if(trigger.dataset.alert){var title=document.getElementById('alert-title');if(title)title.textContent=trigger.dataset.alert}closeModal();if(modal){lastModalTrigger=trigger;modal.classList.add('open');focusModal(modal);if(id==='modal-day')initDayPlanner()}}
   if(event.target.matches('[data-close]')||event.target.closest('[data-close]')||event.target.classList.contains('modal-backdrop'))closeModal();
 });
 
