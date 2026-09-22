@@ -445,7 +445,7 @@
       event.stopPropagation();
       var editShell = editDates.closest('.trip-card-shell');
       var editTrip = editShell && renderedTrips.get(String(editShell.dataset.tripId));
-      if (editTrip) editTripDates(editTrip);
+      if (editTrip) editTripDates(editTrip, editButton);
       return;
     }
     var button = event.target.closest('[data-trip-activity]');
