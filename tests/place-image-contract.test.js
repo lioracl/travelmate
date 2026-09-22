@@ -19,6 +19,8 @@ test('nearby result keeps the resolved POI image available to the save flow', ()
   const app = read('assets/app.js');
   assert.match(nearby, /data-place-image="'\+escapeHtml\(place\.image\)\+'"/);
   assert.match(nearby, /card\.dataset\.placeImage = place\.image/);
+  assert.match(nearby, /card\.dataset\.placeImageSource = place\.imageSource/);
+  assert.match(nearby, /card\.dataset\.placeImageAttribution = place\.imageAttribution/);
   assert.match(app, /result\.dataset\.placeImage\|\|''/);
 });
 

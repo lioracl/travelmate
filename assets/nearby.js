@@ -216,7 +216,7 @@
         image.loading = 'lazy';
         image.decoding = 'async';
         image.referrerPolicy = 'no-referrer';
-        image.addEventListener('load', function () { media.replaceChildren(image); media.classList.remove('is-fallback'); card.dataset.hasImage = '1'; card.dataset.placeImage = place.image; card.classList.add('has-image'); });
+        image.addEventListener('load', function () { media.replaceChildren(image); media.classList.remove('is-fallback'); card.dataset.hasImage = '1'; card.dataset.placeImage = place.image; card.dataset.placeImageSource = place.imageSource || ''; card.dataset.placeImageAttribution = place.imageAttribution || ''; card.classList.add('has-image'); });
         image.addEventListener('error', function () { showFallback(media, place, card); });
         image.src = place.image;
       });
