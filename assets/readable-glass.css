@@ -1243,7 +1243,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header 
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .ai-orb-badge{
   background:var(--tm-accent-warm);
-  color:var(--tm-control-text)
+  color:var(--tm-control-text);
+  -webkit-text-fill-color:var(--tm-control-text)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-surface-dark-glass-strong:rgba(18,56,63,.24);
