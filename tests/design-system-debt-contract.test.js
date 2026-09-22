@@ -28,11 +28,11 @@ test('design-system CSS debt does not grow while ownership is being consolidated
   };
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
-  assert.ok(counts.theme <= 1600, `theme.css !important debt grew to ${counts.theme}`);
-  assert.ok(counts.readableGlass <= 360, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
+  assert.ok(counts.theme <= 1560, `theme.css !important debt grew to ${counts.theme}`);
+  assert.ok(counts.readableGlass <= 359, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
   assert.ok(counts.tripRedesign <= 119, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
   assert.ok(
-    counts.theme + counts.readableGlass + counts.tripRedesign <= 2080,
+    counts.theme + counts.readableGlass + counts.tripRedesign <= 2038,
     `combined design-system !important debt grew to ${counts.theme + counts.readableGlass + counts.tripRedesign}`
   );
 });
