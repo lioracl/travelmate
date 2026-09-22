@@ -578,7 +578,7 @@
       button.setAttribute('title', label);
       if (button.classList.contains('landing-login')) {
         var accountLabel = button.querySelector('[data-account-label]');
-        if (accountLabel) accountLabel.textContent = session ? personalizedUser(session.user).greeting + (personalizedUser(session.user).firstName ? ', ' + personalizedUser(session.user).firstName : '') : label;
+        if (accountLabel) { var accountProfile = session ? personalizedUser(session.user) : null; accountLabel.textContent = accountProfile ? accountProfile.greeting + (accountProfile.firstName ? ', ' + accountProfile.firstName : '') : label; }
       }
       else {
         var tip = button.querySelector('.tip');
