@@ -1960,3 +1960,7 @@ html body.tm-new-design .ai-panel .ai-message-tools button{
   color:var(--tm-card-control-text);
   -webkit-text-fill-color:var(--tm-card-control-text)
 }
+
+/* Keyboard navigation: reveal skip link only when it receives focus. */
+.tm-skip-link{position:fixed;inset-block-start:10px;inset-inline-start:10px;z-index:100000;transform:translateY(-160%);padding:10px 14px;border:2px solid var(--tm-card-control-border);border-radius:10px;background:var(--tm-action-primary);color:var(--tm-text-on-action);font-weight:800;text-decoration:none}
+.tm-skip-link:focus-visible{transform:translateY(0);outline:3px solid var(--tm-focus-ring);outline-offset:3px}
