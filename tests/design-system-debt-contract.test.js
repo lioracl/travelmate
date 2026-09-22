@@ -153,3 +153,12 @@ test('Accent personalization changes only central semantic brand tokens', () => 
   assert.match(theme, /data-accent-choice/);
   assert.doesNotMatch(theme, /document\.querySelectorAll\(['"][.#](?:card|nearby|planner)/);
 });
+
+test('Account settings expose the persisted accent choices accessibly', () => {
+  const home = read(path.join(root, 'assets/home.js'));
+  const theme = read(path.join(root, 'assets/theme.js'));
+  for (const accent of ['ocean', 'forest', 'violet', 'coral']) assert.match(home, new RegExp('data-accent-choice="' + accent + '"'));
+  assert.match(home, /fieldset class="account-accent-picker"/);
+  assert.match(home, /aria-label="בחירת צבע ממשק"/);
+  assert.match(theme, /localStorage\.setItem\(ACCENT_KEY, accent\)/);
+});
