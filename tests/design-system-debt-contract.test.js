@@ -201,3 +201,15 @@ test('Blank-target links isolate the opener context', () => {
     for (const link of links) assert.match(link, /rel="[^"]*noopener[^"]*"/, file + ': ' + link);
   }
 });
+
+test('Modal backdrops expose dialog semantics', () => {
+  for (const file of ['index.html','trip/italy-2028/index.html','trip/japan-2027/index.html']) {
+    const source = read(path.join(root, file));
+    const modals = source.match(/<section\b[^>]*class="[^"]*modal-backdrop[^"]*"[^>]*>/g) || [];
+    assert.ok(modals.length > 0, file + ' has no modal backdrops');
+    for (const modal of modals) {
+      assert.match(modal, /role="dialog"/);
+      assert.match(modal, /aria-modal="true"/);
+    }
+  }
+});
