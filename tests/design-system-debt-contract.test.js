@@ -73,3 +73,16 @@ test('trip redesign stays structural while readable glass owns card material', (
   assert.match(readable, /\.section-head,\.card,\.panel,\.module/);
   assert.match(readable, /background:var\(--tm-readable-surface-soft\)!important/);
 });
+
+test('document vault UI uses semantic surfaces while document paper may stay white', () => {
+  const source = read(path.join(root, 'assets/document-vault.css'));
+  const ui = source
+    .replace(/\.vault-preview-body iframe\{[^}]*\}/g, '')
+    .replace(/\.vault-preview-body pre\{[^}]*\}/g, '')
+    .replace(/\.vault-pdf-page canvas\{[^}]*\}/g, '');
+
+  assert.doesNotMatch(ui, /background:(?:#fff(?:fff)?|rgba\(255,255,255)/i);
+  assert.match(source, /\.vault-upload-button\{[^}]*background:var\(--tm-action-primary\)[^}]*color:var\(--tm-text-on-action\)/);
+  assert.match(source, /\.vault-pdf-toolbar button\{[^}]*background:var\(--tm-card-control\)[^}]*color:var\(--tm-card-control-text\)/);
+  assert.match(source, /\.vault-preview header button\{[^}]*background:var\(--tm-card-control\)[^}]*color:var\(--tm-card-control-text\)/);
+});
