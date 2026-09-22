@@ -129,3 +129,18 @@ test('Places app chrome uses semantic tokens while map markers remain isolated',
   assert.match(nearbyJs, /mapbox-gl-rtl-text@0\.3\.0/);
   assert.match(nearbyJs, /enableRtlText\(MapLibre\)/);
 });
+
+test('Personalization reuses authenticated Supabase user identity', () => {
+  const home = read(path.join(root, 'assets/home.js'));
+  const index = read(path.join(root, 'index.html'));
+  const cloud = read(path.join(root, 'assets/cloud-sync.js'));
+
+  assert.match(cloud, /client\.auth\.getSession\(\)/);
+  assert.match(home, /user\.user_metadata/);
+  assert.match(home, /metadata\.display_name \|\| metadata\.full_name \|\| metadata\.name/);
+  assert.match(home, /data-account-label/);
+  assert.match(home, /data-user-avatar/);
+  assert.match(index, /data-account-label/);
+  assert.match(index, /data-user-avatar/);
+  assert.doesNotMatch(home, /firstName\s*=\s*['"]ליאור['"]/);
+});
