@@ -1931,3 +1931,32 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
     border:1px solid ButtonText
   }
 }
+
+/* Navo contrast contract: assistant content follows semantic surfaces in both themes. */
+html body.tm-new-design .ai-panel .ai-message.assistant .ai-bubble,
+html body.tm-new-design .ai-panel .ai-login-card,
+html body.tm-new-design .ai-panel .ai-error-card{
+  background:var(--tm-card-bg-nested)!important;
+  border-color:var(--tm-card-border)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important
+}
+html body.tm-new-design .ai-panel .ai-message.assistant .ai-bubble :is(p,span,strong,b,em,li,h1,h2,h3,h4),
+html body.tm-new-design .ai-panel .ai-login-card :is(p,span,strong,small),
+html body.tm-new-design .ai-panel .ai-error-card :is(p,span,strong,small){
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important
+}
+html body.tm-new-design .ai-panel .ai-message.user .ai-bubble{
+  background:var(--tm-action-primary)!important;
+  border-color:var(--tm-action-primary-active)!important;
+  color:var(--tm-text-on-action)!important;
+  -webkit-text-fill-color:var(--tm-text-on-action)!important
+}
+html body.tm-new-design .ai-panel .ai-message.user .ai-bubble *{color:inherit!important;-webkit-text-fill-color:currentColor!important}
+html body.tm-new-design .ai-panel .ai-message-tools button{
+  background:var(--tm-card-control)!important;
+  border-color:var(--tm-card-control-border)!important;
+  color:var(--tm-card-control-text)!important;
+  -webkit-text-fill-color:var(--tm-card-control-text)!important
+}
