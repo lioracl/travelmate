@@ -173,3 +173,14 @@ test('Navo message contrast is semantic and theme-safe', () => {
   assert.match(navo, /\.ai-message\.user \.ai-bubble[\s\S]*?color:var\(--tm-text-on-action\)/);
   assert.match(navo, /\.ai-message-tools button[\s\S]*?color:var\(--tm-card-control-text\)/);
 });
+
+test('Every app entry point provides a keyboard skip link to main content', () => {
+  for (const file of ['index.html','trip/custom/index.html','trip/italy-2028/index.html','trip/japan-2027/index.html']) {
+    const source = read(path.join(root, file));
+    assert.match(source, /class="tm-skip-link" href="#main-content"/);
+    assert.match(source, /<main\b[^>]*id="main-content"/);
+  }
+  const glass = read(cssFiles.readableGlass);
+  assert.match(glass, /\.tm-skip-link:focus-visible/);
+  assert.match(glass, /background:var\(--tm-action-primary\)/);
+});
