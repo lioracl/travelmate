@@ -374,7 +374,7 @@
     if (archiveCount && empty) empty.remove();
   }
 
-  function editTripDates(trip) {
+  function editTripDates(trip, opener) {
     var backdrop = document.createElement('section');
     backdrop.className = 'trip-date-editor-backdrop';
     backdrop.innerHTML = '<form class="trip-date-editor" role="dialog" aria-modal="true" aria-labelledby="trip-date-editor-title"><button class="trip-date-editor-close" type="button" aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button><div><small>עדכון הטיול</small><h2 id="trip-date-editor-title">עריכת תאריכים</h2><p>' + escapeText(trip.city) + ', ' + escapeText(trip.country) + '</p></div><label><span>תאריך יציאה</span><input type="date" name="start" value="' + escapeText(trip.start) + '" required></label><label><span>תאריך חזרה</span><input type="date" name="end" value="' + escapeText(trip.end) + '" required></label><p class="trip-date-editor-error" role="alert"></p><button class="trip-date-editor-save" type="submit"><i class="fa-solid fa-calendar-check"></i> שמירת התאריכים</button></form>';
@@ -384,9 +384,20 @@
     function close() {
       document.body.classList.remove('trip-date-editor-open');
       backdrop.remove();
+      if (opener && document.contains(opener)) opener.focus();
     }
     editor.querySelector('.trip-date-editor-close').addEventListener('click', close);
+    backdrop.addEventListener('click', close);
     editor.addEventListener('click', function (event) { event.stopPropagation(); });
+    editor.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') { event.preventDefault(); close(); return; }
+      if (event.key !== 'Tab') return;
+      var focusable = [].slice.call(editor.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function (node) { return node.offsetParent !== null; });
+      if (!focusable.length) return;
+      var first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
     editor.addEventListener('submit', async function (event) {
       event.preventDefault();
       var start = editor.elements.start.value;
