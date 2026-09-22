@@ -184,3 +184,12 @@ test('Every app entry point provides a keyboard skip link to main content', () =
   assert.match(glass, /\.tm-skip-link:focus-visible/);
   assert.match(glass, /background:var\(--tm-action-primary\)/);
 });
+
+test('Icon-only modal close buttons have accessible names', () => {
+  for (const file of ['trip/italy-2028/index.html','trip/japan-2027/index.html']) {
+    const source = read(path.join(root, file));
+    const closeButtons = source.match(/<button class="modal-close"[^>]*>/g) || [];
+    assert.equal(closeButtons.length, 5, file + ' modal close count changed');
+    for (const button of closeButtons) assert.match(button, /aria-label="סגירת החלון"/);
+  }
+});
