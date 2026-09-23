@@ -165,6 +165,7 @@
     document.body.classList.remove('security-center-open');
     var target = dialogReturnFocus;
     dialogReturnFocus = null;
+    if (!target || !document.contains(target) || target.offsetParent === null) target = document.querySelector('[data-mobile-menu]') || document.querySelector('[data-security-open]');
     if (target && document.contains(target) && typeof target.focus === 'function') requestAnimationFrame(function () { target.focus(); });
   }
 
