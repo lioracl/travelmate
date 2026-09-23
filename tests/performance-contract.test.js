@@ -9,6 +9,7 @@ const nearby = fs.readFileSync(path.join(root, 'assets/nearby.js'), 'utf8');
 const serviceWorker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const tripExperience = fs.readFileSync(path.join(root, 'assets/trip-experience.js'), 'utf8');
 const smartPlanTools = fs.readFileSync(path.join(root, 'assets/smart-plan-tools.js'), 'utf8');
+const aboutScript = fs.readFileSync(path.join(root, 'assets/about.js'), 'utf8');
 
 test('home carousel does not eagerly assign all generated Unsplash backgrounds', () => {
   assert.match(home, /slide\.dataset\.slideImage = "url\('https:\/\/images\.unsplash\.com\//);
@@ -181,4 +182,11 @@ test('currency rates prefer browser-compatible providers before the legacy Frank
 test('planner replace-day controls expose an accessible name', () => {
   assert.match(smartPlanTools, /setAttribute\('aria-label', 'החלפת התוכנית ליום '/);
   assert.match(smartPlanTools, /fa-rotate" aria-hidden="true/);
+});
+
+
+test('About returns mobile focus to a visible menu trigger', () => {
+  assert.match(aboutScript, /querySelectorAll\('\[data-mobile-menu\]'\)/);
+  assert.match(aboutScript, /getClientRects\(\)\.length/);
+  assert.match(aboutScript, /mobileMenu\.focus\(\)/);
 });
