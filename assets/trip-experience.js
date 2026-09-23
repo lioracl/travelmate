@@ -168,20 +168,20 @@
       var symbols = ['ILS','USD','GBP','JPY','CHF','CZK','PLN','HUF','RON','CAD','AUD','NZD','DKK','SEK','NOK','TRY','CNY','KRW','INR','THB','MXN','BRL','ZAR',state.localCurrency].filter(function (item, index, list) { return item !== 'EUR' && list.indexOf(item) === index; }).join(',');
       var data;
       try {
-        data = await fetchRateJson('https://api.frankfurter.app/latest?from=EUR&to=' + encodeURIComponent(symbols), 6500);
-        if (!data.rates || !Number(data.rates.ILS)) throw new Error('invalid-frankfurter-rate');
-        state.rateSource = 'ECB דרך Frankfurter'; state.rateSourceUrl = 'https://frankfurter.dev/';
+        var fallback = await fetchRateJson('https://open.er-api.com/v6/latest/EUR', 6500);
+        if (!fallback.rates || !Number(fallback.rates.ILS)) throw new Error('invalid-exchangerate-rate');
+        data = { rates: fallback.rates, date: fallback.time_last_update_utc || '' };
+        state.rateSource = 'ExchangeRate-API'; state.rateSourceUrl = 'https://www.exchangerate-api.com/docs/free';
       } catch (primaryError) {
         try {
-          var fallback = await fetchRateJson('https://open.er-api.com/v6/latest/EUR', 6500);
-          if (!fallback.rates || !Number(fallback.rates.ILS)) throw primaryError;
-          data = { rates: fallback.rates, date: fallback.time_last_update_utc || '' };
-          state.rateSource = 'ExchangeRate-API'; state.rateSourceUrl = 'https://www.exchangerate-api.com/docs/free';
-        } catch (fallbackError) {
           var lastFallback = await fetchRateJson('https://api.exchangerate-api.com/v4/latest/EUR', 6500);
-          if (!lastFallback.rates || !Number(lastFallback.rates.ILS)) throw fallbackError;
+          if (!lastFallback.rates || !Number(lastFallback.rates.ILS)) throw primaryError;
           data = { rates: lastFallback.rates, date: lastFallback.date || '' };
           state.rateSource = 'ExchangeRate-API'; state.rateSourceUrl = 'https://www.exchangerate-api.com/';
+        } catch (fallbackError) {
+          data = await fetchRateJson('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=' + encodeURIComponent(symbols), 6500);
+          if (!data.rates || !Number(data.rates.ILS)) throw fallbackError;
+          state.rateSource = 'ECB דרך Frankfurter'; state.rateSourceUrl = 'https://frankfurter.dev/';
         }
       }
       state.rates = data.rates; state.rate = Number(data.rates.ILS); state.rateDate = data.date || '';
