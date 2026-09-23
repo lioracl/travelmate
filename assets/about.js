@@ -366,7 +366,12 @@
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('about-open');
-    if (aboutReturnFocus && aboutReturnFocus.isConnected) aboutReturnFocus.focus();
+    var returnTarget = aboutReturnFocus && aboutReturnFocus.isConnected ? aboutReturnFocus : null;
+    if (returnTarget && returnTarget.getClientRects().length) returnTarget.focus();
+    else {
+      var mobileMenu = Array.prototype.find.call(document.querySelectorAll('[data-mobile-menu]'), function (button) { return button.getClientRects().length; });
+      if (mobileMenu) mobileMenu.focus();
+    }
     aboutReturnFocus = null;
   }
   function addSidebarEntry() {
