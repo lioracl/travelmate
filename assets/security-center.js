@@ -164,8 +164,10 @@
     dialog.hidden = true;
     document.body.classList.remove('security-center-open');
     var target = dialogReturnFocus;
+    var mobileMenu = document.querySelector('[data-mobile-menu]');
     dialogReturnFocus = null;
-    if (!target || !document.contains(target) || target.offsetParent === null) target = document.querySelector('[data-mobile-menu]') || document.querySelector('[data-security-open]');
+    if (mobileMenu && mobileMenu.offsetParent !== null && window.matchMedia('(max-width: 900px)').matches) target = mobileMenu;
+    else if (!target || !document.contains(target) || target.offsetParent === null) target = mobileMenu || document.querySelector('[data-security-open]');
     if (target && document.contains(target) && typeof target.focus === 'function') requestAnimationFrame(function () { target.focus(); });
   }
 
