@@ -34,7 +34,9 @@
         dayButton.type = 'button';
         dayButton.className = 'day-replace';
         dayButton.dataset.smartReplaceDay = dateAt(index, trip);
-        dayButton.innerHTML = '<i class="fa-solid fa-rotate"></i><span>החלף יום</span>';
+        dayButton.setAttribute('aria-label', 'החלפת התוכנית ליום ' + (index + 1));
+        dayButton.title = 'החלפת התוכנית ליום ' + (index + 1);
+        dayButton.innerHTML = '<i class="fa-solid fa-rotate" aria-hidden="true"></i><span>החלף יום</span>';
         actions.insertBefore(dayButton, actions.firstChild);
       }
     });

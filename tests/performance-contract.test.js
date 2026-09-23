@@ -8,6 +8,7 @@ const home = fs.readFileSync(path.join(root, 'assets/home.js'), 'utf8');
 const nearby = fs.readFileSync(path.join(root, 'assets/nearby.js'), 'utf8');
 const serviceWorker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const tripExperience = fs.readFileSync(path.join(root, 'assets/trip-experience.js'), 'utf8');
+const smartPlanTools = fs.readFileSync(path.join(root, 'assets/smart-plan-tools.js'), 'utf8');
 
 test('home carousel does not eagerly assign all generated Unsplash backgrounds', () => {
   assert.match(home, /slide\.dataset\.slideImage = "url\('https:\/\/images\.unsplash\.com\//);
@@ -174,4 +175,10 @@ test('currency rates prefer browser-compatible providers before the legacy Frank
   const frankfurter = tripExperience.indexOf('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=');
   assert.ok(openEr >= 0 && exchangeV4 > openEr && frankfurter > exchangeV4);
   assert.doesNotMatch(tripExperience, /https:\/\/api\.frankfurter\.app\/latest/);
+});
+
+
+test('planner replace-day controls expose an accessible name', () => {
+  assert.match(smartPlanTools, /setAttribute\('aria-label', 'החלפת התוכנית ליום '/);
+  assert.match(smartPlanTools, /fa-rotate" aria-hidden="true/);
 });
