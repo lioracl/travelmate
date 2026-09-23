@@ -25,3 +25,13 @@ test('skip-link activation explicitly transfers focus to main content', () => {
   assert.match(source, /closest\('\.tm-skip-link\[href="#main-content"\]'\)/);
   assert.match(source, /main\.focus\(\{preventScroll:true\}\)/);
 });
+
+
+test('settings dialog traps focus and restores the launcher', () => {
+  const source = read('assets/security-center.js');
+  assert.match(source, /dialogReturnFocus = document\.activeElement/);
+  assert.match(source, /closeButton\.focus\(\)/);
+  assert.match(source, /function trapDialogFocus\(event\)/);
+  assert.match(source, /document\.contains\(target\)/);
+  assert.match(source, /target\.focus\(\)/);
+});
