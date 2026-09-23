@@ -34,4 +34,6 @@ test('settings dialog traps focus and restores the launcher', () => {
   assert.match(source, /function trapDialogFocus\(event\)/);
   assert.match(source, /document\.contains\(target\)/);
   assert.match(source, /target\.focus\(\)/);
+  assert.match(source, /target\.offsetParent === null/);
+  assert.match(source, /querySelector\('\[data-mobile-menu\]'\)/);
 });
