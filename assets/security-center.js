@@ -6,6 +6,7 @@
   var captchaToken = '';
   var pendingFactorId = '';
   var challengeInProgress = false;
+  var dialogReturnFocus = null;
 
   function escapeHtml(value) {
     return String(value || '').replace(/[&<>"']/g, function (character) {
@@ -129,10 +130,13 @@
   function openDialog() {
     var dialog = document.querySelector('[data-security-dialog]');
     if (!dialog) return;
+    dialogReturnFocus = document.activeElement && document.activeElement !== document.body ? document.activeElement : document.querySelector('[data-security-open]');
     dialog.hidden = false;
     document.body.classList.add('security-center-open');
     syncPreferences();
     refresh();
+    var closeButton = dialog.querySelector('[data-security-close]');
+    if (closeButton) requestAnimationFrame(function () { closeButton.focus(); });
   }
 
   function syncPreferences() {
@@ -156,8 +160,23 @@
 
   function closeDialog() {
     var dialog = document.querySelector('[data-security-dialog]');
-    if (dialog) dialog.hidden = true;
+    if (!dialog || dialog.hidden) return;
+    dialog.hidden = true;
     document.body.classList.remove('security-center-open');
+    var target = dialogReturnFocus;
+    dialogReturnFocus = null;
+    if (target && document.contains(target) && typeof target.focus === 'function') requestAnimationFrame(function () { target.focus(); });
+  }
+
+  function trapDialogFocus(event) {
+    var dialog = document.querySelector('[data-security-dialog]');
+    if (!dialog || dialog.hidden || event.key !== 'Tab') return;
+    var focusable = [].slice.call(dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function (node) { return node.offsetParent !== null; });
+    if (!focusable.length) return;
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    else if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); }
   }
 
   async function renderMfa() {
@@ -257,7 +276,7 @@
         syncPreferences();
       }
     });
-    document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeDialog(); });
+    document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeDialog(); else trapDialogFocus(event); });
     document.querySelector('[data-security-signout]').onclick = async function () { await cloud.signOut('local'); location.reload(); };
     document.querySelector('[data-security-signout-all]').onclick = async function () {
       if (!window.confirm('לנתק את החשבון מכל המכשירים המחוברים?')) return;
