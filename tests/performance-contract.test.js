@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, '..');
 const home = fs.readFileSync(path.join(root, 'assets/home.js'), 'utf8');
 const nearby = fs.readFileSync(path.join(root, 'assets/nearby.js'), 'utf8');
 const serviceWorker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+const tripExperience = fs.readFileSync(path.join(root, 'assets/trip-experience.js'), 'utf8');
 
 test('home carousel does not eagerly assign all generated Unsplash backgrounds', () => {
   assert.match(home, /slide\.dataset\.slideImage = "url\('https:\/\/images\.unsplash\.com\//);
@@ -164,4 +165,13 @@ test('mobile trip header has one high-specificity geometry authority', () => {
   assert.match(source, /Mobile layout authority: the single source of truth for trip header geometry/);
   assert.doesNotMatch(source, /padding-top:94px!important/);
   assert.doesNotMatch(source, /\+ 84px\)!important/);
+});
+
+
+test('currency rates prefer browser-compatible providers before the legacy Frankfurter endpoint', () => {
+  const openEr = tripExperience.indexOf('https://open.er-api.com/v6/latest/EUR');
+  const exchangeV4 = tripExperience.indexOf('https://api.exchangerate-api.com/v4/latest/EUR');
+  const frankfurter = tripExperience.indexOf('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=');
+  assert.ok(openEr >= 0 && exchangeV4 > openEr && frankfurter > exchangeV4);
+  assert.doesNotMatch(tripExperience, /https:\/\/api\.frankfurter\.app\/latest/);
 });
