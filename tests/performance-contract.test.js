@@ -10,6 +10,7 @@ const serviceWorker = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const tripExperience = fs.readFileSync(path.join(root, 'assets/trip-experience.js'), 'utf8');
 const smartPlanTools = fs.readFileSync(path.join(root, 'assets/smart-plan-tools.js'), 'utf8');
 const aboutScript = fs.readFileSync(path.join(root, 'assets/about.js'), 'utf8');
+const appScript = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
 
 test('home carousel does not eagerly assign all generated Unsplash backgrounds', () => {
   assert.match(home, /slide\.dataset\.slideImage = "url\('https:\/\/images\.unsplash\.com\//);
@@ -192,4 +193,10 @@ test('About returns mobile focus to a visible menu trigger', () => {
   assert.match(aboutScript, /matchMedia\('\(max-width: 900px\)'\)/);
   assert.match(aboutScript, /window\.setTimeout/);
   assert.match(aboutScript, /focusTarget\.focus\(\)/);
+});
+
+
+test('skip link is promoted to the initial keyboard focus target', () => {
+  assert.match(appScript, /querySelector\('\.tm-skip-link'\)/);
+  assert.match(appScript, /skip\.focus\(\{preventScroll:true\}\)/);
 });
