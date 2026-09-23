@@ -189,6 +189,7 @@ test('About returns mobile focus to a visible menu trigger', () => {
   assert.match(aboutScript, /querySelectorAll\('\[data-mobile-menu\]'\)/);
   assert.match(aboutScript, /getBoundingClientRect\(\)/);
   assert.match(aboutScript, /returnRect\.right <= window\.innerWidth/);
+  assert.match(aboutScript, /matchMedia\('\(max-width: 900px\)'\)/);
   assert.match(aboutScript, /window\.setTimeout/);
   assert.match(aboutScript, /focusTarget\.focus\(\)/);
 });

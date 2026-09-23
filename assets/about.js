@@ -369,7 +369,9 @@
     var returnTarget = aboutReturnFocus && aboutReturnFocus.isConnected ? aboutReturnFocus : null;
     var returnRect = returnTarget && returnTarget.getBoundingClientRect ? returnTarget.getBoundingClientRect() : null;
     var returnVisible = Boolean(returnRect && returnRect.width && returnRect.height && returnRect.left >= 0 && returnRect.top >= 0 && returnRect.right <= window.innerWidth && returnRect.bottom <= window.innerHeight);
-    var focusTarget = returnVisible ? returnTarget : Array.prototype.find.call(document.querySelectorAll('[data-mobile-menu]'), function (button) { return button.getClientRects().length; });
+    var mobileMenu = Array.prototype.find.call(document.querySelectorAll('[data-mobile-menu]'), function (button) { return button.getClientRects().length; });
+    var mobileViewport = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+    var focusTarget = mobileViewport && mobileMenu ? mobileMenu : (returnVisible ? returnTarget : mobileMenu);
     aboutReturnFocus = null;
     if (focusTarget) window.setTimeout(function () { if (focusTarget.isConnected) focusTarget.focus(); }, 0);
   }
