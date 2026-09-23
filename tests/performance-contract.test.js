@@ -11,6 +11,7 @@ const tripExperience = fs.readFileSync(path.join(root, 'assets/trip-experience.j
 const smartPlanTools = fs.readFileSync(path.join(root, 'assets/smart-plan-tools.js'), 'utf8');
 const aboutScript = fs.readFileSync(path.join(root, 'assets/about.js'), 'utf8');
 const appScript = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+const homeScript = fs.readFileSync(path.join(root, 'assets/home.js'), 'utf8');
 
 test('home carousel does not eagerly assign all generated Unsplash backgrounds', () => {
   assert.match(home, /slide\.dataset\.slideImage = "url\('https:\/\/images\.unsplash\.com\//);
@@ -199,4 +200,9 @@ test('About returns mobile focus to a visible menu trigger', () => {
 test('skip link is promoted to the initial keyboard focus target', () => {
   assert.match(appScript, /querySelector\('\.tm-skip-link'\)/);
   assert.match(appScript, /skip\.focus\(\{preventScroll:true\}\)/);
+});
+
+
+test('home carousel excludes the known ORB-blocked Unsplash asset', () => {
+  assert.doesNotMatch(homeScript, /photo-1470214304380-aadaedcfff1b/);
 });
