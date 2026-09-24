@@ -65,7 +65,8 @@ test('migrated writers preserve feature ownership while delegating persistence',
   assert.match(assistant, /store\.saveTrip\(trip\)/);
 
   const lodging = read('assets/lodging-manager.js');
-  assert.match(lodging, /TravelMateTripStore\.saveTrip\(trip\)/);
+  assert.match(lodging, /TravelMateTripStore\.updateTrip\(trip\.id/);
+  assert.match(lodging, /managedAnchor/);
 });
 
 test('travelmate-trips storage key is owned only by Cloud Sync and Trip Store', () => {
