@@ -59,6 +59,15 @@ test('one shared secure upload owner replaces duplicate upload buttons', () => {
   assert.match(vault, /vaultPickButtons\.forEach/);
 });
 
+test('all document upload entry points share one auth-aware action', () => {
+  assert.match(vault, /function requestDocumentUpload\(categoryName\)/);
+  assert.match(vault, /vaultPickButtons\.forEach/);
+  assert.match(vault, /requestDocumentUpload\(categoryName\)/);
+  assert.match(vault, /authPanel\.scrollIntoView/);
+  assert.match(vault, /email\.focus/);
+  assert.doesNotMatch(vault, /button\.disabled = !currentUser/);
+});
+
 test('encrypted document contents are not sent to Mate by Documents V2', () => {
   assert.doesNotMatch(vault, /askAi|travelmate:ask-ai|Gemini|TravelMateNavo/);
   assert.match(vault, /PBKDF2_ITERATIONS = 310000/);
