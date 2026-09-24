@@ -65,3 +65,7 @@
 .nearby-result :is(.nearby-type,.nearby-distance){font-weight:650}
 @media(max-width:760px){.nearby-selected-category{align-items:stretch;flex-direction:column}.nearby-selected-category [data-nearby-clear-categories]{align-self:flex-start}.nearby-execute-actions{grid-template-columns:1fr}.tm-place-card__primary-actions{grid-template-columns:1fr}.tm-place-card__secondary-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}.tm-place-card__secondary-actions :is(a,button){width:100%}}
 @media(max-width:320px){.nearby-result-schedule{grid-template-columns:1fr}.tm-place-card__secondary-actions{grid-template-columns:1fr}}
+
+/* Place media fallback stays visibly intentional when no exact open-source photo exists. */
+.tm-place-card__media.is-fallback{border:1px solid var(--tm-card-border);background:linear-gradient(135deg,rgba(20,125,146,.18),rgba(169,220,231,.3));color:var(--tm-card-link)}
+.tm-place-card__media.is-loading{background:linear-gradient(135deg,rgba(20,125,146,.12),rgba(169,220,231,.22))}
