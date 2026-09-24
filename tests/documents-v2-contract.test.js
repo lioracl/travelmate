@@ -28,6 +28,7 @@ test('Documents V2 has five encrypted document groups plus Mate as a separate ar
 });
 
 test('legacy document categories are normalized without a database migration', () => {
+  assert.match(vault, /\/טיסה\|טיסות\|flight\|boarding\/i/);
   assert.match(vault, /\/תחבורה\|כרטיס\|רכבת\|אוטובוס\|ticket\|transport\|train\|bus\/i/);
   assert.match(vault, /return 'tickets'/);
   assert.match(vault, /return 'personal'/);
