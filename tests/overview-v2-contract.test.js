@@ -59,8 +59,14 @@ test('Overview V2 reads canonical trip data and renders next, budget and lodging
 
 test('Overview V2 cards use the canonical trip navigation owner', () => {
   assert.match(redesign, /\[data-overview-control-center\] a\[href\^="#"\]/);
-  assert.match(redesign, /\[data-overview-control-center\] a\[data-view\]/);
+  assert.match(redesign, /\[data-overview-control-center\] a/);
+  assert.doesNotMatch(overview, /data-view="/);
   assert.doesNotMatch(overview, /history\.pushState|location\.hash\s*=|travelmate:viewchange/);
+});
+
+test('Overview status links do not trigger hover prefetch before navigation', () => {
+  assert.doesNotMatch(overview, /data-view="/);
+  assert.match(app, /closest&&event\.target\.closest\('\[data-view\]'\)/);
 });
 
 test('Overview V2 listens for canonical trip updates instead of polling', () => {
