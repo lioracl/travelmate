@@ -30,7 +30,28 @@
   <main tabindex="-1" id="main-content" class="content">
     <header class="mobile-header"><a href="../../index.html">←</a><strong><a class="mobile-destination-map" data-maps target="_blank" rel="noopener noreferrer" aria-label="פתיחת מפת היעד" title="פתיחת מפת היעד"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></a><span class="mobile-country-flag" data-country-flag aria-hidden="true">🌍</span><button type="button" class="mobile-trip-whatsapp" data-trip-share-whatsapp aria-label="שיתוף הטיול ב־WhatsApp" title="שיתוף הטיול ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></button><span data-country></span></strong></header>
     <section id="overview" class="hero custom-hero section"><a href="../../index.html" class="hero-back">חזרה לכל הטיולים</a><div class="hero-copy"><span class="status">הטיול החדש שלך</span><h1><span data-city></span></h1><div class="hero-country-line"><span data-country-flag aria-hidden="true">🌍</span><span data-country></span></div><p><span data-days></span> ימים · טיול <span data-type></span></p></div><div class="hero-share-actions"><button type="button" class="share trip-whatsapp-share" data-trip-share-whatsapp aria-label="שיתוף ב־WhatsApp" title="שיתוף ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></button></div></section>
-    <section class="quick-grid trip-overview-summary"><article class="card budget-card"><div><small>תקציב הטיול</small><strong>€<span data-budget></span></strong><span>המלצה ראשונית לחלוקה</span></div></article></section>
+    <section class="trip-overview-summary overview-control-center" data-overview-control-center aria-label="מצב הטיול עכשיו">
+      <article class="card overview-status-card" data-overview-next>
+        <span class="overview-status-icon"><i class="fa-solid fa-calendar-day"></i></span>
+        <div><small>הבא בתוכנית</small><strong data-overview-next-title>עדיין אין פעילות מתוכננת</strong><span data-overview-next-meta>אפשר להתחיל מכרטיסיית תוכנית</span></div>
+        <a href="#plan" aria-label="פתיחת התוכנית"><i class="fa-solid fa-arrow-left"></i></a>
+      </article>
+      <article class="card overview-status-card budget-card" data-overview-budget>
+        <span class="overview-status-icon"><i class="fa-solid fa-wallet"></i></span>
+        <div><small>מצב התקציב</small><strong data-overview-budget-title>טוען…</strong><span data-overview-budget-meta></span></div>
+        <a href="#budget" aria-label="פתיחת התקציב"><i class="fa-solid fa-arrow-left"></i></a>
+      </article>
+      <article class="card overview-status-card" data-overview-lodging>
+        <span class="overview-status-icon"><i class="fa-solid fa-hotel"></i></span>
+        <div><small>מקום לינה</small><strong data-overview-lodging-title>לא הוגדר עדיין</strong><span data-overview-lodging-meta>אפשר לקבע מלון דרך מקומות</span></div>
+        <a href="#places" aria-label="פתיחת מקומות"><i class="fa-solid fa-arrow-left"></i></a>
+      </article>
+      <article class="card overview-status-card" data-overview-attention>
+        <span class="overview-status-icon"><i class="fa-solid fa-circle-check"></i></span>
+        <div><small>דורש תשומת לב</small><strong data-overview-attention-title>הכול נראה מסודר</strong><span data-overview-attention-meta>TravelMate יעדכן כאן אם חסר משהו בסיסי</span></div>
+        <a href="#plan" data-overview-attention-link aria-label="פתיחת הפריט שדורש תשומת לב"><i class="fa-solid fa-arrow-left"></i></a>
+      </article>
+    </section>
     <section class="trip-home-actions" aria-labelledby="trip-home-actions-title">
       <div><p>השלב הבא בטיול</p><h2 id="trip-home-actions-title">מה תרצי לעשות עכשיו?</h2></div>
       <nav aria-label="פעולות מרכזיות בטיול">
