@@ -99,7 +99,7 @@
   }
   function recommendationFor(context, body, generatedAt) {
     return {
-      title: clean(context.destination, 120) + ' — המלצות Navo',
+      title: clean(context.destination, 120) + ' — המלצות Mate',
       subtitle: contextSummary(context),
       body: sanitizeRecommendationBody(body),
       generatedAt: generatedAt || new Date().toISOString(),
@@ -116,7 +116,7 @@
     var typeInstruction = TYPE_META[context.tripType] ? TYPE_META[context.tripType].prompt : '';
     if (context.contextMode === MODE.EXISTING_TRIP) {
       return [
-        'פעל כנבו, יועץ הנסיעות של TravelMate. החזר המלצות תמציתיות בעברית בלבד.',
+        'פעל כMate, יועץ הנסיעות של TravelMate. החזר המלצות תמציתיות בעברית בלבד.',
         'זהו טיול קיים. הערך ושפר את התכנון השמור; אל תתנהג כאילו התכנון מתחיל מאפס.',
         'יעד: ' + context.destination + (context.country ? ', ' + context.country : '') + '.',
         context.tripType ? 'סוג טיול: ' + context.tripType + '. ' + typeInstruction : '',
@@ -126,31 +126,31 @@
         context.savedPlacesContext.length ? 'מקומות שכבר נשמרו: ' + JSON.stringify(context.savedPlacesContext) : '',
         context.lodgingContext ? 'לינה קיימת: ' + JSON.stringify(context.lodgingContext) : '',
         context.transportContext ? 'תחבורה קיימת: ' + JSON.stringify(context.transportContext) : '',
-        'השתמש בכותרות: הטיול שלך בקצרה; מה מתאים במיוחד לטיול הזה; מה לא לפספס; מה כבר מכוסה במסלול רק אם המבנה המאומת מוכיח זאת; מה אולי חסר; לינה; אוכל ובילוי; התניידות; טיפ לעונה; טיפ של Navo.',
+        'השתמש בכותרות: הטיול שלך בקצרה; מה מתאים במיוחד לטיול הזה; מה לא לפספס; מה כבר מכוסה במסלול רק אם המבנה המאומת מוכיח זאת; מה אולי חסר; לינה; אוכל ובילוי; התניידות; טיפ לעונה; טיפ של Mate.',
         'אל תוסיף דבר למסלול. אל תמציא מחירים, שעות פתיחה, סגירות, אירועים או מצב תחבורה בזמן אמת.'
       ].filter(Boolean).join('\n');
     }
     return [
-      'פעל כנבו, יועץ הנסיעות של TravelMate. החזר המלצות תמציתיות בעברית בלבד.',
+      'פעל כMate, יועץ הנסיעות של TravelMate. החזר המלצות תמציתיות בעברית בלבד.',
       'מצב ההקשר: ' + context.contextMode + '.',
       'יעד: ' + context.destination + (context.country ? ', ' + context.country : '') + '.',
       context.tripType ? 'סוג טיול: ' + context.tripType + '. ' + typeInstruction : '',
       context.startDate && context.endDate ? 'תאריכים: ' + context.startDate + ' עד ' + context.endDate + '; ' + context.durationDays + ' ימים.' : '',
       context.budget ? 'תקציב משוער: ' + context.budget + ' ' + context.currency + '.' : '',
       context.preferences.length ? 'העדפות: ' + context.preferences.join(', ') + '.' : '',
-      'התמקד בהתאמת היעד, 4–6 דברים שלא כדאי לפספס, אזורי לינה, אוכל ובילוי, התניידות, קצב מומלץ, טיפ לעונה וטיפ אישי אחד של נבו.',
+      'התמקד בהתאמת היעד, 4–6 דברים שלא כדאי לפספס, אזורי לינה, אוכל ובילוי, התניידות, קצב מומלץ, טיפ לעונה וטיפ אישי אחד של Mate.',
       'אל תטען שיש מסלול קיים. אל תמציא מחירים, שעות פתיחה, סגירות, אירועים או מצב תחבורה בזמן אמת. השתמש בכותרות קצרות ורשימות.'
     ].filter(Boolean).join('\n');
   }
   function renderAnswer(answer) {
-    var navo = window.TravelMateNavo;
+    var navo = window.TravelMateMate;
     return navo && navo.formatResponse ? navo.formatResponse(answer) : '<p>' + escapeHtml(answer).replace(/\n/g, '<br>') + '</p>';
   }
   function createSheet() {
     var backdrop = document.createElement('section');
     backdrop.className = 'navo-intelligence-backdrop';
     backdrop.hidden = true;
-    backdrop.innerHTML = '<div class="navo-intelligence-sheet" role="dialog" aria-modal="true" aria-labelledby="navo-intelligence-title"><header><span class="navo-intelligence-icon"><i class="fa-solid fa-compass"></i></span><div><h2 id="navo-intelligence-title">המלצות Navo</h2><p data-navo-context></p></div><button type="button" data-navo-close aria-label="סגירת המלצות Navo"><i class="fa-solid fa-xmark"></i></button></header><div class="navo-intelligence-status" data-navo-stale hidden><i class="fa-solid fa-triangle-exclamation"></i><span>הפרטים השתנו מאז יצירת ההמלצות</span><button type="button" data-navo-refresh>רענן המלצות</button></div><div class="navo-intelligence-content" data-navo-content tabindex="0"></div><footer><button type="button" data-navo-save><i class="fa-solid fa-file-circle-plus"></i> שמור למסמכים</button><button type="button" data-navo-ask><i class="fa-solid fa-comments"></i> שאל את נבו עוד</button></footer></div>';
+    backdrop.innerHTML = '<div class="navo-intelligence-sheet" role="dialog" aria-modal="true" aria-labelledby="navo-intelligence-title"><header><span class="navo-intelligence-icon"><i class="fa-solid fa-compass"></i></span><div><h2 id="navo-intelligence-title">המלצות Mate</h2><p data-navo-context></p></div><button type="button" data-navo-close aria-label="סגירת המלצות Mate"><i class="fa-solid fa-xmark"></i></button></header><div class="navo-intelligence-status" data-navo-stale hidden><i class="fa-solid fa-triangle-exclamation"></i><span>הפרטים השתנו מאז יצירת ההמלצות</span><button type="button" data-navo-refresh>רענן המלצות</button></div><div class="navo-intelligence-content" data-navo-content tabindex="0"></div><footer><button type="button" data-navo-save><i class="fa-solid fa-file-circle-plus"></i> שמור למסמכים</button><button type="button" data-navo-ask><i class="fa-solid fa-comments"></i> שאל את Mate עוד</button></footer></div>';
     document.body.appendChild(backdrop);
     ui.backdrop = backdrop;
     ui.sheet = backdrop.firstElementChild;
@@ -179,7 +179,7 @@
   function openSheet(context) {
     bindContext(context);
     state.returnFocus = document.activeElement;
-    ui.title.textContent = context.destination + ' — המלצות Navo';
+    ui.title.textContent = context.destination + ' — המלצות Mate';
     ui.context.textContent = contextSummary(context);
     ui.backdrop.hidden = false;
     document.body.classList.add('navo-intelligence-open');
@@ -194,19 +194,19 @@
   function renderState() {
     ui.stale.hidden = !state.stale;
     var body = state.recommendation && state.recommendation.body || '';
-    ui.content.innerHTML = body ? renderAnswer(body) : '<div class="navo-intelligence-empty"><i class="fa-solid fa-compass"></i><p>נבו יכין המלצות מותאמות לפרטי הטיול שבחרת.</p></div>';
-    if (body && window.TravelMateNavo && window.TravelMateNavo.responseIncomplete(state.responseData)) {
+    ui.content.innerHTML = body ? renderAnswer(body) : '<div class="navo-intelligence-empty"><i class="fa-solid fa-compass"></i><p>Mate יכין המלצות מותאמות לפרטי הטיול שבחרת.</p></div>';
+    if (body && window.TravelMateMate && window.TravelMateMate.responseIncomplete(state.responseData)) {
       ui.content.insertAdjacentHTML('beforeend', '<button type="button" class="navo-intelligence-continue" data-navo-continue><i class="fa-solid fa-forward-step"></i> המשך תשובה</button>');
     }
     ui.save.disabled = !body || state.stale || state.busy;
   }
   async function generate() {
     if (state.busy || !state.context) return;
-    var navo = window.TravelMateNavo;
-    if (!navo || !navo.request) { ui.content.innerHTML = '<p class="navo-intelligence-error">נבו עדיין נטען. נסה שוב בעוד רגע.</p>'; return; }
+    var navo = window.TravelMateMate;
+    if (!navo || !navo.request) { ui.content.innerHTML = '<p class="navo-intelligence-error">Mate עדיין נטען. נסה שוב בעוד רגע.</p>'; return; }
     var activeState = state; var activeContext = state.context; var contextFingerprint = fingerprint(activeContext); var requestId = ++activeState.requestId;
     activeState.busy = true; activeState.stale = false; activeState.pendingSave = false;
-    ui.stale.hidden = true; ui.content.innerHTML = '<div class="navo-intelligence-loading"><i class="fa-solid fa-spinner fa-spin"></i><p>נבו מכין המלצות שמתאימות לטיול שלך…</p></div>';
+    ui.stale.hidden = true; ui.content.innerHTML = '<div class="navo-intelligence-loading"><i class="fa-solid fa-spinner fa-spin"></i><p>Mate מכין המלצות שמתאימות לטיול שלך…</p></div>';
     try {
       activeState.prompt = promptFor(activeContext);
       var result = await navo.request([{ role: 'user', content: activeState.prompt }], activeContext);
@@ -219,7 +219,7 @@
     } catch (error) {
       if (activeState.requestId !== requestId) return;
       activeState.recommendation = null;
-      var message = /NAVO_AUTH_REQUIRED/.test(String(error && error.message)) ? 'כדי לקבל המלצות מנבו צריך להתחבר לחשבון TravelMate.' : navo.friendlyError(error);
+      var message = /NAVO_AUTH_REQUIRED/.test(String(error && error.message)) ? 'כדי לקבל המלצות מMate צריך להתחבר לחשבון TravelMate.' : navo.friendlyError(error);
       if (state === activeState) ui.content.innerHTML = '<p class="navo-intelligence-error">' + escapeHtml(message) + '</p>';
     } finally {
       if (activeState.requestId === requestId) activeState.busy = false;
@@ -234,11 +234,11 @@
     if (button) { button.disabled = true; button.textContent = 'ממשיך…'; }
     var failure = '';
     try {
-      var result = await window.TravelMateNavo.continueResponse(state.recommendation.body, [{ role: 'user', content: state.prompt }], state.context);
+      var result = await window.TravelMateMate.continueResponse(state.recommendation.body, [{ role: 'user', content: state.prompt }], state.context);
       if (state !== activeState || state.responseId !== responseId || fingerprint(state.context) !== contextFingerprint) return;
       state.recommendation = recommendationFor(state.context, result.answer, state.recommendation.generatedAt); state.responseData = result.data || {}; state.responseId = newResponseId();
     } catch (error) {
-      failure = window.TravelMateNavo.friendlyError(error);
+      failure = window.TravelMateMate.friendlyError(error);
     } finally {
       if (state === activeState) {
         state.busy = false; renderState();
@@ -247,13 +247,13 @@
     }
   }
   function noteMetadata(context, recommendation, responseId) {
-    return { title: recommendation.title, subtitle: recommendation.subtitle, type: recommendation.type, destination: context.destination, country: context.country, tripId: context.tripId || null, tripType: context.tripType, startDate: context.startDate, endDate: context.endDate, source: 'Navo', generatedAt: recommendation.generatedAt, responseId: responseId || '' };
+    return { title: recommendation.title, subtitle: recommendation.subtitle, type: recommendation.type, destination: context.destination, country: context.country, tripId: context.tripId || null, tripType: context.tripType, startDate: context.startDate, endDate: context.endDate, source: 'Mate', generatedAt: recommendation.generatedAt, responseId: responseId || '' };
   }
   function saveResponse() {
     var recommendation = state.recommendation;
     if (!recommendation || !recommendation.body || state.stale || !state.context) return;
     if (state.context.tripId) {
-      var saved = window.TravelMateNavo.saveNoteForTrip(state.context.tripId, recommendation.title, recommendation.body, noteMetadata(state.context, recommendation, state.responseId));
+      var saved = window.TravelMateMate.saveNoteForTrip(state.context.tripId, recommendation.title, recommendation.body, noteMetadata(state.context, recommendation, state.responseId));
       ui.save.innerHTML = saved ? '<i class="fa-solid fa-check"></i> נשמר במסמכי הטיול' : '<i class="fa-solid fa-check"></i> כבר נשמר';
       state.status = 'saved'; updateBannerState();
       ui.save.disabled = true;
@@ -266,14 +266,14 @@
   function askMore() {
     if (!state.context) return;
     closeSheet();
-    window.TravelMateNavo.openConversation('המשך את המלצות היעד עבור הטיול הזה. שאל אותי במה להתמקד ואל תחזור על המידע שכבר נתת.', state.context);
+    window.TravelMateMate.openConversation('המשך את המלצות היעד עבור הטיול הזה. שאל אותי במה להתמקד ואל תחזור על המידע שכבר נתת.', state.context);
   }
   function attachPendingToTrip(trip) {
     if (!state.pendingSave || !state.recommendation || !state.recommendation.body || !trip) return false;
     var context = normalizeContext(Object.assign({}, state.context || {}, trip), MODE.NEW_TRIP);
     context.tripId = String(trip.id);
     var recommendation = recommendationFor(context, state.recommendation.body, state.recommendation.generatedAt);
-    var added = window.TravelMateNavo && window.TravelMateNavo.appendNote(trip, recommendation.title, recommendation.body, noteMetadata(context, recommendation, state.responseId));
+    var added = window.TravelMateMate && window.TravelMateMate.appendNote(trip, recommendation.title, recommendation.body, noteMetadata(context, recommendation, state.responseId));
     if (added) state.pendingSave = false;
     return Boolean(added);
   }
@@ -286,7 +286,7 @@
     ui.banner.hidden = !ready;
     if (!ready) return;
     bindContext(context);
-    ui.banner.querySelector('strong').textContent = 'נבו מכיר את ' + context.destination;
+    ui.banner.querySelector('strong').textContent = 'Mate מכיר את ' + context.destination;
     ui.banner.querySelector('p').textContent = 'מה כדאי לדעת לטיול ' + context.tripType + (context.durationDays ? ' של ' + context.durationDays + ' ימים?' : '?');
     if (state.recommendation && state.fingerprint !== fingerprint(context)) { state.stale = true; state.status = 'stale'; ui.stale.hidden = false; updateBannerState(); }
   }
@@ -357,7 +357,7 @@
   function updateExistingBanner(context) {
     if (!ui.banner) return;
     var hasType = Boolean(context.tripType);
-    ui.banner.querySelector('strong').textContent = hasType ? 'נבו מכיר את ' + context.destination : 'התאם את ההמלצות לטיול שלך';
+    ui.banner.querySelector('strong').textContent = hasType ? 'Mate מכיר את ' + context.destination : 'התאם את ההמלצות לטיול שלך';
     ui.banner.querySelector('p').textContent = hasType ? 'יש לי המלצות מותאמות לטיול ' + context.tripType + (context.durationDays ? ' של ' + context.durationDays + ' ימים' : '') : 'בחרו סוג טיול כדי לקבל המלצות מותאמות ל־' + context.destination;
     ui.banner.querySelector('[data-navo-open]').hidden = !hasType;
     var setup = ui.banner.querySelector('[data-navo-existing-types]');
@@ -372,7 +372,7 @@
       ui.stale.hidden = false;
     }
     if (!ui.backdrop.hidden && state.context.tripId === context.tripId) {
-      ui.title.textContent = context.destination + ' — המלצות Navo';
+      ui.title.textContent = context.destination + ' — המלצות Mate';
       ui.context.textContent = contextSummary(context);
       renderState();
     }
