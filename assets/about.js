@@ -2,10 +2,12 @@
   'use strict';
 
   var release = {
-    version: '1.55.4',
-    label: 'Event contracts · lazy loading',
+    version: '1.55.5',
+    label: 'CSS ownership cleanup',
     date: '24 בספטמבר 2026',
     highlights: [
+      'Pre-Codex cleanup: Weather מחזיק כעת את שכבת הניגודיות שלו בקובץ אחד, ושכבות contrast זמניות שהתרוקנו הוסרו.',
+      'תוקן Overflow בדסקטופ במסמכים באמצעות Grid תקין של אזור ההתחברות, ללא overflow:hidden או הסתרת תוכן.',
       'Pre-Codex cleanup: אירועי View, Places, Planner ו-Mate משתמשים כעת בחוזי payload מרכזיים במקום CustomEvent חופשי.',
       'טעינת Overview הוקלה: Transport, Getaways, Group, Memories ו-About נטענים רק לפי צורך, עם ניווט קל שמקדים את הפיצר המלא.',
       'Pre-Codex cleanup: Trip Store מרכזי נוסף, ו-Places, Planner, Mate, Lodging וטעינת הטיול המקומית כבר אינם כותבים ישירות ל-travelmate-trips.',
