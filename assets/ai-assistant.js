@@ -263,6 +263,7 @@
       archive = document.createElement('article');
       archive.className = 'ai-notes-archive';
       archive.dataset.aiNotesArchive = '';
+      archive.dataset.documentGroup = 'mate';
       var host = documents.querySelector('.doc-list') || documents;
       host.parentNode.insertBefore(archive, host.nextSibling);
     }
@@ -287,6 +288,7 @@
         renderAiNotesArchive();
       }
     };
+    if (window.TravelMateDocuments && typeof window.TravelMateDocuments.refresh === 'function') window.TravelMateDocuments.refresh();
   }
 
   function responseIncomplete(data) {

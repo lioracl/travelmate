@@ -10,3 +10,74 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
 .vault-preview{position:relative;height:min(780px,calc(100dvh - 36px));touch-action:pan-y}
 .vault-preview header button{position:relative;z-index:3;width:46px;height:46px;border-color:var(--tm-card-control-border);color:var(--tm-card-link);font-size:20px;touch-action:manipulation}
 @media(max-width:650px){.vault-preview{height:100dvh!important}.vault-preview header{padding-top:max(14px,env(safe-area-inset-top));background:var(--tm-card-bg)}.vault-preview footer{padding-bottom:max(14px,env(safe-area-inset-bottom))}}
+
+
+/* Documents V2 category navigation */
+#documents .documents-category-nav{
+  display:flex;
+  gap:8px;
+  margin:14px 0 16px;
+  padding:5px;
+  overflow-x:auto;
+  border:1px solid var(--tm-card-border);
+  border-radius:16px;
+  background:var(--tm-card-bg);
+  scrollbar-width:none;
+}
+#documents .documents-category-nav::-webkit-scrollbar{display:none}
+#documents .documents-category-nav button{
+  min-width:max-content;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:8px 11px;
+  border:1px solid transparent;
+  border-radius:12px;
+  background:transparent;
+  color:var(--tm-card-text);
+  font:inherit;
+  font-weight:800;
+}
+#documents .documents-category-nav button i{color:var(--tm-card-link)}
+#documents .documents-category-nav button b{
+  min-width:22px;
+  min-height:22px;
+  display:inline-grid;
+  place-items:center;
+  padding:0 6px;
+  border-radius:999px;
+  background:var(--tm-card-bg-compact);
+  color:var(--tm-card-secondary);
+  font-size:11px;
+}
+#documents .documents-category-nav button:is(:hover,:focus-visible){
+  border-color:var(--tm-card-control-border);
+  background:var(--tm-card-control);
+  outline:0;
+}
+#documents .documents-category-nav button.active{
+  border-color:var(--tm-card-control-border);
+  background:var(--tm-card-control-selected);
+  color:var(--tm-card-heading);
+}
+#documents .documents-category-nav button.active b{
+  background:var(--tm-action-primary);
+  color:var(--tm-text-on-action);
+}
+#documents [data-document-category-list]{
+  display:grid;
+  gap:10px;
+}
+#documents [data-document-category-list][hidden],
+#documents [data-ai-notes-archive][hidden],
+#documents .document-vault[hidden],
+#documents .doc-row[hidden]{display:none}
+@media(max-width:650px){
+  #documents .documents-category-nav{
+    margin:10px 0 14px;
+    scroll-snap-type:x proximity;
+  }
+  #documents .documents-category-nav button{scroll-snap-align:start}
+}
