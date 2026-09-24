@@ -2,10 +2,12 @@
   'use strict';
 
   var release = {
-    version: '1.55.2',
-    label: 'Pre-Codex core cleanup',
+    version: '1.55.3',
+    label: 'Trip Store consolidation',
     date: '24 בספטמבר 2026',
     highlights: [
+      'Pre-Codex cleanup: Trip Store מרכזי נוסף, ו-Places, Planner, Mate, Lodging וטעינת הטיול המקומית כבר אינם כותבים ישירות ל-travelmate-trips.',
+      'עדכוני פיצרים ממזגים כעת את השדות שלהם מול ה-Trip האחרון לפני שמירה, כדי לצמצם overwrite של שינויים מקבילים.',
       'Pre-Codex cleanup: טעינת Supabase אוחדה לבעלות אחת וניתנת לניסיון חוזר גם אחרי כשל רשת זמני.',
       'Getaways אוחד לפיצר יחיד בתוך Travel Services: שכבת ה-patch הישנה הוסרה, נוספו שני שרתי Overpass חלופיים ו-fallback ישיר למפה.',
       'תיקון מובייל: מיתוג Mate הושלם, קישור דילוג נגיש אינו נשאר גלוי בטעינה, ותמונות Places/Plan מקבלות השלמה ממקורות פתוחים כאשר זמינות.',
