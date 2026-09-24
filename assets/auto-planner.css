@@ -3,3 +3,32 @@
 @media(max-width:850px){.planner-composer{grid-template-columns:1fr 1fr}.planner-composer input[name="title"]{grid-column:1/-1}.planner-composer button{min-height:42px}}@media(max-width:560px){.planner-toolbar{align-items:stretch}.planner-toolbar-actions{display:grid;grid-template-columns:1fr 1fr}.planner-action{width:100%}.planner-progress{width:100%}.planner-composer{grid-template-columns:1fr}.planner-composer input[name="title"]{grid-column:auto}.day-timeline{padding-right:20px}.day-timeline>.planned-activity:before,.day-timeline>.saved-place:before{right:-19px}.planned-activity{grid-template-columns:58px 1fr}.activity-buttons{grid-column:1/-1;justify-content:flex-end}.trip-calendar-backdrop{padding:0}.trip-calendar-dialog{height:100%;border-radius:0}.trip-calendar-dialog>header{padding:14px 16px}.trip-calendar-days{padding:10px 12px}.trip-calendar-days button{flex-basis:64px;min-height:76px}.trip-calendar-toolbar,.trip-calendar-agenda,.trip-calendar-editor,.trip-calendar-dialog>footer{padding-right:14px;padding-left:14px}.trip-calendar-agenda article{grid-template-columns:52px 1fr}.trip-calendar-event-actions{grid-column:1/-1;justify-content:flex-end}.trip-calendar-editor{grid-template-columns:1fr;max-height:55%}.trip-calendar-editor label.wide,.trip-calendar-editor-actions.wide{grid-column:auto}.trip-calendar-dialog>footer span{display:none}}
 .trip-calendar-event-details{display:none;grid-column:1/-1;grid-template-columns:96px minmax(0,1fr);gap:14px;padding-top:12px;border-top:1px solid #dce9e2}.trip-calendar-agenda article.expanded .trip-calendar-event-details{display:grid}.trip-calendar-event-details>img{width:96px;height:82px;border-radius:14px;object-fit:cover}.trip-calendar-event-info{display:grid;gap:8px}.trip-calendar-event-info p{margin:0;color:#52685f;line-height:1.55}.trip-calendar-event-info nav{display:flex;flex-wrap:wrap;gap:7px}.trip-calendar-event-info a,.trip-calendar-event-info button{min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #b8d9ca;border-radius:12px;padding:0 12px;background:#edf8f2;color:#155f49;font:800 12px/1 system-ui;text-decoration:none}.past-days-strip{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding:12px 14px;border:1px solid #bddbcd;border-radius:18px;background:linear-gradient(135deg,#eff8f3,#fff);box-shadow:0 8px 24px rgba(28,92,69,.08)}.past-days-strip[hidden]{display:none}.past-days-strip>span{flex:0 0 auto;display:flex;align-items:center;gap:7px;color:#315f4e;font-weight:900}.past-days-strip>div{display:flex;gap:7px;min-width:0;overflow-x:auto;scrollbar-width:thin}.past-days-strip button{flex:0 0 auto;min-height:40px;border:1px solid #bddbcd;border-radius:12px;padding:0 12px;background:var(--tm-card-control);color:#315f4e;font-weight:900}.past-days-strip button small{margin-inline-start:4px;color:#71847b}.past-days-strip button.active{border-color:#176f54;background:#176f54;color:#fff}.past-days-strip button.active small{color:#dcefe7}.generated-day.past-trip-day:not(.past-trip-day-open){display:none}
 @media(max-width:560px){.trip-calendar-event-details{grid-template-columns:1fr}.trip-calendar-event-details>img{width:100%;height:150px}.trip-calendar-event-info nav{display:grid;grid-template-columns:1fr 1fr}.past-days-strip{align-items:stretch;flex-direction:column}.past-days-strip>div{width:100%}}
+
+
+/* Night pass: Plan action hierarchy */
+.planner-toolbar-actions{align-items:center}
+.planner-more{position:relative;min-width:0}
+.planner-more>summary{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 14px;border:1px solid var(--tm-card-control-border,var(--line));border-radius:13px;background:var(--tm-card-control);color:var(--tm-card-link);font-weight:850;cursor:pointer;list-style:none}
+.planner-more>summary::-webkit-details-marker{display:none}
+.planner-more[open]>summary{background:var(--tm-card-control-selected)}
+.planner-more-menu{position:absolute;z-index:40;top:calc(100% + 8px);inset-inline-end:0;width:min(270px,80vw);display:grid;gap:7px;padding:9px;border:1px solid var(--tm-card-border,var(--line));border-radius:16px;background:var(--tm-card-bg);box-shadow:var(--tm-card-shadow)}
+.planner-more-menu .planner-action{width:100%;justify-content:flex-start;text-align:start}
+.planner-more-menu .planner-danger{color:var(--tm-error,#b42318)}
+@media(max-width:560px){.planner-toolbar-actions{grid-template-columns:1fr 1fr}.planner-more{grid-column:1/-1}.planner-more>summary{width:100%}.planner-more-menu{position:relative;top:auto;inset:auto;width:100%;box-sizing:border-box;margin-top:7px}}
+
+
+/* Night core-screen redesign: Plan */
+#plan .planner-toolbar{padding:14px 16px;gap:14px}
+#plan .planner-progress{flex:1 1 240px;max-width:420px}
+#plan .planner-toolbar-actions{flex:0 1 auto}
+#plan .generated-day>div{display:grid;gap:10px}
+#plan .day-heading{min-height:48px;padding-bottom:8px;border-bottom:1px solid color-mix(in srgb,var(--tm-card-border) 80%,transparent)}
+#plan .day-heading>div{min-width:0}
+#plan .day-summary{margin-top:3px;font-size:12px}
+#plan .planned-activities{gap:8px;margin-top:2px}
+#plan .planned-activity,#plan .saved-place{min-height:64px;padding:10px 12px}
+#plan .planned-activity .activity-copy,#plan .saved-place .saved-place-content{min-width:0}
+#plan .activity-buttons,#plan .saved-place-actions{opacity:.72;transition:opacity .16s ease}
+#plan :is(.planned-activity,.saved-place):is(:hover,:focus-within) :is(.activity-buttons,.saved-place-actions){opacity:1}
+#plan .day-note{min-height:72px;margin-top:4px}
+@media(max-width:560px){#plan .planner-toolbar{padding:12px}#plan .planner-progress{max-width:none}#plan .planned-activity,#plan .saved-place{padding:10px}#plan .activity-buttons,#plan .saved-place-actions{opacity:1}}

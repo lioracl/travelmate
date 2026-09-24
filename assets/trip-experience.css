@@ -233,3 +233,15 @@
   #budget .budget-smart-grid{grid-template-columns:minmax(0,1fr)}
   #budget .budget-smart-grid article{padding:12px}
 }
+
+
+/* Night core-screen redesign: Budget */
+#budget .budget-smart-summary{width:100%;box-sizing:border-box;margin:12px 0 16px;padding:16px}
+#budget .budget-smart-grid{gap:9px}
+#budget .budget-smart-grid article{min-height:94px;padding:12px}
+#budget .budget-smart-narrative{margin-top:10px}
+#budget .expense-workspace{margin-top:14px}
+#budget .currency-converter{margin-top:14px}
+#budget .expense-records{display:grid;gap:9px}
+#budget .expense-record{margin:0}
+@media(max-width:620px){#budget .budget-smart-summary{padding:13px}#budget .budget-smart-grid{gap:8px}#budget .budget-smart-grid article{min-height:0}}

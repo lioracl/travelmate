@@ -81,3 +81,15 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
   }
   #documents .documents-category-nav button{scroll-snap-align:start}
 }
+
+
+/* Night core-screen redesign: Documents */
+#documents .documents-category-nav{margin:10px 0 14px;padding:4px}
+#documents .documents-category-nav button{min-height:42px}
+#documents [data-document-category-list]{gap:8px}
+#documents .doc-row{padding:12px 14px}
+#documents .doc-category-file{padding:9px 10px}
+#documents .document-vault{margin-top:14px}
+#documents .vault-head{gap:12px}
+#documents .vault-list{gap:8px}
+@media(max-width:650px){#documents .doc-row{padding:11px 12px}#documents .doc-category-file-actions{gap:7px}#documents .doc-category-file-actions button{min-height:40px!important}}
