@@ -57,6 +57,7 @@ test('legacy direct subview URLs remain recognized and mapped to Places', () => 
   assert.match(redesign, /linkView === 'places' && isPlacesView\(currentView\)/);
   assert.match(app, /transport:\{styles:/);
   assert.match(app, /getaways:\{styles:/);
+  assert.match(app, /view==='car-rental'\?'transport':view/);
 });
 
 test('Places hub is responsive and does not introduce another override stylesheet', () => {
