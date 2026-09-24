@@ -61,10 +61,6 @@
   }
 
   function createInterface() {
-    var nav = document.querySelector('.sidebar nav');
-    if (nav && !nav.querySelector('[data-view="group"]')) {
-      nav.insertAdjacentHTML('beforeend', '<a href="#group" data-view="group"><i class="fa-solid fa-user-group"></i><span class="tip">הקבוצה</span></a>');
-    }
     var modules = document.querySelector('.modules');
     if (modules && !modules.querySelector('[href="#group"]')) {
       modules.insertAdjacentHTML('beforeend', '<a class="module collaboration-module" href="#group"><span class="icon"><i class="fa-solid fa-comments"></i></span><strong>הקבוצה</strong><small>חברים, סנכרון וצ׳אט משותף</small></a>');
