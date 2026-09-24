@@ -101,6 +101,7 @@
   function activateView(view, pushHistory) {
     if (view === 'car-rental') view = 'transport';
     if (!view || !document.getElementById(view)) view = 'overview';
+    var previousView = currentView;
     currentView = view;
     if (pushHistory) {
       var nextUrl = pageUrl(view);
@@ -108,7 +109,11 @@
     }
     syncTripPages();
     window.scrollTo({ top: 0, behavior: 'auto' });
-    window.dispatchEvent(new CustomEvent('travelmate:viewchange', { detail: { view: view } }));
+    window.TravelMateEvents.emit(window.TravelMateEvents.names.viewChange, {
+      view: view,
+      previousView: previousView,
+      source: pushHistory ? 'navigation' : 'history'
+    });
   }
 
   function viewFromLink(link) {
