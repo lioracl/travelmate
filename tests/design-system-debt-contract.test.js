@@ -87,15 +87,33 @@ test('document vault UI uses semantic surfaces while document paper may stay whi
   assert.match(source, /\.vault-preview header button\{[^}]*background:var\(--tm-card-control\)[^}]*color:var\(--tm-card-control-text\)/);
 });
 
-test('planner core surfaces use semantic tokens and legacy contrast patch stays retired', () => {
+test('planner core surfaces use semantic tokens and the legacy contrast patch is removed', () => {
   const autoPlanner = read(path.join(root, 'assets/auto-planner.css'));
   const placePlanner = read(path.join(root, 'assets/place-planner.css'));
-  const activityContrast = read(path.join(root, 'assets/activity-contrast.css'));
 
   assert.match(autoPlanner, /\.planner-action\{[^}]*background:var\(--tm-card-control\)[^}]*color:var\(--tm-card-control-text\)/);
   assert.match(autoPlanner, /\.planner-action\.primary\{[^}]*background:var\(--tm-action-primary\)[^}]*color:var\(--tm-text-on-action\)/);
   assert.match(placePlanner, /\.saved-place-actions button\{[^}]*background:var\(--tm-card-control\)/);
-  assert.doesNotMatch(activityContrast, /!important|#[0-9a-f]{3,8}|rgba?\(/i);
+  assert.equal(fs.existsSync(path.join(root, 'assets/activity-contrast.css')), false);
+});
+
+test('Weather contrast is owned by the Weather component stylesheet', () => {
+  const weather = read(path.join(root, 'assets/weather-widget.css'));
+  const app = read(path.join(root, 'assets/app.js'));
+  const sw = read(path.join(root, 'sw.js'));
+
+  assert.equal(fs.existsSync(path.join(root, 'assets/weather-contrast.css')), false);
+  assert.match(weather, /Weather live-modal contrast ownership/);
+  assert.match(weather, /html body #modal-weather-live \.weather-live-modal\{/);
+  assert.doesNotMatch(app, /weather-contrast\.css/);
+  assert.doesNotMatch(sw, /weather-contrast\.css|activity-contrast\.css/);
+});
+
+test('Document Vault auth grid cannot exceed its own container', () => {
+  const vault = read(path.join(root, 'assets/document-vault.css'));
+  assert.match(vault, /\.vault-auth form\{[^}]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\) auto auto[^}]*min-width:0/);
+  assert.match(vault, /\.vault-auth form>\*\{min-width:0\}/);
+  assert.match(vault, /\.vault-auth input\{width:100%\}/);
 });
 
 test('Overview quick actions have one final visual owner', () => {
