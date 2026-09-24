@@ -119,3 +119,117 @@
   #budget .receipt-grid :is(input,select){width:100%!important;min-height:48px!important;font-size:16px!important}
   #budget .receipt-actions{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* Budget V2 smart spending summary */
+#budget .budget-smart-summary{
+  width:min(920px,100%);
+  margin:16px auto 18px;
+  padding:18px;
+  border:1px solid var(--tm-card-border);
+  border-radius:22px;
+  background:var(--tm-card-bg-main);
+  box-shadow:var(--tm-shadow-card);
+  color:var(--tm-text-primary);
+}
+#budget .budget-smart-summary>header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:14px;
+}
+#budget .budget-smart-summary>header small{
+  display:block;
+  margin-bottom:3px;
+  color:var(--tm-text-muted);
+  font-weight:800;
+}
+#budget .budget-smart-summary>header h2{
+  margin:0;
+  color:var(--tm-text-primary);
+  font-size:clamp(20px,2.3vw,28px);
+}
+#budget .budget-mode-badge{
+  min-height:36px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  flex:0 0 auto;
+  padding:7px 11px;
+  border:1px solid var(--tm-border-strong);
+  border-radius:999px;
+  background:var(--tm-control-bg);
+  color:var(--tm-text-primary);
+  font-size:12px;
+  font-weight:900;
+}
+#budget .budget-smart-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+#budget .budget-smart-grid article{
+  min-width:0;
+  display:grid;
+  align-content:start;
+  gap:5px;
+  padding:13px;
+  border:1px solid var(--tm-card-border);
+  border-radius:16px;
+  background:var(--tm-card-bg-nested);
+}
+#budget .budget-smart-grid article span{
+  color:var(--tm-text-muted);
+  font-size:11px;
+  font-weight:800;
+}
+#budget .budget-smart-grid article strong{
+  min-width:0;
+  color:var(--tm-text-primary);
+  font-size:clamp(17px,2vw,22px);
+  line-height:1.15;
+  overflow-wrap:anywhere;
+}
+#budget .budget-smart-grid article small{
+  color:var(--tm-text-secondary);
+  font-size:11px;
+  font-weight:800;
+}
+#budget .budget-smart-grid article em{
+  color:var(--tm-text-muted);
+  font-size:10px;
+  font-style:normal;
+  line-height:1.35;
+}
+#budget .budget-smart-narrative{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  margin:12px 0 0;
+  padding:11px 12px;
+  border:1px solid var(--tm-border-subtle);
+  border-radius:14px;
+  background:var(--tm-card-bg-interactive);
+  color:var(--tm-text-primary);
+  line-height:1.55;
+}
+#budget .budget-smart-narrative i{
+  flex:0 0 auto;
+  margin-top:3px;
+  color:var(--tm-action-primary);
+}
+#budget.budget-unlimited-active .budget-smart-summary{
+  border-style:solid;
+}
+@media(max-width:760px){
+  #budget .budget-smart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:480px){
+  #budget .budget-smart-summary{padding:14px;margin:12px 0 16px}
+  #budget .budget-smart-summary>header{align-items:stretch;flex-direction:column}
+  #budget .budget-mode-badge{align-self:flex-start}
+  #budget .budget-smart-grid{grid-template-columns:minmax(0,1fr)}
+  #budget .budget-smart-grid article{padding:12px}
+}
