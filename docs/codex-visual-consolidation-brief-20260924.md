@@ -3,9 +3,9 @@
 Date: 2026-09-24  
 Target branch: `preview`  
 Baseline commit: **resolve the current `preview` HEAD immediately before the Codex session**  
-Release baseline: TravelMate `1.55.8`  
-PWA baseline: `travelmate-smart-v196`  
-Asset baseline: `20260924-11`
+Release baseline: TravelMate `1.55.9`  
+PWA baseline: `travelmate-smart-v197`  
+Asset baseline: `20260924-12`
 
 ## Mission
 
@@ -57,6 +57,14 @@ These remain separate lazy-loaded feature engines. The consolidation is UX/navig
 Group/Sharing, Memories and About are secondary tools under the trip **More** menu. They must not be reintroduced as permanent primary sidebar tabs.
 
 Legacy deep links such as `?view=transport`, `?view=getaways`, `?view=destination-info` and `?view=car-rental` remain compatibility routes. The main Places tab must stay active for the Places-family subviews.
+
+Documents V2 is now canonical:
+- primary filters are All / Flights / Lodging / Tickets & Transport / Insurance / Personal / Mate;
+- legacy categories are normalized in the UI without a database migration;
+- encrypted vault documents and Mate notes remain separate storage/security domains;
+- one encrypted document must render under exactly one category owner;
+- do not send encrypted document contents to Mate automatically;
+- the single header upload action and category upload actions share the same secure vault flow.
 
 Budget V2 is now product-critical:
 - explicit limited and unlimited budget modes;
