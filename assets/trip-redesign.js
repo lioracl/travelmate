@@ -144,7 +144,25 @@
     var view = viewFromLink(link);
     if (!view) return;
     event.preventDefault();
+    var openBudgetConverter = link.hasAttribute('data-budget-converter-open');
     activateView(view, true);
+    if (openBudgetConverter && window.TravelMateFeatures && window.TravelMateFeatures.load) {
+      window.TravelMateFeatures.load('budget').then(function () {
+        var attempts = 0;
+        function focusConverter() {
+          var input = document.querySelector('[data-currency-converter] [data-converter-amount]');
+          if (input) {
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            input.focus({ preventScroll: true });
+            input.select();
+            return;
+          }
+          attempts += 1;
+          if (attempts < 12) setTimeout(focusConverter, 80);
+        }
+        focusConverter();
+      });
+    }
   });
   window.addEventListener('travelmate:feature-ready', function (event) {
     if (event.detail && event.detail.view === currentView) syncTripPages();
