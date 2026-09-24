@@ -70,6 +70,15 @@ test('Overview V2 listens for canonical trip updates instead of polling', () => 
   assert.doesNotMatch(overview, /setInterval/);
 });
 
+test('deleted custom Overview budget-card ownership is not left behind', () => {
+  const readable = read('assets/readable-glass.css');
+  const redesignCss = read('assets/trip-redesign.css');
+  assert.doesNotMatch(readable, /data-trip-kind="custom"[^\n]*trip-overview-summary \.budget-card/);
+  assert.doesNotMatch(readable, /data-trip-kind="custom"[^\n]*\.budget-card \.currency-insight\.compact/);
+  assert.doesNotMatch(readable, /trip-home-actions a:last-child\{grid-column:1\/-1\}/);
+  assert.doesNotMatch(redesignCss, /trip-overview-summary \.budget-card/);
+});
+
 test('Overview V2 styling is feature-scoped and responsive', () => {
   const css = read('assets/overview-control-center.css');
   assert.match(css, /body\[data-trip-view="overview"\] \.overview-control-grid/);
