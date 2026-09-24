@@ -225,14 +225,18 @@
   }
 
   function readTrips() {
+    var store = window.TravelMateTripStore;
+    if (store && store.getTrips) {
+      try { return store.getTrips(); } catch (error) {}
+    }
     var service = activeCloud();
     if (service && service.getLocalTrips) {
       try {
         var cloudTrips = service.getLocalTrips();
-        if (Array.isArray(cloudTrips) && cloudTrips.length) return cloudTrips;
+        if (Array.isArray(cloudTrips)) return cloudTrips;
       } catch (error) {}
     }
-    try { return JSON.parse(localStorage.getItem('travelmate-trips') || '[]'); } catch (error) { return []; }
+    return [];
   }
 
   function currentTripId() {
@@ -279,8 +283,7 @@
       if (event.target.closest('[data-copy-ai-note]')) navigator.clipboard && navigator.clipboard.writeText(note.question + '\n\n' + note.answer);
       if (event.target.closest('[data-delete-ai-note]')) {
         trip.aiNotes = notes.filter(function (item) { return item.id !== note.id; });
-        localStorage.setItem('travelmate-trips', JSON.stringify(trips));
-        if (window.TravelMateCloud) window.TravelMateCloud.queueTripSave(trip);
+        persistTripWithNote(trips, trip);
         renderAiNotesArchive();
       }
     };
@@ -361,9 +364,13 @@
   }
 
   function persistTripWithNote(trips, trip) {
+    var store = window.TravelMateTripStore;
+    if (store && store.saveTrip) {
+      store.saveTrip(trip);
+      return;
+    }
     var service = activeCloud();
     if (service && service.upsertLocalTrip) service.upsertLocalTrip(trip);
-    else localStorage.setItem('travelmate-trips', JSON.stringify(trips));
     if (service && service.queueTripSave) service.queueTripSave(trip);
   }
 
