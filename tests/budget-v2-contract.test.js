@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
+function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf8'); }
 const js = fs.readFileSync(path.join(root, 'assets', 'trip-experience.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'assets', 'trip-experience.css'), 'utf8');
 
@@ -47,4 +48,13 @@ test('Budget V2 summary styling stays in the feature stylesheet and uses semanti
   assert.match(css, /var\(--tm-card-bg\)/);
   assert.match(css, /var\(--tm-text-primary\)/);
   assert.doesNotMatch(css, /--tm-card-bg-main|--tm-shadow-card|--tm-control-bg|--tm-border-strong|--tm-card-bg-interactive/);
+});
+
+test('Overview exposes direct lazy access to the quick currency converter', () => {
+  const html = read('trip/custom/index.html');
+  const redesign = read('assets/trip-redesign.js');
+  assert.match(html, /data-budget-converter-open/);
+  assert.match(html, />המרת מטבע</);
+  assert.match(redesign, /TravelMateFeatures\.load\('budget'\)/);
+  assert.match(redesign, /\[data-currency-converter\] \[data-converter-amount\]/);
 });
