@@ -156,7 +156,7 @@
     ui.content.innerHTML = '<div class="weather-insight"><i class="fa-solid ' + advice.icon + '"></i><div><strong>' + escapeText(advice.title) + '</strong><span>' + escapeText(advice.text) + '</span></div></div><div class="weather-live-grid">' + rows + '</div><div class="weather-live-footer"><div class="weather-live-actions"><button class="primary" type="button" data-weather-ai><i class="fa-solid fa-wand-magic-sparkles"></i> שאל את Mate על התחזית</button><button type="button" data-weather-refresh><i class="fa-solid fa-rotate"></i> רענון</button></div><a class="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">נתונים: Open-Meteo ומודלים של שירותי מזג אוויר לאומיים</a></div>';
     ui.content.querySelector('[data-weather-refresh]').addEventListener('click', function () { load(ui, true); });
     ui.content.querySelector('[data-weather-ai]').addEventListener('click', function () {
-      close(ui); window.dispatchEvent(new CustomEvent('travelmate:ask-ai', { detail: { prompt: 'בדוק את תחזית מזג האוויר ל־7 הימים הקרובים ב' + place.city + ' והצע לי התאמות למסלול ורשימת ציוד קצרה.' } }));
+      close(ui); window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi, { prompt: 'בדוק את תחזית מזג האוויר ל־7 הימים הקרובים ב' + place.city + ' והצע לי התאמות למסלול ורשימת ציוד קצרה.', source: 'weather' });
     });
   }
 
