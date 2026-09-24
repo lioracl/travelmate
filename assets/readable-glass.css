@@ -1965,3 +1965,45 @@ html body.tm-new-design .ai-panel .ai-message-tools button{
 /* Keyboard navigation: reveal skip link only when it receives focus. */
 .tm-skip-link{position:fixed;inset-block-start:10px;inset-inline-start:10px;z-index:100000;transform:translateY(-160%);padding:10px 14px;border:2px solid var(--tm-card-control-border);border-radius:10px;background:var(--tm-action-primary);color:var(--tm-text-on-action);font-weight:800;text-decoration:none}
 .tm-skip-link:focus-visible{transform:translateY(0);outline:3px solid var(--tm-focus-ring);outline-offset:3px}
+
+
+/* 2026-09-24 mobile visual hardening: phone evidence pass. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view]:not([data-trip-view="overview"]) .navo-existing-trip-banner{
+  display:none!important
+}
+
+/* Keep the accessibility skip target off-screen until keyboard focus reaches it. */
+html body .tm-skip-link:not(:focus):not(:focus-visible){
+  transform:translateY(-220%)!important;
+  opacity:0!important;
+  pointer-events:none!important
+}
+html body .tm-skip-link:focus,
+html body .tm-skip-link:focus-visible{
+  transform:translateY(0)!important;
+  opacity:1!important;
+  pointer-events:auto!important
+}
+
+/* Phone glass must remain legible over detailed destination photography. */
+@media(max-width:650px){
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view]{
+    --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.56),rgba(18,56,63,.48));
+    --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.62),rgba(18,56,63,.54));
+    --tm-surface-dark-glass:rgba(16,30,34,.52);
+    --tm-surface-dark-glass-strong:rgba(18,56,63,.62);
+    --tm-surface-dark-glass-soft:rgba(16,30,34,.34);
+    --tm-card-border:rgba(255,255,255,.34);
+    --tm-border-on-dark:rgba(255,255,255,.3);
+    --tm-border-on-dark-strong:rgba(255,255,255,.4);
+    --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 28px rgba(0,0,0,.24);
+    --tm-card-control:rgba(215,236,239,.94);
+    --tm-control-surface:rgba(215,236,239,.94)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] :is(
+    .mobile-header,.custom-hero,.card,.module,.weather-top-widget,.nearby-card,.saved-place,
+    .generated-day,.plan-card,.budget-card,.navo-trip-banner
+  ){
+    border-color:var(--tm-card-border)!important
+  }
+}
