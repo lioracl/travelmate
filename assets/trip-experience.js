@@ -395,6 +395,89 @@
     });
     return totals;
   }
+  function budgetTiming() {
+    var trip = state.trip || {};
+    var start = trip.start ? new Date(trip.start + 'T00:00:00') : null;
+    var end = trip.end ? new Date(trip.end + 'T00:00:00') : null;
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var totalDays = start && end ? Math.max(1, Math.round((end - start) / 86400000) + 1) : Math.max(1, Number(trip.days || 1));
+    var elapsedDays = 1;
+    if (start) {
+      var effective = today < start ? start : end && today > end ? end : today;
+      elapsedDays = Math.max(1, Math.min(totalDays, Math.round((effective - start) / 86400000) + 1));
+    }
+    var remainingDays = start && today < start ? totalDays : Math.max(1, totalDays - elapsedDays + 1);
+    return { totalDays: totalDays, elapsedDays: elapsedDays, remainingDays: remainingDays, today: localDateValue() };
+  }
+  function budgetSmartMetrics() {
+    var totals = budgetExpenseTotals();
+    var timing = budgetTiming();
+    var spentEuros = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
+    var todayEuros = state.expenses.filter(function (expense) { return expense.date === timing.today; }).reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
+    var averageEuros = spentEuros / Math.max(1, timing.elapsedDays);
+    var projectedEuros = state.expenses.length ? averageEuros * timing.totalDays : 0;
+    var plannedEuros = Number(state.trip && state.trip.budget || 0);
+    var remainingEuros = Math.max(0, plannedEuros - spentEuros);
+    var safeTodayEuros = !state.budgetUnlimited && plannedEuros ? remainingEuros / Math.max(1, timing.remainingDays) : 0;
+    var top = Object.keys(totals).map(function (name) { return { name: name, euros: totals[name].total }; }).sort(function (a, b) { return b.euros - a.euros; })[0] || null;
+    return {
+      timing: timing,
+      spentEuros: spentEuros,
+      todayEuros: todayEuros,
+      averageEuros: averageEuros,
+      projectedEuros: projectedEuros,
+      plannedEuros: plannedEuros,
+      remainingEuros: remainingEuros,
+      safeTodayEuros: safeTodayEuros,
+      usedPercent: !state.budgetUnlimited && plannedEuros ? Math.round(spentEuros / plannedEuros * 100) : 0,
+      topCategory: top
+    };
+  }
+  function budgetLocal(euros) { return state.localCurrency === 'EUR' ? Number(euros || 0) : localFromEuros(euros); }
+  function budgetDualAmount(euros) {
+    var local = budgetLocal(euros);
+    var secondary = convertCurrency(Number(euros || 0), 'EUR', state.secondaryCurrency);
+    return '<strong>' + money(local, state.localCurrency) + '</strong>' + (secondary && state.secondaryCurrency !== state.localCurrency ? '<small>≈ ' + money(secondary, state.secondaryCurrency) + '</small>' : '');
+  }
+  function renderBudgetSmartSummary() {
+    var section = document.getElementById('budget'); if (!section) return;
+    var host = section.querySelector('[data-budget-smart-summary]');
+    if (!host) {
+      host = document.createElement('section');
+      host.className = 'budget-smart-summary';
+      host.dataset.budgetSmartSummary = '';
+      var hero = section.querySelector('.budget-hero');
+      if (hero) hero.insertAdjacentElement('afterend', host); else section.prepend(host);
+    }
+    var metrics = budgetSmartMetrics();
+    var unlimited = state.budgetUnlimited;
+    var count = state.expenses.length;
+    var top = metrics.topCategory;
+    var topText = top ? escapeHtml(top.name) + ' · ' + money(budgetLocal(top.euros), state.localCurrency) : 'עדיין אין קטגוריה מובילה';
+    var narrative = '';
+    if (!count) {
+      narrative = unlimited ? 'המעקב פתוח ללא תקרת תקציב. לאחר שתוסיף הוצאה ראשונה יוצגו כאן ממוצע יומי, הקטגוריה המובילה ותחזית לסוף הטיול.' : 'עדיין לא נרשמו הוצאות. לאחר ההוצאה הראשונה נחשב כמה נשאר, מה הקצב היומי ומה צפוי עד סוף הטיול.';
+    } else if (unlimited) {
+      narrative = 'נרשמו ' + count + ' הוצאות. הממוצע עד עכשיו הוא ' + money(budgetLocal(metrics.averageEuros), state.localCurrency) + ' ליום' + (metrics.projectedEuros ? ', ובקצב הזה ההוצאה המשוערת לכל הטיול היא ' + money(budgetLocal(metrics.projectedEuros), state.localCurrency) + '.' : '.');
+    } else if (metrics.plannedEuros) {
+      var delta = metrics.plannedEuros - metrics.projectedEuros;
+      narrative = 'הוצאת ' + metrics.usedPercent + '% מהתקציב. בקצב הנוכחי אתה צפוי לסיים ' + (delta >= 0 ? 'מתחת לתקציב בכ־' : 'מעל התקציב בכ־') + money(Math.abs(budgetLocal(delta)), state.localCurrency) + '.';
+    } else {
+      narrative = 'נרשמו ' + count + ' הוצאות. הגדר תקציב כולל כדי לקבל יתרה, יעד יומי ותחזית מול המסגרת.';
+    }
+    var cards = [
+      '<article><span>הוצא עד עכשיו</span>' + budgetDualAmount(metrics.spentEuros) + '<em>' + count + ' הוצאות</em></article>',
+      '<article><span>היום</span>' + budgetDualAmount(metrics.todayEuros) + '<em>' + (metrics.todayEuros ? 'נרשם היום' : 'עדיין לא נרשמה הוצאה היום') + '</em></article>',
+      '<article><span>ממוצע ליום</span>' + budgetDualAmount(metrics.averageEuros) + '<em>' + metrics.timing.elapsedDays + ' ימים במעקב</em></article>'
+    ];
+    if (!unlimited && metrics.plannedEuros) {
+      cards.push('<article><span>אפשר להוציא ליום</span>' + budgetDualAmount(metrics.safeTodayEuros) + '<em>לפי היתרה ו־' + metrics.timing.remainingDays + ' ימים שנותרו</em></article>');
+    } else {
+      cards.push('<article><span>קטגוריה מובילה</span><strong>' + topText + '</strong><em>מתוך כל ההוצאות שנרשמו</em></article>');
+    }
+    host.innerHTML = '<header><div><small>' + (unlimited ? 'מעקב הוצאות ללא תקרה' : 'סיכום חכם של התקציב') + '</small><h2>' + (unlimited ? 'כמה הוצאתי עד עכשיו?' : 'איפה אני עומד עכשיו?') + '</h2></div><span class="budget-mode-badge"><i class="fa-solid ' + (unlimited ? 'fa-infinity' : 'fa-wallet') + '"></i>' + (unlimited ? ' ללא הגבלה' : ' תקציב מוגדר') + '</span></header><div class="budget-smart-grid">' + cards.join('') + '</div><p class="budget-smart-narrative"><i class="fa-solid fa-wand-magic-sparkles"></i><span>' + escapeHtml(narrative) + '</span></p>';
+  }
+
   function renderBudgetCharts() {
     var bars = document.querySelector('[data-budget-chart-bars]');
     var summary = document.querySelector('[data-budget-chart-summary]');
@@ -407,8 +490,7 @@
     var totalPlannedLocal = state.localCurrency === 'EUR' ? totalPlanned : localFromEuros(totalPlanned);
     var unlimited = state.budgetUnlimited;
     var usedPercent = !unlimited && totalPlanned ? Math.min(100, Math.round(totalSpent / totalPlanned * 100)) : 0;
-    var elapsedDays = 1;
-    if (state.trip && state.trip.start) { var startDate = new Date(state.trip.start + 'T00:00:00'); var endDate = state.trip.end ? new Date(state.trip.end + 'T00:00:00') : new Date(); var today = new Date(); today.setHours(0, 0, 0, 0); var current = today < startDate ? startDate : today > endDate ? endDate : today; elapsedDays = Math.max(1, Math.round((current - startDate) / 86400000) + 1); }
+    var elapsedDays = budgetTiming().elapsedDays;
     summary.innerHTML = unlimited ? '<div><span>מצב</span><strong>ללא הגבלה</strong></div><div><span>הצטבר עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>ממוצע ליום</span><strong>' + money(totalSpentLocal / elapsedDays, state.localCurrency) + '</strong></div>' : '<div><span>מתוכנן</span><strong>' + money(totalPlannedLocal, state.localCurrency) + '</strong></div><div><span>בוצע</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>נותר</span><strong>' + money(Math.max(0, totalPlannedLocal - totalSpentLocal), state.localCurrency) + '</strong></div>';
     (unlimited ? [0, totalSpent, totalSpent / elapsedDays] : [totalPlanned, totalSpent, Math.max(0, totalPlanned - totalSpent)]).forEach(function (euros, index) {
       var card = summary.children[index];
@@ -442,6 +524,7 @@
     }
     var heroCopy = document.querySelector('#budget .budget-hero>div:first-child'); if (heroCopy) heroCopy.innerHTML = '<span>נרשם עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong><p>' + (unlimited ? 'ללא הגבלה · הסכום עולה עם כל הוצאה שנשמרת לאורך הטיול' : totalPlanned ? 'נותרו ' + money(Math.max(0,totalPlannedLocal-totalSpentLocal),state.localCurrency) + ' מתוך ' + money(totalPlannedLocal,state.localCurrency) : 'הגדר תקציב כולל כדי לעקוב אחר היתרה') + '</p>';
     var budgetSection = document.getElementById('budget'); if (budgetSection) budgetSection.classList.toggle('budget-unlimited-active', unlimited);
+    renderBudgetSmartSummary();
     var activeCategories = state.budgetCategories.filter(function (item) { return state.expenses.some(function (expense) { return expenseCategoryParts(expense.category).category === item.name; }); });
     bars.innerHTML = activeCategories.length ? activeCategories.map(function (item, index) {
       var expenseTotal = totals[item.name] ? totals[item.name].total : 0;
