@@ -61,8 +61,10 @@ test('dynamic feature-loader assets all exist', () => {
   }
 });
 
-test('retired contrast override layers stay removed', () => {
-  for (const file of ['contrast-core.css', 'contrast-detail.css', 'contrast-final.css', 'contrast-view.css']) {
+test('retired duplicate style layers stay removed', () => {
+  for (const file of ['contrast-core.css', 'contrast-detail.css', 'contrast-final.css', 'contrast-view.css', 'place-auto-fill-v2.css']) {
     assert.equal(fs.existsSync(path.join(root, 'assets', file)), false, file + ' must not return');
   }
+  const app = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.doesNotMatch(app, /place-auto-fill-v2\.css/);
 });
