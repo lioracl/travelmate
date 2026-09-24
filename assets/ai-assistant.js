@@ -52,7 +52,7 @@
     orb.innerHTML = '<span class="ai-orb-ring"></span><i class="fa-solid fa-wand-magic-sparkles"></i><span class="ai-orb-badge">AI</span>';
     var panel = document.createElement('aside');
     panel.className = 'ai-panel'; panel.hidden = true; panel.id = 'travelmate-ai-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-label', 'העוזר האישי של TravelMate'); orb.setAttribute('aria-controls', panel.id);
-    panel.innerHTML = '<header class="ai-panel-header"><span class="ai-avatar"><i class="fa-solid fa-compass"></i></span><div class="ai-panel-title"><strong>נבו · העוזר האישי שלך</strong><small data-ai-status role="status" aria-live="polite">מוכן לעזור בכל שאלה</small></div><div class="ai-panel-actions"><button class="ai-icon-button" type="button" data-ai-clear title="שיחה חדשה" aria-label="שיחה חדשה"><i class="fa-solid fa-rotate"></i></button><button class="ai-icon-button" type="button" data-ai-close title="סגירה" aria-label="סגירת העוזר"><i class="fa-solid fa-xmark"></i></button></div></header><div class="ai-context-bar"><i class="fa-solid fa-location-dot"></i><span data-ai-context></span><button type="button" data-ai-privacy>מה נשלח?</button></div><div class="ai-chat" data-ai-chat aria-live="polite"></div><div><div class="ai-quick-prompts" data-ai-prompts></div><form class="ai-composer" data-ai-form><div class="ai-composer-row"><button class="ai-voice" type="button" data-ai-voice aria-label="הכתבה קולית" title="הכתבה קולית"><i class="fa-solid fa-microphone"></i></button><textarea name="message" rows="1" maxlength="4000" placeholder="שאל אותי על הטיול או על כל נושא…" aria-label="הודעה לעוזר"></textarea><button type="submit" data-ai-send aria-label="שליחת הודעה"><i class="fa-solid fa-arrow-up"></i></button></div><div class="ai-composer-note"><span>Enter לשליחה · Shift+Enter לשורה חדשה</span><span>AI עשוי לטעות</span></div></form></div>';
+    panel.innerHTML = '<header class="ai-panel-header"><span class="ai-avatar"><i class="fa-solid fa-compass"></i></span><div class="ai-panel-title"><strong>Mate · העוזר האישי שלך</strong><small data-ai-status role="status" aria-live="polite">מוכן לעזור בכל שאלה</small></div><div class="ai-panel-actions"><button class="ai-icon-button" type="button" data-ai-clear title="שיחה חדשה" aria-label="שיחה חדשה"><i class="fa-solid fa-rotate"></i></button><button class="ai-icon-button" type="button" data-ai-close title="סגירה" aria-label="סגירת העוזר"><i class="fa-solid fa-xmark"></i></button></div></header><div class="ai-context-bar"><i class="fa-solid fa-location-dot"></i><span data-ai-context></span><button type="button" data-ai-privacy>מה נשלח?</button></div><div class="ai-chat" data-ai-chat aria-live="polite"></div><div><div class="ai-quick-prompts" data-ai-prompts></div><form class="ai-composer" data-ai-form><div class="ai-composer-row"><button class="ai-voice" type="button" data-ai-voice aria-label="הכתבה קולית" title="הכתבה קולית"><i class="fa-solid fa-microphone"></i></button><textarea name="message" rows="1" maxlength="4000" placeholder="שאל אותי על הטיול או על כל נושא…" aria-label="הודעה לעוזר"></textarea><button type="submit" data-ai-send aria-label="שליחת הודעה"><i class="fa-solid fa-arrow-up"></i></button></div><div class="ai-composer-note"><span>Enter לשליחה · Shift+Enter לשורה חדשה</span><span>AI עשוי לטעות</span></div></form></div>';
     document.body.appendChild(orb); document.body.appendChild(panel);
     return { orb: orb, panel: panel, chat: panel.querySelector('[data-ai-chat]'), form: panel.querySelector('[data-ai-form]'), input: panel.querySelector('textarea'), status: panel.querySelector('[data-ai-status]'), prompts: panel.querySelector('[data-ai-prompts]') };
   }
@@ -297,7 +297,7 @@
 
   function renderHistory() {
     ui.chat.innerHTML = '';
-    if (!state.messages.length) addMessage('assistant', tripContext && (tripContext.city || tripContext.destination) ? 'היי, אני נבו 👋\nאני מכיר את הטיול שמופיע כאן ויכול לעזור לתכנן, לבדוק עומס, להציע רעיונות — וגם לענות על שאלות כלליות.' : 'היי, אני נבו 👋\nהעוזר האישי שלך ב־TravelMate. אפשר לשאול אותי על יעדים, תכנון, תקציב, אריזה — או על כל נושא אחר.');
+    if (!state.messages.length) addMessage('assistant', tripContext && (tripContext.city || tripContext.destination) ? 'היי, אני Mate 👋\nאני מכיר את הטיול שמופיע כאן ויכול לעזור לתכנן, לבדוק עומס, להציע רעיונות — וגם לענות על שאלות כלליות.' : 'היי, אני Mate 👋\nהעוזר האישי שלך ב־TravelMate. אפשר לשאול אותי על יעדים, תכנון, תקציב, אריזה — או על כל נושא אחר.');
     state.messages.forEach(function (message) { addMessage(message.role, message.content); });
   }
 
@@ -318,7 +318,7 @@
 
   function setBusy(busy) { state.busy = busy; ui.input.disabled = busy; ui.form.querySelector('[data-ai-send]').disabled = busy; ui.panel.setAttribute('aria-busy', String(busy)); }
   function setStatus(value) { ui.status.textContent = value; }
-  function typingRow() { return addMessage('assistant', '<span class="ai-typing" aria-label="נבו חושב"><i></i><i></i><i></i></span>', { html: true, temporary: true }); }
+  function typingRow() { return addMessage('assistant', '<span class="ai-typing" aria-label="Mate חושב"><i></i><i></i><i></i></span>', { html: true, temporary: true }); }
 
   function activeCloud() { return window.TravelMateCloud || cloud; }
 
@@ -338,12 +338,12 @@
 
   function friendlyError(error) {
     var message = String(error && (error.travelMateCode || error.message || error.context && error.context.status) || '');
-    if (/AI_NOT_CONFIGURED/i.test(message)) return 'נבו עדיין לא מחובר למפתח Gemini בשרת. בדוק שסוד GEMINI_API_KEY קיים ב־Supabase.';
-    if (/USAGE_CHECK_FAILED/i.test(message)) return 'בדיקת מכסת השימוש של נבו נכשלה. נסה לצאת ולהיכנס מחדש לחשבון.';
+    if (/AI_NOT_CONFIGURED/i.test(message)) return 'Mate עדיין לא מחובר למפתח Gemini בשרת. בדוק שסוד GEMINI_API_KEY קיים ב־Supabase.';
+    if (/USAGE_CHECK_FAILED/i.test(message)) return 'בדיקת מכסת השימוש של Mate נכשלה. נסה לצאת ולהיכנס מחדש לחשבון.';
     if (/AI_PROVIDER_ERROR.*403|PERMISSION_DENIED/i.test(message)) return 'מפתח Gemini אינו מורשה כרגע. בדוק ב־Google AI Studio שהמפתח פעיל ושפרויקט ה־Free tier זמין.';
     if (/AI_PROVIDER_ERROR.*404|NOT_FOUND/i.test(message)) return 'מודל Gemini שהוגדר אינו זמין למפתח הזה. TravelMate יעבור למודל Flash היציב לאחר עדכון השרת.';
     if (/AI_PROVIDER_ERROR|EMPTY_AI_RESPONSE/i.test(message)) return 'שירות Gemini לא החזיר תשובה תקינה. אפשר לנסות שוב בעוד רגע.';
-    if (/AI_TIMEOUT/i.test(message)) return 'נבו לא קיבל תשובה בזמן. בדוק את החיבור ונסה שוב — השיחה נשמרה.';
+    if (/AI_TIMEOUT/i.test(message)) return 'Mate לא קיבל תשובה בזמן. בדוק את החיבור ונסה שוב — השיחה נשמרה.';
     if (/401|JWT|Unauthorized/i.test(message)) return 'כדי לדבר איתי צריך להתחבר לחשבון TravelMate.';
     if (/429|limit|rate/i.test(message)) return 'הגעת למגבלת השימוש היומית בעוזר. אפשר לחזור ולשאול אותי מחר.';
     if (/404|FunctionsHttpError|Failed to send/i.test(message)) return 'שירות ה־AI עדיין לא הופעל ב־Supabase. הממשק כבר מוכן, ונדרשת הפעלה חד־פעמית של הפונקציה.';
@@ -408,7 +408,7 @@
   }
 
   function showInlineLogin(content) {
-    var row = addMessage('assistant', '<form class="ai-login-card ai-inline-login" data-ai-login><strong>התחברות לנבו</strong><p>נבו מוגן בחשבון TravelMate כדי שמפתח ה־AI לא ייחשף בטלפון.</p><input type="email" name="email" autocomplete="email" placeholder="כתובת דוא״ל" aria-label="כתובת דוא״ל להתחברות לנבו" required><input type="password" name="password" autocomplete="current-password" placeholder="סיסמת החשבון" aria-label="סיסמת החשבון להתחברות לנבו" required><button type="submit">התחברות והמשך</button><small data-ai-login-status></small></form>', { html: true, temporary: true });
+    var row = addMessage('assistant', '<form class="ai-login-card ai-inline-login" data-ai-login><strong>התחברות לMate</strong><p>Mate מוגן בחשבון TravelMate כדי שמפתח ה־AI לא ייחשף בטלפון.</p><input type="email" name="email" autocomplete="email" placeholder="כתובת דוא״ל" aria-label="כתובת דוא״ל להתחברות לMate" required><input type="password" name="password" autocomplete="current-password" placeholder="סיסמת החשבון" aria-label="סיסמת החשבון להתחברות לMate" required><button type="submit">התחברות והמשך</button><small data-ai-login-status></small></form>', { html: true, temporary: true });
     var form = row.querySelector('[data-ai-login]');
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
@@ -421,7 +421,7 @@
         var result = await service.signIn(form.elements.email.value.trim(), form.elements.password.value);
         if (result.error) throw result.error;
         state.session = result.data && result.data.session;
-        form.innerHTML = '<strong>התחברת בהצלחה</strong><p>השאלה הוחזרה לשדה. לחץ על שליחה ונבו יענה מיד.</p>';
+        form.innerHTML = '<strong>התחברת בהצלחה</strong><p>השאלה הוחזרה לשדה. לחץ על שליחה וMate יענה מיד.</p>';
         ui.input.value = content; autoGrow(); ui.input.focus(); setStatus('מחובר · מוכן לענות');
       } catch (error) {
         status.textContent = 'הדוא״ל או הסיסמה אינם נכונים. אפשר לנסות שוב.';
