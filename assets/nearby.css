@@ -69,3 +69,19 @@
 /* Place media fallback stays visibly intentional when no exact open-source photo exists. */
 .tm-place-card__media.is-fallback{border:1px solid var(--tm-card-border);background:linear-gradient(135deg,rgba(20,125,146,.18),rgba(169,220,231,.3));color:var(--tm-card-link)}
 .tm-place-card__media.is-loading{background:linear-gradient(135deg,rgba(20,125,146,.12),rgba(169,220,231,.22))}
+
+
+/* Places progressive disclosure: keep the first view focused while preserving advanced controls. */
+.place-planner .nearby-category-search{display:none}
+.place-planner .nearby-controls{display:flex;justify-content:flex-end;align-items:end;margin-top:10px}
+.place-planner .nearby-controls>label:has([data-nearby-category]),.place-planner .nearby-controls>button{display:none}
+.place-planner .nearby-controls>label:has([data-nearby-radius]){width:min(180px,100%);margin-inline-start:auto}
+.place-planner .nearby-selected-category{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;border-inline-start:0;background:transparent}
+.place-planner .nearby-selected-category p{margin:0}
+.tm-place-card__schedule[hidden],.tm-place-card__secondary-actions[hidden]{display:none!important}
+.tm-place-card__key-links{margin-top:4px}
+.tm-place-card__primary-actions{display:flex;flex-wrap:wrap;gap:8px}
+.tm-place-card__primary-actions>button{min-height:42px;flex:1 1 145px}
+.nearby-more-details{border:1px solid var(--tm-card-control-border,var(--line));border-radius:12px;background:var(--tm-card-control);color:var(--tm-card-link);font:inherit;font-weight:850}
+.tm-place-card__secondary-actions{margin-top:0;padding-top:4px;border-top:1px solid var(--tm-card-border,var(--line))}
+@media(max-width:760px){.place-planner .nearby-controls{justify-content:stretch}.place-planner .nearby-controls>label:has([data-nearby-radius]){width:100%;margin:0}.place-planner .nearby-selected-category{align-items:flex-start}.tm-place-card__primary-actions{display:grid;grid-template-columns:1fr 1fr}.tm-place-card__primary-actions .nearby-more-details{grid-column:1/-1}}
