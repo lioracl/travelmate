@@ -337,10 +337,8 @@
 
   var existingTransientTypes = {};
   function canonicalTrip(tripId) {
+    if (window.TravelMateTripStore) return window.TravelMateTripStore.getTrip(tripId);
     var trips = window.TravelMateCloud && window.TravelMateCloud.getLocalTrips ? window.TravelMateCloud.getLocalTrips() || [] : [];
-    var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
-    if (trip) return trip;
-    try { trips = JSON.parse(localStorage.getItem('travelmate-trips') || '[]'); } catch (error) { trips = []; }
     return trips.find(function (item) { return String(item.id) === String(tripId); }) || null;
   }
   function existingContext(trip) {
