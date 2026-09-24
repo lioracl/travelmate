@@ -3,9 +3,9 @@
 Date: 2026-09-24  
 Target branch: `preview`  
 Baseline commit: **resolve the current `preview` HEAD immediately before the Codex session**  
-Release baseline: TravelMate `1.55.9`  
-PWA baseline: `travelmate-smart-v197`  
-Asset baseline: `20260924-12`
+Release baseline: TravelMate `1.55.10`  
+PWA baseline: `travelmate-smart-v198`  
+Asset baseline: `20260925-01`
 
 ## Mission
 
@@ -57,6 +57,14 @@ These remain separate lazy-loaded feature engines. The consolidation is UX/navig
 Group/Sharing, Memories and About are secondary tools under the trip **More** menu. They must not be reintroduced as permanent primary sidebar tabs.
 
 Legacy deep links such as `?view=transport`, `?view=getaways`, `?view=destination-info` and `?view=car-rental` remain compatibility routes. The main Places tab must stay active for the Places-family subviews.
+
+Overview V2 is now canonical:
+- the Overview is a lightweight control center, not a duplicate of Plan/Budget/Places;
+- its four status cards are Next in plan / Budget status / Lodging / Needs attention;
+- it reads canonical trip data from Trip Store and must not eagerly load full Budget or Planner engines;
+- weather remains in the hero and Mate recommendations remain a separate Overview intelligence surface;
+- quick actions are Plan / Currency conversion / Documents / Sharing / Places;
+- Codex should improve visual hierarchy without turning the Overview into a dense dashboard.
 
 Documents V2 is now canonical:
 - primary filters are All / Flights / Lodging / Tickets & Transport / Insurance / Personal / Mate;

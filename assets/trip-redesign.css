@@ -515,3 +515,81 @@ body:not(.home-page) .trip-sidebar-more-menu i{
   }
   body:not(.home-page) .places-hub-nav a{min-height:44px;font-size:13px}
 }
+
+
+/* Overview V2 control center */
+body[data-trip-view="overview"] .overview-control-center{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:16px 0;
+}
+body[data-trip-view="overview"] .overview-status-card{
+  min-width:0;
+  display:grid;
+  grid-template-columns:46px minmax(0,1fr) 38px;
+  align-items:center;
+  gap:12px;
+  padding:16px;
+}
+body[data-trip-view="overview"] .overview-status-card>div{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+body[data-trip-view="overview"] .overview-status-card small{
+  color:var(--tm-card-secondary);
+  font-size:11px;
+  font-weight:800;
+}
+body[data-trip-view="overview"] .overview-status-card strong{
+  overflow:hidden;
+  color:var(--tm-card-heading);
+  font-size:18px;
+  line-height:1.25;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+body[data-trip-view="overview"] .overview-status-card div>span{
+  overflow:hidden;
+  color:var(--tm-card-muted);
+  font-size:12px;
+  line-height:1.4;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+body[data-trip-view="overview"] .overview-status-icon{
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  border-radius:14px;
+  background:var(--tm-card-bg-compact);
+  color:var(--tm-card-link);
+  font-size:19px;
+}
+body[data-trip-view="overview"] .overview-status-card>a{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:999px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-link);
+}
+body[data-trip-view="overview"] .overview-status-card>a:is(:hover,:focus-visible){
+  background:var(--tm-card-control-selected);
+  outline:0;
+}
+@media(max-width:760px){
+  body[data-trip-view="overview"] .overview-control-center{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  body[data-trip-view="overview"] .overview-status-card{
+    grid-template-columns:42px minmax(0,1fr) 36px;
+    padding:13px;
+  }
+  body[data-trip-view="overview"] .overview-status-icon{width:42px;height:42px}
+  body[data-trip-view="overview"] .overview-status-card strong{font-size:16px}
+}
