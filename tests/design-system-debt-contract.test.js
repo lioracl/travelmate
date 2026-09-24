@@ -127,6 +127,13 @@ test('Overview quick actions have one final visual owner', () => {
   assert.match(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions nav\{[^}]*gap:10px!important/);
 });
 
+test('legacy global card overrides exclude Overview V2 cards', () => {
+  const styles = read(path.join(root, 'assets/styles.css'));
+  const legacyRules = styles.match(/:where\([^}]+\):not\(\.weather-top-widget\)[^}]+\{(?:border-radius:4px!important|border-color:transparent!important)\}/g) || [];
+  assert.ok(legacyRules.length >= 2, 'legacy card rules must remain identifiable');
+  for (const rule of legacyRules) assert.match(rule, /:not\(\.overview-control-card\)/);
+});
+
 test('Overview V2 control-center material has one feature owner', () => {
   const tripRedesign = read(path.join(root, 'assets/trip-redesign.css'));
   const readableGlass = read(path.join(root, 'assets/readable-glass.css'));
