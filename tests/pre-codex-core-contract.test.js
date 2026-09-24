@@ -55,6 +55,7 @@ test('retired Getaways patch is not referenced anywhere in deployable source', (
   }
   walk(root);
   const offenders = files
+    .filter((file) => !file.includes(path.sep + 'tests' + path.sep))
     .filter((file) => fs.readFileSync(file, 'utf8').includes('getaway-fix.js'))
     .map((file) => path.relative(root, file));
   assert.deepEqual(offenders, []);
