@@ -609,7 +609,7 @@
       metrics.push({ label: 'היום', value: dualBudgetMoney(data.todaySpent) });
       if (timing.elapsedDays) metrics.push({ label: 'ממוצע ליום', value: dualBudgetMoney(data.averagePerDay) });
       if (topCategory) metrics.push({ label: 'הקטגוריה הגבוהה', value: escapeHtml(topCategory.name) + '<small>' + localMoneyFromEuros(topCategory.total) + '</small>' });
-      if (!hasExpenses) narrative = 'עדיין לא נרשמו הוצאות. במצב ללא הגבלה TravelMate עוקב אחרי ההוצאה בפועל בלי להציג יתרה או חריגה.';
+      if (!hasExpenses) narrative = 'עדיין לא נרשמו הוצאות. במצב ללא הגבלה TravelMate עוקב אחרי ההוצאה בפועל בלי להשוות ליעד תקציבי.';
       else if (timing.status === 'active' && data.projectedTotal) narrative = 'בקצב הנוכחי ההוצאה המשוערת עד סוף הטיול היא ' + localMoneyFromEuros(data.projectedTotal) + '.';
       else if (timing.status === 'before') narrative = 'ההוצאות שנרשמו עד עכשיו הן הוצאות לפני תחילת הטיול. אין מגבלת תקציב להשוואה.';
       else narrative = 'זהו סיכום ההוצאות שנרשמו עד עכשיו, ללא יעד תקציבי.';
