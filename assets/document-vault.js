@@ -67,24 +67,6 @@
       status.classList.toggle('error', Boolean(error));
     }
 
-    if (!config || !config.url || !config.publishableKey) {
-      setStatus('חיבור האחסון טרם הוגדר.', true);
-      return;
-    }
-
-    if (!window.TravelMateCloud || typeof window.TravelMateCloud.getClient !== 'function') {
-      setStatus('שירות הענן של TravelMate אינו זמין כרגע. נסי לרענן את האפליקציה.', true);
-      return;
-    }
-
-    var client;
-    try {
-      client = await window.TravelMateCloud.getClient();
-    } catch (error) {
-      setStatus('לא ניתן לטעון כרגע את שירות האחסון. בדקי את החיבור לאינטרנט.', true);
-      return;
-    }
-    var bucket = config.documentBucket || 'travel-documents';
     var authPanel = vault.querySelector('[data-vault-auth]');
     var authForm = vault.querySelector('[data-vault-auth-form]');
     var sessionPanel = vault.querySelector('[data-vault-session]');
@@ -166,6 +148,25 @@
       groupForCategory: groupForCategory
     });
     applyDocumentFilter();
+
+    if (!config || !config.url || !config.publishableKey) {
+      setStatus('חיבור האחסון טרם הוגדר. קטגוריות ו־Mate עדיין זמינים במכשיר.', true);
+      return;
+    }
+
+    if (!window.TravelMateCloud || typeof window.TravelMateCloud.getClient !== 'function') {
+      setStatus('שירות הענן אינו זמין כרגע. קטגוריות ו־Mate עדיין זמינים במכשיר.', true);
+      return;
+    }
+
+    var client;
+    try {
+      client = await window.TravelMateCloud.getClient();
+    } catch (error) {
+      setStatus('לא ניתן לטעון כרגע את הכספת. קטגוריות ו־Mate עדיין זמינים במכשיר.', true);
+      return;
+    }
+    var bucket = config.documentBucket || 'travel-documents';
 
     async function applySession(session) {
       currentUser = session && session.user ? session.user : null;
