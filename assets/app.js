@@ -6,7 +6,7 @@ var appScript=document.currentScript;
   var finalStyle='readable-glass.css';
   var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
   var features={
-    overview:{styles:['weather-widget.css','weather-contrast.css','ai-assistant.css','trip-intelligence.css'],scripts:['weather-widget.js','ai-assistant.js','trip-intelligence.js']},
+    overview:{styles:['weather-widget.css','ai-assistant.css','trip-intelligence.css'],scripts:['weather-widget.js','ai-assistant.js','trip-intelligence.js']},
     places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js']},
     plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css'],scripts:['auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
     documents:{styles:['document-vault.css'],scripts:['document-vault.js']},
