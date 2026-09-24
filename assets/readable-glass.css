@@ -2081,3 +2081,29 @@ body.tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-templa
 body.tm-new-design[data-trip-view="overview"] .trip-home-actions a{min-width:0;text-align:center}
 @media(max-width:900px){body.tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){body.tm-new-design[data-trip-view="overview"] .overview-control-center{gap:8px}body.tm-new-design[data-trip-view="overview"] .overview-status-card{min-height:78px;padding:12px}body.tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:1fr 1fr}body.tm-new-design[data-trip-view="overview"] .trip-home-actions a:last-child{grid-column:1/-1}}
+
+
+/* Night polish 2: accessibility and secondary-screen geometry */
+body.tm-new-design[data-trip-view="plan"] #plan :is(.day-add,.day-replace,.activity-buttons button,.saved-place-actions button){
+  min-width:40px;
+  min-height:40px
+}
+body.tm-new-design[data-trip-view] main.content :is(#transport,#getaways,#group,#memories,#destination-info) :is(button,a[href],input,select,textarea):focus-visible{
+  outline:0;
+  box-shadow:var(--tm-core-focus)
+}
+body.tm-new-design[data-trip-view] main.content :is(#transport,#getaways,#group,#memories,#destination-info) :is(button,a[href],input,select,textarea){
+  min-height:40px
+}
+body.tm-new-design[data-trip-view] main.content :is(#transport,#getaways,#group,#memories,#destination-info) :is(.transport-card,.service-card,.group-card,.album-card,.memory-card,.trip-summary-card,.resource-link){
+  border-radius:var(--tm-core-radius-lg)
+}
+@media(max-width:650px){
+  body.tm-new-design[data-trip-view="plan"] #plan :is(.day-add,.day-replace,.activity-buttons button,.saved-place-actions button){
+    min-width:44px;
+    min-height:44px
+  }
+  body.tm-new-design[data-trip-view] main.content :is(#transport,#getaways,#group,#memories,#destination-info) :is(button,a[href],input,select,textarea){
+    min-height:44px
+  }
+}
