@@ -1181,6 +1181,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-weather-card-blur:blur(4px) saturate(104%);
   --tm-custom-overview-surface:var(--tm-glass-large-bg);
   --tm-custom-overview-subtle:var(--tm-card-bg-nested);
+  --tm-custom-overview-card-border:rgba(255,255,255,.24);
+  --tm-custom-overview-card-shadow:0 6px 18px rgba(0,0,0,.12);
   --tm-overview-green-soft:var(--tm-card-control-selected);
   --tm-card-bg:var(--tm-custom-overview-surface);
   --tm-app-glass-screen:var(--tm-custom-overview-surface);
@@ -1312,6 +1314,11 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main
   --tm-app-glass-screen:var(--tm-card-bg);
   --tm-app-glass-border-soft:var(--tm-card-border);
   --tm-app-glass-shadow:var(--tm-card-shadow)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .overview-control-card{
+  border:1px solid var(--tm-custom-overview-card-border);
+  background:var(--tm-custom-overview-surface);
+  box-shadow:var(--tm-custom-overview-card-shadow)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow);display:grid;gap:10px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;gap:6px}
