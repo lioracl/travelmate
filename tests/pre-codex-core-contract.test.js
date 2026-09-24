@@ -19,7 +19,7 @@ test('Supabase library loading has one canonical owner and remains retry-safe', 
 
   const cloud = read('assets/cloud-sync.js');
   assert.match(cloud, /window\.travelMateSupabaseLoader = null/);
-  assert.match(cloud, /clientPromise = null;\s*throw error;/);
+  assert.match(cloud, /if \(clientPromise === attempt\) clientPromise = null;/);
 
   const vault = read('assets/document-vault.js');
   assert.doesNotMatch(vault, /SUPABASE_CDN|SUPABASE_SRI|loadSupabaseLibrary|travelMateSupabaseLoader/);
