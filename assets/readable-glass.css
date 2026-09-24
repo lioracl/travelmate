@@ -2022,8 +2022,8 @@ html body .tm-skip-link:focus-visible{
 body.tm-new-design[data-trip-view] main.content :is(
   #overview,#plan,#places,#budget,#documents
 ) :is(button,a[href],input,select,textarea):focus-visible{
-  outline:0!important;
-  box-shadow:var(--tm-core-focus)!important
+  outline:0;
+  box-shadow:var(--tm-core-focus)
 }
 body.tm-new-design[data-trip-view] main.content :is(
   #overview,#plan,#places,#budget,#documents
@@ -2034,7 +2034,7 @@ body.tm-new-design[data-trip-view] main.content :is(
   #plan,#places,#budget,#documents
 ) :is(input,select,textarea){
   min-height:var(--tm-core-control-h);
-  border-radius:var(--tm-core-radius-md)!important
+  border-radius:var(--tm-core-radius-md)
 }
 body.tm-new-design[data-trip-view] main.content :is(
   #plan,#places,#budget,#documents
@@ -2044,7 +2044,7 @@ body.tm-new-design[data-trip-view] main.content :is(
   .budget-smart-summary,.expense-workspace,.currency-converter,.expense-record,
   .document-vault,.doc-row,.doc-category-file
 ){
-  border-radius:var(--tm-core-radius-lg)!important
+  border-radius:var(--tm-core-radius-lg)
 }
 body.tm-new-design[data-trip-view] main.content :is(#plan,#places,#budget,#documents) h2{
   letter-spacing:-.015em;
@@ -2057,7 +2057,7 @@ body.tm-new-design[data-trip-view] main.content :is(#plan,#places,#budget,#docum
   line-height:1.55
 }
 body.tm-new-design[data-trip-view] main.content :is(#plan,#places,#budget,#documents) button{
-  border-radius:var(--tm-core-radius-md)!important;
+  border-radius:var(--tm-core-radius-md);
   font-weight:850
 }
 @media(max-width:650px){
@@ -2074,10 +2074,10 @@ body.tm-new-design[data-trip-view] main.content :is(#plan,#places,#budget,#docum
 
 /* Night core-screen redesign: Overview */
 body.tm-new-design[data-trip-view="overview"] .overview-control-center{gap:10px;margin:14px 0 16px}
-body.tm-new-design[data-trip-view="overview"] .overview-status-card{min-height:86px;padding:14px!important;border-radius:var(--tm-core-radius-lg)!important}
+body.tm-new-design[data-trip-view="overview"] .overview-status-card{min-height:86px;padding:14px;border-radius:var(--tm-core-radius-lg)}
 body.tm-new-design[data-trip-view="overview"] .overview-status-icon{border-radius:13px}
-body.tm-new-design[data-trip-view="overview"] .overview-status-card>a{min-height:38px!important}
+body.tm-new-design[data-trip-view="overview"] .overview-status-card>a{min-height:38px}
 body.tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(5,minmax(0,1fr))}
 body.tm-new-design[data-trip-view="overview"] .trip-home-actions a{min-width:0;text-align:center}
 @media(max-width:900px){body.tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){body.tm-new-design[data-trip-view="overview"] .overview-control-center{gap:8px}body.tm-new-design[data-trip-view="overview"] .overview-status-card{min-height:78px;padding:12px!important}body.tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:1fr 1fr}body.tm-new-design[data-trip-view="overview"] .trip-home-actions a:last-child{grid-column:1/-1}}
+@media(max-width:520px){body.tm-new-design[data-trip-view="overview"] .overview-control-center{gap:8px}body.tm-new-design[data-trip-view="overview"] .overview-status-card{min-height:78px;padding:12px}body.tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:1fr 1fr}body.tm-new-design[data-trip-view="overview"] .trip-home-actions a:last-child{grid-column:1/-1}}
