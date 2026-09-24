@@ -197,9 +197,11 @@ test('About returns mobile focus to a visible menu trigger', () => {
 });
 
 
-test('skip link is promoted to the initial keyboard focus target', () => {
-  assert.match(appScript, /querySelector\('\.tm-skip-link'\)/);
-  assert.match(appScript, /skip\.focus\(\{preventScroll:true\}\)/);
+test('skip link stays hidden until keyboard focus and does not steal initial focus', () => {
+  const glass = fs.readFileSync(path.join(root, 'assets/readable-glass.css'), 'utf8');
+  assert.doesNotMatch(appScript, /skip\.focus\(\{preventScroll:true\}\)/);
+  assert.match(glass, /\.tm-skip-link\{[^}]*transform:translateY\(-160%\)/);
+  assert.match(glass, /\.tm-skip-link:focus-visible\{[^}]*transform:translateY\(0\)/);
 });
 
 
