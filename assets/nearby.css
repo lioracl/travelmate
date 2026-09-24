@@ -102,3 +102,12 @@
 #places .tm-place-card__content{gap:7px}
 #places .tm-place-card__primary-actions{margin-top:2px}
 @media(max-width:760px){#places>.nearby-panel.place-planner{gap:10px}#places .nearby-category-chips{grid-template-columns:repeat(2,minmax(0,1fr))}#places .nearby-result{padding:12px}}
+
+/* Night polish 2: mobile Places density */
+@media(max-width:760px){
+  #places .nearby-category-chips{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #places .place-planner-intro{padding-block:12px}
+  #places .nearby-category-selector{gap:8px}
+  #places .nearby-location-selector{gap:8px}
+}
+@media(max-width:350px){#places .nearby-category-chips{grid-template-columns:repeat(2,minmax(0,1fr))}}
