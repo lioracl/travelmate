@@ -2,10 +2,12 @@
   'use strict';
 
   var release = {
-    version: '1.55.3',
-    label: 'Trip Store consolidation',
+    version: '1.55.4',
+    label: 'Event contracts · lazy loading',
     date: '24 בספטמבר 2026',
     highlights: [
+      'Pre-Codex cleanup: אירועי View, Places, Planner ו-Mate משתמשים כעת בחוזי payload מרכזיים במקום CustomEvent חופשי.',
+      'טעינת Overview הוקלה: Transport, Getaways, Group, Memories ו-About נטענים רק לפי צורך, עם ניווט קל שמקדים את הפיצר המלא.',
       'Pre-Codex cleanup: Trip Store מרכזי נוסף, ו-Places, Planner, Mate, Lodging וטעינת הטיול המקומית כבר אינם כותבים ישירות ל-travelmate-trips.',
       'עדכוני פיצרים ממזגים כעת את השדות שלהם מול ה-Trip האחרון לפני שמירה, כדי לצמצם overwrite של שינויים מקבילים.',
       'Pre-Codex cleanup: טעינת Supabase אוחדה לבעלות אחת וניתנת לניסיון חוזר גם אחרי כשל רשת זמני.',
