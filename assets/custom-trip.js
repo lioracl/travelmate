@@ -257,16 +257,6 @@
       article.innerHTML = '<span class="badge">יום ' + (index + 1) + '</span><div><strong>' + new Intl.DateTimeFormat('he-IL', { weekday: 'long', day: 'numeric', month: 'long' }).format(date) + '</strong><p>' + (index === 0 ? 'הגעה, התמקמות וסיור קל ליד מקום הלינה' : index === trip.days - 1 ? 'בוקר חופשי, השלמות ויציאה לשדה התעופה' : themes[(index - 1) % themes.length]) + '</p></div>';
       days.appendChild(article);
     }
-    var splits = [['לינה', .4], ['אוכל', .22], ['תחבורה', .15], ['אטרקציות', .13], ['רזרבה', .1]];
-    var expenses = document.querySelector('[data-expenses]');
-    expenses.innerHTML = '';
-    splits.forEach(function (item) {
-      var amount = Math.round(trip.budget * item[1]);
-      var article = document.createElement('article');
-      article.className = 'expense';
-      article.innerHTML = '<div><strong>' + item[0] + '</strong><span>€' + amount.toLocaleString('he-IL') + '</span></div><div class="progress"><i style="width:' + (item[1] * 100) + '%"></i></div>';
-      expenses.appendChild(article);
-    });
   }
 
   function refreshOverviewFromStore() {
