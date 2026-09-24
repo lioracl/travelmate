@@ -1,5 +1,5 @@
-const CACHE_NAME='travelmate-smart-v197';
-const ASSET_VERSION='20260924-12';
+const CACHE_NAME='travelmate-smart-v198';
+const ASSET_VERSION='20260924-13';
 const CORE_PATHS=[
   './',
   './index.html',
@@ -15,6 +15,9 @@ const CORE_PATHS=[
   './assets/cloud-sync.js',
   './assets/trip-store.js',
   './assets/event-contracts.js',
+  './assets/currency-utils.js',
+  './assets/overview-control-center.css',
+  './assets/overview-control-center.js',
   './assets/supabase-config.js',
   './assets/mobile-menu.css',
   './assets/document-vault.css',
