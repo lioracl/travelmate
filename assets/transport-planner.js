@@ -72,19 +72,6 @@
     return { public: officialSearch(city, country), rail: 'https://www.openstreetmap.org/search?query=' + encodeURIComponent('train station ' + city + ' ' + country), taxi: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('taxi ' + city + ' ' + country) };
   }
   function addNavigation() {
-    var nav = document.querySelector('.sidebar nav');
-    var hasTransport = nav && [].slice.call(nav.querySelectorAll('a')).some(function (link) {
-      try { var url = new URL(link.href, location.href); return link.dataset.view === 'transport' || url.hash === '#transport' || url.searchParams.get('view') === 'transport'; }
-      catch (error) { return false; }
-    });
-    if (nav && !hasTransport) {
-      var item = document.createElement('a');
-      item.href = '#transport';
-      item.dataset.view = 'transport';
-      item.className = 'sidebar-service';
-      item.innerHTML = '<i class="fa-solid fa-train-subway"></i><span class="tip">תחבורה ומחירים</span>';
-      nav.appendChild(item);
-    }
     var modules = document.querySelector('.modules');
     if (modules && !modules.querySelector('[href="#transport"]')) {
       var card = document.createElement('a');
