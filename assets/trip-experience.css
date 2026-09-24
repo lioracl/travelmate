@@ -128,8 +128,8 @@
   padding:18px;
   border:1px solid var(--tm-card-border);
   border-radius:22px;
-  background:var(--tm-card-bg-main);
-  box-shadow:var(--tm-shadow-card);
+  background:var(--tm-card-bg);
+  box-shadow:var(--tm-card-shadow);
   color:var(--tm-text-primary);
 }
 #budget .budget-smart-summary>header{
@@ -158,9 +158,9 @@
   gap:7px;
   flex:0 0 auto;
   padding:7px 11px;
-  border:1px solid var(--tm-border-strong);
+  border:1px solid var(--tm-card-control-border);
   border-radius:999px;
-  background:var(--tm-control-bg);
+  background:var(--tm-control-surface);
   color:var(--tm-text-primary);
   font-size:12px;
   font-weight:900;
@@ -211,7 +211,7 @@
   padding:11px 12px;
   border:1px solid var(--tm-border-subtle);
   border-radius:14px;
-  background:var(--tm-card-bg-interactive);
+  background:var(--tm-card-bg-hover);
   color:var(--tm-text-primary);
   line-height:1.55;
 }
