@@ -5,3 +5,15 @@
 html body.tm-new-design #transport .official-fares{background:linear-gradient(135deg,#126c51,#185f67)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid rgba(255,255,255,.25)!important}html body.tm-new-design #transport .official-fares *{color:#fff!important;-webkit-text-fill-color:#fff!important}html body.tm-new-design #transport .transport-note{padding:12px 14px!important;border:1px solid #b9d8ca!important;border-radius:14px!important;background:#edf7f2!important;color:#315d4d!important;-webkit-text-fill-color:#315d4d!important}html body.tm-new-design #transport .transport-note i{color:#176b4e!important;-webkit-text-fill-color:#176b4e!important}
 .transport-destination-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.transport-destination-fields label{min-width:0}.transport-destination-fields select{font-weight:800}
 @media(max-width:700px){.transport-destination-fields{grid-template-columns:1fr}}
+
+/* Night polish 2: transport */
+#transport .transport-layout{gap:12px}
+#transport .transport-card{padding:17px;border-radius:18px}
+#transport .transport-title{gap:10px;margin-bottom:12px}
+#transport .transport-title>span{width:44px;height:44px;border-radius:13px}
+#transport .transport-form{gap:10px}
+#transport .transport-results{margin-top:13px}
+#transport .transport-empty{min-height:112px;border-radius:15px}
+#transport .fare-row{padding:10px 0}
+#transport .transport-note{margin-top:10px}
+@media(max-width:700px){#transport .transport-card{padding:13px}#transport .transport-title{align-items:flex-start}#transport .transport-title>span{width:40px;height:40px;flex:0 0 40px}#transport .transport-form{gap:9px}#transport .transport-empty{min-height:94px}#transport .fare-row{padding:9px 0}}
