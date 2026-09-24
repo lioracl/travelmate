@@ -4,6 +4,7 @@
   window.__travelMateTripExperienceLoaded = true;
 
   var cloud = window.TravelMateCloud;
+  var currencyUtils = window.TravelMateCurrencyUtils;
   var state = { trip: null, rate: null, rates: {}, ilsRates: { ILS: 1 }, rateDate: '', rateSource: '', rateSourceUrl: '', fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR', secondaryCurrency: 'ILS', budgetUnlimited: false };
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
   function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch (error) { return fallback; } }
@@ -15,37 +16,6 @@
   function money(value, currency) { return new Intl.NumberFormat('he-IL', { style: 'currency', currency: currency, maximumFractionDigits: 2 }).format(Number(value || 0)); }
   function currencySymbol(currency) { var part = new Intl.NumberFormat('he-IL', { style: 'currency', currency: currency }).formatToParts(0).find(function (item) { return item.type === 'currency'; }); return part ? part.value : currency; }
   function clean(value) { return String(value || '').replace(/[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]/gu, '').trim(); }
-  function countryCurrency(country) {
-    var value = clean(country).toLowerCase();
-    var groups = {
-      ILS: ['ישראל', 'israel'],
-      CZK: ['צכיה', "צ'כיה", 'הרפובליקה הצכית', 'czechia', 'czech republic'],
-      JPY: ['יפן', 'japan'],
-      GBP: ['בריטניה', 'אנגליה', 'סקוטלנד', 'וויילס', 'united kingdom', 'uk', 'england', 'scotland', 'wales'],
-      CHF: ['שווייץ', 'שוויץ', 'switzerland'],
-      PLN: ['פולין', 'poland'],
-      HUF: ['הונגריה', 'hungary'],
-      TRY: ['טורקיה', 'turkey', 'türkiye'],
-      USD: ['ארצות הברית', 'ארה"ב', 'usa', 'united states'],
-      CAD: ['קנדה', 'canada'],
-      DKK: ['דנמרק', 'denmark'],
-      SEK: ['שוודיה', 'sweden'],
-      NOK: ['נורווגיה', 'norway'],
-      RON: ['רומניה', 'romania'],
-      ISK: ['איסלנד', 'iceland'],
-      AUD: ['אוסטרליה', 'australia'],
-      NZD: ['ניו זילנד', 'new zealand'],
-      CNY: ['סין', 'china'],
-      KRW: ['קוריאה הדרומית', 'דרום קוריאה', 'south korea'],
-      INR: ['הודו', 'india'],
-      THB: ['תאילנד', 'thailand'],
-      MXN: ['מקסיקו', 'mexico'],
-      BRL: ['ברזיל', 'brazil'],
-      ZAR: ['דרום אפריקה', 'south africa']
-    };
-    var code = Object.keys(groups).find(function (currency) { return groups[currency].some(function (name) { return value === name || value.indexOf(name) >= 0; }); });
-    return code || 'EUR';
-  }
   function localFromEuros(euros) { return Number(euros || 0) * Number(state.localCurrency === 'EUR' ? 1 : state.rates[state.localCurrency] || 0); }
   function localRateInIls() { var localRate = state.localCurrency === 'EUR' ? 1 : Number(state.rates[state.localCurrency] || 0); return localRate && state.rate ? state.rate / localRate : 0; }
   function inferBudget() { var explicit = Number(state.trip && state.trip.budget || String(document.querySelector('[data-budget]') && document.querySelector('[data-budget]').textContent || '').replace(/[^0-9.]/g, '') || 0); if (explicit) return explicit; var text = document.querySelector('.budget-card') && document.querySelector('.budget-card').textContent || document.getElementById('budget') && document.getElementById('budget').textContent || ''; var match = text.match(/מתוך\s*([\d,.]+)\s*€/i) || text.match(/([\d,.]+)\s*€/); return match ? Number(match[1].replace(/,/g, '')) : 0; }
@@ -744,7 +714,7 @@
   async function init() {
     try { state.trip = window.travelMateTripReady ? await window.travelMateTripReady : null; } catch (error) {}
     if (!state.trip) { var heroTitle = clean(document.querySelector('.hero h1') && document.querySelector('.hero h1').textContent); var heroSubtitle = clean(document.querySelector('.hero .hero-copy p') && document.querySelector('.hero .hero-copy p').textContent); state.trip = { id: new URLSearchParams(location.search).get('id') || location.pathname, city: document.querySelector('[data-city]') && clean(document.querySelector('[data-city]').textContent) || heroSubtitle.split('·')[0].trim() || heroTitle || 'היעד', country: document.querySelector('[data-country]') && clean(document.querySelector('[data-country]').textContent) || heroTitle, budget: 0 }; }
-    state.localCurrency = countryCurrency(state.trip.country);
+    state.localCurrency = currencyUtils ? currencyUtils.countryCurrency(state.trip.country) : 'EUR';
     state.budgetUnlimited = typeof state.trip.budgetUnlimited === 'boolean' ? state.trip.budgetUnlimited : readJson(storageKey('budget-unlimited'), false) === true;
     state.secondaryCurrency = state.trip.secondaryCurrency || readJson(storageKey('secondary-currency'), state.localCurrency === 'ILS' ? 'EUR' : 'ILS');
     window.TravelMateCurrency = {
