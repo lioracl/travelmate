@@ -51,7 +51,34 @@
   function inferBudget() { var explicit = Number(state.trip && state.trip.budget || String(document.querySelector('[data-budget]') && document.querySelector('[data-budget]').textContent || '').replace(/[^0-9.]/g, '') || 0); if (explicit) return explicit; var text = document.querySelector('.budget-card') && document.querySelector('.budget-card').textContent || document.getElementById('budget') && document.getElementById('budget').textContent || ''; var match = text.match(/מתוך\s*([\d,.]+)\s*€/i) || text.match(/([\d,.]+)\s*€/); return match ? Number(match[1].replace(/,/g, '')) : 0; }
   function toast(message) { var old = document.querySelector('.trip-experience-toast'); if (old) old.remove(); var node = document.createElement('div'); node.className = 'trip-experience-toast'; node.textContent = message; document.body.appendChild(node); setTimeout(function () { node.remove(); }, 2800); }
   function safeExpenses() { return state.expenses.map(function (expense) { var copy = Object.assign({}, expense); delete copy.receiptData; return copy; }); }
-  function saveTripData() { if (!state.trip) return; state.trip.expenses = safeExpenses(); state.trip.budgetCategories = state.budgetCategories; state.trip.memories = state.memories; state.trip.photoAlbumUrl = state.albumUrl; state.trip.currencyFee = state.fee; state.trip.secondaryCurrency = state.secondaryCurrency; state.trip.budgetUnlimited = state.budgetUnlimited; writeJson(storageKey('budget-unlimited'), state.budgetUnlimited); if (new URLSearchParams(location.search).get('id') && cloud && cloud.queueTripSave) cloud.queueTripSave(state.trip); }
+  function saveTripData() {
+    if (!state.trip) return;
+    var expenses = safeExpenses();
+    var store = window.TravelMateTripStore;
+    var saved = store && store.updateTrip ? store.updateTrip(state.trip.id, function (current) {
+      current.expenses = expenses;
+      current.budgetCategories = state.budgetCategories;
+      current.memories = state.memories;
+      current.photoAlbumUrl = state.albumUrl;
+      current.currencyFee = state.fee;
+      current.secondaryCurrency = state.secondaryCurrency;
+      current.budgetUnlimited = state.budgetUnlimited;
+      if (state.trip.budget != null) current.budget = state.trip.budget;
+      return current;
+    }) : null;
+    if (saved) state.trip = saved;
+    else {
+      state.trip.expenses = expenses;
+      state.trip.budgetCategories = state.budgetCategories;
+      state.trip.memories = state.memories;
+      state.trip.photoAlbumUrl = state.albumUrl;
+      state.trip.currencyFee = state.fee;
+      state.trip.secondaryCurrency = state.secondaryCurrency;
+      state.trip.budgetUnlimited = state.budgetUnlimited;
+      if (new URLSearchParams(location.search).get('id') && cloud && cloud.queueTripSave) cloud.queueTripSave(state.trip);
+    }
+    writeJson(storageKey('budget-unlimited'), state.budgetUnlimited);
+  }
 
   function receiptPath(expenseId, fileName, userId) {
     var extension = String(fileName || '').split('.').pop().replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 8) || 'bin';
@@ -396,6 +423,7 @@
     return totals;
   }
   function renderBudgetCharts() {
+    renderSmartBudgetSummary();
     var bars = document.querySelector('[data-budget-chart-bars]');
     var summary = document.querySelector('[data-budget-chart-summary]');
     if (!bars || !summary) return;
@@ -499,6 +527,118 @@
     try { if (!cloud) throw new Error('cloud-unavailable'); var client = await cloud.getClient(); var data = await fileToBase64(file); var result = await client.functions.invoke('travel-assistant', { body: { receipt: { mimeType: file.type || 'image/jpeg', data: data } } }); if (result.error || !result.data || !result.data.receipt) throw result.error || new Error('scan-failed'); applyReceipt(form, result.data.receipt); status.textContent = 'הסריקה הושלמה. בדוק את הסכום והפרטים לפני השמירה.'; } catch (error) { try { var localReceipt = await localReceiptScan(file, status); applyReceipt(form, localReceipt); status.textContent = localReceipt.amount ? 'הסריקה המקומית הושלמה. בדוק את הפרטים לפני השמירה.' : 'הטקסט זוהה, אך הסכום לא היה ברור. הזן אותו ידנית.'; } catch (localError) { status.textContent = 'הסריקה החכמה לא זמינה כרגע. אפשר לראות את הקבלה ולהקליד את הפרטים ידנית.'; } }
   }
   function expenseInEuros(expense) { if (expense.currency === 'EUR' || !expense.currency) return Number(expense.amount || 0); var rate = Number(state.rates[expense.currency] || 0); return rate ? Number(expense.amount || 0) / rate : 0; }
+  function tripBudgetTiming() {
+    var trip = state.trip || {};
+    var start = trip.start ? new Date(trip.start + 'T00:00:00') : null;
+    var end = trip.end ? new Date(trip.end + 'T00:00:00') : null;
+    var totalDays = Math.max(1, Number(trip.days || 0) || (start && end ? Math.round((end - start) / 86400000) + 1 : 1));
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    if (!start || Number.isNaN(start.getTime())) return { status: 'unknown', totalDays: totalDays, elapsedDays: 0, remainingDays: totalDays };
+    if (!end || Number.isNaN(end.getTime())) end = new Date(start.getTime() + (totalDays - 1) * 86400000);
+    if (today < start) return { status: 'before', totalDays: totalDays, elapsedDays: 0, remainingDays: totalDays };
+    if (today > end) return { status: 'after', totalDays: totalDays, elapsedDays: totalDays, remainingDays: 0 };
+    return {
+      status: 'active',
+      totalDays: totalDays,
+      elapsedDays: Math.max(1, Math.round((today - start) / 86400000) + 1),
+      remainingDays: Math.max(1, Math.round((end - today) / 86400000) + 1)
+    };
+  }
+  function budgetAnalytics() {
+    var totalSpent = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
+    var todayKey = localDateValue();
+    var todaySpent = state.expenses.filter(function (expense) { return expense.date === todayKey; }).reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
+    var categoryTotals = budgetExpenseTotals();
+    var leadingCategory = Object.keys(categoryTotals).map(function (name) { return { name: name, total: categoryTotals[name].total }; }).sort(function (a, b) { return b.total - a.total; })[0] || null;
+    var timing = tripBudgetTiming();
+    var averagePerDay = timing.elapsedDays ? totalSpent / timing.elapsedDays : 0;
+    var projectedTotal = timing.status === 'active' && timing.elapsedDays ? averagePerDay * timing.totalDays : timing.status === 'after' ? totalSpent : 0;
+    var budget = Math.max(0, Number(state.trip && state.trip.budget || 0));
+    var remaining = Math.max(0, budget - totalSpent);
+    var overBudget = Math.max(0, totalSpent - budget);
+    var usedPercent = budget ? totalSpent / budget * 100 : 0;
+    var dailyAvailable = !state.budgetUnlimited && budget && timing.remainingDays ? remaining / timing.remainingDays : 0;
+    return {
+      totalSpent: totalSpent,
+      todaySpent: todaySpent,
+      leadingCategory: leadingCategory,
+      timing: timing,
+      averagePerDay: averagePerDay,
+      projectedTotal: projectedTotal,
+      budget: budget,
+      remaining: remaining,
+      overBudget: overBudget,
+      usedPercent: usedPercent,
+      dailyAvailable: dailyAvailable
+    };
+  }
+  function localMoneyFromEuros(euros) {
+    var local = state.localCurrency === 'EUR' ? Number(euros || 0) : localFromEuros(euros);
+    return money(local, state.localCurrency);
+  }
+  function dualBudgetMoney(euros) {
+    var primary = localMoneyFromEuros(euros);
+    var secondary = convertCurrency(Number(euros || 0), 'EUR', state.secondaryCurrency);
+    return primary + (secondary && state.secondaryCurrency !== state.localCurrency ? '<small>≈ ' + money(secondary, state.secondaryCurrency) + '</small>' : '');
+  }
+  function createSmartBudgetSummary() {
+    var section = document.getElementById('budget');
+    if (!section || section.querySelector('[data-budget-smart-summary]')) return;
+    var summary = document.createElement('section');
+    summary.className = 'budget-smart-summary';
+    summary.dataset.budgetSmartSummary = '';
+    summary.setAttribute('aria-live', 'polite');
+    var hero = section.querySelector('.budget-hero');
+    if (hero) hero.insertAdjacentElement('afterend', summary);
+    else section.prepend(summary);
+    renderSmartBudgetSummary();
+  }
+  function renderSmartBudgetSummary() {
+    var host = document.querySelector('[data-budget-smart-summary]');
+    if (!host) return;
+    var data = budgetAnalytics();
+    var unlimited = state.budgetUnlimited;
+    var hasExpenses = state.expenses.length > 0;
+    var timing = data.timing;
+    var topCategory = data.leadingCategory;
+    var metrics = [];
+    var narrative = '';
+
+    if (unlimited) {
+      metrics.push({ label: 'הוצאת עד עכשיו', value: dualBudgetMoney(data.totalSpent) });
+      metrics.push({ label: 'היום', value: dualBudgetMoney(data.todaySpent) });
+      if (timing.elapsedDays) metrics.push({ label: 'ממוצע ליום', value: dualBudgetMoney(data.averagePerDay) });
+      if (topCategory) metrics.push({ label: 'הקטגוריה הגבוהה', value: escapeHtml(topCategory.name) + '<small>' + localMoneyFromEuros(topCategory.total) + '</small>' });
+      if (!hasExpenses) narrative = 'עדיין לא נרשמו הוצאות. במצב ללא הגבלה TravelMate עוקב אחרי ההוצאה בפועל בלי להציג יתרה או חריגה.';
+      else if (timing.status === 'active' && data.projectedTotal) narrative = 'בקצב הנוכחי ההוצאה המשוערת עד סוף הטיול היא ' + localMoneyFromEuros(data.projectedTotal) + '.';
+      else if (timing.status === 'before') narrative = 'ההוצאות שנרשמו עד עכשיו הן הוצאות לפני תחילת הטיול. אין מגבלת תקציב להשוואה.';
+      else narrative = 'זהו סיכום ההוצאות שנרשמו עד עכשיו, ללא יעד תקציבי.';
+      host.classList.add('is-unlimited');
+    } else {
+      host.classList.remove('is-unlimited');
+      metrics.push({ label: 'הוצאת עד עכשיו', value: dualBudgetMoney(data.totalSpent) });
+      if (data.budget) {
+        metrics.push({ label: 'נותר', value: dualBudgetMoney(data.remaining) });
+        metrics.push({ label: timing.status === 'active' ? 'זמין ליום מהיום' : 'זמין בממוצע ליום', value: dualBudgetMoney(data.dailyAvailable) });
+        metrics.push({ label: 'היום', value: dualBudgetMoney(data.todaySpent) });
+        if (!hasExpenses) narrative = 'עוד לא נרשמו הוצאות. התקציב המלא עדיין זמין.';
+        else if (data.overBudget > 0) narrative = 'נרשמה חריגה של ' + localMoneyFromEuros(data.overBudget) + ' מעל התקציב שהוגדר.';
+        else if (timing.status === 'active' && data.projectedTotal) {
+          var forecastDelta = data.budget - data.projectedTotal;
+          narrative = forecastDelta >= 0 ? 'בקצב הנוכחי צפוי להישאר בסוף הטיול כ־' + localMoneyFromEuros(forecastDelta) + '.' : 'בקצב הנוכחי צפויה חריגה של כ־' + localMoneyFromEuros(Math.abs(forecastDelta)) + ' עד סוף הטיול.';
+        } else {
+          narrative = 'נוצלו ' + Math.round(data.usedPercent) + '% מהתקציב שהוגדר.';
+        }
+      } else {
+        metrics.push({ label: 'היום', value: dualBudgetMoney(data.todaySpent) });
+        if (timing.elapsedDays) metrics.push({ label: 'ממוצע ליום', value: dualBudgetMoney(data.averagePerDay) });
+        if (topCategory) metrics.push({ label: 'הקטגוריה הגבוהה', value: escapeHtml(topCategory.name) + '<small>' + localMoneyFromEuros(topCategory.total) + '</small>' });
+        narrative = 'מצב התקציב מוגדר, אבל עדיין לא הוזן סכום יעד. הזן תקציב כדי לקבל יתרה, סכום יומי ותחזית לסוף הטיול.';
+      }
+    }
+
+    host.innerHTML = '<header><div><small>' + (unlimited ? 'מעקב הוצאות ללא תקרה' : 'סיכום תקציב חכם') + '</small><h2>' + (hasExpenses ? 'מה מצב ההוצאות שלי עכשיו?' : 'התקציב מוכן למעקב') + '</h2></div><span class="budget-smart-mode"><i class="fa-solid ' + (unlimited ? 'fa-infinity' : 'fa-wallet') + '"></i>' + (unlimited ? 'ללא הגבלה' : 'תקציב מוגדר') + '</span></header><div class="budget-smart-metrics">' + metrics.map(function (item) { return '<article><span>' + item.label + '</span><strong>' + item.value + '</strong></article>'; }).join('') + '</div><p class="budget-smart-narrative"><i class="fa-solid fa-wand-magic-sparkles"></i><span>' + narrative + '</span></p>';
+  }
   function renderExpenseList() {
     var summary = document.querySelector('[data-expense-summary]'); if (!summary) return; var total = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
     var localTotal = state.localCurrency === 'EUR' ? total : localFromEuros(total);
@@ -668,7 +808,7 @@
       }
     };
     state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readJson(storageKey('expenses'), []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) && state.trip.budgetCategories.length ? state.trip.budgetCategories : readJson(storageKey('budget-categories'), null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readJson(storageKey('memories'), []); state.albumUrl = state.trip.photoAlbumUrl || readJson(storageKey('album-url'), ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readJson(storageKey('currency-fee'), 2.5));
-    injectCurrencyCards(); createBudgetTools(); createCurrencyConverter(); createMemoriesSection(); setupCollapsibleSections();
+    injectCurrencyCards(); createSmartBudgetSummary(); createBudgetTools(); createCurrencyConverter(); createMemoriesSection(); setupCollapsibleSections();
     loadRate();
     migrateInlineReceipts();
     syncPendingReceipts();
