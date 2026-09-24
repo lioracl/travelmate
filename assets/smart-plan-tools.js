@@ -3,11 +3,7 @@
 
   function getTrip() {
     var id = new URLSearchParams(location.search).get('id');
-    try {
-      return JSON.parse(localStorage.getItem('travelmate-trips') || '[]').find(function (trip) {
-        return String(trip.id) === String(id);
-      });
-    } catch (error) { return null; }
+    return window.TravelMateTripStore ? window.TravelMateTripStore.getTrip(id) : null;
   }
 
   function dateAt(index, trip) {
