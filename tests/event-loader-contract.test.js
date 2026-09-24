@@ -76,13 +76,15 @@ test('high-value event emitters use the canonical event API', () => {
   }
 });
 
-test('lazy feature owners reuse navigation entries instead of duplicating them', () => {
+test('lazy secondary features use the static More menu instead of mutating primary navigation', () => {
+  const custom = read('trip/custom/index.html');
   const collaboration = read('assets/collaboration.js');
   const experience = read('assets/trip-experience.js');
-  assert.match(collaboration, /querySelector\('\[data-view="group"\]'\)/);
-  assert.match(collaboration, /data-view="group"/);
-  assert.match(experience, /querySelector\('\[data-view="memories"\]'\)/);
-  assert.match(experience, /data-view="memories"/);
+  assert.match(custom, /trip-sidebar-more/);
+  assert.match(custom, /data-view="group"/);
+  assert.match(custom, /data-view="memories"/);
+  assert.doesNotMatch(collaboration, /querySelector\('\.sidebar nav'\)/);
+  assert.doesNotMatch(experience, /querySelector\('\.sidebar nav'\)/);
 });
 
 test('Nearby and Document Vault are feature-scoped on custom trips', () => {
