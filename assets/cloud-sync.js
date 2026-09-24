@@ -35,18 +35,19 @@
   function getClient() {
     if (window.__travelMateSupabaseClient) return Promise.resolve(window.__travelMateSupabaseClient);
     if (clientPromise) return clientPromise;
-    clientPromise = loadLibrary().then(function (library) {
+    var attempt = loadLibrary().then(function (library) {
       var config = window.TRAVELMATE_SUPABASE;
       if (!config || !config.url || !config.publishableKey) throw new Error('SUPABASE_NOT_CONFIGURED');
       window.__travelMateSupabaseClient = library.createClient(config.url, config.publishableKey, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
       return window.__travelMateSupabaseClient;
-    }).catch(function (error) {
-      clientPromise = null;
-      throw error;
     });
-    return clientPromise;
+    clientPromise = attempt;
+    attempt.catch(function () {
+      if (clientPromise === attempt) clientPromise = null;
+    });
+    return attempt;
   }
 
   function getLocalTrips() {
