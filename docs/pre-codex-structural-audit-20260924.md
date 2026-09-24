@@ -8,12 +8,14 @@ PWA baseline: `travelmate-smart-v190` / assets `20260924-05`
 ## Cleanup status update — 2026-09-24
 
 Completed after this audit:
+- **Event contracts: RESOLVED.** `travelmate:viewchange`, `travelmate:places-updated`, `travelmate:activities-updated`, and `travelmate:ask-ai` now normalize payloads through `TravelMateEvents`; raw emitters for these contracts were removed.
+- **Loader narrowing: RESOLVED for heavy structural families.** Transport, Getaways, Group, Memories, and About no longer preload as global structure. Lightweight navigation exists up front and waits for the owning feature before view activation.
 - **Trip Store / direct trip storage: RESOLVED.** `travelmate-trips` is now owned only by `cloud-sync.js` and `trip-store.js`; feature modules consume `TravelMateTripStore` for reads/writes. High-risk writers and remaining direct readers were migrated, while existing trip JSON and cloud sync APIs were preserved.
 - **Supabase loader ownership: RESOLVED.** `document-vault.js` now delegates client creation to the canonical `TravelMateCloud.getClient()`; only `cloud-sync.js` owns `window.travelMateSupabaseLoader`. Failed library loads remove the failed script and can be retried.
 - **Getaways duplicate implementation: RESOLVED.** The proven corrective search/failover behavior was merged into `travel-services.js`; `getaway-fix.js` was removed from the loader and repository.
 - Regression contracts were added to prevent either duplicate from returning.
 
-The Trip Store consolidation target is now **RESOLVED**. The next pre-Codex targets are event payload contracts, loader narrowing, and the remaining CSS ownership debt.
+Trip Store, event payload contracts, and heavy structural loader narrowing are now **RESOLVED**. The next pre-Codex target is the remaining CSS/visual ownership debt plus final runtime acceptance.
 
 ## Purpose
 
@@ -264,8 +266,8 @@ This does **not** mean every code path is live. Files such as `getaway-fix.js` m
 1. ~~Fix the shared Supabase loader ownership.~~ **DONE**
 2. ~~Consolidate Getaways implementation and remove the patch file.~~ **DONE**
 3. ~~Define a Trip Store facade and migrate the highest-risk full-array writers first.~~ **DONE — expanded to all direct feature readers/writers.**
-4. Document event payload contracts for places/activities/AI.
-5. Tighten the global feature loader without changing user-visible behavior.
+4. ~~Document and enforce event payload contracts for places/activities/AI.~~ **DONE**
+5. ~~Tighten the global feature loader without changing user-visible behavior.~~ **DONE for heavy structural families**
 6. Run the full runtime/contract/PWA regression.
 7. Hand Codex the visual ownership map and prohibit expansion of components marked for later removal.
 
