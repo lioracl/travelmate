@@ -389,26 +389,23 @@
     if (focusTarget) window.setTimeout(function () { if (focusTarget.isConnected) focusTarget.focus(); }, 0);
   }
   function addSidebarEntry() {
-    var nav = document.querySelector('.sidebar nav');
-    if (!nav) return;
-    var button = nav.querySelector('[data-about-open]');
+    var sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+    var button = sidebar.querySelector('[data-about-open]');
     if (!button) {
+      var host = sidebar.querySelector('.trip-sidebar-more-menu') || sidebar.querySelector('nav');
+      if (!host) return;
       button = document.createElement('button');
       button.type = 'button';
       button.className = 'sidebar-about';
       button.dataset.aboutOpen = '';
-      button.innerHTML = '<i class="fa-solid fa-circle-info"></i><span class="tip">אודות · גרסה ' + release.version + '</span>';
-      button.setAttribute('aria-label', 'אודות TravelMate, גרסה ' + release.version);
-      nav.appendChild(button);
+      button.innerHTML = '<i class="fa-solid fa-circle-info"></i><span>אודות TravelMate</span>';
+      host.appendChild(button);
     }
-    if (nav.lastElementChild !== button) nav.appendChild(button);
-    if (!nav.dataset.aboutOrderWatch) {
-      nav.dataset.aboutOrderWatch = 'true';
-      new MutationObserver(function () {
-        var about = nav.querySelector('[data-about-open]');
-        if (about && nav.lastElementChild !== about) nav.appendChild(about);
-      }).observe(nav, { childList: true });
-    }
+    button.removeAttribute('data-lazy-about');
+    button.setAttribute('aria-label', 'אודות TravelMate, גרסה ' + release.version);
+    var label = button.querySelector('.tip,span');
+    if (label) label.textContent = 'אודות TravelMate';
   }
   function addHomeEntry() {
     if (document.querySelector('.workspace') || document.querySelector('[data-home-about]')) return;
