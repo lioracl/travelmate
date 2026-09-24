@@ -58,6 +58,9 @@
   var currentView = viewParams.get('view') || 'overview';
   if (currentView === 'car-rental') currentView = 'transport';
   var overviewClasses = ['trip-overview-summary', 'trip-home-actions'];
+  var placesHub = document.querySelector('[data-places-hub]');
+  var placesViews = { places: true, transport: true, getaways: true, 'destination-info': true };
+  function isPlacesView(view) { return Boolean(placesViews[view]); }
 
   function pageUrl(view) {
     var url = new URL(window.location.href);
@@ -75,18 +78,40 @@
   }
 
   function syncTripPages() {
-    sidebar.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
+    sidebar.querySelectorAll('nav a[href^="#"], .trip-sidebar-more a[href^="#"]').forEach(function (link) {
       var view = link.getAttribute('href').slice(1);
       link.href = pageUrl(view);
     });
+    if (placesHub) {
+      placesHub.querySelectorAll('a[href^="#"]').forEach(function (link) {
+        var view = link.getAttribute('href').slice(1);
+        link.href = pageUrl(view);
+      });
+    }
     sidebar.querySelectorAll('nav a').forEach(function (link) {
       var linkUrl;
       try { linkUrl = new URL(link.href, window.location.href); } catch (error) { return; }
-      var linkView = linkUrl.searchParams.get('view') || linkUrl.hash.slice(1);
-      link.classList.toggle('active', linkView === currentView);
-      if (linkView === currentView) link.setAttribute('aria-current', 'page');
+      var linkView = link.dataset.view || linkUrl.searchParams.get('view') || linkUrl.hash.slice(1);
+      var selected = linkView === currentView || (linkView === 'places' && isPlacesView(currentView));
+      link.classList.toggle('active', selected);
+      if (selected) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
     });
+    sidebar.querySelectorAll('.trip-sidebar-more a[data-view]').forEach(function (link) {
+      var selected = link.dataset.view === currentView;
+      link.classList.toggle('active', selected);
+      if (selected) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    if (placesHub) {
+      placesHub.hidden = !isPlacesView(currentView);
+      placesHub.querySelectorAll('a[data-view]').forEach(function (link) {
+        var selected = link.dataset.view === currentView;
+        link.classList.toggle('active', selected);
+        if (selected) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      });
+    }
     if (!content) return;
     content.querySelectorAll(':scope > section').forEach(function (section) {
       if (section.classList.contains('hero')) {
@@ -96,6 +121,7 @@
       section.hidden = sectionView(section) !== currentView;
     });
     document.body.dataset.tripView = currentView;
+    document.body.dataset.tripPrimaryView = isPlacesView(currentView) ? 'places' : currentView;
   }
 
   function activateView(view, pushHistory) {
@@ -137,15 +163,25 @@
   document.querySelectorAll('.trip-home-actions a[href^="#"]').forEach(function (link) {
     link.href = pageUrl(link.getAttribute('href').slice(1));
   });
+  if (placesHub) {
+    placesHub.querySelectorAll('a[href^="#"]').forEach(function (link) {
+      link.href = pageUrl(link.getAttribute('href').slice(1));
+    });
+  }
+  sidebar.querySelectorAll('.trip-sidebar-more a[href^="#"]').forEach(function (link) {
+    link.href = pageUrl(link.getAttribute('href').slice(1));
+  });
   syncTripPages();
   document.addEventListener('click', function (event) {
-    var link = event.target.closest('.sidebar nav a, .trip-home-actions a');
+    var link = event.target.closest('.sidebar nav a, .trip-home-actions a, .places-hub-nav a, .trip-sidebar-more-menu a');
     if (!link || event.defaultPrevented || (event.button != null && event.button !== 0) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     var view = viewFromLink(link);
     if (!view) return;
     event.preventDefault();
     var openBudgetConverter = link.hasAttribute('data-budget-converter-open');
     activateView(view, true);
+    var more = link.closest('.trip-sidebar-more');
+    if (more) more.removeAttribute('open');
     if (openBudgetConverter && window.TravelMateFeatures && window.TravelMateFeatures.load) {
       window.TravelMateFeatures.load('budget').then(function () {
         var attempts = 0;
