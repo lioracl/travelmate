@@ -160,7 +160,7 @@
     } catch (error) { return ''; }
   }
 
-  document.querySelectorAll('.trip-home-actions a[href^="#"]').forEach(function (link) {
+  document.querySelectorAll('.trip-home-actions a[href^="#"], [data-overview-control-center] a[href^="#"]').forEach(function (link) {
     link.href = pageUrl(link.getAttribute('href').slice(1));
   });
   if (placesHub) {
@@ -173,7 +173,7 @@
   });
   syncTripPages();
   document.addEventListener('click', function (event) {
-    var link = event.target.closest('.sidebar nav a, .trip-home-actions a, .places-hub-nav a, .trip-sidebar-more-menu a');
+    var link = event.target.closest('.sidebar nav a, .trip-home-actions a, [data-overview-control-center] a[data-view], .places-hub-nav a, .trip-sidebar-more-menu a');
     if (!link || event.defaultPrevented || (event.button != null && event.button !== 0) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     var view = viewFromLink(link);
     if (!view) return;
