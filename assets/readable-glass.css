@@ -37,7 +37,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   -webkit-text-fill-color:var(--tm-readable-text)!important;
   box-shadow:var(--tm-readable-shadow)!important;
   text-shadow:0 1px 6px rgba(0,24,18,.42)!important;
-  opacity:1!important
+  opacity:1
 }
 
 html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
@@ -1354,7 +1354,7 @@ html[data-theme][data-theme] body.tm-new-design main.content :is(
   .document-vault,.document-vault-panel,.vault-auth,.gps-consent-card,.gps-place-heading,
   .weather-insight,.weather-live-day,.weather-forecast-panel
 ){
-  border-color:var(--tm-card-border)!important;
+  border-color:var(--tm-card-border);
   background:var(--tm-card-surface,var(--tm-card-bg))!important;
   background-color:transparent!important;
   color:var(--tm-card-text)!important;
@@ -1969,20 +1969,20 @@ html body.tm-new-design .ai-panel .ai-message-tools button{
 
 /* 2026-09-24 mobile visual hardening: phone evidence pass. */
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view]:not([data-trip-view="overview"]) .navo-existing-trip-banner{
-  display:none!important
+  display:none
 }
 
 /* Keep the accessibility skip target off-screen until keyboard focus reaches it. */
 html body .tm-skip-link:not(:focus):not(:focus-visible){
-  transform:translateY(-220%)!important;
-  opacity:0!important;
-  pointer-events:none!important
+  transform:translateY(-220%);
+  opacity:0;
+  pointer-events:none
 }
 html body .tm-skip-link:focus,
 html body .tm-skip-link:focus-visible{
-  transform:translateY(0)!important;
+  transform:translateY(0);
   opacity:1!important;
-  pointer-events:auto!important
+  pointer-events:auto
 }
 
 /* Phone glass must remain legible over detailed destination photography. */
