@@ -75,3 +75,12 @@ test('high-value event emitters use the canonical event API', () => {
     }
   }
 });
+
+test('lazy feature owners reuse navigation entries instead of duplicating them', () => {
+  const collaboration = read('assets/collaboration.js');
+  const experience = read('assets/trip-experience.js');
+  assert.match(collaboration, /querySelector\('\[data-view="group"\]'\)/);
+  assert.match(collaboration, /data-view="group"/);
+  assert.match(experience, /querySelector\('\[data-view="memories"\]'\)/);
+  assert.match(experience, /data-view="memories"/);
+});
