@@ -42,6 +42,9 @@
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
       return window.__travelMateSupabaseClient;
+    }).catch(function (error) {
+      clientPromise = null;
+      throw error;
     });
     return clientPromise;
   }
