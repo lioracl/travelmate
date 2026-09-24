@@ -367,6 +367,12 @@
     });
     nearbyInitObserver.observe(document.documentElement, { childList: true, subtree: true });
   }
-  window.TravelMateNearby = { categories: categoryRegistry, init: initNearbyPanels, resolveMedia: function (place) { return enrichWikidata(Object.assign({}, place || {})); } };
+  window.TravelMateNearby = {
+    categories: categoryRegistry,
+    init: initNearbyPanels,
+    resolveMedia: function (place) { return enrichWikidata(Object.assign({}, place || {})); },
+    invalidateMedia: function (place) { var key = place && (place.id || place.wikidata || place.wikipedia || place.wikipediaUrl || place.name); if (key) placeMediaCache.delete(key); }
+  };
+  window.dispatchEvent(new CustomEvent('travelmate:nearby-ready'));
   window.TravelMateNearbyTest = { gpsSearchRadius: gpsSearchRadius, normalizePlaceName: normalizePlaceName, poiScore: poiScore, categoryCount: categoryRegistry.length };
 })();
