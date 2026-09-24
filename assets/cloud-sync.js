@@ -22,7 +22,7 @@
       script.integrity = SUPABASE_SRI;
       script.crossOrigin = 'anonymous';
       script.onload = function () { resolve(window.supabase); };
-      script.onerror = function () { reject(new Error('SUPABASE_LIBRARY_FAILED')); };
+      script.onerror = function () { script.remove(); reject(new Error('SUPABASE_LIBRARY_FAILED')); };
       document.head.appendChild(script);
     }).catch(function (error) {
       window.travelMateSupabaseLoader = null;
