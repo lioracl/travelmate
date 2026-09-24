@@ -3,6 +3,8 @@ name: Deploy TravelMate Preview
 on:
   push:
     branches: [preview]
+  pull_request:
+    branches: [preview]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: travelmate-pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -39,6 +41,7 @@ jobs:
           test -f supabase/migrations/20260914041455_trip_revision_and_tombstones.sql
 
   deploy:
+    if: github.event_name == 'push'
     needs: verify
     environment:
       name: github-pages
