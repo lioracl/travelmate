@@ -173,7 +173,7 @@
   });
   syncTripPages();
   document.addEventListener('click', function (event) {
-    var link = event.target.closest('.sidebar nav a, .trip-home-actions a, [data-overview-control-center] a[data-view], .places-hub-nav a, .trip-sidebar-more-menu a');
+    var link = event.target.closest('.sidebar nav a, .trip-home-actions a, [data-overview-control-center] a, .places-hub-nav a, .trip-sidebar-more-menu a');
     if (!link || event.defaultPrevented || (event.button != null && event.button !== 0) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     var view = viewFromLink(link);
     if (!view) return;
