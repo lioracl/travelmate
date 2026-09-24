@@ -176,7 +176,10 @@
       unlockPanel.hidden = !currentUser;
       form.hidden = !currentUser;
       summary.hidden = !currentUser;
-      vaultPickButtons.forEach(function (button) { button.disabled = !currentUser; });
+      vaultPickButtons.forEach(function (button) {
+        button.disabled = false;
+        button.toggleAttribute('data-auth-required', !currentUser);
+      });
       vault.querySelector('[data-vault-email]').textContent = currentUser ? currentUser.email : '';
       if (!currentUser) {
         passphraseInput.value = '';
@@ -502,18 +505,22 @@
       await renderDocuments();
     }
 
+    function requestDocumentUpload(categoryName) {
+      if (!currentUser) {
+        setStatus('יש להתחבר לפני העלאת מסמך.');
+        authPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        var email = authForm.elements.email;
+        if (email) email.focus({ preventScroll: true });
+        return;
+      }
+      var categories = [].slice.call(form.elements.category.options).map(function (option) { return option.value; });
+      if (categoryName && categories.includes(categoryName)) form.elements.category.value = categoryName;
+      input.value = '';
+      input.click();
+    }
+
     vaultPickButtons.forEach(function (button) {
-      button.addEventListener('click', function () {
-        if (!currentUser) {
-          setStatus('יש להתחבר לפני העלאת מסמך.');
-          authPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          var email = authForm.elements.email;
-          if (email) email.focus({ preventScroll: true });
-          return;
-        }
-        input.value = '';
-        input.click();
-      });
+      button.addEventListener('click', function () { requestDocumentUpload(''); });
     });
     input.addEventListener('change', function () {
       var selectedFiles = [].slice.call(input.files || []);
@@ -540,12 +547,8 @@
     });
     section.querySelectorAll('.doc-row button').forEach(function (templateButton) {
       templateButton.addEventListener('click', function () {
-        if (!currentUser) return setStatus('התחבר לכספת לפני העלאת מסמך.', true);
         var categoryName = templateButton.closest('.doc-row').dataset.documentCategory;
-        var categories = [].slice.call(form.elements.category.options).map(function (option) { return option.value; });
-        if (categoryName && categories.includes(categoryName)) form.elements.category.value = categoryName;
-        input.value = '';
-        input.click();
+        requestDocumentUpload(categoryName);
       });
     });
 
