@@ -12,7 +12,6 @@
   var lastSaveTime = 0;
   var fullSyncPromises = new Map();
   var deletedTripIds = new Set();
-  var clientPromise;
 
   function loadLibrary() {
     if (window.supabase && window.supabase.createClient) return Promise.resolve(window.supabase);
@@ -34,8 +33,8 @@
 
   function getClient() {
     if (window.__travelMateSupabaseClient) return Promise.resolve(window.__travelMateSupabaseClient);
-    if (clientPromise) return clientPromise;
-    var attempt = loadLibrary().then(function (library) {
+    return loadLibrary().then(function (library) {
+      if (window.__travelMateSupabaseClient) return window.__travelMateSupabaseClient;
       var config = window.TRAVELMATE_SUPABASE;
       if (!config || !config.url || !config.publishableKey) throw new Error('SUPABASE_NOT_CONFIGURED');
       window.__travelMateSupabaseClient = library.createClient(config.url, config.publishableKey, {
@@ -43,11 +42,6 @@
       });
       return window.__travelMateSupabaseClient;
     });
-    clientPromise = attempt;
-    attempt.catch(function () {
-      if (clientPromise === attempt) clientPromise = null;
-    });
-    return attempt;
   }
 
   function getLocalTrips() {
