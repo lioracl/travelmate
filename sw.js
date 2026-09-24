@@ -34,8 +34,6 @@ const CORE_PATHS=[
   './assets/theme.js',
   './assets/weather-widget.css',
   './assets/weather-widget.js',
-  './assets/weather-contrast.css',
-  './assets/activity-contrast.css',
   './assets/app-icon.svg',
   './manifest.webmanifest'
 ];
