@@ -1,10 +1,12 @@
 var appScript=document.currentScript;
 (function(){
-  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260921-21'}catch(error){return'20260921-21'}})(),loadedStyles={},loadedScripts={},baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','weather-widget.css','weather-contrast.css','document-vault.css'];
+  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260924-07'}catch(error){return'20260924-07'}})();
+  var loadedStyles={},loadedScripts={};
+  var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css'];
   var finalStyle='readable-glass.css';
-  var structureStyles=['travel-services.css','transport-planner.css','collaboration.css','chat-place-sharing.css','place-directions.css','activity-contrast.css'],deferredStructureStyles=['trip-experience.css','about.css'];
-  var structureScripts=['travel-services.js','transport-planner.js','place-directions.js','collaboration.js'],deferredStructureScripts=['trip-experience.js','about.js'];
+  var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
   var features={
+    overview:{styles:['weather-widget.css','weather-contrast.css','ai-assistant.css','trip-intelligence.css'],scripts:['weather-widget.js','ai-assistant.js','trip-intelligence.js']},
     places:{styles:['place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js']},
     plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css'],scripts:['auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
     documents:{styles:['document-vault.css'],scripts:[]},
@@ -20,28 +22,52 @@ var appScript=document.currentScript;
   function loadStyle(file){
     if(loadedStyles[file])return loadedStyles[file];
     loadedStyles[file]=new Promise(function(resolve){
-      var existing=document.querySelector('link[data-travelmate-style="'+file+'"]');
+      var existing=document.querySelector('link[data-travelmate-style="'+file+'"],link[href*="/assets/'+file+'"]');
       if(existing){resolve();return}
       var style=document.createElement('link');style.rel='stylesheet';style.href=assetUrl(file);style.dataset.travelmateStyle=file;style.onload=resolve;style.onerror=function(){console.error('TravelMate style failed to load:',file);resolve()};var finalLink=document.querySelector('link[data-travelmate-style="'+finalStyle+'"]');if(file!==finalStyle&&finalLink)document.head.insertBefore(style,finalLink);else document.head.appendChild(style)
     });
     return loadedStyles[file]
   }
-  function loadScript(file){if(loadedScripts[file])return loadedScripts[file];loadedScripts[file]=new Promise(function(resolve){var script=document.createElement('script');script.src=assetUrl(file);script.async=false;script.onload=resolve;script.onerror=function(){console.error('TravelMate feature failed to load:',file);resolve()};document.head.appendChild(script)});return loadedScripts[file]}
+  function loadScript(file){
+    if(loadedScripts[file])return loadedScripts[file];
+    var existing=[].slice.call(document.scripts).find(function(script){return script.src&&script.src.indexOf('/assets/'+file)!==-1});
+    if(existing){loadedScripts[file]=Promise.resolve();return loadedScripts[file]}
+    loadedScripts[file]=new Promise(function(resolve){var script=document.createElement('script');script.src=assetUrl(file);script.async=false;script.onload=resolve;script.onerror=function(){console.error('TravelMate feature failed to load:',file);resolve()};document.head.appendChild(script)});
+    return loadedScripts[file]
+  }
   function loadSequence(files){return files.reduce(function(chain,file){return chain.then(function(){return loadScript(file)})},Promise.resolve())}
-  function loadFeature(view){var feature=features[view];if(!feature)return Promise.resolve();return Promise.all((feature.styles||[]).map(loadStyle)).then(function(){return loadSequence(feature.scripts||[])})}
-  function loadStructure(){return Promise.all(structureStyles.map(loadStyle)).then(function(){return Promise.all([loadSequence(['travel-services.js','transport-planner.js']),loadSequence(['place-directions.js','collaboration.js'])])})}
-  function warmDeferredStructure(){var run=function(){Promise.all(deferredStructureStyles.map(loadStyle)).then(function(){return loadSequence(deferredStructureScripts)})};if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else setTimeout(run,700)}
-  function warmAssistants(){var run=function(){Promise.all(['ai-assistant.css','trip-intelligence.css','smart-hub.css'].map(loadStyle)).then(function(){return ['ai-assistant.js','trip-intelligence.js','smart-hub.js'].reduce(function(chain,file){return chain.then(function(){return loadScript(file)})},Promise.resolve())})};if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:2500});else setTimeout(run,800)}
+  function waitForSection(view){
+    if(!dynamicSectionViews[view]||document.getElementById(view))return Promise.resolve();
+    return new Promise(function(resolve){var deadline=Date.now()+2500;(function check(){if(document.getElementById(view)||Date.now()>=deadline){resolve();return}requestAnimationFrame(check)})()})
+  }
+  function loadFeature(view){
+    var feature=features[view];if(!feature)return Promise.resolve();
+    return Promise.all((feature.styles||[]).map(loadStyle)).then(function(){return loadSequence(feature.scripts||[])}).then(function(){return waitForSection(view)}).then(function(){
+      window.dispatchEvent(new CustomEvent('travelmate:feature-ready',{detail:{view:view}}));
+    })
+  }
+  function ensureLazyNavigation(){
+    var nav=document.querySelector('.sidebar nav');if(!nav)return;
+    function viewOf(link){try{var url=new URL(link.href,location.href);return link.dataset.view||url.searchParams.get('view')||url.hash.replace(/^#/,'')}catch(error){return''}}
+    function ensure(view,icon,label){var existing=[].slice.call(nav.querySelectorAll('a')).find(function(link){return viewOf(link)===view});if(existing){existing.dataset.view=view;return existing}var link=document.createElement('a');link.href='#'+view;link.dataset.view=view;link.className='sidebar-lazy-feature';link.innerHTML='<i class="fa-solid '+icon+'"></i><span class="tip">'+label+'</span>';nav.appendChild(link);return link}
+    ensure('transport','fa-train-subway','תחבורה ומחירים');
+    ensure('getaways','fa-mountain-sun','טיולים מחוץ לעיר');
+    ensure('group','fa-user-group','הקבוצה');
+    ensure('memories','fa-images','אלבום וסיכום');
+    if(!nav.querySelector('[data-about-open]')){var about=document.createElement('button');about.type='button';about.className='sidebar-about';about.dataset.aboutOpen='';about.dataset.lazyAbout='';about.innerHTML='<i class="fa-solid fa-circle-info"></i><span class="tip">אודות TravelMate</span>';about.setAttribute('aria-label','אודות TravelMate');nav.appendChild(about)}
+  }
+  function warmAssistants(){var run=function(){Promise.all(['ai-assistant.css','smart-hub.css'].map(loadStyle)).then(function(){return loadSequence(['ai-assistant.js','smart-hub.js'])})};if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:2600});else setTimeout(run,1200)}
   function activeView(){return document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview'}
+  ensureLazyNavigation();
   var baseReady=Promise.all(baseStyles.map(loadStyle));
-  var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js','weather-widget.js'])});
+  var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
   var featureReady=baseReady.then(function(){return loadFeature(activeView())});
-  var structureReady=loadStructure();
-  Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,structureReady]).then(function(){warmDeferredStructure();warmAssistants()});
+  Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady]).then(function(){warmAssistants()});
   window.addEventListener('travelmate:viewchange',function(event){loadFeature(event.detail&&event.detail.view)});
   document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
   document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
-  window.TravelMateFeatures={load:loadFeature};
+  document.addEventListener('click',function(event){var button=event.target.closest&&event.target.closest('[data-lazy-about]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();loadFeature('about').then(function(){button.removeAttribute('data-lazy-about');button.click()})},true);
+  window.TravelMateFeatures=Object.freeze({load:loadFeature,has:function(view){return Boolean(features[view])}});
 })();
 var lastModalTrigger=null;
 function closeModal(){document.querySelectorAll('.modal-backdrop.open').forEach(function(modal){modal.classList.remove('open')});if(lastModalTrigger&&document.contains(lastModalTrigger)){lastModalTrigger.focus()}lastModalTrigger=null}
