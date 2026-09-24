@@ -268,4 +268,15 @@
       expenses.appendChild(article);
     });
   }
+
+  function refreshOverviewFromStore() {
+    var trip = localTrip();
+    if (trip) renderOverviewControlCenter(trip);
+  }
+
+  ['travelmate:planner-rendered', 'travelmate:places-updated', 'travelmate:activities-updated'].forEach(function (eventName) {
+    document.addEventListener(eventName, refreshOverviewFromStore);
+  });
+  window.addEventListener('travelmate:local-trips-updated', refreshOverviewFromStore);
+  window.addEventListener('travelmate:trip-synced', refreshOverviewFromStore);
 })();
