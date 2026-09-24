@@ -66,7 +66,7 @@
     var currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
     return items.find(function (item) {
       return item.date > today || (item.date === today && item.time >= currentTime);
-    }) || items[0];
+    }) || null;
   }
 
   function overviewLodging(trip) {
