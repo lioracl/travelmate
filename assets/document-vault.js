@@ -25,7 +25,7 @@
 
   function groupForCategory(value) {
     var category = String(value || '').trim();
-    if (/טיס|flight|boarding/i.test(category)) return 'flights';
+    if (/טיסה|טיסות|flight|boarding/i.test(category)) return 'flights';
     if (/לינה|מלון|hotel|lodg/i.test(category)) return 'lodging';
     if (/ביטוח|insurance/i.test(category)) return 'insurance';
     if (/תחבורה|כרטיס|רכבת|אוטובוס|ticket|transport|train|bus/i.test(category)) return 'tickets';
