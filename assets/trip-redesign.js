@@ -88,6 +88,10 @@
         link.href = pageUrl(view);
       });
     }
+    document.querySelectorAll('[data-overview-control-center] a[href^="#"]').forEach(function (link) {
+      var view = link.getAttribute('href').slice(1);
+      link.href = pageUrl(view);
+    });
     sidebar.querySelectorAll('nav a').forEach(function (link) {
       var linkUrl;
       try { linkUrl = new URL(link.href, window.location.href); } catch (error) { return; }
