@@ -143,7 +143,7 @@
     ].filter(Boolean).join('\n');
   }
   function renderAnswer(answer) {
-    var navo = window.TravelMateMate;
+    var navo = window.TravelMateNavo;
     return navo && navo.formatResponse ? navo.formatResponse(answer) : '<p>' + escapeHtml(answer).replace(/\n/g, '<br>') + '</p>';
   }
   function createSheet() {
@@ -195,14 +195,14 @@
     ui.stale.hidden = !state.stale;
     var body = state.recommendation && state.recommendation.body || '';
     ui.content.innerHTML = body ? renderAnswer(body) : '<div class="navo-intelligence-empty"><i class="fa-solid fa-compass"></i><p>Mate יכין המלצות מותאמות לפרטי הטיול שבחרת.</p></div>';
-    if (body && window.TravelMateMate && window.TravelMateMate.responseIncomplete(state.responseData)) {
+    if (body && window.TravelMateNavo && window.TravelMateNavo.responseIncomplete(state.responseData)) {
       ui.content.insertAdjacentHTML('beforeend', '<button type="button" class="navo-intelligence-continue" data-navo-continue><i class="fa-solid fa-forward-step"></i> המשך תשובה</button>');
     }
     ui.save.disabled = !body || state.stale || state.busy;
   }
   async function generate() {
     if (state.busy || !state.context) return;
-    var navo = window.TravelMateMate;
+    var navo = window.TravelMateNavo;
     if (!navo || !navo.request) { ui.content.innerHTML = '<p class="navo-intelligence-error">Mate עדיין נטען. נסה שוב בעוד רגע.</p>'; return; }
     var activeState = state; var activeContext = state.context; var contextFingerprint = fingerprint(activeContext); var requestId = ++activeState.requestId;
     activeState.busy = true; activeState.stale = false; activeState.pendingSave = false;
@@ -234,11 +234,11 @@
     if (button) { button.disabled = true; button.textContent = 'ממשיך…'; }
     var failure = '';
     try {
-      var result = await window.TravelMateMate.continueResponse(state.recommendation.body, [{ role: 'user', content: state.prompt }], state.context);
+      var result = await window.TravelMateNavo.continueResponse(state.recommendation.body, [{ role: 'user', content: state.prompt }], state.context);
       if (state !== activeState || state.responseId !== responseId || fingerprint(state.context) !== contextFingerprint) return;
       state.recommendation = recommendationFor(state.context, result.answer, state.recommendation.generatedAt); state.responseData = result.data || {}; state.responseId = newResponseId();
     } catch (error) {
-      failure = window.TravelMateMate.friendlyError(error);
+      failure = window.TravelMateNavo.friendlyError(error);
     } finally {
       if (state === activeState) {
         state.busy = false; renderState();
@@ -253,7 +253,7 @@
     var recommendation = state.recommendation;
     if (!recommendation || !recommendation.body || state.stale || !state.context) return;
     if (state.context.tripId) {
-      var saved = window.TravelMateMate.saveNoteForTrip(state.context.tripId, recommendation.title, recommendation.body, noteMetadata(state.context, recommendation, state.responseId));
+      var saved = window.TravelMateNavo.saveNoteForTrip(state.context.tripId, recommendation.title, recommendation.body, noteMetadata(state.context, recommendation, state.responseId));
       ui.save.innerHTML = saved ? '<i class="fa-solid fa-check"></i> נשמר במסמכי הטיול' : '<i class="fa-solid fa-check"></i> כבר נשמר';
       state.status = 'saved'; updateBannerState();
       ui.save.disabled = true;
@@ -266,14 +266,14 @@
   function askMore() {
     if (!state.context) return;
     closeSheet();
-    window.TravelMateMate.openConversation('המשך את המלצות היעד עבור הטיול הזה. שאל אותי במה להתמקד ואל תחזור על המידע שכבר נתת.', state.context);
+    window.TravelMateNavo.openConversation('המשך את המלצות היעד עבור הטיול הזה. שאל אותי במה להתמקד ואל תחזור על המידע שכבר נתת.', state.context);
   }
   function attachPendingToTrip(trip) {
     if (!state.pendingSave || !state.recommendation || !state.recommendation.body || !trip) return false;
     var context = normalizeContext(Object.assign({}, state.context || {}, trip), MODE.NEW_TRIP);
     context.tripId = String(trip.id);
     var recommendation = recommendationFor(context, state.recommendation.body, state.recommendation.generatedAt);
-    var added = window.TravelMateMate && window.TravelMateMate.appendNote(trip, recommendation.title, recommendation.body, noteMetadata(context, recommendation, state.responseId));
+    var added = window.TravelMateNavo && window.TravelMateNavo.appendNote(trip, recommendation.title, recommendation.body, noteMetadata(context, recommendation, state.responseId));
     if (added) state.pendingSave = false;
     return Boolean(added);
   }
