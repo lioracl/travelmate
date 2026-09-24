@@ -107,12 +107,14 @@ test('collaboration keeps long realtime chat sessions bounded in memory', () => 
   assert.ok((source.match(/state\.messages = state\.messages\.slice\(-MESSAGE_LIMIT\)/g) || []).length >= 2);
 });
 
-test('trip feature loader inherits the active app asset version and defers noncritical structure', () => {
+test('trip feature loader inherits the active asset version and keeps heavy structure lazy', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.match(source, /new URL\(appScript\.src,location\.href\)\.searchParams\.get\('v'\)/);
   assert.doesNotMatch(source, /var version='20260921-14'/);
-  assert.match(source, /deferredStructureScripts=\['trip-experience\.js','about\.js'\]/);
-  assert.match(source, /requestIdleCallback\(run,\{timeout:1800\}\)/);
+  assert.doesNotMatch(source, /loadStructure|deferredStructureScripts|structureScripts|structureStyles/);
+  assert.match(source, /ensureLazyNavigation\(\)/);
+  assert.match(source, /dynamicSectionViews=\{transport:true,getaways:true,group:true,memories:true\}/);
+  assert.match(source, /requestIdleCallback\(run,\{timeout:2600\}\)/);
 });
 
 test('Turnstile is armed on auth interaction instead of loading at startup', () => {

@@ -53,12 +53,12 @@ test('readable glass remains the final CSS authority for dynamically loaded trip
   assert.match(source, /if\(file!==finalStyle&&finalLink\)document\.head\.insertBefore\(style,finalLink\);else document\.head\.appendChild\(style\)/);
 });
 
-test('document vault is a base style and feature reloads reuse the existing style promise', () => {
+test('document vault style is feature-scoped and feature reloads reuse the existing style promise', () => {
   const source = read(path.join(root, 'assets/app.js'));
 
-  assert.match(source, /baseStyles=\[[^\]]*'document-vault\.css'\]/);
-  assert.match(source, /documents:\{styles:\['document-vault\.css'\],scripts:\[\]\}/);
-  assert.match(source, /function loadStyle\(file\)\{\s*if\(loadedStyles\[file\]\)return loadedStyles\[file\]/);
+  assert.doesNotMatch(source, /baseStyles=\[[^\]]*'document-vault\.css'\]/);
+  assert.match(source, /documents:\{styles:\['document-vault\.css'\],scripts:\['document-vault\.js'\]\}/);
+  assert.match(source, /function loadStyle\(file\)\{[\s\S]*?if\(loadedStyles\[file\]\)return loadedStyles\[file\]/);
 });
 
 test('trip redesign stays structural while readable glass owns card material', () => {

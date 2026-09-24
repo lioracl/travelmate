@@ -551,7 +551,7 @@
       return true;
     },
     openConversation: function (prompt, context) {
-      window.dispatchEvent(new CustomEvent('travelmate:ask-ai', { detail: { prompt: prompt, context: context } }));
+      window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi, { prompt: prompt, context: context, source: 'mate-conversation' });
     }
   };
   window.dispatchEvent(new CustomEvent('travelmate:navo-ready'));

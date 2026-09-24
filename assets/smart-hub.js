@@ -34,7 +34,7 @@
   function dateLabel(value) { if (!value) return ''; try { return new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00')); } catch (error) { return value; } }
   function mapsUrl(query) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query); }
   function openMaps(query) { window.open(mapsUrl(query + ' ' + state.trip.city + ' ' + state.trip.country), '_blank', 'noopener,noreferrer'); }
-  function askAI(prompt) { closeHub(); window.setTimeout(function () { window.dispatchEvent(new CustomEvent('travelmate:ask-ai', { detail: { prompt: prompt } })); }, 0); }
+  function askAI(prompt) { closeHub(); window.setTimeout(function () { window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi, { prompt: prompt, source: 'smart-hub' }); }, 0); }
   function speak(text, language) {
     if (!('speechSynthesis' in window)) return showStatus('הקראה קולית אינה זמינה בדפדפן הזה.', 'error');
     speechSynthesis.cancel(); var utterance = new SpeechSynthesisUtterance(text); utterance.lang = language || 'he-IL'; utterance.rate = .94; speechSynthesis.speak(utterance);

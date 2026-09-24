@@ -62,8 +62,8 @@
 
   function createInterface() {
     var nav = document.querySelector('.sidebar nav');
-    if (nav && !nav.querySelector('[href="#group"]')) {
-      nav.insertAdjacentHTML('beforeend', '<a href="#group"><i class="fa-solid fa-user-group"></i><span class="tip">הקבוצה</span></a>');
+    if (nav && !nav.querySelector('[data-view="group"]')) {
+      nav.insertAdjacentHTML('beforeend', '<a href="#group" data-view="group"><i class="fa-solid fa-user-group"></i><span class="tip">הקבוצה</span></a>');
     }
     var modules = document.querySelector('.modules');
     if (modules && !modules.querySelector('[href="#group"]')) {

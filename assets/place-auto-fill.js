@@ -98,7 +98,7 @@
       return current;
     });
     if (!saved) return false;
-    document.dispatchEvent(new CustomEvent('travelmate:places-updated'));
+    window.TravelMateEvents.emit(window.TravelMateEvents.names.placesUpdated, { tripId: trip.id, source: 'auto-places' });
     return true;
   }
 
@@ -780,7 +780,7 @@
         canceled: false
       });
       saveTrip(fresh);
-      document.dispatchEvent(new CustomEvent('travelmate:activities-updated'));
+      window.TravelMateEvents.emit(window.TravelMateEvents.names.activitiesUpdated, { tripId: fresh.id, source: 'auto-places' });
       closeDialog();
       if (window.showDayToast) window.showDayToast('הפעילות הוחלפה מתוך חיפוש המקומות המלא.');
       return;
@@ -798,7 +798,7 @@
       });
       fresh.savedPlaces[placeIndex] = placeReplacement;
       saveTrip(fresh);
-      document.dispatchEvent(new CustomEvent('travelmate:activities-updated'));
+      window.TravelMateEvents.emit(window.TravelMateEvents.names.activitiesUpdated, { tripId: fresh.id, source: 'auto-places' });
       closeDialog();
       if (window.showDayToast) window.showDayToast('המקום הוחלף מתוך חיפוש המקומות המלא.');
       return;
@@ -1137,7 +1137,7 @@
         done: false
       });
       saveTrip(trip);
-      document.dispatchEvent(new CustomEvent('travelmate:activities-updated'));
+      window.TravelMateEvents.emit(window.TravelMateEvents.names.activitiesUpdated, { tripId: trip.id, source: 'auto-places' });
     } catch (error) {
       alert(error.message || 'לא הצלחנו להחליף את הפעילות.');
     } finally {
@@ -1161,7 +1161,7 @@
     for (var placeIndex = 0; placeIndex < places.length; placeIndex++) {
       await replacementFor(places[placeIndex].id);
     }
-    document.dispatchEvent(new CustomEvent('travelmate:activities-updated'));
+    window.TravelMateEvents.emit(window.TravelMateEvents.names.activitiesUpdated, { tripId: trip.id, source: 'auto-places' });
   }
 
   function install() {
