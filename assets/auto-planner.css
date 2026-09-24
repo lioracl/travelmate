@@ -15,3 +15,20 @@
 .planner-more-menu .planner-action{width:100%;justify-content:flex-start;text-align:start}
 .planner-more-menu .planner-danger{color:var(--tm-error,#b42318)}
 @media(max-width:560px){.planner-toolbar-actions{grid-template-columns:1fr 1fr}.planner-more{grid-column:1/-1}.planner-more>summary{width:100%}.planner-more-menu{position:relative;top:auto;inset:auto;width:100%;box-sizing:border-box;margin-top:7px}}
+
+
+/* Night core-screen redesign: Plan */
+#plan .planner-toolbar{padding:14px 16px;gap:14px}
+#plan .planner-progress{flex:1 1 240px;max-width:420px}
+#plan .planner-toolbar-actions{flex:0 1 auto}
+#plan .generated-day>div{display:grid;gap:10px}
+#plan .day-heading{min-height:48px;padding-bottom:8px;border-bottom:1px solid color-mix(in srgb,var(--tm-card-border) 80%,transparent)}
+#plan .day-heading>div{min-width:0}
+#plan .day-summary{margin-top:3px;font-size:12px}
+#plan .planned-activities{gap:8px;margin-top:2px}
+#plan .planned-activity,#plan .saved-place{min-height:64px;padding:10px 12px}
+#plan .planned-activity .activity-copy,#plan .saved-place .saved-place-content{min-width:0}
+#plan .activity-buttons,#plan .saved-place-actions{opacity:.72;transition:opacity .16s ease}
+#plan :is(.planned-activity,.saved-place):is(:hover,:focus-within) :is(.activity-buttons,.saved-place-actions){opacity:1}
+#plan .day-note{min-height:72px;margin-top:4px}
+@media(max-width:560px){#plan .planner-toolbar{padding:12px}#plan .planner-progress{max-width:none}#plan .planned-activity,#plan .saved-place{padding:10px}#plan .activity-buttons,#plan .saved-place-actions{opacity:1}}
