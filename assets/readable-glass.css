@@ -1313,21 +1313,9 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main
   --tm-app-glass-border-soft:var(--tm-card-border);
   --tm-app-glass-shadow:var(--tm-card-shadow)
 }
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-overview-summary .budget-card{
-  --tm-card-surface:var(--tm-custom-overview-surface);
-  --tm-card-elevation:var(--tm-card-shadow);
-  border:1px solid var(--tm-card-border);
-  background:var(--tm-card-surface);
-  color:var(--tm-card-text);
-  box-shadow:var(--tm-card-elevation);
-  -webkit-backdrop-filter:var(--tm-card-blur);
-  backdrop-filter:var(--tm-card-blur)
-}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{--tm-card-surface:transparent;--tm-card-elevation:none;--tm-card-blur:none;--tm-material-blur:none;--tm-weather-unified-bg:var(--tm-card-surface);--tm-weather-unified-shadow:var(--tm-card-elevation);--tm-app-glass-card:var(--tm-card-surface);--tm-app-glass-shadow:var(--tm-card-elevation)}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{--tm-card-surface:var(--tm-custom-overview-surface);--tm-card-elevation:var(--tm-card-shadow);display:grid;gap:10px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;gap:6px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{--tm-card-surface:var(--tm-card-control);--tm-card-elevation:none;--tm-card-blur:none;min-width:0;gap:7px;padding:10px;border:1px solid var(--tm-card-control-border);font-size:13px;font-weight:600}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact button{border:1px solid var(--tm-card-control-border);background:var(--tm-card-control);color:var(--tm-card-control-text);box-shadow:var(--tm-card-shadow-compact);-webkit-backdrop-filter:none;backdrop-filter:none}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a i{font-size:16px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions>div p{margin:0 0 2px;font-size:11px}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions h2{margin:0;font-size:19px;line-height:1.25;font-weight:750;color:var(--tm-card-heading)}
@@ -1335,7 +1323,6 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .tri
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-overview-summary,
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{margin-top:10px}
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-auto-rows:minmax(52px,auto)}
-  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a:last-child{grid-column:1/-1}
 }
 
 /* Theme-qualified boundary wins over older page-specific light/dark surfaces. */
