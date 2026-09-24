@@ -38,7 +38,7 @@
   }
 
   function createVaultMarkup() {
-    return '<div class="vault-head"><div><span class="vault-badge"><i class="fa-solid fa-shield-halved"></i> ענן פרטי ומוצפן</span><h2>כספת המסמכים של הטיול</h2><p>הקבצים מוצפנים במכשיר לפני ההעלאה ונפתחים רק לאחר הזנת סיסמת הכספת.</p></div><button class="pill-btn" type="button" data-vault-pick><i class="fa-solid fa-cloud-arrow-up"></i> העלאת קבצים</button></div>' +
+    return '<div class="vault-head"><div><span class="vault-badge"><i class="fa-solid fa-shield-halved"></i> ענן פרטי ומוצפן</span><h2>כספת המסמכים של הטיול</h2><p>הקבצים מוצפנים במכשיר לפני ההעלאה ונפתחים רק לאחר הזנת סיסמת הכספת.</p></div></div>' +
       '<div class="vault-auth" data-vault-auth><div class="vault-auth-copy"><i class="fa-solid fa-user-lock"></i><div><strong>התחברות לכספת</strong><span>החשבון מגן על המסמכים ומאפשר גישה גם מהטלפון.</span></div></div><form data-vault-auth-form><input name="email" type="email" autocomplete="email" placeholder="כתובת דוא״ל" required><input name="password" type="password" autocomplete="current-password" minlength="8" placeholder="סיסמת חשבון · לפחות 8 תווים" required><button type="submit" data-auth-signin>כניסה</button><button type="button" class="secondary" data-auth-signup>יצירת חשבון</button><button type="button" class="secondary" data-auth-resend>לא קיבלתי מייל · שלח שוב</button></form></div>' +
       '<div class="vault-session" data-vault-session hidden><div><i class="fa-solid fa-circle-check"></i><span>מחובר/ת בתור <strong data-vault-email></strong></span></div><button type="button" data-vault-signout>יציאה</button></div>' +
       '<div class="vault-unlock" data-vault-unlock hidden><label><span>סיסמת הצפנת הכספת</span><span class="vault-passphrase-control"><input data-vault-passphrase type="password" autocomplete="off" minlength="10" placeholder="אותה סיסמה שבה הצפנת את הקבצים"><button type="button" data-vault-toggle-passphrase aria-label="הצגת סיסמת הכספת"><i class="fa-solid fa-eye"></i></button></span></label><small><i class="fa-solid fa-triangle-exclamation"></i> לפתיחת מסמך יש להזין את אותה סיסמת כספת ששימשה בהעלאה. היא נפרדת מסיסמת החשבון ואינה נשמרת.</small></div>' +
@@ -77,6 +77,7 @@
     var drop = vault.querySelector('[data-vault-drop]');
     var uploadButton = form.querySelector('.vault-upload-button');
     var summary = vault.querySelector('[data-vault-summary]');
+    var vaultPickButtons = [].slice.call(section.querySelectorAll('[data-vault-pick]'));
     var categoryList = section.querySelector('[data-document-category-list]');
     var currentUser = null;
     var categoryTargets = {};
@@ -175,7 +176,7 @@
       unlockPanel.hidden = !currentUser;
       form.hidden = !currentUser;
       summary.hidden = !currentUser;
-      vault.querySelector('[data-vault-pick]').disabled = !currentUser;
+      vaultPickButtons.forEach(function (button) { button.disabled = !currentUser; });
       vault.querySelector('[data-vault-email]').textContent = currentUser ? currentUser.email : '';
       if (!currentUser) {
         passphraseInput.value = '';
@@ -276,6 +277,7 @@
       var item = document.createElement('div');
       item.className = 'doc-category-file';
       item.dataset.documentId = documentRecord.id;
+      item.dataset.documentGroup = groupForCategory(documentRecord.category);
       item.innerHTML = '<span class="doc-category-file-icon"><i class="fa-solid ' + iconFor(documentRecord.mime_type) + '"></i></span><span class="doc-category-file-copy"><strong>' + escapeHtml(documentRecord.file_name) + '</strong><small>' + formatSize(documentRecord.file_size) + ' · ' + new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(documentRecord.created_at)) + (documentRecord.note ? ' · ' + escapeHtml(documentRecord.note) : '') + '</small></span><span class="doc-category-file-actions"><button type="button" data-open-document><i class="fa-solid fa-eye"></i> פתיחה</button><button type="button" data-download-document aria-label="הורדה"><i class="fa-solid fa-download"></i></button><button type="button" class="danger" data-delete-document aria-label="מחיקה"><i class="fa-solid fa-trash"></i></button></span>';
       item._documentRecord = documentRecord;
       return item;
@@ -500,9 +502,18 @@
       await renderDocuments();
     }
 
-    vault.querySelector('[data-vault-pick]').addEventListener('click', function () {
-      if (!currentUser) return setStatus('יש להתחבר לפני העלאת קובץ.', true);
-      input.click();
+    vaultPickButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        if (!currentUser) {
+          setStatus('יש להתחבר לפני העלאת מסמך.');
+          authPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          var email = authForm.elements.email;
+          if (email) email.focus({ preventScroll: true });
+          return;
+        }
+        input.value = '';
+        input.click();
+      });
     });
     input.addEventListener('change', function () {
       var selectedFiles = [].slice.call(input.files || []);
