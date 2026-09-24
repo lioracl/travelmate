@@ -113,7 +113,6 @@ body:not(.home-page) .sidebar-service i,
 body:not(.home-page) .trip-logout i{-webkit-text-stroke-color:#414846!important}
 body[data-trip-view="overview"] .hero .weather-top-widget{top:50%;left:104px;bottom:auto;transform:translateY(-50%)}
 body[data-trip-view="overview"] .trip-overview-summary{grid-template-columns:1fr;width:100%}
-body[data-trip-view="overview"] .trip-overview-summary .budget-card{grid-column:1/-1;width:100%;max-width:none}
 body[data-trip-view="overview"] .trip-home-actions{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
 @media(max-width:650px){body[data-trip-view="overview"] .hero .weather-top-widget{position:relative!important;inset:auto!important;order:5!important;z-index:3!important;width:100%!important;max-width:none!important;margin:0!important;transform:none!important}}
 body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero{min-height:108px;margin-top:0;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
