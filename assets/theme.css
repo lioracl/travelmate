@@ -942,7 +942,7 @@ html body.tm-new-design .ai-orb{
   box-shadow:0 16px 38px rgba(11,88,105,.28)!important
 }
 html body.tm-new-design .ai-orb::after{
-  content:"נבו";
+  content:"Mate";
   font-size:14px;
   font-weight:900
 }
