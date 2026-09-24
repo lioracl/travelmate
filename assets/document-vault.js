@@ -21,13 +21,29 @@
     return pdfJsPromise;
   }
 
+  var DOCUMENT_GROUPS = ['flights', 'lodging', 'tickets', 'insurance', 'personal', 'mate'];
+
+  function groupForCategory(value) {
+    var category = String(value || '').trim();
+    if (/טיס|flight|boarding/i.test(category)) return 'flights';
+    if (/לינה|מלון|hotel|lodg/i.test(category)) return 'lodging';
+    if (/ביטוח|insurance/i.test(category)) return 'insurance';
+    if (/תחבורה|כרטיס|רכבת|אוטובוס|ticket|transport|train|bus/i.test(category)) return 'tickets';
+    if (/mate|navo/i.test(category)) return 'mate';
+    return 'personal';
+  }
+
+  function storedCategoryForGroup(group) {
+    return ({ flights: 'טיסות', lodging: 'לינה', tickets: 'כרטיסים ותחבורה', insurance: 'ביטוח', personal: 'אישי' })[group] || 'אישי';
+  }
+
   function createVaultMarkup() {
     return '<div class="vault-head"><div><span class="vault-badge"><i class="fa-solid fa-shield-halved"></i> ענן פרטי ומוצפן</span><h2>כספת המסמכים של הטיול</h2><p>הקבצים מוצפנים במכשיר לפני ההעלאה ונפתחים רק לאחר הזנת סיסמת הכספת.</p></div><button class="pill-btn" type="button" data-vault-pick><i class="fa-solid fa-cloud-arrow-up"></i> העלאת קבצים</button></div>' +
       '<div class="vault-auth" data-vault-auth><div class="vault-auth-copy"><i class="fa-solid fa-user-lock"></i><div><strong>התחברות לכספת</strong><span>החשבון מגן על המסמכים ומאפשר גישה גם מהטלפון.</span></div></div><form data-vault-auth-form><input name="email" type="email" autocomplete="email" placeholder="כתובת דוא״ל" required><input name="password" type="password" autocomplete="current-password" minlength="8" placeholder="סיסמת חשבון · לפחות 8 תווים" required><button type="submit" data-auth-signin>כניסה</button><button type="button" class="secondary" data-auth-signup>יצירת חשבון</button><button type="button" class="secondary" data-auth-resend>לא קיבלתי מייל · שלח שוב</button></form></div>' +
       '<div class="vault-session" data-vault-session hidden><div><i class="fa-solid fa-circle-check"></i><span>מחובר/ת בתור <strong data-vault-email></strong></span></div><button type="button" data-vault-signout>יציאה</button></div>' +
       '<div class="vault-unlock" data-vault-unlock hidden><label><span>סיסמת הצפנת הכספת</span><span class="vault-passphrase-control"><input data-vault-passphrase type="password" autocomplete="off" minlength="10" placeholder="אותה סיסמה שבה הצפנת את הקבצים"><button type="button" data-vault-toggle-passphrase aria-label="הצגת סיסמת הכספת"><i class="fa-solid fa-eye"></i></button></span></label><small><i class="fa-solid fa-triangle-exclamation"></i> לפתיחת מסמך יש להזין את אותה סיסמת כספת ששימשה בהעלאה. היא נפרדת מסיסמת החשבון ואינה נשמרת.</small></div>' +
-      '<form class="vault-upload" data-vault-form hidden><select name="category" aria-label="קטגוריה"><option>טיסות</option><option>לינה</option><option>ביטוח</option><option>תחבורה</option><option>כרטיסים</option><option>דרכון ואשרות</option><option>אחר</option></select><input name="note" type="text" maxlength="180" placeholder="הערה אופציונלית — ללא מספרי דרכון"><button class="vault-upload-button" type="submit"><i class="fa-solid fa-lock"></i> הצפנה ושמירה</button><label class="vault-drop" data-vault-drop><input name="files" type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt"><span><i class="fa-solid fa-file-shield"></i><strong>גרור קבצים לכאן או לחץ לבחירה</strong><small>PDF, תמונות וקובצי Office · עד 25MB לקובץ</small></span></label></form>' +
-      '<p class="vault-status" data-vault-status aria-live="polite"></p><div class="vault-summary" data-vault-summary hidden><strong data-vault-count>0 מסמכים</strong><div><small data-vault-size>0 MB</small><div class="vault-storage"><i data-vault-storage style="width:0%"></i></div></div></div><div class="vault-list" data-vault-list></div>';
+      '<form class="vault-upload" data-vault-form hidden><select name="category" aria-label="קטגוריה"><option>טיסות</option><option>לינה</option><option>כרטיסים ותחבורה</option><option>ביטוח</option><option>אישי</option></select><input name="note" type="text" maxlength="180" placeholder="הערה אופציונלית — ללא מספרי דרכון"><button class="vault-upload-button" type="submit"><i class="fa-solid fa-lock"></i> הצפנה ושמירה</button><label class="vault-drop" data-vault-drop><input name="files" type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt"><span><i class="fa-solid fa-file-shield"></i><strong>גרור קבצים לכאן או לחץ לבחירה</strong><small>PDF, תמונות וקובצי Office · עד 25MB לקובץ</small></span></label></form>' +
+      '<p class="vault-status" data-vault-status aria-live="polite"></p><div class="vault-summary" data-vault-summary hidden><strong data-vault-count>0 מסמכים</strong><div><small data-vault-size>0 MB</small><div class="vault-storage"><i data-vault-storage style="width:0%"></i></div></div></div>';
   }
 
   async function init() {
@@ -42,7 +58,8 @@
     vault.className = 'document-vault';
     vault.dataset.documentVault = '';
     vault.innerHTML = createVaultMarkup();
-    section.querySelector('.section-head').insertAdjacentElement('afterend', vault);
+    var categoryNavigation = section.querySelector('[data-documents-category-nav]');
+    (categoryNavigation || section.querySelector('.section-head')).insertAdjacentElement('afterend', vault);
 
     var status = vault.querySelector('[data-vault-status]');
     function setStatus(message, error) {
@@ -78,22 +95,77 @@
     var drop = vault.querySelector('[data-vault-drop]');
     var uploadButton = form.querySelector('.vault-upload-button');
     var summary = vault.querySelector('[data-vault-summary]');
-    var list = vault.querySelector('[data-vault-list]');
+    var categoryList = section.querySelector('[data-document-category-list]');
     var currentUser = null;
     var categoryTargets = {};
+    var activeDocumentFilter = 'all';
 
-    section.querySelectorAll('.doc-list > .doc-row').forEach(function (categoryRow) {
+    section.querySelectorAll('[data-document-category-list] > .doc-row').forEach(function (categoryRow) {
       var title = categoryRow.querySelector('strong');
       var categoryButton = categoryRow.querySelector(':scope > button');
       if (!title || !categoryButton) return;
-      var categoryName = categoryForTitle(title.textContent.trim());
+      var group = categoryRow.dataset.documentGroup || groupForCategory(title.textContent.trim());
+      var categoryName = storedCategoryForGroup(group);
       var filesContainer = document.createElement('div');
       filesContainer.className = 'doc-category-files';
-      filesContainer.dataset.categoryFiles = categoryName;
+      filesContainer.dataset.categoryFiles = group;
+      categoryRow.dataset.documentGroup = group;
       categoryRow.dataset.documentCategory = categoryName;
       categoryRow.appendChild(filesContainer);
-      categoryTargets[categoryName] = { row: categoryRow, button: categoryButton, files: filesContainer };
+      categoryTargets[group] = { row: categoryRow, button: categoryButton, files: filesContainer };
     });
+
+    function mateArchive() { return section.querySelector('[data-ai-notes-archive]'); }
+
+    function updateDocumentFilterCounts() {
+      var totals = { flights: 0, lodging: 0, tickets: 0, insurance: 0, personal: 0, mate: 0 };
+      Object.keys(categoryTargets).forEach(function (group) {
+        totals[group] = categoryTargets[group].files.children.length;
+      });
+      var archive = mateArchive();
+      if (archive) totals.mate = archive.querySelectorAll('[data-ai-note-id]').length;
+      var all = totals.flights + totals.lodging + totals.tickets + totals.insurance + totals.personal + totals.mate;
+      section.querySelectorAll('[data-document-filter-count]').forEach(function (node) {
+        var group = node.dataset.documentFilterCount;
+        node.textContent = group === 'all' ? String(all) : String(totals[group] || 0);
+      });
+    }
+
+    function applyDocumentFilter() {
+      var archive = mateArchive();
+      section.querySelectorAll('[data-document-filter]').forEach(function (button) {
+        var selected = button.dataset.documentFilter === activeDocumentFilter;
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      });
+      Object.keys(categoryTargets).forEach(function (group) {
+        categoryTargets[group].row.hidden = activeDocumentFilter !== 'all' && activeDocumentFilter !== group;
+      });
+      if (categoryList) categoryList.hidden = activeDocumentFilter === 'mate';
+      vault.hidden = activeDocumentFilter === 'mate';
+      if (archive) archive.hidden = activeDocumentFilter !== 'all' && activeDocumentFilter !== 'mate';
+      updateDocumentFilterCounts();
+    }
+
+    if (categoryNavigation) {
+      categoryNavigation.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-document-filter]');
+        if (!button) return;
+        var next = button.dataset.documentFilter || 'all';
+        activeDocumentFilter = next === 'all' || DOCUMENT_GROUPS.indexOf(next) >= 0 ? next : 'all';
+        applyDocumentFilter();
+      });
+    }
+
+    window.TravelMateDocuments = Object.freeze({
+      refresh: function () { applyDocumentFilter(); },
+      filter: function (group) {
+        activeDocumentFilter = group === 'all' || DOCUMENT_GROUPS.indexOf(group) >= 0 ? group : 'all';
+        applyDocumentFilter();
+      },
+      groupForCategory: groupForCategory
+    });
+    applyDocumentFilter();
 
     async function applySession(session) {
       currentUser = session && session.user ? session.user : null;
@@ -106,7 +178,6 @@
       vault.querySelector('[data-vault-email]').textContent = currentUser ? currentUser.email : '';
       if (!currentUser) {
         passphraseInput.value = '';
-        list.innerHTML = '';
         setStatus('יש להתחבר כדי לראות או להעלות מסמכים.');
         return;
       }
@@ -182,31 +253,22 @@
       vault.querySelector('[data-vault-count]').textContent = documents.length + ' מסמכים';
       vault.querySelector('[data-vault-size]').textContent = formatSize(total) + ' בענן';
       vault.querySelector('[data-vault-storage]').style.width = Math.min(100, Math.max(documents.length ? 2 : 0, total / (1024 * 1024 * 1024) * 100)) + '%';
-      list.innerHTML = '';
-      list.hidden = true;
-      Object.keys(categoryTargets).forEach(function (categoryName) {
-        var target = categoryTargets[categoryName];
+      Object.keys(categoryTargets).forEach(function (group) {
+        var target = categoryTargets[group];
         target.files.innerHTML = '';
         target.row.classList.remove('has-documents');
         target.button.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> העלאה';
       });
       documents.forEach(function (documentRecord) {
-        var categoryTarget = categoryTargets[documentRecord.category];
-        if (categoryTarget) {
-          categoryTarget.files.appendChild(createCategoryDocument(documentRecord));
-          categoryTarget.row.classList.add('has-documents');
-          var categoryCount = categoryTarget.files.children.length;
-          categoryTarget.button.innerHTML = '<i class="fa-solid fa-plus"></i> העלאה נוספת (' + categoryCount + ')';
-          return;
-        }
-        list.hidden = false;
-        var row = document.createElement('article');
-        row.className = 'vault-file';
-        row.dataset.documentId = documentRecord.id;
-        row.innerHTML = '<span class="vault-file-icon"><i class="fa-solid ' + iconFor(documentRecord.mime_type) + '"></i></span><span class="vault-file-copy"><strong>' + escapeHtml(documentRecord.file_name) + '</strong><span>' + escapeHtml(documentRecord.category) + ' · ' + formatSize(documentRecord.file_size) + ' · ' + new Intl.DateTimeFormat('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(documentRecord.created_at)) + (documentRecord.note ? ' · ' + escapeHtml(documentRecord.note) : '') + '</span></span><span class="vault-file-actions"><button type="button" data-open-document><i class="fa-solid fa-eye"></i> פתיחה</button><button type="button" data-download-document aria-label="הורדה"><i class="fa-solid fa-download"></i></button><button type="button" class="danger" data-delete-document aria-label="מחיקה"><i class="fa-solid fa-trash"></i></button></span>';
-        row._documentRecord = documentRecord;
-        list.appendChild(row);
+        var group = groupForCategory(documentRecord.category);
+        var categoryTarget = categoryTargets[group] || categoryTargets.personal;
+        if (!categoryTarget) return;
+        categoryTarget.files.appendChild(createCategoryDocument(documentRecord));
+        categoryTarget.row.classList.add('has-documents');
+        var categoryCount = categoryTarget.files.children.length;
+        categoryTarget.button.innerHTML = '<i class="fa-solid fa-plus"></i> העלאה נוספת (' + categoryCount + ')';
       });
+      applyDocumentFilter();
     }
 
     function createCategoryDocument(documentRecord) {
@@ -328,7 +390,7 @@
       preview.setAttribute('role', 'dialog');
       preview.setAttribute('aria-modal', 'true');
       preview.setAttribute('aria-label', 'תצוגת המסמך ' + record.file_name);
-      preview.innerHTML = '<article class="vault-preview"><header><div><span>תצוגה מאובטחת</span><h2>' + escapeHtml(record.file_name) + '</h2><p>' + escapeHtml(record.category) + ' · ' + formatSize(record.file_size) + '</p></div><button type="button" data-vault-preview-close aria-label="סגירת המסמך"><i class="fa-solid fa-xmark"></i></button></header><div class="vault-preview-body" data-vault-preview-body></div><footer><small><i class="fa-solid fa-shield-halved"></i> הקובץ פוענח רק בזיכרון המכשיר ולא נשלח לשירות חיצוני.</small><button type="button" data-vault-preview-download><i class="fa-solid fa-download"></i> הורדה למכשיר</button></footer></article>';
+      preview.innerHTML = '<article class="vault-preview"><header><div><span>תצוגה מאובטחת</span><h2>' + escapeHtml(record.file_name) + '</h2><p>' + escapeHtml(storedCategoryForGroup(groupForCategory(record.category))) + ' · ' + formatSize(record.file_size) + '</p></div><button type="button" data-vault-preview-close aria-label="סגירת המסמך"><i class="fa-solid fa-xmark"></i></button></header><div class="vault-preview-body" data-vault-preview-body></div><footer><small><i class="fa-solid fa-shield-halved"></i> הקובץ פוענח רק בזיכרון המכשיר ולא נשלח לשירות חיצוני.</small><button type="button" data-vault-preview-download><i class="fa-solid fa-download"></i> הורדה למכשיר</button></footer></article>';
       var body = preview.querySelector('[data-vault-preview-body]');
       var closeButton = preview.querySelector('[data-vault-preview-close]');
       var previouslyFocused = document.activeElement;
@@ -523,7 +585,7 @@
     return Uint8Array.from(binary, function (character) { return character.charCodeAt(0); });
   }
   function sanitizeFileName(value) { return String(value || 'document').normalize('NFKD').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 90) || 'document'; }
-  function categoryForTitle(value) { value = String(value || ''); if (/טיס/.test(value)) return 'טיסות'; if (/מלון|לינה/.test(value)) return 'לינה'; if (/דרכון|אשר/.test(value)) return 'דרכון ואשרות'; if (/ביטוח/.test(value)) return 'ביטוח'; if (/רכב|רכבת|JR|תחבורה/.test(value)) return 'תחבורה'; if (/כרטיס/.test(value)) return 'כרטיסים'; if (/נוספים/.test(value)) return 'אחר'; return value || 'אחר'; }
+  function categoryForTitle(value) { return storedCategoryForGroup(groupForCategory(value)); }
   function formatSize(bytes) { bytes = Number(bytes || 0); if (bytes < 1024) return bytes + ' B'; if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / 1048576).toFixed(1) + ' MB'; }
   function iconFor(type) { type = type || ''; if (type.includes('pdf')) return 'fa-file-pdf'; if (type.includes('image')) return 'fa-file-image'; if (type.includes('word')) return 'fa-file-word'; if (type.includes('sheet') || type.includes('excel')) return 'fa-file-excel'; return 'fa-file-lines'; }
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
