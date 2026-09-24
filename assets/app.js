@@ -6,13 +6,13 @@ var appScript=document.currentScript;
   var finalStyle='readable-glass.css';
   var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
   var features={
-    overview:{styles:['weather-widget.css','ai-assistant.css','trip-intelligence.css'],scripts:['weather-widget.js','ai-assistant.js','trip-intelligence.js']},
+    overview:{styles:['overview-control-center.css','weather-widget.css','ai-assistant.css','trip-intelligence.css'],scripts:['currency-utils.js','overview-control-center.js','weather-widget.js','ai-assistant.js','trip-intelligence.js']},
     places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js']},
     plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css'],scripts:['auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
     documents:{styles:['document-vault.css'],scripts:['document-vault.js']},
-    budget:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
-    memories:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
-    summary:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
+    budget:{styles:['trip-experience.css'],scripts:['currency-utils.js','trip-experience.js']},
+    memories:{styles:['trip-experience.css'],scripts:['currency-utils.js','trip-experience.js']},
+    summary:{styles:['trip-experience.css'],scripts:['currency-utils.js','trip-experience.js']},
     group:{styles:['collaboration.css','chat-place-sharing.css','place-directions.css'],scripts:['place-directions.js','collaboration.js']},
     transport:{styles:['transport-planner.css','travel-services.css','place-directions.css'],scripts:['travel-services.js','transport-planner.js','place-directions.js']},
     getaways:{styles:['travel-services.css'],scripts:['travel-services.js']},
