@@ -135,7 +135,10 @@ test('Overview V2 control-center material has one feature owner', () => {
   assert.doesNotMatch(tripRedesign, /trip-overview-summary \.budget-card/);
   assert.doesNotMatch(readableGlass, /\[data-trip-kind="custom"\].*trip-overview-summary \.budget-card/);
   assert.match(overview, /body\[data-trip-view="overview"\] \.overview-control-card\{/);
-  assert.match(overview, /background:var\(--tm-custom-overview-surface/);
+  assert.doesNotMatch(overview, /\.overview-control-card\{[^}]*background:/);
+  assert.match(readableGlass, /\.overview-control-card\{[^}]*background:var\(--tm-custom-overview-surface\)/);
+  assert.match(readableGlass, /--tm-custom-overview-card-border:/);
+  assert.match(readableGlass, /--tm-custom-overview-card-shadow:/);
   assert.doesNotMatch(overview, /!important/);
 });
 
