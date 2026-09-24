@@ -48,11 +48,11 @@ body[data-trip-view="overview"] .overview-control-card{
   grid-template-rows:1fr auto;
   gap:10px 12px;
   padding:15px;
-  border:1px solid var(--tm-card-border);
+  border:1px solid var(--tm-border-subtle);
   border-radius:var(--tm-card-radius,18px);
-  background:var(--tm-card-bg);
+  background:var(--tm-custom-overview-surface,var(--tm-card-bg));
   color:var(--tm-card-text);
-  box-shadow:var(--tm-card-shadow-compact);
+  box-shadow:var(--tm-card-shadow);
 }
 body[data-trip-view="overview"] .overview-control-icon{
   width:42px;
@@ -60,7 +60,7 @@ body[data-trip-view="overview"] .overview-control-icon{
   display:grid;
   place-items:center;
   border-radius:13px;
-  background:var(--tm-card-bg-compact);
+  background:var(--tm-custom-overview-subtle,var(--tm-card-bg-compact));
   color:var(--tm-card-link);
   font-size:18px;
 }
