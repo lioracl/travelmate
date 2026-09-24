@@ -31,6 +31,11 @@ test('unlimited mode uses spending-tracking language instead of remaining-budget
   assert.match(js, /state\.budgetUnlimited/);
 });
 
+test('currency converter is promoted directly below the smart budget summary', () => {
+  assert.match(js, /smartSummary\.insertAdjacentElement\('afterend', card\)/);
+  assert.match(js, /המרת מטבע מהירה/);
+});
+
 test('Budget persistence delegates to the canonical Trip Store', () => {
   assert.match(js, /window\.TravelMateTripStore/);
   assert.match(js, /store\.saveTrip\(state\.trip\)/);
