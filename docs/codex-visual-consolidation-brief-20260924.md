@@ -2,10 +2,10 @@
 
 Date: 2026-09-24  
 Target branch: `preview`  
-Baseline commit: `28d160fcabf3f8d37cd2cc7b06ccb2f423bdbfa9`  
-Release baseline: TravelMate `1.55.5`  
-PWA baseline: `travelmate-smart-v193`  
-Asset baseline: `20260924-08`
+Baseline commit: **resolve the current `preview` HEAD immediately before the Codex session**  
+Release baseline: TravelMate `1.55.8`  
+PWA baseline: `travelmate-smart-v196`  
+Asset baseline: `20260924-11`
 
 ## Mission
 
@@ -34,6 +34,36 @@ The repository has already completed the structural pre-Codex cleanup. Do not re
 - Do not weaken accessibility to match a screenshot.
 - Do not remove the keyboard skip link. It must remain visually hidden until keyboard focus.
 - Keep Italy/Japan pages as regression fixtures; do not redesign them into a second product architecture.
+
+## Current product information architecture — do not undo
+
+The primary trip navigation is intentionally limited to **five core areas**:
+
+1. Overview
+2. Plan
+3. Places
+4. Budget
+5. Documents
+
+The Places area is a parent experience with four subviews:
+
+- Places
+- Transport
+- Getaways / outside the city
+- Destination information
+
+These remain separate lazy-loaded feature engines. The consolidation is UX/navigation only; do not merge them into one monolithic script.
+
+Group/Sharing, Memories and About are secondary tools under the trip **More** menu. They must not be reintroduced as permanent primary sidebar tabs.
+
+Legacy deep links such as `?view=transport`, `?view=getaways`, `?view=destination-info` and `?view=car-rental` remain compatibility routes. The main Places tab must stay active for the Places-family subviews.
+
+Budget V2 is now product-critical:
+- explicit limited and unlimited budget modes;
+- unlimited mode must never show remaining budget, over-budget state or utilization percentage;
+- smart summary shows spent-to-date, today, daily average, category/allowance context and trip projection;
+- the currency converter sits directly below the smart summary;
+- Overview has a direct lazy-loaded quick action to the converter.
 
 ## Current architecture — treat as canonical
 
@@ -93,6 +123,9 @@ The following work is **DONE** and must not be reimplemented:
 - Skip link focus bug fixed.
 - Places/Planner image pipeline fixed, including empty URL handling and saved-place backfill.
 - PWA versioning and offline cache update path hardened.
+- Primary trip navigation consolidated to five core areas; Transport/Getaways/Destination Info are now Places subviews, while Group/Memories/About are secondary tools.
+- Duplicate legacy sidebar active-state ownership removed; `trip-redesign.js` is the canonical trip navigation state owner.
+- Budget V2 core added, including unlimited tracking, smart spend summary and direct Overview access to the currency converter.
 
 ## Current visual debt
 
