@@ -118,12 +118,8 @@
   function currentTripData() {
     var trip = resolvedTrip || window.travelMateCurrentTrip || {};
     var id = String(trip.id || new URLSearchParams(location.search).get('id') || '');
-    try {
-      var stored = JSON.parse(localStorage.getItem('travelmate-trips') || '[]');
-      var latest = stored.find(function (item) { return String(item.id) === id; });
-      if (latest) trip = Object.assign({}, trip, latest);
-    } catch (error) {}
-    return trip;
+    var latest = window.TravelMateTripStore && window.TravelMateTripStore.getTrip(id);
+    return latest ? Object.assign({}, trip, latest) : trip;
   }
 
   function shareChecklistItems(place) {

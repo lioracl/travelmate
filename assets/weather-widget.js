@@ -49,10 +49,8 @@
 
   function storedTrip() {
     var id = new URLSearchParams(location.search).get('id');
-    if (!id) return null;
-    try {
-      return JSON.parse(localStorage.getItem('travelmate-trips') || '[]').find(function (item) { return String(item.id) === String(id); }) || null;
-    } catch (error) { return null; }
+    if (!id || !window.TravelMateTripStore) return null;
+    return window.TravelMateTripStore.getTrip(id);
   }
 
   function pageDestination() {

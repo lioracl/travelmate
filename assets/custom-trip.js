@@ -3,18 +3,14 @@
 
   var tripId = new URLSearchParams(location.search).get('id');
   var cloud = window.TravelMateCloud;
+  var store = window.TravelMateTripStore;
 
   function localTrip() {
-    var trip = null;
+    if (store && store.getTrip) return store.getTrip(tripId);
     if (cloud && cloud.getLocalTrips) {
-      trip = cloud.getLocalTrips().find(function (item) { return String(item.id) === String(tripId); }) || null;
+      return cloud.getLocalTrips().find(function (item) { return String(item.id) === String(tripId); }) || null;
     }
-    if (!trip) {
-      try {
-        trip = JSON.parse(localStorage.getItem('travelmate-trips') || '[]').find(function (item) { return String(item.id) === String(tripId); }) || null;
-      } catch (error) {}
-    }
-    return trip;
+    return null;
   }
 
   function signature(trip) {

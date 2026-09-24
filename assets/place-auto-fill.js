@@ -8,7 +8,6 @@
   smartScript.src = new URL('smart-plan-tools.js', featureUrl).href + (featureVersion ? '?v=' + encodeURIComponent(featureVersion) : '');
   document.head.appendChild(smartScript);
 
-  var STORAGE_KEY = 'travelmate-trips';
   var endpoints = [
     'https://overpass-api.de/api/interpreter',
     'https://overpass.kumi.systems/api/interpreter'
@@ -82,21 +81,23 @@
   }
 
   function getTrips() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (error) { return []; }
+    return window.TravelMateTripStore ? window.TravelMateTripStore.getTrips() : [];
   }
 
   function currentTrip() {
     var id = new URLSearchParams(location.search).get('id');
-    return getTrips().find(function (trip) { return String(trip.id) === String(id); });
+    return window.TravelMateTripStore ? window.TravelMateTripStore.getTrip(id) : null;
   }
 
   function saveTrip(trip) {
-    var trips = getTrips();
-    var index = trips.findIndex(function (item) { return String(item.id) === String(trip.id); });
-    if (index < 0) return false;
-    trips[index] = trip;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
-    if (window.TravelMateCloud) window.TravelMateCloud.queueTripSave(trip);
+    var store = window.TravelMateTripStore;
+    if (!store || !trip) return false;
+    var saved = store.updateTrip(trip.id, function (current) {
+      current.savedPlaces = trip.savedPlaces || current.savedPlaces || [];
+      current.activities = trip.activities || current.activities || [];
+      return current;
+    });
+    if (!saved) return false;
     document.dispatchEvent(new CustomEvent('travelmate:places-updated'));
     return true;
   }

@@ -8,11 +8,12 @@ PWA baseline: `travelmate-smart-v190` / assets `20260924-05`
 ## Cleanup status update — 2026-09-24
 
 Completed after this audit:
+- **Trip Store / direct trip storage: RESOLVED.** `travelmate-trips` is now owned only by `cloud-sync.js` and `trip-store.js`; feature modules consume `TravelMateTripStore` for reads/writes. High-risk writers and remaining direct readers were migrated, while existing trip JSON and cloud sync APIs were preserved.
 - **Supabase loader ownership: RESOLVED.** `document-vault.js` now delegates client creation to the canonical `TravelMateCloud.getClient()`; only `cloud-sync.js` owns `window.travelMateSupabaseLoader`. Failed library loads remove the failed script and can be retried.
 - **Getaways duplicate implementation: RESOLVED.** The proven corrective search/failover behavior was merged into `travel-services.js`; `getaway-fix.js` was removed from the loader and repository.
 - Regression contracts were added to prevent either duplicate from returning.
 
-The next core consolidation target is the **Trip Store facade / direct `travelmate-trips` writers**.
+The Trip Store consolidation target is now **RESOLVED**. The next pre-Codex targets are event payload contracts, loader narrowing, and the remaining CSS ownership debt.
 
 ## Purpose
 
@@ -69,7 +70,7 @@ A controlled runtime submission produced one Nominatim request and one Overpass 
 
 **Target:** merge the proven corrective logic into `travel-services.js`, add regression coverage, then delete `getaway-fix.js`.
 
-### 2. Trip persistence is decentralized — HIGH
+### 2. Trip persistence was decentralized — RESOLVED
 
 Direct `travelmate-trips` access exists in 12 feature files. Full-array writes exist in at least:
 
@@ -237,7 +238,7 @@ This does **not** mean every code path is live. Files such as `getaway-fix.js` m
 ### MERGE LATER
 
 - Getaways corrective logic → travel-services — **DONE**
-- direct trip persistence → canonical Trip Store
+- direct trip persistence → canonical Trip Store — **DONE**
 - Supabase loader → one core loader — **DONE**
 - duplicated Nominatim/Overpass/Wikimedia helpers → provider adapters
 - common Mate request/context/persistence plumbing → one AI core
@@ -262,7 +263,7 @@ This does **not** mean every code path is live. Files such as `getaway-fix.js` m
 
 1. ~~Fix the shared Supabase loader ownership.~~ **DONE**
 2. ~~Consolidate Getaways implementation and remove the patch file.~~ **DONE**
-3. Define a Trip Store facade and migrate the highest-risk full-array writers first.
+3. ~~Define a Trip Store facade and migrate the highest-risk full-array writers first.~~ **DONE — expanded to all direct feature readers/writers.**
 4. Document event payload contracts for places/activities/AI.
 5. Tighten the global feature loader without changing user-visible behavior.
 6. Run the full runtime/contract/PWA regression.

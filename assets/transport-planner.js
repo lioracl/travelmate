@@ -14,10 +14,8 @@
     return { city: route.split(/,| ו/)[0].trim() || country, country: country, start: '' };
   }
   function latestTrip(trip) {
-    try {
-      var localTrips = JSON.parse(localStorage.getItem('travelmate-trips') || '[]');
-      return localTrips.find(function (item) { return String(item.id) === String(trip.id || ''); }) || trip;
-    } catch (error) { return trip; }
+    if (!window.TravelMateTripStore || !trip) return trip;
+    return window.TravelMateTripStore.getTrip(trip.id) || trip;
   }
   function itineraryPlaces(trip) {
     var names = [];
