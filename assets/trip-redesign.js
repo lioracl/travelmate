@@ -100,7 +100,17 @@
 
   function activateView(view, pushHistory) {
     if (view === 'car-rental') view = 'transport';
-    if (!view || !document.getElementById(view)) view = 'overview';
+    if (!view) view = 'overview';
+    if (!document.getElementById(view)) {
+      var featureLoader = window.TravelMateFeatures;
+      if (featureLoader && featureLoader.has && featureLoader.has(view)) {
+        featureLoader.load(view).then(function () {
+          if (document.getElementById(view)) activateView(view, pushHistory);
+        });
+        return;
+      }
+      view = 'overview';
+    }
     var previousView = currentView;
     currentView = view;
     if (pushHistory) {
@@ -135,6 +145,9 @@
     if (!view) return;
     event.preventDefault();
     activateView(view, true);
+  });
+  window.addEventListener('travelmate:feature-ready', function (event) {
+    if (event.detail && event.detail.view === currentView) syncTripPages();
   });
   window.addEventListener('popstate', function () {
     activateView(new URLSearchParams(window.location.search).get('view') || 'overview', false);
