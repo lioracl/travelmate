@@ -3,9 +3,9 @@
 Date: 2026-09-24  
 Target branch: `preview`  
 Baseline commit: **resolve the current `preview` HEAD immediately before the Codex session**  
-Release baseline: TravelMate `1.55.9`  
-PWA baseline: `travelmate-smart-v197`  
-Asset baseline: `20260924-12`
+Release baseline: TravelMate `1.55.10`  
+PWA baseline: `travelmate-smart-v198`  
+Asset baseline: `20260924-13`
 
 ## Mission
 
@@ -57,6 +57,15 @@ These remain separate lazy-loaded feature engines. The consolidation is UX/navig
 Group/Sharing, Memories and About are secondary tools under the trip **More** menu. They must not be reintroduced as permanent primary sidebar tabs.
 
 Legacy deep links such as `?view=transport`, `?view=getaways`, `?view=destination-info` and `?view=car-rental` remain compatibility routes. The main Places tab must stay active for the Places-family subviews.
+
+Overview V2 is now canonical:
+- the overview is a concise status/control surface, not a duplicate of the full feature screens;
+- the three status cards are Next item / Budget snapshot / Trip base (hotel);
+- Weather remains in the hero and Mate keeps its existing recommendation banner;
+- only four quick actions remain: Plan / Currency conversion / Places / Documents;
+- do not reintroduce Group or Destination Info as Overview quick actions;
+- the full Budget module must remain lazy and must not load just to render the Overview snapshot;
+- `currency-utils.js` is the shared owner of destination currency mapping for Overview and Budget.
 
 Documents V2 is now canonical:
 - primary filters are All / Flights / Lodging / Tickets & Transport / Insurance / Personal / Mate;
