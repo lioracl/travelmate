@@ -177,13 +177,13 @@
 
     var hotelAction = hotel && hotel.maps
       ? '<a href="' + escapeHtml(hotel.maps) + '" target="_blank" rel="noopener noreferrer"><span>ניווט</span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>'
-      : '<a href="#places" data-view="places"><span>הגדרת לינה</span><i class="fa-solid fa-arrow-left"></i></a>';
+      : '<a href="#places"><span>הגדרת לינה</span><i class="fa-solid fa-arrow-left"></i></a>';
 
     host.innerHTML =
       '<header class="overview-control-head"><div><small>במבט אחד</small><h2>מה חשוב עכשיו</h2></div><span class="overview-trip-phase" data-overview-phase="' + phase.mode + '"><i class="fa-regular fa-clock"></i>' + escapeHtml(phase.label) + '</span></header>' +
       '<div class="overview-control-grid">' +
-        '<article class="overview-control-card" data-overview-card="next"><span class="overview-control-icon"><i class="fa-regular fa-calendar-check"></i></span><div><small>הדבר הבא</small>' + nextBody + '</div><a href="#plan" data-view="plan"><span>לתוכנית</span><i class="fa-solid fa-arrow-left"></i></a></article>' +
-        '<article class="overview-control-card" data-overview-card="budget"><span class="overview-control-icon"><i class="fa-solid fa-wallet"></i></span><div><small>' + (budget.unlimited ? 'הוצאות עד עכשיו' : 'מצב התקציב') + '</small><strong>' + escapeHtml(budget.strong) + '</strong><span>' + escapeHtml(budget.detail) + '</span></div><a href="#budget" data-view="budget"><span>לתקציב</span><i class="fa-solid fa-arrow-left"></i></a></article>' +
+        '<article class="overview-control-card" data-overview-card="next"><span class="overview-control-icon"><i class="fa-regular fa-calendar-check"></i></span><div><small>הדבר הבא</small>' + nextBody + '</div><a href="#plan"><span>לתוכנית</span><i class="fa-solid fa-arrow-left"></i></a></article>' +
+        '<article class="overview-control-card" data-overview-card="budget"><span class="overview-control-icon"><i class="fa-solid fa-wallet"></i></span><div><small>' + (budget.unlimited ? 'הוצאות עד עכשיו' : 'מצב התקציב') + '</small><strong>' + escapeHtml(budget.strong) + '</strong><span>' + escapeHtml(budget.detail) + '</span></div><a href="#budget"><span>לתקציב</span><i class="fa-solid fa-arrow-left"></i></a></article>' +
         '<article class="overview-control-card" data-overview-card="hotel"><span class="overview-control-icon"><i class="fa-solid fa-hotel"></i></span><div><small>בסיס הטיול</small>' + hotelBody + '</div>' + hotelAction + '</article>' +
       '</div>';
 
