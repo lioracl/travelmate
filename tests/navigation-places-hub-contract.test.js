@@ -42,6 +42,14 @@ test('feature modules no longer append secondary features into primary sidebar n
   }
 });
 
+test('trip-redesign is the single active-state owner for trip navigation', () => {
+  const app = read('assets/app.js');
+  const redesign = read('assets/trip-redesign.js');
+  assert.doesNotMatch(app, /syncLegacySidebar|scheduleLegacySidebar/);
+  assert.match(redesign, /function syncTripPages\(\)/);
+  assert.match(redesign, /document\.body\.dataset\.tripPrimaryView/);
+});
+
 test('legacy direct subview URLs remain recognized and mapped to Places', () => {
   const redesign = read('assets/trip-redesign.js');
   const app = read('assets/app.js');
