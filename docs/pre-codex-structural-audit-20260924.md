@@ -8,6 +8,8 @@ PWA baseline: `travelmate-smart-v190` / assets `20260924-05`
 ## Cleanup status update — 2026-09-24
 
 Completed after this audit:
+- **CSS patch layers: PARTIALLY RESOLVED.** `weather-contrast.css` was consolidated into `weather-widget.css`, and the empty `activity-contrast.css` compatibility layer was removed. The remaining `!important` debt stays intentionally unchanged until the Codex visual ownership pass.
+- **Documents desktop overflow: RESOLVED.** The Vault auth form now uses `minmax(0,1fr)` columns and zero-min-width grid children instead of overflowing its container.
 - **Event contracts: RESOLVED.** `travelmate:viewchange`, `travelmate:places-updated`, `travelmate:activities-updated`, and `travelmate:ask-ai` now normalize payloads through `TravelMateEvents`; raw emitters for these contracts were removed.
 - **Loader narrowing: RESOLVED for heavy structural families.** Transport, Getaways, Group, Memories, and About no longer preload as global structure. Lightweight navigation exists up front and waits for the owning feature before view activation.
 - **Loader narrowing extended:** Nearby JS/CSS and Document Vault JS/CSS are now scoped to Places/Documents instead of Overview. In the same 3.5s mobile Overview window, local asset requests dropped from **51 → 34**, JS from **25 → 18**, CSS from **26 → 16**, and transferred local assets from about **1.19 MB → 0.71 MB**. Transport/Getaways/Group/Memories/About also remain absent until requested.
@@ -170,7 +172,7 @@ Current debt:
 - `readable-glass.css`: 358
 - `cloud-sync.css`: 106
 - `trip-redesign.css`: 79
-- `weather-contrast.css`: 75
+- `weather-widget.css` (includes the consolidated live-modal contrast contract): 75
 
 Examples of selectors with multiple visual owners include:
 
@@ -189,8 +191,8 @@ Examples of selectors with multiple visual owners include:
 
 ### CSS consolidation candidates
 
-- `weather-contrast.css`: MERGE LATER into the Weather component + final semantic material layer.
-- `activity-contrast.css`: intentionally empty compatibility file; REMOVE LATER after loader/test references are updated.
+- `weather-contrast.css`: **DONE — merged into `weather-widget.css` and removed.**
+- `activity-contrast.css`: **DONE — removed after loader/test references were retired.**
 - `styles.css`: legacy/base monolith; shrink gradually, do not delete in one pass.
 - `theme.css` and `readable-glass.css`: keep as authorities but reduce override debt during Codex visual consolidation.
 
@@ -251,7 +253,6 @@ This does **not** mean every code path is live. Files such as `getaway-fix.js` m
 ### REMOVE LATER
 
 - `getaway-fix.js` after merge
-- `activity-contrast.css` after references/contract update
 - obsolete legacy declarations left in `styles.css` after ownership migration
 - static trip-page duplication only after fixtures are represented safely elsewhere
 
@@ -280,7 +281,7 @@ Codex should:
 - not touch `main`;
 - not deploy Supabase Production changes;
 - not introduce another visual override layer;
-- not expand `getaway-fix.js`, `activity-contrast.css`, or other components marked for later removal;
+- do not reintroduce retired patch layers such as `getaway-fix.js`, `activity-contrast.css`, or `weather-contrast.css`;
 - prefer removing conflicting ownership over adding new `!important`;
 - preserve internal compatibility identifiers unless a tested migration is part of the same change;
 - run contract tests and runtime checks after each ownership consolidation.
