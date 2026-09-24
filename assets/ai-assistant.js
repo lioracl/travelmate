@@ -408,7 +408,7 @@
   }
 
   function showInlineLogin(content) {
-    var row = addMessage('assistant', '<form class="ai-login-card ai-inline-login" data-ai-login><strong>התחברות לMate</strong><p>Mate מוגן בחשבון TravelMate כדי שמפתח ה־AI לא ייחשף בטלפון.</p><input type="email" name="email" autocomplete="email" placeholder="כתובת דוא״ל" aria-label="כתובת דוא״ל להתחברות לMate" required><input type="password" name="password" autocomplete="current-password" placeholder="סיסמת החשבון" aria-label="סיסמת החשבון להתחברות לMate" required><button type="submit">התחברות והמשך</button><small data-ai-login-status></small></form>', { html: true, temporary: true });
+    var row = addMessage('assistant', '<form class="ai-login-card ai-inline-login" data-ai-login><strong>התחברות ל־Mate</strong><p>Mate מוגן בחשבון TravelMate כדי שמפתח ה־AI לא ייחשף בטלפון.</p><input type="email" name="email" autocomplete="email" placeholder="כתובת דוא״ל" aria-label="כתובת דוא״ל להתחברות ל־Mate" required><input type="password" name="password" autocomplete="current-password" placeholder="סיסמת החשבון" aria-label="סיסמת החשבון להתחברות ל־Mate" required><button type="submit">התחברות והמשך</button><small data-ai-login-status></small></form>', { html: true, temporary: true });
     var form = row.querySelector('[data-ai-login]');
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
@@ -421,7 +421,7 @@
         var result = await service.signIn(form.elements.email.value.trim(), form.elements.password.value);
         if (result.error) throw result.error;
         state.session = result.data && result.data.session;
-        form.innerHTML = '<strong>התחברת בהצלחה</strong><p>השאלה הוחזרה לשדה. לחץ על שליחה וMate יענה מיד.</p>';
+        form.innerHTML = '<strong>התחברת בהצלחה</strong><p>השאלה הוחזרה לשדה. לחץ על שליחה ו־Mate יענה מיד.</p>';
         ui.input.value = content; autoGrow(); ui.input.focus(); setStatus('מחובר · מוכן לענות');
       } catch (error) {
         status.textContent = 'הדוא״ל או הסיסמה אינם נכונים. אפשר לנסות שוב.';
