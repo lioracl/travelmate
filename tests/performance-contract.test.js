@@ -48,11 +48,10 @@ test('place auto fill caches identical Overpass queries and aborts losing mirror
 });
 
 
-test('legacy sidebar scroll work is coalesced to one animation frame', () => {
+test('legacy sidebar scroll ownership is removed in favor of trip-redesign navigation state', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
-  assert.match(source, /function scheduleLegacySidebar\(\)/);
-  assert.match(source, /requestAnimationFrame\(function\(\)\{legacySidebarFrame=0;syncLegacySidebar\(\)\}\)/);
-  assert.match(source, /addEventListener\('scroll',scheduleLegacySidebar/);
+  assert.doesNotMatch(source, /syncLegacySidebar|scheduleLegacySidebar/);
+  assert.doesNotMatch(source, /addEventListener\('scroll',scheduleLegacySidebar/);
 });
 
 test('network usage persistence is batched instead of writing on every resource', () => {

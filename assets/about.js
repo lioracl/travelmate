@@ -2,10 +2,13 @@
   'use strict';
 
   var release = {
-    version: '1.55.7',
-    label: 'Budget quick access',
+    version: '1.55.8',
+    label: 'Navigation consolidation',
     date: '24 בספטמבר 2026',
     highlights: [
+      'הניווט הראשי בטיול צומצם לחמישה אזורי ליבה: סקירה, תוכנית, מקומות, תקציב ומסמכים.',
+      'מקומות מרכז כעת ארבעה תתי-אזורים — מקומות, תחבורה, מחוץ לעיר ועל היעד — תוך שמירה על טעינה עצלה וקישורים ישנים.',
+      'קבוצה, זיכרונות ואודות עברו לתפריט עוד משני ואינם מעמיסים עוד על הניווט הראשי.',
       'הסקירה כוללת כעת קיצור דרך ישיר להמרת מטבע; Budget נטען ב-lazy loading והפוקוס עובר מיד לשדה הסכום.',
       'Budget V2: מצב תקציב מוגדר או ללא הגבלה מקבל סיכום חכם וברור של הוצאות עד עכשיו, היום, ממוצע יומי, קטגוריה מובילה ותחזית לסוף הטיול.',
       'במצב ללא הגבלה אין יתרה, חריגה או אחוז ניצול; המערכת מתמקדת במעקב הוצאות ובקצב ההוצאה בפועל.',
@@ -389,26 +392,23 @@
     if (focusTarget) window.setTimeout(function () { if (focusTarget.isConnected) focusTarget.focus(); }, 0);
   }
   function addSidebarEntry() {
-    var nav = document.querySelector('.sidebar nav');
-    if (!nav) return;
-    var button = nav.querySelector('[data-about-open]');
+    var sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+    var button = sidebar.querySelector('[data-about-open]');
     if (!button) {
+      var host = sidebar.querySelector('.trip-sidebar-more-menu') || sidebar.querySelector('nav');
+      if (!host) return;
       button = document.createElement('button');
       button.type = 'button';
       button.className = 'sidebar-about';
       button.dataset.aboutOpen = '';
-      button.innerHTML = '<i class="fa-solid fa-circle-info"></i><span class="tip">אודות · גרסה ' + release.version + '</span>';
-      button.setAttribute('aria-label', 'אודות TravelMate, גרסה ' + release.version);
-      nav.appendChild(button);
+      button.innerHTML = '<i class="fa-solid fa-circle-info"></i><span>אודות TravelMate</span>';
+      host.appendChild(button);
     }
-    if (nav.lastElementChild !== button) nav.appendChild(button);
-    if (!nav.dataset.aboutOrderWatch) {
-      nav.dataset.aboutOrderWatch = 'true';
-      new MutationObserver(function () {
-        var about = nav.querySelector('[data-about-open]');
-        if (about && nav.lastElementChild !== about) nav.appendChild(about);
-      }).observe(nav, { childList: true });
-    }
+    button.removeAttribute('data-lazy-about');
+    button.setAttribute('aria-label', 'אודות TravelMate, גרסה ' + release.version);
+    var label = button.querySelector('.tip,span');
+    if (label) label.textContent = 'אודות TravelMate';
   }
   function addHomeEntry() {
     if (document.querySelector('.workspace') || document.querySelector('[data-home-about]')) return;

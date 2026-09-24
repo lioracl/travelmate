@@ -4,11 +4,11 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>טיול חדש - TravelMate</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="../../assets/styles.css?v=20260924-10">
-  <link rel="stylesheet" data-travelmate-style="mobile-menu.css" href="../../assets/mobile-menu.css?v=20260924-10">
-  <link rel="stylesheet" data-travelmate-style="trip-redesign.css" href="../../assets/trip-redesign.css?v=20260924-10">
-  <link rel="stylesheet" data-travelmate-style="theme.css" href="../../assets/theme.css?v=20260924-10">
-  <link rel="stylesheet" href="../../assets/security-center.css?v=20260924-10"><link rel="stylesheet" href="../../assets/admin-center.css?v=20260924-10">
+  <link rel="stylesheet" href="../../assets/styles.css?v=20260924-11">
+  <link rel="stylesheet" data-travelmate-style="mobile-menu.css" href="../../assets/mobile-menu.css?v=20260924-11">
+  <link rel="stylesheet" data-travelmate-style="trip-redesign.css" href="../../assets/trip-redesign.css?v=20260924-11">
+  <link rel="stylesheet" data-travelmate-style="theme.css" href="../../assets/theme.css?v=20260924-11">
+  <link rel="stylesheet" href="../../assets/security-center.css?v=20260924-11"><link rel="stylesheet" href="../../assets/admin-center.css?v=20260924-11">
 </head>
 <body data-trip-kind="custom">
 <a class="tm-skip-link" href="#main-content">דלג לתוכן הראשי</a>
@@ -17,7 +17,15 @@
     <a class="logo" href="../../index.html" aria-label="TravelMate"><span class="brand-dot"><i class="fa-solid fa-route" aria-hidden="true"></i></span><strong>TravelMate</strong></a>
     <a class="back" href="../../index.html"><i class="fa-solid fa-arrow-right"></i> כל הטיולים</a>
     <div class="destination-mini"><span data-country-flag aria-hidden="true">🌍</span><div><strong data-country></strong><small data-dates></small></div></div>
-    <nav><a class="active" href="#overview"><i class="fa-solid fa-house"></i><span class="tip">סקירה</span></a><a href="#plan"><i class="fa-solid fa-calendar-days"></i><span class="tip">תוכנית</span></a><a href="#places"><i class="fa-solid fa-location-dot"></i><span class="tip">מקומות</span></a><a href="#documents"><i class="fa-solid fa-folder-open"></i><span class="tip">מסמכים</span></a><a href="#budget"><i class="fa-solid fa-wallet"></i><span class="tip">תקציב</span></a></nav>
+    <nav aria-label="אזורי הטיול"><a class="active" href="#overview" data-view="overview"><i class="fa-solid fa-house"></i><span class="tip">סקירה</span></a><a href="#plan" data-view="plan"><i class="fa-solid fa-calendar-days"></i><span class="tip">תוכנית</span></a><a href="#places" data-view="places"><i class="fa-solid fa-location-dot"></i><span class="tip">מקומות</span></a><a href="#budget" data-view="budget"><i class="fa-solid fa-wallet"></i><span class="tip">תקציב</span></a><a href="#documents" data-view="documents"><i class="fa-solid fa-folder-open"></i><span class="tip">מסמכים</span></a></nav>
+    <details class="trip-sidebar-more" data-trip-sidebar-more>
+      <summary aria-label="כלים נוספים"><i class="fa-solid fa-ellipsis"></i><span class="tip">עוד</span></summary>
+      <div class="trip-sidebar-more-menu">
+        <a href="#group" data-view="group"><i class="fa-solid fa-user-group"></i><span>שיתוף וקבוצה</span></a>
+        <a href="#memories" data-view="memories"><i class="fa-solid fa-images"></i><span>זיכרונות וסיכום</span></a>
+        <button type="button" data-about-open data-lazy-about><i class="fa-solid fa-circle-info"></i><span>אודות TravelMate</span></button>
+      </div>
+    </details>
   </aside>
   <main tabindex="-1" id="main-content" class="content">
     <header class="mobile-header"><a href="../../index.html">←</a><strong><a class="mobile-destination-map" data-maps target="_blank" rel="noopener noreferrer" aria-label="פתיחת מפת היעד" title="פתיחת מפת היעד"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></a><span class="mobile-country-flag" data-country-flag aria-hidden="true">🌍</span><button type="button" class="mobile-trip-whatsapp" data-trip-share-whatsapp aria-label="שיתוף הטיול ב־WhatsApp" title="שיתוף הטיול ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></button><span data-country></span></strong></header>
@@ -33,6 +41,12 @@
         <a href="#destination-info"><i class="fa-solid fa-circle-info"></i><span>מידע נוסף על היעד</span></a>
       </nav>
     </section>
+    <nav class="places-hub-nav" data-places-hub aria-label="כלי מקומות" hidden>
+      <a href="#places" data-view="places"><i class="fa-solid fa-location-dot"></i><span>מקומות</span></a>
+      <a href="#transport" data-view="transport"><i class="fa-solid fa-train-subway"></i><span>תחבורה</span></a>
+      <a href="#getaways" data-view="getaways"><i class="fa-solid fa-mountain-sun"></i><span>מחוץ לעיר</span></a>
+      <a href="#destination-info" data-view="destination-info"><i class="fa-solid fa-circle-info"></i><span>על היעד</span></a>
+    </nav>
     <section id="plan" class="section"><div class="section-head"><div><p>נבנה לפי תאריכי הטיול</p><h1>תוכנית יומית</h1></div></div><div class="generated-days" data-generated-days></div></section>
     <section id="places" class="section"><div class="section-head"><div><p>GPS, מפה וקישורים חכמים</p><h1>מקומות ומפה</h1></div></div></section>
     <section id="documents" class="section"><div class="section-head"><div><p>כרטיסים, הזמנות וקבצים</p><h1>מסמכים</h1></div><button class="pill-btn" type="button" data-vault-pick><i class="fa-solid fa-lock"></i> העלאה לכספת</button></div><div class="doc-list"><article class="doc-row action"><div class="icon"><i class="fa-solid fa-plane"></i></div><div><strong>טיסות</strong><span>אישורי הזמנה וצ׳ק־אין</span></div><button>העלאה</button></article><article class="doc-row action"><div class="icon"><i class="fa-solid fa-hotel"></i></div><div><strong>לינה</strong><span>אישור מלון וכתובת</span></div><button>העלאה</button></article><article class="doc-row"><div class="icon"><i class="fa-solid fa-shield"></i></div><div><strong>ביטוח</strong><span>פוליסות ואישורי כיסוי</span></div><button>העלאה</button></article><article class="doc-row"><div class="icon"><i class="fa-solid fa-train-subway"></i></div><div><strong>תחבורה וכרטיסים</strong><span>רכבות, אוטובוסים וכרטיסי כניסה</span></div><button>העלאה</button></article><article class="doc-row"><div class="icon"><i class="fa-solid fa-passport"></i></div><div><strong>דרכון ואשרות</strong><span>מסמכי נסיעה רגישים נשמרים בכספת</span></div><button>העלאה</button></article><article class="doc-row"><div class="icon"><i class="fa-solid fa-file-arrow-up"></i></div><div><strong>מסמכים נוספים</strong><span>PDF, תמונות וקובצי Office מכל סוג</span></div><button>העלאה</button></article></div></section>
@@ -40,5 +54,5 @@
     <section id="destination-info" class="external-resources"><h2>מידע נוסף ל־<span data-city></span></h2><p>חיפוש חיצוני לפי ההקשר של היעד.</p><div class="resource-links"><a class="resource-link" data-maps target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-map"></i><span><strong>Google Maps</strong><small>מפה וניווט בעיר</small></span></a><a class="resource-link" data-wiki target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-wikipedia-w"></i><span><strong>Wikipedia</strong><small>רקע על העיר והמדינה</small></span></a><a class="resource-link" data-tourism target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i><span><strong>מדריך תיירות</strong><small>חיפוש האתר הרשמי של היעד</small></span></a></div></section>
   </main>
 </div>
-<script src="../../assets/network-usage.js?v=20260924-10" defer></script><script src="../../assets/supabase-config.js?v=20260924-10" defer></script><script src="../../assets/cloud-sync.js?v=20260924-10" defer></script><script src="../../assets/trip-store.js?v=20260924-10" defer></script><script src="../../assets/event-contracts.js?v=20260924-10" defer></script><script src="../../assets/destination-images.js?v=20260924-10" defer></script><script src="../../assets/custom-trip.js?v=20260924-10" defer></script><script src="../../assets/app.js?v=20260924-10" defer></script><script src="../../assets/security-center.js?v=20260924-10" defer></script><script src="../../assets/admin-center.js?v=20260924-10" defer></script>
+<script src="../../assets/network-usage.js?v=20260924-11" defer></script><script src="../../assets/supabase-config.js?v=20260924-11" defer></script><script src="../../assets/cloud-sync.js?v=20260924-11" defer></script><script src="../../assets/trip-store.js?v=20260924-11" defer></script><script src="../../assets/event-contracts.js?v=20260924-11" defer></script><script src="../../assets/destination-images.js?v=20260924-11" defer></script><script src="../../assets/custom-trip.js?v=20260924-11" defer></script><script src="../../assets/app.js?v=20260924-11" defer></script><script src="../../assets/security-center.js?v=20260924-11" defer></script><script src="../../assets/admin-center.js?v=20260924-11" defer></script>
 </body></html>

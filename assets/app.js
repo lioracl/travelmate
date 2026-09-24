@@ -48,16 +48,12 @@ var appScript=document.currentScript;
   }
   function ensureLazyNavigation(){
     var nav=document.querySelector('.sidebar nav');if(!nav)return;
-    function viewOf(link){try{var url=new URL(link.href,location.href);return link.dataset.view||url.searchParams.get('view')||url.hash.replace(/^#/,'')}catch(error){return''}}
-    function ensure(view,icon,label){var existing=[].slice.call(nav.querySelectorAll('a')).find(function(link){return viewOf(link)===view});if(existing){existing.dataset.view=view;return existing}var link=document.createElement('a');link.href='#'+view;link.dataset.view=view;link.className='sidebar-lazy-feature';link.innerHTML='<i class="fa-solid '+icon+'"></i><span class="tip">'+label+'</span>';nav.appendChild(link);return link}
-    ensure('transport','fa-train-subway','תחבורה ומחירים');
-    ensure('getaways','fa-mountain-sun','טיולים מחוץ לעיר');
-    ensure('group','fa-user-group','הקבוצה');
-    ensure('memories','fa-images','אלבום וסיכום');
-    if(!nav.querySelector('[data-about-open]')){var about=document.createElement('button');about.type='button';about.className='sidebar-about';about.dataset.aboutOpen='';about.dataset.lazyAbout='';about.innerHTML='<i class="fa-solid fa-circle-info"></i><span class="tip">אודות TravelMate</span>';about.setAttribute('aria-label','אודות TravelMate');nav.appendChild(about)}
+    [].slice.call(nav.querySelectorAll('.sidebar-lazy-feature,.sidebar-service')).forEach(function(link){
+      if(/^(transport|getaways|group|memories)$/.test(link.dataset.view||''))link.remove()
+    })
   }
   function warmAssistants(){var run=function(){Promise.all(['ai-assistant.css','smart-hub.css'].map(loadStyle)).then(function(){return loadSequence(['ai-assistant.js','smart-hub.js'])})};if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:2600});else setTimeout(run,1200)}
-  function activeView(){return document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview'}
+  function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
   ensureLazyNavigation();
   var baseReady=Promise.all(baseStyles.map(loadStyle));
   var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
@@ -104,7 +100,7 @@ document.addEventListener('dragover',function(event){var list=event.target.close
 document.addEventListener('keydown',function(event){if(event.key==='Escape'){closeModal();closeMobileMenu()}});
 
 function closeMobileMenu(){document.body.classList.remove('mobile-menu-open');var button=document.querySelector('[data-mobile-menu]');if(button){button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','פתיחת תפריט');var icon=button.querySelector('i');if(icon)icon.className='fa-solid fa-bars'}}
-document.addEventListener('click',function(event){var menuButton=event.target.closest('[data-mobile-menu]');if(menuButton){var opening=!document.body.classList.contains('mobile-menu-open');document.body.classList.toggle('mobile-menu-open',opening);menuButton.setAttribute('aria-expanded',String(opening));menuButton.setAttribute('aria-label',opening?'סגירת תפריט':'פתיחת תפריט');var icon=menuButton.querySelector('i');if(icon)icon.className=opening?'fa-solid fa-xmark':'fa-solid fa-bars';return}if(event.target.closest('.sidebar nav a')||event.target.matches('.mobile-menu-shade'))closeMobileMenu()});
+document.addEventListener('click',function(event){var menuButton=event.target.closest('[data-mobile-menu]');if(menuButton){var opening=!document.body.classList.contains('mobile-menu-open');document.body.classList.toggle('mobile-menu-open',opening);menuButton.setAttribute('aria-expanded',String(opening));menuButton.setAttribute('aria-label',opening?'סגירת תפריט':'פתיחת תפריט');var icon=menuButton.querySelector('i');if(icon)icon.className=opening?'fa-solid fa-xmark':'fa-solid fa-bars';return}if(event.target.closest('.sidebar nav a,.trip-sidebar-more-menu a,.trip-sidebar-more-menu button')||event.target.matches('.mobile-menu-shade'))closeMobileMenu()});
 document.addEventListener('click',function(event){if(!event.target.closest('[data-vault-pick]')||event.target.closest('[data-document-vault]'))return;var fileInput=document.querySelector('[data-vault-form] input[type="file"]');if(fileInput)fileInput.click()});
 window.addEventListener('resize',function(){if(window.innerWidth>1000)closeMobileMenu()});
 document.addEventListener('click',function(event){var skip=event.target.closest('.tm-skip-link[href="#main-content"]');if(!skip)return;var main=document.getElementById('main-content');if(!main)return;requestAnimationFrame(function(){main.focus({preventScroll:true})})});
@@ -210,5 +206,3 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   function start(){var days=document.querySelector('[data-generated-days]');if(!days)return;new MutationObserver(schedule).observe(days,{childList:true,subtree:true});document.addEventListener('travelmate:planner-rendered',schedule);document.addEventListener('travelmate:places-updated',schedule);schedule()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
-
-var links=document.querySelectorAll('.sidebar nav a');var sections=[].slice.call(document.querySelectorAll('.section[id]'));function syncLegacySidebar(){var selectedView=new URLSearchParams(location.search).get('view');if(selectedView){links.forEach(function(link){var url;try{url=new URL(link.href,location.href)}catch(error){return}var linkView=url.searchParams.get('view')||url.hash.slice(1)||'overview';var selected=linkView===selectedView;link.classList.toggle('active',selected);if(selected)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current')});return}var current='overview';sections.forEach(function(section){if(!section.hidden&&section.getBoundingClientRect().top<160)current=section.id});links.forEach(function(link){var selected=link.getAttribute('href')==='#'+current;link.classList.toggle('active',selected);if(selected)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current')})}var legacySidebarFrame=0;function scheduleLegacySidebar(){if(legacySidebarFrame)return;legacySidebarFrame=requestAnimationFrame(function(){legacySidebarFrame=0;syncLegacySidebar()})}addEventListener('scroll',scheduleLegacySidebar,{passive:true});syncLegacySidebar();
