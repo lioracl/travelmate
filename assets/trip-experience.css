@@ -259,3 +259,25 @@
 #memories .trip-summary-card{margin-top:12px}
 #memories .trip-summary-text{padding:12px;line-height:1.6}
 @media(max-width:760px){#memories :is(.album-card,.memory-card,.trip-summary-card){padding:14px}#memories .memory-layout{gap:10px}#memories .trip-summary-text{padding:10px}}
+
+/* Night polish 2: budget progressive disclosure */
+#budget .budget-settings-toggle{display:none}
+@media(max-width:620px){
+  #budget .budget-settings-toggle{width:100%;min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--tm-card-control-border);border-radius:13px;background:var(--tm-card-control);color:var(--tm-card-link);font:inherit;font-weight:900}
+  #budget .budget-settings-toggle>i:last-child{transition:transform .18s ease}
+  #budget .budget-settings-toggle.open>i:last-child{transform:rotate(180deg)}
+  #budget .total-budget-editor[hidden]{display:none}
+  #budget .budget-smart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #budget .budget-smart-grid article{min-height:84px}
+  #budget .budget-charts>header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+  #budget .budget-charts>header button{width:auto;min-height:42px;padding:0 11px}
+  #budget .budget-chart-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  #budget .budget-chart-summary>div{padding:9px 7px;text-align:center}
+  #budget .budget-chart-summary span{font-size:10px}
+  #budget .budget-chart-summary strong{font-size:15px;overflow-wrap:anywhere}
+}
+@media(max-width:360px){
+  #budget .budget-smart-grid{grid-template-columns:1fr}
+  #budget .budget-charts>header{grid-template-columns:1fr}
+  #budget .budget-charts>header button{width:100%}
+}
