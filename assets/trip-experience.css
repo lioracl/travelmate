@@ -119,3 +119,21 @@
   #budget .receipt-grid :is(input,select){width:100%!important;min-height:48px!important;font-size:16px!important}
   #budget .receipt-actions{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* Budget V2 smart summary — functional foundation before final Codex visual consolidation. */
+#budget .budget-smart-summary{display:grid;gap:14px;margin:16px 0;padding:18px;border:1px solid var(--tm-card-border);border-radius:22px;background:var(--tm-card-bg-nested);color:var(--tm-card-text);box-shadow:var(--tm-card-shadow)}
+#budget .budget-smart-summary>header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+#budget .budget-smart-summary>header small{display:block;color:var(--tm-card-text-muted);font-weight:800}
+#budget .budget-smart-summary>header h2{margin:3px 0 0;font-size:clamp(19px,2.2vw,25px)}
+#budget .budget-smart-mode{display:inline-flex;align-items:center;gap:7px;min-height:38px;border:1px solid var(--tm-card-control-border);border-radius:999px;padding:7px 11px;background:var(--tm-card-control);color:var(--tm-card-control-text);font-size:12px;font-weight:900;white-space:nowrap}
+#budget .budget-smart-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#budget .budget-smart-metrics article{min-width:0;padding:13px;border:1px solid var(--tm-card-border);border-radius:16px;background:var(--tm-card-bg-main)}
+#budget .budget-smart-metrics article>span{display:block;color:var(--tm-card-text-muted);font-size:11px;font-weight:800}
+#budget .budget-smart-metrics article>strong{display:block;margin-top:5px;color:var(--tm-card-text);font-size:clamp(16px,2vw,21px);line-height:1.25;overflow-wrap:anywhere}
+#budget .budget-smart-metrics article>strong small{display:block;margin-top:4px;color:var(--tm-card-text-muted);font-size:11px;font-weight:800}
+#budget .budget-smart-narrative{display:flex;align-items:flex-start;gap:10px;margin:0;padding:12px 14px;border:1px solid var(--tm-card-border);border-radius:15px;background:var(--tm-card-bg-main);color:var(--tm-card-text);line-height:1.5}
+#budget .budget-smart-narrative>i{margin-top:2px;color:var(--tm-card-link)}
+#budget .budget-smart-summary.is-unlimited .budget-smart-mode{font-variant-numeric:tabular-nums}
+@media(max-width:760px){#budget .budget-smart-summary>header{flex-direction:column}#budget .budget-smart-mode{align-self:flex-start}#budget .budget-smart-metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){#budget .budget-smart-metrics{grid-template-columns:1fr}}
