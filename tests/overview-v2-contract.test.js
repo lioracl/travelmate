@@ -60,6 +60,7 @@ test('Overview V2 reads canonical trip data and renders next, budget and lodging
 test('Overview V2 cards use the canonical trip navigation owner', () => {
   assert.match(redesign, /\[data-overview-control-center\] a\[href\^="#"\]/);
   assert.match(redesign, /\[data-overview-control-center\] a/);
+  assert.match(redesign, /querySelectorAll\('\[data-overview-control-center\] a\[href\^="#"\]'\)/);
   assert.doesNotMatch(overview, /data-view="/);
   assert.doesNotMatch(overview, /history\.pushState|location\.hash\s*=|travelmate:viewchange/);
 });
