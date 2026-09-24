@@ -35,6 +35,10 @@ test('Overview budget summary supports limited and unlimited modes', () => {
   assert.match(custom, /הוצאות נרשמו/);
 });
 
+test('Overview does not recycle a past item as the next activity', () => {
+  assert.match(custom, /return items\.find\(function \(item\) \{[\s\S]*?\}\) \|\| null;/);
+});
+
 test('Overview attention state prioritizes missing plan, lodging, then budget setup', () => {
   const plan = custom.indexOf("attentionTitle.textContent = 'התוכנית עדיין ריקה'");
   const lodging = custom.indexOf("attentionTitle.textContent = 'לא הוגדר מקום לינה'");
