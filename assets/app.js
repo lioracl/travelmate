@@ -13,7 +13,7 @@ var appScript=document.currentScript;
     summary:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
     group:{styles:['collaboration.css','chat-place-sharing.css','place-directions.css'],scripts:['place-directions.js','collaboration.js']},
     transport:{styles:['transport-planner.css','travel-services.css','place-directions.css'],scripts:['travel-services.js','transport-planner.js','place-directions.js']},
-    getaways:{styles:['travel-services.css'],scripts:['travel-services.js','getaway-fix.js']},
+    getaways:{styles:['travel-services.css'],scripts:['travel-services.js']},
     about:{styles:['about.css'],scripts:['about.js']}
   };
   function assetUrl(file){return new URL(file,appScript.src).href+'?v='+version}
