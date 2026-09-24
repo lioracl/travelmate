@@ -3,26 +3,9 @@
 
   var MAX_FILE_SIZE = 25 * 1024 * 1024;
   var PBKDF2_ITERATIONS = 310000;
-  var SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.7/dist/umd/supabase.min.js';
-  var SUPABASE_SRI = 'sha384-BmlQlKlDvXvKoxkn5OQuUo/aJQCTXeB+Kls6EccBmG4Kf8AXvp89RtO9MtPxP/r5';
   var PDF_JS_VERSION = '5.7.284';
   var pdfJsPromise;
   var initialized = false;
-
-  function loadSupabaseLibrary() {
-    if (window.supabase && window.supabase.createClient) return Promise.resolve(window.supabase);
-    if (window.travelMateSupabaseLoader) return window.travelMateSupabaseLoader;
-    window.travelMateSupabaseLoader = new Promise(function (resolve, reject) {
-      var script = document.createElement('script');
-      script.src = SUPABASE_CDN;
-      script.integrity = SUPABASE_SRI;
-      script.crossOrigin = 'anonymous';
-      script.onload = function () { resolve(window.supabase); };
-      script.onerror = function () { reject(new Error('SUPABASE_LIBRARY_FAILED')); };
-      document.head.appendChild(script);
-    });
-    return window.travelMateSupabaseLoader;
-  }
 
   function loadPdfJs() {
     if (pdfJsPromise) return pdfJsPromise;
@@ -72,19 +55,18 @@
       return;
     }
 
-    var library;
+    if (!window.TravelMateCloud || typeof window.TravelMateCloud.getClient !== 'function') {
+      setStatus('שירות הענן של TravelMate אינו זמין כרגע. נסי לרענן את האפליקציה.', true);
+      return;
+    }
+
+    var client;
     try {
-      library = await loadSupabaseLibrary();
+      client = await window.TravelMateCloud.getClient();
     } catch (error) {
       setStatus('לא ניתן לטעון כרגע את שירות האחסון. בדקי את החיבור לאינטרנט.', true);
       return;
     }
-
-    var client = window.TravelMateCloud
-      ? await window.TravelMateCloud.getClient()
-      : library.createClient(config.url, config.publishableKey, {
-          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-        });
     var bucket = config.documentBucket || 'travel-documents';
     var authPanel = vault.querySelector('[data-vault-auth]');
     var authForm = vault.querySelector('[data-vault-auth-form]');
