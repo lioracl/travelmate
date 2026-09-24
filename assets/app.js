@@ -53,7 +53,7 @@ var appScript=document.currentScript;
     })
   }
   function warmAssistants(){var run=function(){Promise.all(['ai-assistant.css','smart-hub.css'].map(loadStyle)).then(function(){return loadSequence(['ai-assistant.js','smart-hub.js'])})};if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:2600});else setTimeout(run,1200)}
-  function activeView(){return document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview'}
+  function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
   ensureLazyNavigation();
   var baseReady=Promise.all(baseStyles.map(loadStyle));
   var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
