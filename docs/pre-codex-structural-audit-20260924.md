@@ -5,6 +5,15 @@ Baseline branch: `preview`
 Baseline commit: `dfb5499bd3cee5dae4f262502336461fbd0586a6`  
 PWA baseline: `travelmate-smart-v190` / assets `20260924-05`
 
+## Cleanup status update — 2026-09-24
+
+Completed after this audit:
+- **Supabase loader ownership: RESOLVED.** `document-vault.js` now delegates client creation to the canonical `TravelMateCloud.getClient()`; only `cloud-sync.js` owns `window.travelMateSupabaseLoader`. Failed library loads remove the failed script and can be retried.
+- **Getaways duplicate implementation: RESOLVED.** The proven corrective search/failover behavior was merged into `travel-services.js`; `getaway-fix.js` was removed from the loader and repository.
+- Regression contracts were added to prevent either duplicate from returning.
+
+The next core consolidation target is the **Trip Store facade / direct `travelmate-trips` writers**.
+
 ## Purpose
 
 This audit defines the canonical owner of each major capability before the next Codex visual/UX consolidation pass. It is intentionally conservative: identify ownership and duplication first; remove or merge code only in a later, verified consolidation step.
@@ -52,7 +61,7 @@ This audit defines the canonical owner of each major capability before the next 
 
 ## High-confidence duplication / consolidation findings
 
-### 1. Getaways has two active implementations — HIGH
+### 1. Getaways had two active implementations — RESOLVED
 
 `travel-services.js` wires `[data-getaway-form]`, while `getaway-fix.js` installs a document-level capture submit handler on the same form and calls `stopImmediatePropagation()`.
 
@@ -81,7 +90,7 @@ The canonical cloud layer already exposes:
 
 **Target:** introduce one canonical Trip Store facade and migrate feature modules away from direct full-array LocalStorage writes. Preserve the current Cloud API and sync conflict semantics.
 
-### 3. Supabase CDN loader is defined twice — HIGH
+### 3. Supabase CDN loader was defined twice — RESOLVED
 
 Both `cloud-sync.js` and `document-vault.js` assign `window.travelMateSupabaseLoader`.
 
@@ -227,9 +236,9 @@ This does **not** mean every code path is live. Files such as `getaway-fix.js` m
 
 ### MERGE LATER
 
-- Getaways corrective logic → travel-services
+- Getaways corrective logic → travel-services — **DONE**
 - direct trip persistence → canonical Trip Store
-- Supabase loader → one core loader
+- Supabase loader → one core loader — **DONE**
 - duplicated Nominatim/Overpass/Wikimedia helpers → provider adapters
 - common Mate request/context/persistence plumbing → one AI core
 - CSS material overrides → explicit final owners
@@ -251,8 +260,8 @@ This does **not** mean every code path is live. Files such as `getaway-fix.js` m
 
 ## Pre-Codex order of work
 
-1. Fix the shared Supabase loader ownership.
-2. Consolidate Getaways implementation and remove the patch file.
+1. ~~Fix the shared Supabase loader ownership.~~ **DONE**
+2. ~~Consolidate Getaways implementation and remove the patch file.~~ **DONE**
 3. Define a Trip Store facade and migrate the highest-risk full-array writers first.
 4. Document event payload contracts for places/activities/AI.
 5. Tighten the global feature loader without changing user-visible behavior.
