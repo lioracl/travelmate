@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>טיול חדש - TravelMate</title>
+  <script>(function(){try{var r=document.documentElement,t=localStorage.getItem('travelmate-theme'),a=localStorage.getItem('travelmate-accent'),m={forest:'emerald',violet:'plum',coral:'sunset'};r.dataset.theme=t==='dark'?'dark':'light';r.dataset.accent=m[a]||a||'ocean';r.style.colorScheme=r.dataset.theme}catch(e){}})()</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="../../assets/styles.css?v=20260925-12">
   <link rel="stylesheet" data-travelmate-style="mobile-menu.css" href="../../assets/mobile-menu.css?v=20260925-12">
@@ -12,7 +13,8 @@
   <link rel="stylesheet" data-travelmate-style="trip-intelligence.css" href="../../assets/trip-intelligence.css?v=20260925-12">
   <link rel="stylesheet" data-travelmate-style="readable-glass.css" href="../../assets/readable-glass.css?v=20260925-12">
 </head>
-<body data-trip-kind="custom">
+<body class="tm-new-design" data-trip-kind="custom">
+<script>(function(){var v=new URLSearchParams(location.search).get('view')||location.hash.slice(1)||'overview';if(v==='car-rental')v='transport';document.body.dataset.tripView=v;document.body.dataset.tripPrimaryView=/^(places|transport|getaways|destination-info)$/.test(v)?'places':v})()</script>
 <a class="tm-skip-link" href="#main-content">דלג לתוכן הראשי</a>
 <div class="workspace">
   <aside class="sidebar">
