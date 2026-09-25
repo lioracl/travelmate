@@ -126,6 +126,7 @@
     getAccent: readAccent,
     setAccent: saveAccent,
     accents: ACCENTS,
-    normalizeAccent: normalizeAccent
+    normalizeAccent: normalizeAccent,
+    refreshAccentChoices: function () { decorateAccentChoices(readAccent()); }
   };
 })();
