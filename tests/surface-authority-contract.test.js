@@ -89,3 +89,11 @@ test('Plan nested activity and saved-place cards do not stack backdrop blur',()=
   const glass=read('assets/readable-glass.css');
   assert.match(glass,/data-trip-view="plan"[^\n]*#plan#plan :is\(\.planned-activity,\.saved-place\)\{\s*--tm-card-blur:none/);
 });
+
+
+test('Places keeps blur on primary surfaces, not opaque controls or saved-place shelf items',()=>{
+  const glass=read('assets/readable-glass.css');
+  const nearby=read('assets/nearby.css');
+  assert.match(glass,/--tm-places-control-blur:none/);
+  assert.match(nearby,/\.saved-places-shelf__item\{[\s\S]*?-webkit-backdrop-filter:none;[\s\S]*?backdrop-filter:none/);
+});
