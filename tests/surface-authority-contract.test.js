@@ -97,3 +97,9 @@ test('Places keeps blur on primary surfaces, not opaque controls or saved-place 
   assert.match(glass,/--tm-places-control-blur:none/);
   assert.match(nearby,/\.saved-places-shelf__item\{[\s\S]*?-webkit-backdrop-filter:none;[\s\S]*?backdrop-filter:none/);
 });
+
+
+test('Budget nested result and expense rows do not stack backdrop blur',()=>{
+  const glass=read('assets/readable-glass.css');
+  assert.match(glass,/data-trip-view="budget"[^\n]*#budget#budget :is\(\.currency-converter-result,\.expense-record\)\{\s*--tm-card-blur:none/);
+});
