@@ -2,10 +2,13 @@
   'use strict';
 
   var release = {
-    version: '1.55.19',
-    label: 'Surface Authority 2.0',
+    version: '1.55.20',
+    label: 'Glass polish & contrast hardening',
     date: '25 בספטמבר 2026',
     highlights: [
+      'Glass polish: כרטיסי Glass ראשיים ופנימיים שקופים יותר תוך שמירת blur של 18px/14px; Weather נשאר Photo Glass עם blur של 20px.',
+      'Dark contrast hardening: תוקנו Primary/Secondary/Selected controls, Plan day headers, Places mode selection ו-Navo recommendation banner בכל שש ערכות הצבע.',
+      'QA: מטריצת 60 מצבים של 6 Themes × Light/Dark × 5 מסכי ליבה ומטריצת 20 מצבים של כל המסכים עברו ללא White Blockers, contrast failures או horizontal overflow.',
       'Surface Authority 2.0: לכל מסכי הטיול יש כעת מודל חומר אחד עם Canvas, Glass, Nested, Control ו-Photo Glass במקום כמה מערכות CSS מתחרות.',
       'Weather עבר ל-Photo Glass שקוף יותר עם blur של 20px; כרטיסים ראשיים משתמשים ב-18px וכרטיסים פנימיים ב-14px, כך שהצילום נשאר נוכח בלי לפגוע בקריאות.',
       'הוסרו בעלי חומר ישנים מ-Overview, Places ומובייל, וכספת המסמכים ו-empty state של תחבורה הועברו לאותם semantic surface tokens.',

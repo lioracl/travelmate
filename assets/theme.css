@@ -2354,12 +2354,12 @@ html body.tm-new-design main.content #documents .ai-notes-archive .ai-note-answe
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan :is(
   .day-heading.day-heading,.day-tab.day-tab
 ){
-  background:color-mix(in srgb,var(--tm-accent-soft,#D7EDF2) 14%,rgba(248,252,250,.64))!important;
+  background:var(--tm-card-bg-nested)!important;
   background-color:transparent!important;
-  border:1px solid color-mix(in srgb,var(--tm-brand-primary,#147D92) 24%,rgba(255,255,255,.58))!important;
+  border:1px solid var(--tm-card-border)!important;
   border-radius:14px!important;
-  color:#26332e!important;
-  -webkit-text-fill-color:#26332e!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan :is(
