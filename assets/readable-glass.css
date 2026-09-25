@@ -2097,18 +2097,6 @@ html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-h
   -webkit-text-fill-color:currentColor;
 }
 
-/* Documents and resource lists keep structural wrappers transparent.
-   Glass belongs only to useful content cards, avoiding blur-on-blur stacking. */
-html body[data-trip-kind="custom"].tm-new-design main.content :is(
-  #documents .document-vault,#documents .doc-list,#destination-info .resource-links
-){
-  background:transparent!important;
-  border-color:transparent!important;
-  box-shadow:none!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important
-}
-
 /* Weather is photo-glass: more transparent, more blur, stable white text. */
 html body[data-trip-kind="custom"].tm-new-design .weather-top-widget{
   border-color:rgba(255,255,255,.28);
