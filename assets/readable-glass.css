@@ -1379,7 +1379,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
   --tm-photo-scrim-start:rgba(24,35,38,.08);
   --tm-photo-scrim-mid:rgba(24,35,38,.11);
   --tm-photo-scrim-end:rgba(24,35,38,.14);
-  --tm-places-control-blur:var(--tm-surface-blur-nested);
+  --tm-places-control-blur:none;
   --tm-places-picker-bg:var(--tm-surface-control)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
