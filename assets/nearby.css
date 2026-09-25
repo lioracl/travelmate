@@ -158,8 +158,8 @@
   border-radius:13px;
   background:var(--tm-card-bg-compact);
   color:var(--tm-card-text);
-  -webkit-backdrop-filter:var(--tm-surface-blur-nested);
-  backdrop-filter:var(--tm-surface-blur-nested)
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
 }
 .saved-places-shelf__icon{
   width:38px;
