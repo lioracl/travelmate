@@ -148,5 +148,4 @@
   setTimeout(addSectionBackButtons, 800);
   setTimeout(addSectionBackButtons, 2400);
   updateExitButtons();
-  scrollToCurrent();
 })();
