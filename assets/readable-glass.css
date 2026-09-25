@@ -1290,8 +1290,8 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
-    border:1px solid var(--tm-card-border);
-    background:var(--tm-surface-dark-glass-strong);
+    border:1px solid var(--tm-chrome-border,var(--tm-card-border));
+    background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
     color:var(--tm-card-text);
     box-shadow:var(--tm-card-shadow-compact);
     -webkit-backdrop-filter:blur(8px) saturate(104%);
