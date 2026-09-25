@@ -2070,8 +2070,10 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
 
   --tm-readable-control:var(--tm-action-secondary);
   --tm-readable-control-text:#F7FAFA;
+  --tm-control-text:#F7FAFA;
   --tm-accent-soft-text:#F7FAFA;
   --tm-card-control-text:#F7FAFA;
+  --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 30%,rgba(18,42,34,.88));
   --tm-card-control-placeholder:rgba(247,250,250,.62);
   --tm-card-muted:rgba(247,250,250,.68);
   --tm-card-link:color-mix(in srgb,var(--tm-brand-primary) 48%,#fff);
