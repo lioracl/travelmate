@@ -12,11 +12,11 @@ test('trip photo is owned by the app background while content uses readable glas
   const glass = read('assets/readable-glass.css');
   assert.match(trip, /body:not\(\.home-page\)\{color:#111;background-color:#10241e;background-image:linear-gradient/);
   assert.match(trip, /hero\.custom-hero\{[^}]*background:linear-gradient/);
-  assert.match(glass, /Destination photo background: trip content uses readable glass surfaces/);
+  assert.match(glass, /Surface Authority 2\.0/);
   assert.match(glass, /--tm-page-section-surface:transparent/);
   assert.match(glass, /--tm-readable-surface:transparent/);
-  assert.match(glass, /--tm-readable-surface-soft:color-mix\(in srgb,var\(--tm-accent-soft,#D7EDF2\) 12%,rgba\(248,252,250,\.58\)\)/);
-  assert.match(glass, /--tm-card-text:#173f32/);
+  assert.match(glass, /--tm-readable-surface-soft:var\(--tm-surface-glass\)/);
+  assert.match(glass, /--tm-surface-text:#173f32/);
 });
 
 test('light section and Plan day headings no longer force white text', () => {
