@@ -400,7 +400,7 @@
       var summary = document.querySelector('.trip-overview-summary');
       (summary || overview).insertAdjacentElement('afterend', banner);
       ui.banner = banner; ui.bannerState = banner.querySelector('[data-navo-state]');
-      banner.querySelector('[data-navo-open]').addEventListener('click', function () { openSheet(existingContext(canonicalTrip(tripId) || trip)); });
+      banner.querySelector('[data-navo-open]').addEventListener('click', function () { var ready=window.TravelMateFeatures&&window.TravelMateFeatures.ensureAssistant?window.TravelMateFeatures.ensureAssistant():Promise.resolve();ready.then(function(){openSheet(existingContext(canonicalTrip(tripId)||trip))}) });
       updateExistingBanner(context);
       function refresh() { var latest = canonicalTrip(tripId); if (latest) { trip = latest; markExistingStale(existingContext(latest)); } }
       ['travelmate:planner-rendered', 'travelmate:places-updated', 'travelmate:activities-updated'].forEach(function (eventName) { document.addEventListener(eventName, refresh); });
