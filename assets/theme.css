@@ -2227,13 +2227,13 @@ html body.tm-new-design .network-usage-meter::before,
 html body.tm-new-design .network-usage-meter::after{animation:none!important}
 html body.tm-new-design main.content{caret-color:transparent}
 html body.tm-new-design main.content :is(input,textarea,[contenteditable="true"]){caret-color:auto}
-html body.tm-new-design main.content :is(#budget,#transport,#car-rental,#getaways) :is(.expense-workspace,.budget-columns-editor,.receipt-form,.expense-live-summary,.transport-card,.service-card,.getaway-result){
-  background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(229,241,235,.93))!important;
-  border-color:rgba(72,130,103,.28)!important;
-  color:#173f32!important;
-  -webkit-text-fill-color:#173f32!important
+html body.tm-new-design main.content :is(#budget,#transport,#car-rental,#getaways) :is(.expense-workspace,.budget-columns-editor,.receipt-form,.transport-card,.service-card,.getaway-result){
+  background:var(--tm-card-bg)!important;
+  border-color:var(--tm-card-border)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important
 }
-html body.tm-new-design main.content :is(#budget,#transport,#car-rental,#getaways) :is(.expense-workspace,.budget-columns-editor,.receipt-form,.expense-live-summary,.transport-card,.service-card,.getaway-result) :is(h1,h2,h3,strong,b,label,span,p,small){
+html body.tm-new-design main.content :is(#budget,#transport,#car-rental,#getaways) :is(.expense-workspace,.budget-columns-editor,.receipt-form,.transport-card,.service-card,.getaway-result) :is(h1,h2,h3,strong,b,label,span,p,small){
   color:inherit!important;
   -webkit-text-fill-color:currentColor!important;
   text-shadow:none!important
@@ -2241,17 +2241,16 @@ html body.tm-new-design main.content :is(#budget,#transport,#car-rental,#getaway
 
 /* 1.35 — the receipt editor is part of the budget weather surface, not a white inset page. */
 html body.tm-new-design[data-trip-view][data-trip-view] main.content section#budget#budget .expense-workspace.expense-workspace .receipt-form.receipt-form{
-  background:rgba(8,36,29,.78)!important;
-  background-color:rgba(8,36,29,.78)!important;
-  border:1px solid rgba(255,255,255,.26)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  background:var(--tm-card-bg-nested)!important;
+  border:1px solid var(--tm-card-border)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important
 }
 html body.tm-new-design[data-trip-view][data-trip-view] main.content section#budget#budget .expense-workspace .receipt-picker.receipt-picker{
-  background:rgba(255,255,255,.1)!important;
-  border-color:rgba(255,255,255,.3)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  background:var(--tm-card-bg-nested)!important;
+  border-color:var(--tm-card-border)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important
 }
 html body.tm-new-design[data-trip-view][data-trip-view] main.content section#budget#budget .expense-workspace .receipt-grid :is(input,select){
   background:#fff!important;
@@ -2662,8 +2661,7 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan .generated-day
   -webkit-text-fill-color:inherit!important;
   opacity:1!important
 }
-html body.tm-new-design #budget .budget-hero>div:first-child,
-html body.tm-new-design #budget .expense-live-summary{
+html body.tm-new-design #budget .budget-hero>div:first-child{
   border:2px solid rgba(166,230,204,.76)!important;
   background:linear-gradient(135deg,rgba(8,72,52,.97),rgba(20,111,79,.94))!important;
   color:#fff!important;
@@ -2671,8 +2669,7 @@ html body.tm-new-design #budget .expense-live-summary{
   box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 12px 28px rgba(1,39,28,.25)!important;
   opacity:1!important
 }
-html body.tm-new-design #budget .budget-hero>div:first-child :is(h2,h3,strong,b,span,p,small,i),
-html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,small,i){
+html body.tm-new-design #budget .budget-hero>div:first-child :is(h2,h3,strong,b,span,p,small,i){
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
   opacity:1!important;
