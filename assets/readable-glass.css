@@ -2109,7 +2109,7 @@ body.tm-new-design[data-trip-view] main.content :is(#transport,#getaways,#group,
 }
 
 
-/* Design correction: destination photography belongs to the hero; trip content uses readable surfaces. */
+/* Destination photo background: trip content uses readable glass surfaces over the app-wide destination image. */
 html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design{
   --tm-trip-page-bg:transparent;
   --tm-readable-surface:rgba(248,252,250,.78);
