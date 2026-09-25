@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.23',
+    version: '1.55.24',
     label: 'Cold-start performance hardening',
     date: '25 בספטמבר 2026',
     highlights: [
+      'Plan performance: planned activities and saved places no longer stack nested backdrop blur inside day cards; only the day surface and planner toolbar keep main Glass blur.',
       'Plan surface cleanup: סרגל הימים שעברו משתמש כעת ב-Nested Glass במקום Control surface אטום, כך שאין white slab ב-Light Mode.',
       'Cold start: תמונת פראג הוקטנה מכ-3.63MB לכ-0.5MB ונשאר מקור תמונה יחיד דרך Destination Images.',
       'Local-first startup: טיול מקומי מוצג מיד; Supabase refresh, Security/Admin ו-Mate נדחים לאחר הציור הראשוני או נטענים לפי דרישה.',
