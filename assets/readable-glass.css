@@ -1962,7 +1962,7 @@ body.tm-new-design[data-trip-view] main.content :is(#plan,#places,#budget,#docum
 
 /* Night core-screen redesign: Overview */
 body.tm-new-design[data-trip-view="overview"] .overview-control-center{gap:10px;margin:14px 0 16px}
-body.tm-new-design[data-trip-view="overview"] .overview-status-card{min-height:86px;padding:14px;border-radius:var(--tm-core-radius-lg)}
+body.tm-new-design[data-trip-view="overview"] .overview-status-card{--tm-card-surface:var(--tm-card-bg-nested);--tm-card-elevation:var(--tm-card-shadow-compact);--tm-card-blur:none;min-height:86px;padding:14px;border-radius:var(--tm-core-radius-lg)}
 body.tm-new-design[data-trip-view="overview"] .overview-status-icon{border-radius:13px}
 body.tm-new-design[data-trip-view="overview"] .overview-status-card>a{min-height:38px}
 body.tm-new-design[data-trip-view="overview"] .trip-home-actions nav{grid-template-columns:repeat(5,minmax(0,1fr))}
