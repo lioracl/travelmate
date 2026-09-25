@@ -20,9 +20,10 @@ test('trip content stays transparent and cards use glass surfaces', () => {
   assert.match(css, /--tm-page-section-surface:transparent/);
   assert.match(css, /--tm-readable-surface:transparent/);
   assert.match(css, /--tm-readable-control:var\(--tm-action-secondary\)/);
-  assert.match(css, /main\.content\{\s*background:transparent/);
-  assert.match(css, /Photo-background restore: cards float over the destination image/);
-  assert.match(css, /backdrop-filter:blur\(16px\) saturate\(118%\)/);
+  assert.match(css, /Surface Authority 2\.0/);
+  assert.match(css, /main\.content[\s\S]*background:transparent/);
+  assert.match(css, /--tm-surface-blur:blur\(18px\) saturate\(118%\)/);
+  assert.match(css, /--tm-surface-blur-photo:blur\(20px\) saturate\(112%\)/);
 });
 
 test('dark mobile background keeps the destination image with a darker scrim', () => {
