@@ -2,10 +2,15 @@
   'use strict';
 
   var release = {
-    version: '1.55.21',
-    label: 'Mobile glass & saved places clarity',
+    version: '1.55.22',
+    label: 'Cold-start performance hardening',
     date: '25 בספטמבר 2026',
     highlights: [
+      'Cold start: תמונת פראג הוקטנה מכ-3.63MB לכ-0.5MB ונשאר מקור תמונה יחיד דרך Destination Images.',
+      'Local-first startup: טיול מקומי מוצג מיד; Supabase refresh, Security/Admin ו-Mate נדחים לאחר הציור הראשוני או נטענים לפי דרישה.',
+      'Zero-layout-shift: Weather ו-Mate מקבלים slots קיימים ב-HTML, Theme/View state נקבעים לפני First Paint והוסר hash/history shield ישן שגרם ל-scroll jump.',
+      'CSS cleanup #1: הוסרו Material owners כפולים ו-53 מופעי !important מ-theme.css בלי להעלות CSS debt או לשנות את Surface Authority.',
+      'Service Worker: Documents ו-Security יצאו מ-precache הקריטי ונשמרים כ-feature bundles לפי שימוש.',
       'Mobile feedback: Weather ו-Photo Glass משתמשים כעת ב-blur רגוע יותר של 12px; Glass ראשי ב-14px ו-Nested Glass ב-10px כדי לשמור את תמונת היעד חדה ונוכחת יותר.',
       'Documents: מעטפת הכספת חזרה להיות structural ושקופה במקום כרטיס Glass גדול נוסף; כרטיסי המסמך והפעולות נשארים המשטחים האמיתיים.',
       'Places: נוסף אזור ברור ״מקומות שמורים״ עם מונה, סטטוס תזמון וקישור מפה, כך שמקום שנשמר בלי יום ושעה כבר לא נעלם מהמשתמש.',
