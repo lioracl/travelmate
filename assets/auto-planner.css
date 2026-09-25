@@ -32,3 +32,14 @@
 #plan :is(.planned-activity,.saved-place):is(:hover,:focus-within) :is(.activity-buttons,.saved-place-actions){opacity:1}
 #plan .day-note{min-height:72px;margin-top:4px}
 @media(max-width:560px){#plan .planner-toolbar{padding:12px}#plan .planner-progress{max-width:none}#plan .planned-activity,#plan .saved-place{padding:10px}#plan .activity-buttons,#plan .saved-place-actions{opacity:1}}
+
+/* Pixel polish: one-row Plan actions on phones. */
+@media(max-width:700px){
+  #plan .planner-toolbar{margin-bottom:10px}
+  #plan .planner-progress{gap:4px}
+  #plan .trip-calendar-hint{display:none}
+  #plan .planner-progress-track{height:6px}
+  #plan .planner-toolbar-actions{width:100%}
+  #plan .planner-more{grid-column:auto}
+  #plan .planner-more>summary{width:100%;min-height:46px;padding-inline:7px;font-size:11px}
+}
