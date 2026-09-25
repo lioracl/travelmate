@@ -109,3 +109,11 @@ test('Document rows do not allocate repeated backdrop blur layers',()=>{
   const glass=read('assets/readable-glass.css');
   assert.match(glass,/data-trip-view="documents"[^\n]*#documents#documents \.doc-row\{\s*--tm-card-blur:none/);
 });
+
+
+test('Transport nested and repeated surfaces do not stack backdrop blur',()=>{
+  const glass=read('assets/readable-glass.css');
+  const transport=read('assets/transport-planner.css');
+  assert.match(transport,/\.transport-empty\{[^}]*-webkit-backdrop-filter:none;backdrop-filter:none/);
+  assert.match(glass,/data-trip-view="transport"[^\n]*#transport#transport \.service-card\.service-info-link\{\s*--tm-card-blur:none/);
+});
