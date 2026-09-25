@@ -6,7 +6,9 @@ var appScript=document.currentScript;
   var finalStyle='readable-glass.css';
   var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
   var features={
-    overview:{styles:['weather-widget.css','ai-assistant.css','trip-intelligence.css'],scripts:['weather-widget.js','ai-assistant.js','trip-intelligence.js']},
+    overview:{styles:['weather-widget.css','trip-intelligence.css'],scripts:['weather-widget.js','trip-intelligence.js']},
+    assistant:{styles:['ai-assistant.css','smart-hub.css'],scripts:['ai-assistant.js','smart-hub.js']},
+    account:{styles:['security-center.css','admin-center.css'],scripts:['security-center.js','admin-center.js']},
     places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js']},
     plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css'],scripts:['auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
     documents:{styles:['document-vault.css'],scripts:['document-vault.js']},
@@ -52,18 +54,19 @@ var appScript=document.currentScript;
       if(/^(transport|getaways|group|memories)$/.test(link.dataset.view||''))link.remove()
     })
   }
-  function warmAssistants(){var run=function(){Promise.all(['ai-assistant.css','smart-hub.css'].map(loadStyle)).then(function(){return loadSequence(['ai-assistant.js','smart-hub.js'])})};if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:2600});else setTimeout(run,1200)}
+  function scheduleIdleFeature(view,delay){var run=function(){loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
+  function warmNonCritical(){scheduleIdleFeature('assistant',2200);scheduleIdleFeature('account',4200)}
   function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
   ensureLazyNavigation();
   var baseReady=Promise.all(baseStyles.map(loadStyle));
   var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
   var featureReady=baseReady.then(function(){return loadFeature(activeView())});
-  Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady]).then(function(){warmAssistants()});
+  Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady]).then(function(){warmNonCritical()});
   window.addEventListener('travelmate:viewchange',function(event){loadFeature(event.detail&&event.detail.view)});
   document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
   document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
   document.addEventListener('click',function(event){var button=event.target.closest&&event.target.closest('[data-lazy-about]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();loadFeature('about').then(function(){button.removeAttribute('data-lazy-about');button.click()})},true);
-  window.TravelMateFeatures=Object.freeze({load:loadFeature,has:function(view){return Boolean(features[view])}});
+  window.TravelMateFeatures=Object.freeze({load:loadFeature,has:function(view){return Boolean(features[view])},ensureAssistant:function(){return loadFeature('assistant')},ensureAccount:function(){return loadFeature('account')}});
 })();
 var lastModalTrigger=null;
 function closeModal(){document.querySelectorAll('.modal-backdrop.open').forEach(function(modal){modal.classList.remove('open')});if(lastModalTrigger&&document.contains(lastModalTrigger)){lastModalTrigger.focus()}lastModalTrigger=null}
