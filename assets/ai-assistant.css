@@ -23,3 +23,20 @@
 @media(max-width:650px){.ai-note-toggle span{display:none}.ai-note-toggle{padding:9px}}
 .ai-orb{z-index:2147481000!important;pointer-events:auto!important}.ai-panel{z-index:2147481100!important;pointer-events:auto!important}.ai-panel[hidden]{display:none!important}.ai-panel,.ai-panel *{pointer-events:auto}.ai-panel textarea{background:#fff!important;color:#153f33!important;-webkit-text-fill-color:#153f33!important;caret-color:#153f33!important}.ai-panel textarea::placeholder{color:#647b72!important;-webkit-text-fill-color:#647b72!important}.ai-panel .ai-composer{position:relative;z-index:2}
 .ai-orb{z-index:2147482101!important}.ai-panel{z-index:2147482100!important}
+
+
+/* Design correction: smaller mobile Mate launcher with safe-area clearance. */
+@media(max-width:600px){
+  .ai-orb{
+    left:max(10px,env(safe-area-inset-left));
+    bottom:max(14px,env(safe-area-inset-bottom));
+    width:48px;
+    height:48px;
+    border-radius:15px;
+    font-size:18px;
+    box-shadow:0 10px 26px rgba(16,86,67,.28)
+  }
+  .ai-orb-ring{display:none}
+  .ai-orb-badge{right:-2px;top:-4px;padding:2px 5px;font-size:9px}
+  body:not(.home-page) main.content{padding-bottom:max(96px,calc(72px + env(safe-area-inset-bottom)))}
+}
