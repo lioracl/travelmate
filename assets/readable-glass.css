@@ -2312,3 +2312,105 @@ html body.tm-new-design :is(.danger,[data-delete],[data-remove],[data-delete-exp
   --tm-control-current-bg:var(--tm-action-danger);
   --tm-control-current-border:var(--tm-action-danger)
 }
+
+
+/* Theme system 2026: semantic accent surfaces + white-blocker correction.
+   Rich destination photography remains visible; neutral inputs stay readable. */
+html body.tm-new-design{
+  --tm-accent-soft:#D7EDF2;
+  --tm-accent-soft-text:#0B5869;
+  --tm-action-secondary:color-mix(in srgb,var(--tm-accent-soft) 82%,rgba(255,255,255,.58));
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 13%,var(--tm-accent-soft));
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 22%,var(--tm-accent-soft));
+  --tm-surface-selected:color-mix(in srgb,var(--tm-accent-soft) 78%,rgba(255,255,255,.24));
+  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-primary) 38%,transparent);
+  --tm-card-border-hover:color-mix(in srgb,var(--tm-brand-primary) 52%,rgba(255,255,255,.32));
+  --tm-card-link:var(--tm-brand-primary-dark);
+  --tm-card-icon:var(--tm-brand-primary);
+  --tm-glass-shell-bg:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-accent-soft) 18%,rgba(255,255,255,.62)),
+    rgba(239,247,243,.54));
+  --tm-glass-shell-border:color-mix(in srgb,var(--tm-brand-primary) 22%,rgba(255,255,255,.58));
+}
+html[data-theme="dark"] body.tm-new-design{
+  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(18,42,34,.82));
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(18,42,34,.86));
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 44%,rgba(18,42,34,.9));
+  --tm-surface-selected:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(18,42,34,.78));
+  --tm-glass-shell-bg:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 10%,rgba(13,31,26,.66)),
+    rgba(8,24,20,.56));
+  --tm-glass-shell-border:color-mix(in srgb,var(--tm-brand-primary) 38%,rgba(255,255,255,.2));
+  --tm-card-link:color-mix(in srgb,var(--tm-brand-primary) 48%,#fff);
+  --tm-card-icon:color-mix(in srgb,var(--tm-brand-primary) 58%,#fff);
+}
+
+/* Large shells must not become opaque white screens over the destination photo. */
+html body[data-trip-kind="custom"].tm-new-design main.content :is(
+  .section-head,
+  #plan .generated-day>div,
+  #places .nearby-panel,
+  #places .lodging-setup,
+  #budget .budget-smart-summary,
+  #budget .expense-workspace,
+  #budget .currency-converter,
+  #budget .budget-charts,
+  #documents .document-vault,
+  #documents .ai-notes-archive,
+  #transport .transport-card,
+  #transport .service-card,
+  #getaways .service-card,
+  #group .collaboration-heading,
+  #memories .album-card,
+  #memories .memory-card,
+  #memories .trip-summary-card
+){
+  background:var(--tm-glass-shell-bg)!important;
+  border-color:var(--tm-glass-shell-border)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(120%)!important;
+  backdrop-filter:blur(18px) saturate(120%)!important;
+  box-shadow:0 12px 34px rgba(7,34,26,.14)!important
+}
+
+/* Nested content can be more opaque than shells, but should still reveal depth. */
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.content :is(
+  #plan .planned-activity,
+  #plan .saved-place,
+  #documents .doc-row,
+  #budget .expense-record
+){
+  background:color-mix(in srgb,var(--tm-accent-soft) 12%,rgba(255,255,255,.72))!important
+}
+
+/* Secondary actions use the selected theme instead of defaulting to white. */
+html body.tm-new-design :is(
+  .mobile-back,.mobile-destination-map,
+  .smart-hub-launch,
+  #plan .day-add,
+  #transport .official-fares,
+  #memories .album-card>a,
+  #overview .overview-status-card a,
+  #overview .navo-trip-types button:not(.is-selected)
+){
+  border-color:color-mix(in srgb,var(--tm-brand-primary) 28%,var(--tm-card-control-border))!important;
+  background:var(--tm-action-secondary)!important;
+  color:var(--tm-accent-soft-text)!important;
+  -webkit-text-fill-color:currentColor!important
+}
+html[data-theme="dark"] body.tm-new-design :is(
+  .mobile-back,.mobile-destination-map,
+  .smart-hub-launch,
+  #plan .day-add,
+  #transport .official-fares,
+  #memories .album-card>a,
+  #overview .overview-status-card a,
+  #overview .navo-trip-types button:not(.is-selected)
+){
+  color:#f7fafa!important
+}
+html body.tm-new-design :is(
+  #plan .day-add,
+  #overview .navo-trip-types button:not(.is-selected)
+):is(:hover,:focus-visible){
+  background:var(--tm-action-secondary-hover)!important
+}
