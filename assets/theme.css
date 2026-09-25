@@ -1876,17 +1876,17 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapse
 }
 @media(max-width:700px){
   html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar{
-    gap:14px!important;
-    padding:14px!important;
+    gap:8px!important;
+    padding:9px!important;
   }
   html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar-actions{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-    gap:9px!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:7px!important;
   }
   html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar .planner-toolbar-actions button{
-    min-height:52px!important;
-    padding:9px 8px!important;
-    font-size:12px!important;
+    min-height:46px!important;
+    padding:7px 6px!important;
+    font-size:11px!important;
   }
 }
 html body.tm-new-design[data-trip-view="plan"] main.content #plan .planner-toolbar{
