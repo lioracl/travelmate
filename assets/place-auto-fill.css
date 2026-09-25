@@ -56,3 +56,19 @@
 .auto-place-lodging-providers>div{display:flex;align-items:center;gap:10px}.auto-place-lodging-providers>div>i{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#1e7657;color:#fff}.auto-place-lodging-providers strong,.auto-place-lodging-providers small{display:block}.auto-place-lodging-providers small{margin-top:3px;color:#60786d}
 .auto-place-lodging-providers nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.auto-place-lodging-providers a{padding:10px 13px;display:inline-flex;align-items:center;gap:7px;border:1px solid #a9cdbd;border-radius:11px;background:#fff;color:#176047;font-weight:900;text-decoration:none}.auto-place-lodging-providers p{margin:10px 0 0;color:#687b72;font-size:11px;line-height:1.5}
 @media(max-width:680px){.auto-place-lodging-providers nav{display:grid}.auto-place-lodging-providers a{justify-content:center}}
+
+
+/* Design correction: smart fill stays available without dominating Places. */
+@media(max-width:760px){
+  .auto-place-launch{
+    min-height:58px;
+    margin-bottom:10px;
+    padding:9px 11px;
+    grid-template-columns:36px minmax(0,1fr) auto;
+    gap:9px;
+    border-radius:15px
+  }
+  .auto-place-launch>i:first-child{width:36px;height:36px;border-radius:11px;font-size:16px}
+  .auto-place-launch strong{font-size:14px}
+  .auto-place-launch small{display:none}
+}
