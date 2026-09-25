@@ -2,20 +2,21 @@
   'use strict';
 
   var workspace = document.querySelector('.workspace');
-  if (!workspace || !document.querySelector('main.content')) return;
+  var content = document.querySelector('main.content');
+  if (!workspace || !content) return;
 
-  var baseUrl = new URL(location.href);
-  baseUrl.hash = '';
-  baseUrl.searchParams.delete('invite');
-  var requestedHash = location.hash || '#overview';
-  var lastKnownSection = requestedHash.replace(/^#/, '') || 'overview';
-  try { sessionStorage.setItem('travelmate-last-trip-url', baseUrl.href); } catch (error) {}
+  try { history.scrollRestoration = 'manual'; } catch (error) {}
 
-  function sectionId() { return location.hash.replace(/^#/, '') || 'overview'; }
+  var currentUrl = new URL(location.href);
+  currentUrl.hash = '';
+  currentUrl.searchParams.delete('invite');
+  try { sessionStorage.setItem('travelmate-last-trip-url', currentUrl.href); } catch (error) {}
+
   function closeOverlays() {
     document.querySelectorAll('.modal-backdrop.open').forEach(function (modal) { modal.classList.remove('open'); });
     document.body.classList.remove('mobile-menu-open');
   }
+
   function updateExitButtons() {
     document.querySelectorAll('.mobile-back,.hero-back').forEach(function (button) {
       if (!button.dataset.tripExitHref) button.dataset.tripExitHref = button.getAttribute('href') || '../../index.html';
@@ -24,30 +25,9 @@
       if (button.classList.contains('hero-back')) button.innerHTML = '<i class="fa-solid fa-arrow-right"></i> כל הטיולים';
     });
   }
-  function scrollToCurrent() {
-    var target = document.getElementById(sectionId()) || document.getElementById('overview');
-    if (target) requestAnimationFrame(function () { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-    updateExitButtons();
-  }
-  function pushSection(id, from) {
-    var nextState = { travelMateTrip: true, travelMateAction: id, travelMateFrom: from || sectionId() };
-    if (history.state && history.state.travelMateAction) history.replaceState(nextState, '', baseUrl.href + '#' + id);
-    else history.pushState(nextState, '', baseUrl.href + '#' + id);
-    lastKnownSection = id;
-    scrollToCurrent();
-  }
-  function returnToTrip() {
-    closeOverlays();
-    if (history.state && (history.state.travelMateAction || history.state.travelMateModal || history.state.travelMateOverlay)) {
-      history.back();
-      return;
-    }
-    history.replaceState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
-    lastKnownSection = 'overview';
-    scrollToCurrent();
-  }
+
   function addSectionBackButtons() {
-    document.querySelectorAll('main.content .section[id]:not(#overview)').forEach(function (section) {
+    content.querySelectorAll('.section[id]:not(#overview)').forEach(function (section) {
       var head = section.querySelector(':scope > .section-head');
       if (!head || head.querySelector('.trip-action-back')) return;
       var button = document.createElement('button');
@@ -59,94 +39,41 @@
     });
   }
 
-  // Keep several same-document entries behind the overview. Mobile browsers can
-  // dispatch more than one Back event before JavaScript gets a chance to respond;
-  // the extra entries keep even a rapid double/triple press inside this trip.
-  var guardDepth = 8;
-  function armTripShield() {
-    history.replaceState({ travelMateTripGuard: true, travelMateGuardIndex: 0 }, '', baseUrl.href + '#overview');
-    for (var guardIndex = 1; guardIndex <= guardDepth; guardIndex += 1) {
-      history.pushState({ travelMateTripGuard: true, travelMateGuardIndex: guardIndex }, '', baseUrl.href + '#overview');
-    }
-    history.pushState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
+  function overviewUrl() {
+    var url = new URL(location.href);
+    url.hash = '';
+    url.searchParams.set('view', 'overview');
+    return url.href;
   }
-  function restoreProtectedOverview() {
-    history.replaceState({ travelMateTripGuard: true, travelMateGuardIndex: 0 }, '', baseUrl.href + '#overview');
-    for (var guardIndex = 1; guardIndex <= guardDepth; guardIndex += 1) {
-      history.pushState({ travelMateTripGuard: true, travelMateGuardIndex: guardIndex }, '', baseUrl.href + '#overview');
+
+  function returnToOverview() {
+    closeOverlays();
+    var view = new URLSearchParams(location.search).get('view') || 'overview';
+    if (view === 'overview') {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      return;
     }
-    history.pushState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
-    lastKnownSection = 'overview';
-    scrollToCurrent();
+    if (history.state && history.state.travelMateView) {
+      history.back();
+      return;
+    }
+    var state = { travelMateView: 'overview' };
+    history.pushState(state, '', overviewUrl());
+    window.dispatchEvent(new PopStateEvent('popstate', { state: state }));
   }
-  armTripShield();
-  if (requestedHash !== '#overview') pushSection(requestedHash.slice(1), 'overview');
 
   document.addEventListener('click', function (event) {
-    var exitButton = event.target.closest('.mobile-back,.hero-back');
-    var sectionLink = exitButton ? null : event.target.closest('a[href^="#"]');
-    if (sectionLink && sectionLink.getAttribute('href').length > 1) {
-      var id = sectionLink.getAttribute('href').slice(1);
-      if (document.getElementById(id)) {
-        event.preventDefault();
-        if (id !== sectionId()) pushSection(id, sectionId());
-        closeOverlays();
-        return;
-      }
-    }
-
     if (event.target.closest('.trip-action-back')) {
       event.preventDefault();
-      returnToTrip();
-      return;
-    }
-
-    var modalTrigger = event.target.closest('[data-modal]');
-    if (modalTrigger && !(history.state && history.state.travelMateModal)) {
-      history.pushState({ travelMateTrip: true, travelMateModal: modalTrigger.dataset.modal }, '', location.href);
-      return;
-    }
-    if ((event.target.closest('[data-close]') || event.target.classList.contains('modal-backdrop')) && history.state && history.state.travelMateModal) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      history.back();
+      returnToOverview();
     }
   }, true);
 
-  window.addEventListener('hashchange', function () {
-    var id = sectionId();
-    if (!(history.state && (history.state.travelMateTrip || history.state.travelMateTripGuard))) {
-      history.replaceState({ travelMateTrip: true, travelMateAction: id, travelMateFrom: lastKnownSection }, '', location.href);
-    }
-    lastKnownSection = id;
-    scrollToCurrent();
-  });
-
-  window.addEventListener('popstate', function (event) {
-    closeOverlays();
-    if (event.state && event.state.travelMateTripGuard) {
-      restoreProtectedOverview();
-      return;
-    }
-    if (!event.state || event.state.travelMateAction || event.state.travelMateModal || event.state.travelMateOverlay) {
-      history.replaceState({ travelMateTrip: true, travelMateOverview: true }, '', baseUrl.href + '#overview');
-      lastKnownSection = 'overview';
-      scrollToCurrent();
-      return;
-    }
-    lastKnownSection = sectionId();
-    scrollToCurrent();
-  });
-
-  window.addEventListener('pageshow', function (event) {
-    if (event.persisted && !(history.state && (history.state.travelMateTrip || history.state.travelMateTripGuard))) {
-      restoreProtectedOverview();
-    }
+  window.addEventListener('travelmate:feature-ready', function () {
+    addSectionBackButtons();
+    updateExitButtons();
   });
 
   addSectionBackButtons();
-  setTimeout(addSectionBackButtons, 800);
-  setTimeout(addSectionBackButtons, 2400);
   updateExitButtons();
-  scrollToCurrent();
 })();

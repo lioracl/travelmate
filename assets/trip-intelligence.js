@@ -385,8 +385,10 @@
       if (!trip || String(trip.id) !== String(tripId)) return;
       var context = existingContext(trip);
       bindContext(context);
-      var banner = document.createElement('aside');
+      var banner = document.querySelector('[data-navo-trip-banner]') || document.createElement('aside');
       banner.className = 'navo-trip-banner navo-existing-trip-banner';
+      banner.dataset.navoTripBanner = '';
+      banner.removeAttribute('aria-busy');
       banner.innerHTML = '<span><i class="fa-solid fa-compass"></i></span><div><small class="navo-trip-state" data-navo-state></small><strong></strong><p></p><div class="navo-existing-type-setup" data-navo-existing-types></div></div><button type="button" data-navo-open><i class="fa-solid fa-wand-magic-sparkles"></i> לצפייה בהמלצות</button>';
       var types = banner.querySelector('[data-navo-existing-types]');
       Object.keys(TYPE_META).forEach(function (type) {
@@ -397,10 +399,9 @@
         });
         types.appendChild(button);
       });
-      var summary = document.querySelector('.trip-overview-summary');
-      (summary || overview).insertAdjacentElement('afterend', banner);
+      if (!banner.isConnected) { var summary = document.querySelector('.trip-overview-summary'); (summary || overview).insertAdjacentElement('afterend', banner); }
       ui.banner = banner; ui.bannerState = banner.querySelector('[data-navo-state]');
-      banner.querySelector('[data-navo-open]').addEventListener('click', function () { openSheet(existingContext(canonicalTrip(tripId) || trip)); });
+      banner.querySelector('[data-navo-open]').addEventListener('click', function () { var ready=window.TravelMateFeatures&&window.TravelMateFeatures.ensureAssistant?window.TravelMateFeatures.ensureAssistant():Promise.resolve();ready.then(function(){openSheet(existingContext(canonicalTrip(tripId)||trip))}) });
       updateExistingBanner(context);
       function refresh() { var latest = canonicalTrip(tripId); if (latest) { trip = latest; markExistingStale(existingContext(latest)); } }
       ['travelmate:planner-rendered', 'travelmate:places-updated', 'travelmate:activities-updated'].forEach(function (eventName) { document.addEventListener(eventName, refresh); });

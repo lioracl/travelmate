@@ -557,18 +557,16 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-days{
 @media(min-width:1001px){
   html body:not(.home-page) .workspace>.sidebar,
   html body:not(.home-page) .workspace>.sidebar nav{
-    scrollbar-width:none!important
-  }
+    
   html body:not(.home-page) .workspace>.sidebar::-webkit-scrollbar,
   html body:not(.home-page) .workspace>.sidebar nav::-webkit-scrollbar{
     width:0!important;
     height:0!important;
-    display:none!important
-  }
+    
   html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about){
-    border:0!important;
+    
     border-radius:0!important;
-    background:transparent!important;
+    
     box-shadow:none!important
   }
   html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about) .tip{
@@ -622,7 +620,7 @@ html body.tm-new-design[data-trip-view] main.content>section>.section-head :is(b
 
 html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
   padding:0 0 12px!important;
-  border:0!important;
+  
   border-radius:0!important;
   background:transparent!important;
   box-shadow:none!important;
@@ -633,7 +631,7 @@ html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions{
 }
 html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar :is(button,.planner-action){
   align-self:center!important;
-  border:0!important;
+  
   background:rgba(8,66,49,.82)!important;
   color:#fff!important;
   box-shadow:0 7px 18px rgba(8,66,49,.18)!important
@@ -741,10 +739,9 @@ html body.tm-new-design #group .group-message:not(.mine) .message-sender{
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
 ) :where(h1,h2,h3,h4,strong,p,span,small,label){
-  color:#173f32!important;
-  -webkit-text-fill-color:#173f32!important;
-  text-shadow:none!important
-}
+  
+  
+  
 html body.tm-new-design #documents .section-head :is(h1,p),
 html body.tm-new-design #budget .section-head :is(h1,p),
 html body.tm-new-design #transport .section-head :is(h1,p),
@@ -790,7 +787,7 @@ html body.tm-new-design[data-trip-view] #memories .section-head p{
     margin-right:278px!important
   }
   html[dir="ltr"] body:not(.home-page) main.content{
-    margin-right:0!important;
+    
     margin-left:278px!important
   }
   html body:not(.home-page) .workspace>.sidebar .logo{
@@ -934,9 +931,9 @@ html body.tm-new-design .ai-orb{
   justify-content:center!important;
   gap:8px!important;
   border:1px solid rgba(255,255,255,.78)!important;
-  border-radius:18px!important;
-  background:var(--tm-brand-primary)!important;
-  color:var(--tm-text-on-brand)!important;
+  
+  
+  
   -webkit-text-fill-color:var(--tm-text-on-brand)!important;
   box-shadow:0 16px 38px rgba(11,88,105,.28)!important
 }
@@ -1211,7 +1208,7 @@ body.tm-new-design .ai-icon-button{
   body:not(.home-page) .mobile-menu-button{
     border:0!important;
     border-radius:15px!important;
-    background:var(--tm-action-secondary)!important;
+    
     box-shadow:0 8px 20px rgba(20,89,65,.16)!important
   }
   body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions){
@@ -1417,17 +1414,16 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
 /* Final sidebar authority: one surface, no nested outlines. */
 @media(min-width:1001px){
   html body:not(.home-page) .workspace>.sidebar{
-    border:0!important;
+    
     border-radius:24px!important;
     background:linear-gradient(145deg,color-mix(in srgb,var(--tm-accent-soft) 10%,rgba(248,253,250,.94)),color-mix(in srgb,var(--tm-accent-soft) 20%,rgba(236,245,241,.9)))!important;
     box-shadow:0 16px 42px rgba(16,75,57,.16)!important
   }
   html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about),
   html body:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
-    border:0!important;
+    
     border-radius:14px!important;
-    box-shadow:none!important
-  }
+    
   html body:not(.home-page) .workspace>.sidebar nav a.active,
   html body:not(.home-page) .workspace>.sidebar nav [aria-current="page"]{
     background:linear-gradient(135deg,#e7f4ed,#d1e9dc)!important;
@@ -1556,7 +1552,7 @@ html body.tm-new-design main.content>section:is(
   }
   html body:not(.home-page) .workspace>.sidebar nav a.active{
     background:transparent!important;
-    color:#0f6b4d!important;
+    
     box-shadow:inset -3px 0 0 #16805c!important;
     font-weight:950!important
   }
@@ -1968,7 +1964,7 @@ html body.tm-new-design[data-trip-view="group"] main.content #group .group-messa
   box-shadow:0 7px 18px rgba(23,63,50,.13)!important
 }
 html body.tm-new-design[data-trip-view="group"] main.content #group .group-message.mine{
-  background:#176b50!important;
+  
   color:#fff!important;
   -webkit-text-fill-color:#fff!important
 }
@@ -1983,8 +1979,7 @@ html body.tm-new-design[data-trip-view="group"] main.content #group .group-messa
 html body.tm-new-design[data-trip-view="group"] main.content #group .group-message.sender-tone-4:not(.mine){--sender-bg:#fff0be;--sender-ink:#765c0f}
 html body.tm-new-design[data-trip-view="group"] main.content #group .group-message.sender-tone-5:not(.mine){--sender-bg:#d5f1f3;--sender-ink:#17646a}
 html body.tm-new-design[data-trip-view="group"] main.content #group .group-message:not(.mine){
-  background:var(--sender-bg)!important
-}
+  
 html body.tm-new-design[data-trip-view="group"] main.content #group .message-place-actions button:first-child{
   border:0!important;
   background:#176b50!important;
@@ -2591,16 +2586,7 @@ html body.tm-new-design[data-trip-view="plan"] #plan :is([data-delete],[data-del
   -webkit-text-fill-color:#8f241c!important
 }
 
-/* 1.37.5 — crisp glass edges and a deliberately destructive planner action. */
-html body.tm-new-design main.content :is(
-  .section-head,.planner-toolbar,.generated-day,.planned-activity,.saved-place,
-  .transport-card,.service-card,.doc-row,.document-vault,.expense-workspace,
-  .group-card,.album-card,.memory-card,.trip-summary-card
-){
-  border-width:2px!important;
-  border-color:rgba(226,255,244,.46)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 14px 34px rgba(0,0,0,.16)!important
-}
+/* Planner danger action remains explicit; shared card material is owned by readable-glass.css. */
 html body.tm-new-design[data-trip-view="plan"] main.content section#plan#plan .planner-action.planner-action.planner-danger{
   border:1px solid var(--tm-action-danger)!important;
   background:var(--tm-action-danger)!important;
@@ -2610,11 +2596,6 @@ html body.tm-new-design[data-trip-view="plan"] main.content section#plan#plan .p
 html body.tm-new-design[data-trip-view="plan"] main.content section#plan#plan .planner-action.planner-action.planner-danger :is(i,span){
   color:#fff!important;
   -webkit-text-fill-color:#fff!important
-}
-html body.tm-new-design .sidebar,
-html body.tm-new-design .network-usage-meter{
-  transform:translateZ(0);
-  backface-visibility:hidden
 }
 html body.home-page.is-authenticated :where(.trip-archive,.home-about){
   align-self:start!important;
@@ -2705,26 +2686,6 @@ html body.tm-new-design #budget .expense-live-summary :is(h2,h3,strong,b,span,p,
     -webkit-text-fill-color:#f7fff9!important;
     white-space:normal!important;
     line-height:1.45!important
-  }
-  html body.tm-new-design .sidebar .destination-mini{
-    border:2px solid rgba(77,151,120,.82)!important;
-    background:linear-gradient(145deg,rgba(239,250,245,.8),rgba(205,233,220,.74))!important;
-    color:#104f3b!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.72),0 9px 24px rgba(0,43,31,.2)!important;
-    -webkit-backdrop-filter:blur(18px) saturate(1.15)!important;
-    backdrop-filter:blur(18px) saturate(1.15)!important
-  }
-  html body.tm-new-design .sidebar .destination-mini :is(strong,small,span){
-    color:#104f3b!important;
-    -webkit-text-fill-color:#104f3b!important;
-    opacity:1!important
-  }
-  html body.tm-new-design .sidebar .destination-mini small[data-dates]{
-    display:block!important;
-    margin-top:4px!important;
-    font-weight:700!important;
-    line-height:1.45!important;
-    white-space:normal!important
   }
 }
 
@@ -2836,18 +2797,18 @@ html body.tm-new-design main.content #budget .budget-limit-mode label{
   margin:0!important
 }
 html body.tm-new-design main.content #budget .budget-limit-mode input[type="radio"]{
-  position:absolute!important;
+  
   inset:0!important;
-  width:1px!important;
-  min-width:1px!important;
-  height:1px!important;
-  min-height:1px!important;
-  margin:0!important;
-  padding:0!important;
-  border:0!important;
-  opacity:0!important;
-  appearance:none!important;
-  -webkit-appearance:none!important;
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   pointer-events:none!important
 }
 html body.tm-new-design main.content #budget .budget-limit-mode label>span{
@@ -2919,14 +2880,13 @@ html body.tm-new-design main.content #budget .budget-hero-meter.is-unlimited>spa
     padding-inline:12px!important
   }
   html body.tm-new-design main.content #budget .budget-hero{
-    grid-template-columns:minmax(0,1fr)!important;
+    
     gap:11px!important;
     padding:13px!important;
     border-radius:18px!important
   }
   html body.tm-new-design main.content #budget .budget-limit-mode{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important
-  }
+    
   html body.tm-new-design main.content #budget .budget-limit-mode label>span{
     grid-template-columns:24px minmax(0,1fr)!important;
     min-height:66px!important;
@@ -2937,12 +2897,10 @@ html body.tm-new-design main.content #budget .budget-hero-meter.is-unlimited>spa
     line-height:1.28!important
   }
   html body.tm-new-design main.content #budget .total-budget-editor>label>div{
-    grid-template-columns:auto minmax(0,1fr)!important
-  }
+    
   html body.tm-new-design main.content #budget .total-budget-editor button{
-    grid-column:1/-1!important;
-    width:100%!important
-  }
+    
+    
   html body.tm-new-design main.content #budget :is(
     .expense-workspace,.expense-records,.budget-charts,.currency-converter
   ){

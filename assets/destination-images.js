@@ -1,9 +1,9 @@
 (function () {
   'use strict';
 
-  var CACHE_KEY = 'travelmate-destination-images-v6';
+  var CACHE_KEY = 'travelmate-destination-images-v7';
   var FALLBACK = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=82';
-  var PRAGUE_IMAGE = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Prague%20castle%20panorama.jpg?width=2200';
+  var PRAGUE_IMAGE = 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Prague_castle_panorama.jpg/1280px-Prague_castle_panorama.jpg';
   var HAIFA_IMAGE = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Haifa%20Bahai%20Gardens%20-%20landscape.jpg?width=2200';
   var pending = new Map();
 

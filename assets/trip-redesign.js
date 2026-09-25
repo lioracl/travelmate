@@ -5,10 +5,6 @@
 
   var hero = document.querySelector('.hero');
   if (hero) {
-    var city = document.querySelector('[data-city]');
-    if (city && /^(פראג|prague)$/i.test(city.textContent.trim())) {
-      document.body.style.setProperty('--trip-bg-image', 'url("https://commons.wikimedia.org/wiki/Special:Redirect/file/Prague%20castle%20panorama.jpg?width=2200")');
-    }
     function syncDestinationBackground() {
       var image = hero.style.backgroundImage || getComputedStyle(hero).backgroundImage;
       var matches = image.match(/url\((['"]?)(.*?)\1\)/);

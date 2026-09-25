@@ -113,7 +113,11 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.doesNotMatch(source, /loadStructure|deferredStructureScripts|structureScripts|structureStyles/);
   assert.match(source, /ensureLazyNavigation\(\)/);
   assert.match(source, /dynamicSectionViews=\{transport:true,getaways:true,group:true,memories:true\}/);
-  assert.match(source, /requestIdleCallback\(run,\{timeout:2600\}\)/);
+  assert.match(source, /assistant:\{styles:\['ai-assistant\.css','smart-hub\.css'\],scripts:\['ai-assistant\.js','smart-hub\.js'\]\}/);
+  assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
+  assert.match(source, /scheduleIdleFeature\('assistant',2200\)/);
+  assert.match(source, /scheduleIdleFeature\('account',4200\)/);
+  assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
 });
 
 test('Turnstile is armed on auth interaction instead of loading at startup', () => {
@@ -132,10 +136,10 @@ test('getaway destination geocoding waits for the first search submit', () => {
 });
 
 test('service worker precaches startup essentials and runtime-caches feature-only bundles', () => {
-  assert.match(serviceWorker, /security-center\.js/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/security-center\.js'/);
   assert.match(serviceWorker, /trip-redesign\.js/);
   assert.match(serviceWorker, /theme\.js/);
-  assert.match(serviceWorker, /document-vault\.js/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/document-vault\.js'/);
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/ai-assistant\.js'/);
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/smart-hub\.js'/);
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/trip-intelligence\.js'/);

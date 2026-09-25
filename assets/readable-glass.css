@@ -1893,7 +1893,7 @@ body.tm-new-design[data-trip-view] main.content :is(
 }
 body.tm-new-design[data-trip-view] main.content :is(
   #overview,#plan,#places,#budget,#documents
-) :is(button,a[href]){
+) :is(button:not(.weather-top-widget),a[href]){
   min-height:var(--tm-core-control-h)
 }
 body.tm-new-design[data-trip-view] main.content :is(
@@ -1974,6 +1974,11 @@ body.tm-new-design[data-trip-view] main.content :is(#transport,#getaways,#group,
   }
 }
 
+
+body[data-trip-view]:not([data-trip-view="overview"]) [data-weather-top-widget],
+body[data-trip-view]:not([data-trip-view="overview"]) [data-navo-trip-banner]{
+  display:none
+}
 
 /* Surface Authority 2.0 — one material model for all custom-trip screens.
    Canvas = destination photo. Glass = translucent + blur. Nested = lighter depth.
