@@ -181,9 +181,9 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     --tm-drawer-text:#123f32;
     --tm-drawer-muted:#49675d;
     display:flex!important;
-    border:1px solid rgba(44,119,91,.34)!important;
+    border:1px solid color-mix(in srgb,var(--tm-brand-primary) 30%,rgba(255,255,255,.52))!important;
     border-radius:24px 0 0 24px!important;
-    background:linear-gradient(155deg,rgba(248,253,250,.99),rgba(220,239,230,.985))!important;
+    background:linear-gradient(155deg,color-mix(in srgb,var(--tm-accent-soft) 10%,rgba(248,253,250,.99)),color-mix(in srgb,var(--tm-accent-soft) 22%,rgba(236,245,241,.985)))!important;
     color:var(--tm-drawer-text)!important;
     -webkit-text-fill-color:var(--tm-drawer-text)!important;
     box-shadow:-18px 0 54px rgba(3,43,31,.28)!important;
@@ -232,14 +232,14 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     opacity:1!important
   }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about):is(:hover,:focus-visible){
-    border-color:rgba(34,111,82,.2)!important;
-    background:rgba(195,226,212,.68)!important;
-    color:#0b503a!important;
-    -webkit-text-fill-color:#0b503a!important
+    border-color:color-mix(in srgb,var(--tm-brand-primary) 24%,transparent)!important;
+    background:var(--tm-action-secondary)!important;
+    color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;
+    -webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important
   }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar nav a:is(.active,[aria-current="page"]){
-    border-color:#0b7654!important;
-    background:linear-gradient(135deg,#16805d,#0b6248)!important;
+    border-color:var(--tm-action-primary-active)!important;
+    background:linear-gradient(135deg,var(--tm-action-primary),var(--tm-action-primary-active))!important;
     color:#fff!important;
     -webkit-text-fill-color:#fff!important;
     box-shadow:0 8px 20px rgba(7,78,55,.2)!important
@@ -1205,8 +1205,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .custom-hero .h
   -webkit-text-fill-color:currentColor
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar{
-  border:1px solid var(--tm-border-on-dark);
-  background:var(--tm-surface-dark-glass-strong);
+  border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
+  background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
   color:var(--tm-text-on-photo);
   -webkit-text-fill-color:currentColor;
   -webkit-backdrop-filter:blur(8px) saturate(104%);
@@ -1222,8 +1222,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sid
   color:var(--tm-text-on-brand)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header{
-  border:1px solid var(--tm-border-on-dark);
-  background:var(--tm-surface-dark-glass-strong);
+  border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
+  background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
   color:var(--tm-text-on-photo);
   -webkit-text-fill-color:currentColor;
   -webkit-backdrop-filter:blur(8px) saturate(104%);
@@ -2344,6 +2344,8 @@ html body.tm-new-design{
     color-mix(in srgb,var(--tm-accent-soft) 18%,rgba(255,255,255,.62)),
     rgba(239,247,243,.54));
   --tm-glass-shell-border:color-mix(in srgb,var(--tm-brand-primary) 22%,rgba(255,255,255,.58));
+  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 30%,rgba(5,20,16,.78));
+  --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(255,255,255,.24));
 }
 html[data-theme="dark"] body.tm-new-design{
   --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(18,42,34,.82));
@@ -2356,6 +2358,8 @@ html[data-theme="dark"] body.tm-new-design{
   --tm-glass-shell-border:color-mix(in srgb,var(--tm-brand-primary) 38%,rgba(255,255,255,.2));
   --tm-card-link:color-mix(in srgb,var(--tm-brand-primary) 48%,#fff);
   --tm-card-icon:color-mix(in srgb,var(--tm-brand-primary) 58%,#fff);
+  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 24%,rgba(4,15,12,.88));
+  --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 42%,rgba(255,255,255,.18));
 }
 
 /* Large shells must not become opaque white screens over the destination photo. */
