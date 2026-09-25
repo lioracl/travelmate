@@ -1868,7 +1868,7 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day>div>.day-hea
   cursor:pointer!important;
 }
 html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div{
-  display:none!important;
+  display:block!important;
 }
 html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed{
   min-height:68px!important;
