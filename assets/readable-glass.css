@@ -2284,10 +2284,12 @@ html body.tm-new-design[data-trip-kind="custom"] main.content :is(
   .lodging-toggle,
   .auto-place-launch
 ){
-  border-color:color-mix(in srgb,var(--tm-brand-primary) 30%,var(--tm-card-control-border))!important;
-  background:var(--tm-action-secondary)!important;
-  color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;
-  -webkit-text-fill-color:currentColor!important
+  --tm-control-current-bg:var(--tm-action-secondary);
+  --tm-control-current-border:color-mix(in srgb,var(--tm-brand-primary) 30%,var(--tm-card-control-border));
+  --tm-control-current-text:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
+  --tm-card-control:var(--tm-action-secondary);
+  --tm-card-control-border:var(--tm-control-current-border);
+  --tm-card-control-text:var(--tm-control-current-text)
 }
 html body.tm-new-design[data-trip-kind="custom"] main.content :is(
   .nearby-category-chips button.active,
@@ -2297,9 +2299,12 @@ html body.tm-new-design[data-trip-kind="custom"] main.content :is(
   .documents-category-nav button.active,
   .documents-category-nav button[aria-selected="true"]
 ){
-  border-color:var(--tm-brand-primary)!important;
-  background:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(255,255,255,.8))!important;
-  color:var(--tm-brand-primary-dark)!important
+  --tm-control-current-bg:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(255,255,255,.8));
+  --tm-control-current-border:var(--tm-brand-primary);
+  --tm-control-current-text:var(--tm-brand-primary-dark);
+  --tm-card-control:var(--tm-control-current-bg);
+  --tm-card-control-border:var(--tm-control-current-border);
+  --tm-card-control-text:var(--tm-control-current-text)
 }
 
 /* Keep semantic states independent of user-selected accent. */
