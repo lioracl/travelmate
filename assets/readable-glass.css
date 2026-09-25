@@ -1893,7 +1893,7 @@ body.tm-new-design[data-trip-view] main.content :is(
 }
 body.tm-new-design[data-trip-view] main.content :is(
   #overview,#plan,#places,#budget,#documents
-) :is(button,a[href]){
+) :is(button:not(.weather-top-widget),a[href]){
   min-height:var(--tm-core-control-h)
 }
 body.tm-new-design[data-trip-view] main.content :is(
