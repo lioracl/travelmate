@@ -1504,6 +1504,10 @@ html body.tm-new-design[data-trip-view="plan"] #plan#plan :is(.planned-activity,
   --tm-card-blur:none
 }
 
+html body.tm-new-design[data-trip-view="budget"] #budget#budget .currency-converter-result{
+  --tm-card-blur:none
+}
+
 html body.tm-new-design[data-trip-view="plan"] #plan#plan .past-days-strip{
   border-color:var(--tm-card-border);
   background:var(--tm-card-bg-nested);
