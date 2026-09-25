@@ -130,7 +130,7 @@
   border-radius:22px;
   background:var(--tm-card-bg);
   box-shadow:var(--tm-card-shadow);
-  color:var(--tm-text-primary);
+  color:var(--tm-card-text);
 }
 #budget .budget-smart-summary>header{
   display:flex;
@@ -142,12 +142,12 @@
 #budget .budget-smart-summary>header small{
   display:block;
   margin-bottom:3px;
-  color:var(--tm-text-muted);
+  color:var(--tm-card-muted);
   font-weight:800;
 }
 #budget .budget-smart-summary>header h2{
   margin:0;
-  color:var(--tm-text-primary);
+  color:var(--tm-card-heading);
   font-size:clamp(20px,2.3vw,28px);
 }
 #budget .budget-mode-badge{
@@ -263,7 +263,7 @@
 /* Night polish 2: budget progressive disclosure */
 #budget .budget-settings-toggle{display:none}
 @media(max-width:620px){
-  #budget .budget-settings-toggle{width:100%;min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--tm-card-control-border);border-radius:13px;background:var(--tm-card-control);color:var(--tm-card-link);font:inherit;font-weight:900}
+  #budget .budget-settings-toggle{width:100%;min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--tm-card-control-border);border-radius:13px;background:var(--tm-action-secondary);color:var(--tm-readable-control-text,var(--tm-card-link));font:inherit;font-weight:900}
   #budget .budget-settings-toggle>i:last-child{transition:transform .18s ease}
   #budget .budget-settings-toggle.open>i:last-child{transform:rotate(180deg)}
   #budget .total-budget-editor[hidden]{display:none}
