@@ -47,6 +47,7 @@
       '<section class="security-preferences"><h3>העדפות האפליקציה</h3><div class="settings-list">' +
       '<div class="settings-row"><i class="fa-solid fa-language" aria-hidden="true"></i><span><strong>שפת האפליקציה</strong><small>בחר את שפת הממשק בכל המכשיר הזה</small></span><div class="settings-options" role="group" aria-label="שפת האפליקציה"><button type="button" data-language-choice="he">עברית</button><button type="button" data-language-choice="en">English</button></div></div>' +
       '<div class="settings-row"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span><strong>תצוגת האפליקציה</strong><small>בחר מצב בהיר או כהה</small></span><div class="settings-options" role="group" aria-label="תצוגת האפליקציה"><button type="button" data-theme-choice="light"><i class="fa-regular fa-sun"></i> בהיר</button><button type="button" data-theme-choice="dark"><i class="fa-regular fa-moon"></i> כהה</button></div></div>' +
+      '<div class="settings-row settings-row-accent"><i class="fa-solid fa-palette" aria-hidden="true"></i><span><strong>ערכת צבע</strong><small>הצבע משפיע על פעולות, בחירה, אייקונים וגוון ה־Glass — לא על צבעי אזהרה או הצלחה</small></span><fieldset class="settings-accent-picker"><legend class="sr-only">בחירת ערכת צבע</legend><div role="group" aria-label="בחירת ערכת צבע"><button type="button" data-accent-choice="ocean" aria-label="אוקיינוס"><i></i><span>אוקיינוס</span></button><button type="button" data-accent-choice="emerald" aria-label="אמרלד"><i></i><span>אמרלד</span></button><button type="button" data-accent-choice="teal" aria-label="טורקיז"><i></i><span>טורקיז</span></button><button type="button" data-accent-choice="sunset" aria-label="שקיעה"><i></i><span>שקיעה</span></button><button type="button" data-accent-choice="plum" aria-label="שזיף"><i></i><span>שזיף</span></button><button type="button" data-accent-choice="pink" aria-label="ורוד"><i></i><span>ורוד</span></button></div></fieldset></div>' +
       '</div></section><div class="settings-section-title"><i class="fa-solid fa-shield-halved"></i><span><strong>אבטחה ופרטיות</strong><small>מצב החשבון ואימות דו־שלבי</small></span></div>' +
       '<section class="security-status" data-security-status></section>' +
       '<section class="security-mfa" data-security-mfa></section>' +
@@ -142,9 +143,13 @@
   function syncPreferences() {
     var language = window.TravelMateLanguage && window.TravelMateLanguage.get ? window.TravelMateLanguage.get() : 'he';
     var theme = window.TravelMateTheme && window.TravelMateTheme.get ? window.TravelMateTheme.get() : 'light';
+    var accent = window.TravelMateTheme && window.TravelMateTheme.getAccent ? window.TravelMateTheme.getAccent() : 'ocean';
     try {
       if (!window.TravelMateLanguage) language = localStorage.getItem('travelmate-language') || 'he';
-      if (!window.TravelMateTheme) theme = localStorage.getItem('travelmate-theme') || 'light';
+      if (!window.TravelMateTheme) {
+        theme = localStorage.getItem('travelmate-theme') || 'light';
+        accent = localStorage.getItem('travelmate-accent') || 'ocean';
+      }
     } catch (error) {}
     document.querySelectorAll('[data-language-choice]').forEach(function (button) {
       var selected = button.dataset.languageChoice === language;
@@ -153,6 +158,12 @@
     });
     document.querySelectorAll('[data-theme-choice]').forEach(function (button) {
       var selected = button.dataset.themeChoice === theme;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+    document.querySelectorAll('[data-accent-choice]').forEach(function (button) {
+      var choice = window.TravelMateTheme && window.TravelMateTheme.normalizeAccent ? window.TravelMateTheme.normalizeAccent(button.dataset.accentChoice) : button.dataset.accentChoice;
+      var selected = choice === accent;
       button.classList.toggle('active', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
@@ -276,6 +287,11 @@
           try { localStorage.setItem('travelmate-theme', themeChoice.dataset.themeChoice); } catch (error) {}
           document.documentElement.dataset.theme = themeChoice.dataset.themeChoice;
         }
+        syncPreferences();
+      }
+      var accentChoice = event.target.closest('[data-accent-choice]');
+      if (accentChoice && window.TravelMateTheme && window.TravelMateTheme.setAccent) {
+        window.TravelMateTheme.setAccent(accentChoice.dataset.accentChoice);
         syncPreferences();
       }
     });

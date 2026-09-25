@@ -2,10 +2,16 @@
   'use strict';
 
   var release = {
-    version: '1.55.17',
-    label: 'Destination photo background restore',
+    version: '1.55.18',
+    label: 'Six-palette theme system',
     date: '25 בספטמבר 2026',
     highlights: [
+      'Theme System חדש: המשתמש יכול לבחור בין Ocean, Emerald, Teal, Sunset, Plum ו-Pink מתוך ההגדרות.',
+      'צבע הערכה משפיע כעת גם על ה-App Chrome, הניווט ו-Mate בגוון מאופק, תוך שמירת WhatsApp, Danger, Warning ו-Success בצבעים הסמנטיים שלהם.',
+      'White Blocker Audit: מעטפות מסך גדולות ב-Plan, Budget, Documents, Transport, Getaways, Group ו-Memories אינן יוצרות עוד לוחות לבנים שמסתירים את תמונת היעד; שדות קלט נשארים ניטרליים וקריאים.',
+      'הצבע הנבחר משפיע על Primary/Secondary actions, selected states, icons, focus וגוון עדין של ה-Glass בלי לשנות Danger/Success סמנטיים.',
+      'בחירות ישנות Forest/Violet/Coral עוברות אוטומטית ל-Emerald/Plum/Sunset והבחירה נשמרת ב-localStorage.',
+      'כל שש הערכות נבדקו לניגודיות WCAG AA עבור טקסט על Primary ו-Soft surfaces.',
       'עיצוב הרקע חזר: תמונת היעד משמשת כרקע רציף לכל מסכי הטיול במקום עמוד לבן.',
       'הכרטיסים משתמשים במשטחי Glass חצי-שקופים עם blur כדי לשמור על עומק לצד קריאות טובה.',
       'במובייל הרקע נשאר קבוע גם בזמן גלילה, ו-Dark Mode מקבל שכבת כהות נפרדת.',

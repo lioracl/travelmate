@@ -7,17 +7,20 @@
   --tm-readable-muted:rgba(247,250,250,.76);
   --tm-readable-control:rgba(244,243,239,.9);
   --tm-readable-control-text:#182326;
-  --tm-readable-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 26px rgba(0,0,0,.14)
+  --tm-readable-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 26px rgba(0,0,0,.14);
+  --tm-page-section-surface:var(--tm-readable-surface);
+  --tm-page-section-border:var(--tm-readable-border);
+  --tm-page-section-shadow:var(--tm-readable-shadow)
 }
 
 
 html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#plan),
 html body.tm-new-design main.content>.external-resources{
-  border:1.5px solid var(--tm-readable-border)!important;
-  background:var(--tm-readable-surface)!important;
+  border:1.5px solid var(--tm-page-section-border)!important;
+  background:var(--tm-page-section-surface)!important;
   color:var(--tm-readable-text)!important;
   -webkit-text-fill-color:var(--tm-readable-text)!important;
-  box-shadow:var(--tm-readable-shadow)!important;
+  box-shadow:var(--tm-page-section-shadow)!important;
   -webkit-backdrop-filter:var(--tm-card-blur)!important;
   backdrop-filter:var(--tm-card-blur)!important
 }
@@ -26,8 +29,8 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
   .day-heading,.day-tab,.day-item,.lodging-day-card,.airport-day-card,.trip-anchor,
   .planner-toolbar,.planner-composer,.nearby-result,.auto-place-launch,
-  .doc-row,.document-vault,.expense-workspace,.expense-record,.receipt-card,
-  .budget-charts,.currency-converter,.transport-card,.travel-service-card,.service-card,
+  .doc-row,.document-vault,.ai-notes-archive,.expense-workspace,.expense-record,.receipt-card,
+  .budget-smart-summary,.budget-charts,.currency-converter,.transport-card,.travel-service-card,.service-card,
   .fare-guide,.getaway-result,.group-card,.album-card,.memory-card,.trip-summary-card,
   .resource-link
 ):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
@@ -178,9 +181,9 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     --tm-drawer-text:#123f32;
     --tm-drawer-muted:#49675d;
     display:flex!important;
-    border:1px solid rgba(44,119,91,.34)!important;
+    border:1px solid color-mix(in srgb,var(--tm-brand-primary) 30%,rgba(255,255,255,.52))!important;
     border-radius:24px 0 0 24px!important;
-    background:linear-gradient(155deg,rgba(248,253,250,.99),rgba(220,239,230,.985))!important;
+    background:linear-gradient(155deg,color-mix(in srgb,var(--tm-accent-soft) 10%,rgba(248,253,250,.99)),color-mix(in srgb,var(--tm-accent-soft) 22%,rgba(236,245,241,.985)))!important;
     color:var(--tm-drawer-text)!important;
     -webkit-text-fill-color:var(--tm-drawer-text)!important;
     box-shadow:-18px 0 54px rgba(3,43,31,.28)!important;
@@ -229,14 +232,14 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     opacity:1!important
   }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about):is(:hover,:focus-visible){
-    border-color:rgba(34,111,82,.2)!important;
-    background:rgba(195,226,212,.68)!important;
-    color:#0b503a!important;
-    -webkit-text-fill-color:#0b503a!important
+    border-color:color-mix(in srgb,var(--tm-brand-primary) 24%,transparent)!important;
+    background:var(--tm-action-secondary)!important;
+    color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;
+    -webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important
   }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar nav a:is(.active,[aria-current="page"]){
-    border-color:#0b7654!important;
-    background:linear-gradient(135deg,#16805d,#0b6248)!important;
+    border-color:var(--tm-action-primary-active)!important;
+    background:linear-gradient(135deg,var(--tm-action-primary),var(--tm-action-primary-active))!important;
     color:#fff!important;
     -webkit-text-fill-color:#fff!important;
     box-shadow:0 8px 20px rgba(7,78,55,.2)!important
@@ -1202,8 +1205,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .custom-hero .h
   -webkit-text-fill-color:currentColor
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar{
-  border:1px solid var(--tm-border-on-dark);
-  background:var(--tm-surface-dark-glass-strong);
+  border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
+  background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
   color:var(--tm-text-on-photo);
   -webkit-text-fill-color:currentColor;
   -webkit-backdrop-filter:blur(8px) saturate(104%);
@@ -1219,8 +1222,8 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sid
   color:var(--tm-text-on-brand)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header{
-  border:1px solid var(--tm-border-on-dark);
-  background:var(--tm-surface-dark-glass-strong);
+  border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
+  background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
   color:var(--tm-text-on-photo);
   -webkit-text-fill-color:currentColor;
   -webkit-backdrop-filter:blur(8px) saturate(104%);
@@ -1287,8 +1290,8 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
-    border:1px solid var(--tm-card-border);
-    background:var(--tm-surface-dark-glass-strong);
+    border:1px solid var(--tm-chrome-border,var(--tm-card-border));
+    background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
     color:var(--tm-card-text);
     box-shadow:var(--tm-card-shadow-compact);
     -webkit-backdrop-filter:blur(8px) saturate(104%);
@@ -2112,14 +2115,17 @@ body.tm-new-design[data-trip-view] main.content :is(#transport,#getaways,#group,
 /* Destination photo background: trip content uses readable glass surfaces over the app-wide destination image. */
 html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design{
   --tm-trip-page-bg:transparent;
-  --tm-readable-surface:rgba(248,252,250,.78);
-  --tm-readable-surface-soft:rgba(255,255,255,.72);
-  --tm-readable-border:rgba(255,255,255,.5);
+  --tm-page-section-surface:transparent;
+  --tm-page-section-border:transparent;
+  --tm-page-section-shadow:none;
+  --tm-readable-surface:transparent;
+  --tm-readable-surface-soft:color-mix(in srgb,var(--tm-accent-soft,#D7EDF2) 12%,rgba(248,252,250,.58));
+  --tm-readable-border:color-mix(in srgb,var(--tm-brand-primary,#147D92) 20%,rgba(255,255,255,.52));
   --tm-readable-text:#173f32;
   --tm-readable-muted:#526d63;
-  --tm-readable-control:rgba(255,255,255,.84);
-  --tm-readable-control-text:#173f32;
-  --tm-readable-shadow:0 10px 30px rgba(8,39,29,.16);
+  --tm-readable-control:var(--tm-action-secondary);
+  --tm-readable-control-text:var(--tm-accent-soft-text,#0B5869);
+  --tm-readable-shadow:0 10px 30px rgba(8,39,29,.14);
   --tm-glass-large-bg:linear-gradient(135deg,rgba(255,255,255,.82),rgba(226,241,233,.72));
   --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(255,255,255,.9),rgba(231,245,238,.8));
   --tm-card-bg:var(--tm-glass-large-bg);
@@ -2150,6 +2156,13 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design{
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
   --tm-trip-page-bg:transparent;
+  --tm-page-section-surface:transparent;
+  --tm-page-section-border:transparent;
+  --tm-page-section-shadow:none;
+  --tm-readable-surface:transparent;
+  --tm-readable-surface-soft:color-mix(in srgb,var(--tm-brand-primary,#147D92) 9%,rgba(12,31,25,.62));
+  --tm-readable-control:var(--tm-action-secondary);
+  --tm-readable-control-text:#f7fafa;
   --tm-card-bg:linear-gradient(135deg,rgba(17,34,29,.82),rgba(10,26,22,.72));
   --tm-card-bg-nested:rgba(19,37,31,.72);
   --tm-card-bg-compact:rgba(20,39,33,.72);
@@ -2207,10 +2220,214 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.c
 }
 @media(max-width:650px){
   html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design{
-    --tm-readable-surface:rgba(248,252,250,.8);
-    --tm-readable-surface-soft:rgba(255,255,255,.75);
-    --tm-glass-large-bg:linear-gradient(135deg,rgba(255,255,255,.82),rgba(229,242,235,.72));
-    --tm-card-bg-nested:rgba(240,248,244,.74);
-    --tm-card-control:rgba(255,255,255,.88)
+    --tm-readable-surface:transparent;
+    --tm-readable-surface-soft:color-mix(in srgb,var(--tm-accent-soft,#D7EDF2) 12%,rgba(248,252,250,.62));
+    --tm-glass-large-bg:linear-gradient(135deg,color-mix(in srgb,var(--tm-brand-primary,#147D92) 6%,rgba(255,255,255,.68)),rgba(229,242,235,.58));
+    --tm-card-bg-nested:color-mix(in srgb,var(--tm-accent-soft,#D7EDF2) 8%,rgba(240,248,244,.64));
+    --tm-card-control:rgba(255,255,255,.84)
   }
+}
+
+
+/* User-selectable accent themes: semantic roles, not hard-coded component colors. */
+html[data-accent]{
+  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 18%,#F4F3EF);
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 26%,#F4F3EF);
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 34%,#F4F3EF);
+  --tm-action-ghost-hover:color-mix(in srgb,var(--tm-brand-primary) 16%,transparent);
+  --tm-surface-selected:color-mix(in srgb,var(--tm-brand-primary) 18%,rgba(255,255,255,.78));
+  --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 18%,rgba(255,255,255,.84));
+  --tm-card-border-hover:color-mix(in srgb,var(--tm-brand-primary) 58%,transparent);
+  --tm-border-control:color-mix(in srgb,var(--tm-brand-primary) 25%,rgba(24,35,38,.24));
+  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-primary) 38%,transparent);
+  --tm-card-link:var(--tm-brand-primary-dark);
+  --tm-card-icon:var(--tm-brand-primary);
+  --tm-info:var(--tm-brand-primary-dark)
+}
+html[data-theme="dark"][data-accent]{
+  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,#E7EFEC);
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 32%,#E7EFEC);
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 40%,#E7EFEC);
+  --tm-surface-selected:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(18,38,32,.88));
+  --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 26%,#E7EFEC);
+  --tm-card-border-hover:color-mix(in srgb,var(--tm-brand-soft) 62%,transparent);
+  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-soft) 52%,transparent);
+  --tm-card-link:var(--tm-brand-soft);
+  --tm-card-icon:var(--tm-brand-soft)
+}
+
+/* The destination photo stays dominant; the chosen theme only tints glass by a small amount. */
+html:not([data-theme="dark"])[data-accent] body[data-trip-kind="custom"].tm-new-design{
+  --tm-glass-large-bg:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 7%,rgba(255,255,255,.84)),
+    color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(226,241,233,.74)));
+  --tm-glass-large-bg-hover:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 9%,rgba(255,255,255,.9)),
+    color-mix(in srgb,var(--tm-brand-primary) 7%,rgba(231,245,238,.8)));
+  --tm-card-bg:var(--tm-glass-large-bg);
+  --tm-card-bg-nested:color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(239,247,243,.76));
+  --tm-card-bg-compact:color-mix(in srgb,var(--tm-brand-primary) 4%,rgba(247,251,249,.76));
+  --tm-overview-card:var(--tm-glass-large-bg);
+  --tm-overview-card-soft:color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(255,255,255,.76))
+}
+html[data-theme="dark"][data-accent] body[data-trip-kind="custom"].tm-new-design{
+  --tm-glass-large-bg:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 11%,rgba(17,34,29,.84)),
+    color-mix(in srgb,var(--tm-brand-primary) 8%,rgba(10,26,22,.76)));
+  --tm-glass-large-bg-hover:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 15%,rgba(17,34,29,.88)),
+    color-mix(in srgb,var(--tm-brand-primary) 11%,rgba(10,26,22,.8)));
+  --tm-card-bg:var(--tm-glass-large-bg);
+  --tm-card-bg-nested:color-mix(in srgb,var(--tm-brand-primary) 8%,rgba(19,37,31,.76));
+  --tm-card-bg-compact:color-mix(in srgb,var(--tm-brand-primary) 6%,rgba(20,39,33,.76))
+}
+
+/* Secondary controls use a themed soft fill; form fields remain neutral for readability. */
+html body.tm-new-design[data-trip-kind="custom"] main.content :is(
+  .planner-action:not(.primary):not(.planner-danger),
+  .planner-more>summary,
+  .nearby-category-chips button,
+  .nearby-mode-bar button,
+  .nearby-map-button,
+  .tm-place-card__primary-actions button:not(.nearby-search),
+  .documents-category-nav button,
+  .doc-row>button:not([data-delete]),
+  .budget-settings-toggle,
+  .budget-chart-actions button,
+  .lodging-toggle,
+  .auto-place-launch
+){
+  --tm-control-current-bg:var(--tm-action-secondary);
+  --tm-control-current-border:color-mix(in srgb,var(--tm-brand-primary) 30%,var(--tm-card-control-border));
+  --tm-control-current-text:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
+  --tm-card-control:var(--tm-action-secondary);
+  --tm-card-control-border:var(--tm-control-current-border);
+  --tm-card-control-text:var(--tm-control-current-text)
+}
+html body.tm-new-design[data-trip-kind="custom"] main.content :is(
+  .nearby-category-chips button.active,
+  .nearby-category-chips button[aria-pressed="true"],
+  .nearby-mode-bar button.active,
+  .nearby-mode-bar button[aria-pressed="true"],
+  .documents-category-nav button.active,
+  .documents-category-nav button[aria-selected="true"]
+){
+  --tm-control-current-bg:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(255,255,255,.8));
+  --tm-control-current-border:var(--tm-brand-primary);
+  --tm-control-current-text:var(--tm-brand-primary-dark);
+  --tm-card-control:var(--tm-control-current-bg);
+  --tm-card-control-border:var(--tm-control-current-border);
+  --tm-card-control-text:var(--tm-control-current-text)
+}
+
+/* Keep semantic states independent of user-selected accent. */
+html body.tm-new-design :is(.danger,[data-delete],[data-remove],[data-delete-expense]){
+  --tm-control-current-bg:var(--tm-action-danger);
+  --tm-control-current-border:var(--tm-action-danger)
+}
+
+
+/* Theme system 2026: semantic accent surfaces + white-blocker correction.
+   Rich destination photography remains visible; neutral inputs stay readable. */
+html body.tm-new-design{
+  --tm-accent-soft:#D7EDF2;
+  --tm-accent-soft-text:#0B5869;
+  --tm-action-secondary:color-mix(in srgb,var(--tm-accent-soft) 82%,rgba(255,255,255,.58));
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 13%,var(--tm-accent-soft));
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 22%,var(--tm-accent-soft));
+  --tm-surface-selected:color-mix(in srgb,var(--tm-accent-soft) 78%,rgba(255,255,255,.24));
+  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-primary) 38%,transparent);
+  --tm-card-border-hover:color-mix(in srgb,var(--tm-brand-primary) 52%,rgba(255,255,255,.32));
+  --tm-card-link:var(--tm-brand-primary-dark);
+  --tm-card-icon:var(--tm-brand-primary);
+  --tm-glass-shell-bg:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-accent-soft) 18%,rgba(255,255,255,.62)),
+    rgba(239,247,243,.54));
+  --tm-glass-shell-border:color-mix(in srgb,var(--tm-brand-primary) 22%,rgba(255,255,255,.58));
+  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 30%,rgba(5,20,16,.78));
+  --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(255,255,255,.24));
+}
+html[data-theme="dark"] body.tm-new-design{
+  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(18,42,34,.82));
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(18,42,34,.86));
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 44%,rgba(18,42,34,.9));
+  --tm-surface-selected:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(18,42,34,.78));
+  --tm-glass-shell-bg:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 10%,rgba(13,31,26,.66)),
+    rgba(8,24,20,.56));
+  --tm-glass-shell-border:color-mix(in srgb,var(--tm-brand-primary) 38%,rgba(255,255,255,.2));
+  --tm-card-link:color-mix(in srgb,var(--tm-brand-primary) 48%,#fff);
+  --tm-card-icon:color-mix(in srgb,var(--tm-brand-primary) 58%,#fff);
+  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 24%,rgba(4,15,12,.88));
+  --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 42%,rgba(255,255,255,.18));
+}
+
+/* Large shells must not become opaque white screens over the destination photo. */
+html body[data-trip-kind="custom"].tm-new-design main.content :is(
+  .section-head,
+  #plan .generated-day>div,
+  #places .nearby-panel,
+  #places .lodging-setup,
+  #budget .budget-smart-summary,
+  #budget .expense-workspace,
+  #budget .currency-converter,
+  #budget .budget-charts,
+  #documents .document-vault,
+  #documents .ai-notes-archive,
+  #transport .transport-card,
+  #transport .service-card,
+  #getaways .service-card,
+  #group .collaboration-heading,
+  #memories .album-card,
+  #memories .memory-card,
+  #memories .trip-summary-card
+){
+  background:var(--tm-glass-shell-bg);
+  border-color:var(--tm-glass-shell-border);
+  -webkit-backdrop-filter:blur(18px) saturate(120%);
+  backdrop-filter:blur(18px) saturate(120%);
+  box-shadow:0 12px 34px rgba(7,34,26,.14)
+}
+
+/* Nested content can be more opaque than shells, but should still reveal depth. */
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.content :is(
+  #plan .planned-activity,
+  #plan .saved-place,
+  #documents .doc-row,
+  #budget .expense-record
+){
+  background:color-mix(in srgb,var(--tm-accent-soft) 12%,rgba(255,255,255,.72))
+}
+
+/* Secondary actions use the selected theme instead of defaulting to white. */
+html body.tm-new-design :is(
+  .mobile-back,.mobile-destination-map,
+  .smart-hub-launch,
+  #plan .day-add,
+  #transport .official-fares,
+  #memories .album-card>a,
+  #overview .overview-status-card a,
+  #overview .navo-trip-types button:not(.is-selected)
+){
+  border-color:color-mix(in srgb,var(--tm-brand-primary) 28%,var(--tm-card-control-border));
+  background:var(--tm-action-secondary);
+  color:var(--tm-accent-soft-text);
+  -webkit-text-fill-color:currentColor
+}
+html[data-theme="dark"] body.tm-new-design :is(
+  .mobile-back,.mobile-destination-map,
+  .smart-hub-launch,
+  #plan .day-add,
+  #transport .official-fares,
+  #memories .album-card>a,
+  #overview .overview-status-card a,
+  #overview .navo-trip-types button:not(.is-selected)
+){
+  color:#f7fafa
+}
+html body.tm-new-design :is(
+  #plan .day-add,
+  #overview .navo-trip-types button:not(.is-selected)
+):is(:hover,:focus-visible){
+  background:var(--tm-action-secondary-hover)
 }

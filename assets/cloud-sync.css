@@ -10,7 +10,7 @@
 
 .cloud-account-backdrop .cloud-account-split{background-image:linear-gradient(to left,rgba(0,0,0,.74) 0 50%,rgba(0,0,0,.12) 50% 100%),url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1400&q=86');background-position:center;background-size:cover}.cloud-account-split:after{display:none}.cloud-account-backdrop .cloud-account-split .cloud-account-copy,.cloud-account-backdrop .cloud-account-split form{width:min(340px,calc(100% - 48px));justify-self:center;padding-inline:0}.cloud-account-backdrop .cloud-account-split form{gap:12px;padding-top:20px}.cloud-auth-field{gap:5px;font-size:12px;font-weight:400}.cloud-account-split .cloud-auth-input input{min-height:40px;padding-right:38px;font-size:12px}.cloud-auth-input i{right:13px;font-size:12px}@media(max-width:760px){.cloud-account-backdrop .cloud-account-split{background-image:linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.78)),url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=900&q=82');background-position:center;background-size:cover}.cloud-account-backdrop .cloud-account-split .cloud-account-copy,.cloud-account-backdrop .cloud-account-split form{width:calc(100% - 48px);padding-inline:0}}
 
-.cloud-account-split form .cloud-login-submit{width:100%;min-height:30px;height:auto;margin-top:16px;padding:6px 12px;display:flex;align-items:center;justify-content:center;background:#0e614b!important;border-color:#0e614b!important;font-family:"Rubik",sans-serif;font-size:15px;font-weight:300!important;line-height:1;text-align:center}
+.cloud-account-split form .cloud-login-submit{width:100%;min-height:30px;height:auto;margin-top:16px;padding:6px 12px;display:flex;align-items:center;justify-content:center;background:var(--tm-action-primary,#0e614b)!important;border-color:var(--tm-action-primary-active,#0e614b)!important;font-family:"Rubik",sans-serif;font-size:15px;font-weight:300!important;line-height:1;text-align:center}
 
 .cloud-account-split .cloud-social-separator{margin-top:16px}.cloud-account-split .cloud-social-logins{margin-top:10px}
 
@@ -371,11 +371,11 @@ html body.home-page .cloud-account-split .security-captcha-development i{flex:0 
 
 .account-accent-picker{grid-column:1/-1;margin:2px 0 6px;padding:12px;border:1px solid var(--tm-card-control-border,rgba(255,255,255,.25));border-radius:14px}
 .account-accent-picker legend{padding-inline:6px;font-size:12px;font-weight:800}
-.account-accent-picker>div{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.account-accent-picker>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .cloud-account-split .cloud-account-session .account-accent-picker button{min-width:0;min-height:52px!important;display:grid;place-items:center;gap:4px;padding:6px!important;border:1px solid rgba(255,255,255,.3)!important;background:rgba(255,255,255,.08)!important;color:#fff!important}
 .account-accent-picker button i{width:22px;height:22px;border:2px solid rgba(255,255,255,.72);border-radius:50%;background:var(--accent-swatch)}
 .account-accent-picker button span{font-size:10px}
-.account-accent-picker [data-accent-choice="ocean"]{--accent-swatch:#147D92}.account-accent-picker [data-accent-choice="forest"]{--accent-swatch:#176B52}.account-accent-picker [data-accent-choice="violet"]{--accent-swatch:#6D5DA8}.account-accent-picker [data-accent-choice="coral"]{--accent-swatch:#B85F4A}
-.cloud-account-split .cloud-account-session .account-accent-picker button.active{border-color:#fff!important;box-shadow:0 0 0 2px var(--accent-swatch)}
+.account-accent-picker [data-accent-choice="ocean"]{--accent-swatch:#147D92;--accent-swatch-soft:#D7EDF2}.account-accent-picker [data-accent-choice="emerald"]{--accent-swatch:#176B52;--accent-swatch-soft:#D8ECE4}.account-accent-picker [data-accent-choice="teal"]{--accent-swatch:#0B6F73;--accent-swatch-soft:#D8ECEC}.account-accent-picker [data-accent-choice="sunset"]{--accent-swatch:#A34E3C;--accent-swatch-soft:#F3DED8}.account-accent-picker [data-accent-choice="plum"]{--accent-swatch:#674177;--accent-swatch-soft:#E8DDED}.account-accent-picker [data-accent-choice="pink"]{--accent-swatch:#A23D6F;--accent-swatch-soft:#F4DCE8}
+.cloud-account-split .cloud-account-session .account-accent-picker button.active{border-color:#fff!important;background:color-mix(in srgb,var(--accent-swatch) 26%,rgba(255,255,255,.08))!important;box-shadow:0 0 0 2px var(--accent-swatch)}
 .cloud-account-split .cloud-account-session .account-accent-picker button:focus-visible{outline:3px solid rgba(255,255,255,.7);outline-offset:2px}
 @media(max-width:520px){.account-accent-picker>div{grid-template-columns:repeat(2,minmax(0,1fr))}}
