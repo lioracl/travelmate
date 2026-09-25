@@ -17,8 +17,9 @@ test('destination image remains the app background on trip screens', () => {
 
 test('trip content stays transparent and cards use glass surfaces', () => {
   const css = read('assets/readable-glass.css');
-  assert.match(css, /--tm-readable-surface:rgba\(248,252,250,\.78\)/);
-  assert.match(css, /--tm-card-control:rgba\(255,255,255,\.86\)/);
+  assert.match(css, /--tm-page-section-surface:transparent/);
+  assert.match(css, /--tm-readable-surface:transparent/);
+  assert.match(css, /--tm-readable-control:var\(--tm-action-secondary\)/);
   assert.match(css, /main\.content\{\s*background:transparent/);
   assert.match(css, /Photo-background restore: cards float over the destination image/);
   assert.match(css, /backdrop-filter:blur\(16px\) saturate\(118%\)/);
