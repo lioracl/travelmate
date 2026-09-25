@@ -187,40 +187,62 @@
   var immediateSignature = signature(immediateTrip);
   if (immediateTrip) renderTrip(immediateTrip);
 
-  window.travelMateTripReady = (async function () {
-    var trip = immediateTrip;
-    if (cloud && tripId) {
-      try {
-        var invitedOwnerId = null;
-        var inviteToken = new URLSearchParams(location.search).get('invite');
-        if (inviteToken) {
-          var invitation = await cloud.acceptTripInvite(inviteToken);
-          if (!invitation.accepted && invitation.reason === 'SIGNED_OUT') {
-            sessionStorage.setItem('travelmate-pending-invite', location.href);
-          } else if (invitation.accepted) {
-            invitedOwnerId = invitation.trip && invitation.trip.owner_id;
-            var cleanUrl = new URL(location.href);
-            cleanUrl.searchParams.delete('invite');
-            history.replaceState({}, '', cleanUrl.href);
-            window.dispatchEvent(new CustomEvent('travelmate:invite-accepted'));
-          }
+  var inviteToken = new URLSearchParams(location.search).get('invite');
+
+  async function resolveCloudTrip(seedTrip, token) {
+    var trip = seedTrip;
+    if (!cloud || !tripId) return trip || localTrip();
+    try {
+      var invitedOwnerId = null;
+      if (token) {
+        var invitation = await cloud.acceptTripInvite(token);
+        if (!invitation.accepted && invitation.reason === 'SIGNED_OUT') {
+          sessionStorage.setItem('travelmate-pending-invite', location.href);
+        } else if (invitation.accepted) {
+          invitedOwnerId = invitation.trip && invitation.trip.owner_id;
+          var cleanUrl = new URL(location.href);
+          cleanUrl.searchParams.delete('invite');
+          history.replaceState({}, '', cleanUrl.href);
+          window.dispatchEvent(new CustomEvent('travelmate:invite-accepted'));
         }
-        var cloudTrip = await cloud.getTrip(tripId, invitedOwnerId);
-        if (cloudTrip) trip = cloudTrip;
       }
-      catch (error) {
-        console.error('TravelMate cloud trip load failed', error);
-        trip = trip || localTrip();
+      var cloudTrip = await cloud.getTrip(tripId, invitedOwnerId);
+      if (cloudTrip) trip = cloudTrip;
+    } catch (error) {
+      console.error('TravelMate cloud trip load failed', error);
+      trip = trip || localTrip();
+    }
+    return trip || localTrip();
+  }
+
+  function scheduleCloudRefresh(seedTrip) {
+    if (!cloud || !tripId || !seedTrip || navigator.onLine === false) return;
+    var run = function () {
+      resolveCloudTrip(seedTrip, null).then(function (cloudTrip) {
+        if (!cloudTrip) return;
+        if (signature(cloudTrip) !== signature(localTrip())) renderTrip(cloudTrip);
+        window.dispatchEvent(new CustomEvent('travelmate:trip-cloud-refreshed', { detail: { id: tripId } }));
+      }).catch(function () {});
+    };
+    setTimeout(function () {
+      if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2000 });
+      else run();
+    }, 2800);
+  }
+
+  if (immediateTrip && !inviteToken) {
+    window.travelMateTripReady = Promise.resolve(immediateTrip);
+    scheduleCloudRefresh(immediateTrip);
+  } else {
+    window.travelMateTripReady = resolveCloudTrip(immediateTrip, inviteToken).then(function (trip) {
+      if (!trip) {
+        location.replace('../../index.html');
+        return null;
       }
-    }
-    if (!trip) trip = localTrip();
-    if (!trip) {
-      location.replace('../../index.html');
-      return null;
-    }
-    if (!immediateTrip || signature(trip) !== immediateSignature) renderTrip(trip);
-    return trip;
-  })();
+      if (!immediateTrip || signature(trip) !== immediateSignature) renderTrip(trip);
+      return trip;
+    });
+  }
 
   function renderTrip(trip) {
     function text(selector, value) { document.querySelectorAll(selector).forEach(function (node) { node.textContent = value; }); }
