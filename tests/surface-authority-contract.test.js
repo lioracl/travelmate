@@ -60,3 +60,26 @@ test('reduced transparency has an opaque fallback',()=>{
   assert.match(css,/@media \(prefers-reduced-transparency:reduce\)/);
   assert.match(css,/--tm-surface-photo:rgba\(8,24,20,\.88\)/);
 });
+
+
+test('surface polish keeps glass transparent and dark controls paired',()=>{
+  const css=read('assets/readable-glass.css');
+  assert.match(css,/rgba\(250,253,251,\.50\)/);
+  assert.match(css,/rgba\(228,241,234,\.38\)/);
+  assert.match(css,/rgba\(247,251,249,\.40\)/);
+  assert.match(css,/rgba\(12,31,25,\.46\)/);
+  assert.match(css,/rgba\(8,24,20,\.40\)/);
+  assert.match(css,/rgba\(15,34,28,\.36\)/);
+  assert.match(css,/--tm-control-text:#F7FAFA/);
+  assert.match(css,/--tm-card-control-selected:color-mix\(in srgb,var\(--tm-brand-primary\) 30%,rgba\(18,42,34,\.88\)\)/);
+});
+
+test('feature surfaces consume semantic tokens instead of hardcoded light colors',()=>{
+  const theme=read('assets/theme.css');
+  const intelligence=read('assets/trip-intelligence.css');
+  assert.match(theme,/\.day-heading\.day-heading,.day-tab\.day-tab[\s\S]*background:var\(--tm-card-bg-nested\)!important/);
+  assert.match(theme,/\.day-heading\.day-heading,.day-tab\.day-tab[\s\S]*color:var\(--tm-card-text\)!important/);
+  assert.match(intelligence,/\.navo-trip-banner\{[\s\S]*background:var\(--tm-card-bg-nested\)/);
+  assert.match(intelligence,/\.navo-trip-banner\{[\s\S]*color:var\(--tm-card-text\)/);
+  assert.match(intelligence,/\.navo-trip-banner p\{[^}]*color:var\(--tm-card-secondary\)/);
+});
