@@ -8,6 +8,9 @@
   <link rel="stylesheet" data-travelmate-style="mobile-menu.css" href="../../assets/mobile-menu.css?v=20260925-12">
   <link rel="stylesheet" data-travelmate-style="trip-redesign.css" href="../../assets/trip-redesign.css?v=20260925-12">
   <link rel="stylesheet" data-travelmate-style="theme.css" href="../../assets/theme.css?v=20260925-12">
+  <link rel="stylesheet" data-travelmate-style="weather-widget.css" href="../../assets/weather-widget.css?v=20260925-12">
+  <link rel="stylesheet" data-travelmate-style="trip-intelligence.css" href="../../assets/trip-intelligence.css?v=20260925-12">
+  <link rel="stylesheet" data-travelmate-style="readable-glass.css" href="../../assets/readable-glass.css?v=20260925-12">
 </head>
 <body data-trip-kind="custom">
 <a class="tm-skip-link" href="#main-content">דלג לתוכן הראשי</a>
@@ -28,7 +31,7 @@
   </aside>
   <main tabindex="-1" id="main-content" class="content">
     <header class="mobile-header"><a href="../../index.html">←</a><strong><a class="mobile-destination-map" data-maps target="_blank" rel="noopener noreferrer" aria-label="פתיחת מפת היעד" title="פתיחת מפת היעד"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></a><span class="mobile-country-flag" data-country-flag aria-hidden="true">🌍</span><button type="button" class="mobile-trip-whatsapp" data-trip-share-whatsapp aria-label="שיתוף הטיול ב־WhatsApp" title="שיתוף הטיול ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></button><span data-country></span></strong></header>
-    <section id="overview" class="hero custom-hero section"><a href="../../index.html" class="hero-back">חזרה לכל הטיולים</a><div class="hero-copy"><span class="status">הטיול החדש שלך</span><h1><span data-city></span></h1><div class="hero-country-line"><span data-country-flag aria-hidden="true">🌍</span><span data-country></span></div><p><span data-days></span> ימים · טיול <span data-type></span></p></div><div class="hero-share-actions"><button type="button" class="share trip-whatsapp-share" data-trip-share-whatsapp aria-label="שיתוף ב־WhatsApp" title="שיתוף ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></button></div></section>
+    <section id="overview" class="hero custom-hero section"><a href="../../index.html" class="hero-back">חזרה לכל הטיולים</a><div class="hero-copy"><span class="status">הטיול החדש שלך</span><h1><span data-city></span></h1><div class="hero-country-line"><span data-country-flag aria-hidden="true">🌍</span><span data-country></span></div><p><span data-days></span> ימים · טיול <span data-type></span></p></div><div class="hero-share-actions"><button type="button" class="share trip-whatsapp-share" data-trip-share-whatsapp aria-label="שיתוף ב־WhatsApp" title="שיתוף ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></button></div><button type="button" class="weather-top-widget weather-master-card" data-card-style="weather" data-weather-top-widget aria-haspopup="dialog" aria-expanded="false"><span class="weather-top-icon"><i class="fa-solid fa-cloud-sun" aria-hidden="true"></i></span><span class="weather-top-copy"><small>מזג האוויר</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><i class="fa-solid fa-chevron-down weather-top-chevron" aria-hidden="true"></i></button></section>
     <section class="trip-overview-summary overview-control-center" data-overview-control-center aria-label="מצב הטיול עכשיו">
       <article class="card overview-status-card" data-overview-next>
         <span class="overview-status-icon"><i class="fa-solid fa-calendar-day"></i></span>
@@ -51,6 +54,7 @@
         <a href="#plan" data-overview-attention-link aria-label="פתיחת הפריט שדורש תשומת לב"><i class="fa-solid fa-arrow-left"></i></a>
       </article>
     </section>
+    <aside class="navo-trip-banner navo-existing-trip-banner" data-navo-trip-banner aria-busy="true"><span><i class="fa-solid fa-compass" aria-hidden="true"></i></span><div><small class="navo-trip-state" data-navo-state>Mate</small><strong>Mate מכיר את הטיול</strong><p>מכין את ההמלצות המותאמות…</p><div class="navo-existing-type-setup" data-navo-existing-types hidden></div></div><button type="button" data-navo-open disabled><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> לצפייה בהמלצות</button></aside>
     <section class="trip-home-actions" aria-labelledby="trip-home-actions-title">
       <div><p>פעולות מהירות</p><h2 id="trip-home-actions-title">מה עושים עכשיו?</h2></div>
       <nav aria-label="פעולות מרכזיות בטיול">
