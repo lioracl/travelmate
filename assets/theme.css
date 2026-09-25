@@ -667,9 +667,9 @@ html body.tm-new-design #documents .vault-status:not(:empty){
   padding:11px 13px!important;
   border:0!important;
   border-radius:12px!important;
-  background:#e8f5ef!important;
-  color:#14583f!important;
-  -webkit-text-fill-color:#14583f!important;
+  background:var(--tm-surface-selected)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   font-weight:800!important
 }
 html body.tm-new-design #documents .vault-status.error:not(:empty){
@@ -681,26 +681,26 @@ html body.tm-new-design #documents .vault-status.error:not(:empty){
 
 html body.tm-new-design #memories .memory-file-picker{
   border:0!important;
-  background:#e9f5ef!important;
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
+  background:var(--tm-card-bg-nested)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   box-shadow:inset 0 0 0 1px rgba(23,93,69,.16)!important
 }
 html body.tm-new-design #memories .memory-file-picker :where(span,small,strong,i){
-  color:#175d45!important;
+  color:var(--tm-card-text)!important;
   -webkit-text-fill-color:#175d45!important
 }
 html body.tm-new-design[data-trip-view="memories"] main.content section#memories .memory-card form label.memory-file-picker,
 html body.tm-new-design[data-trip-view="memories"] main.content section#memories .memory-card form label.memory-file-picker *{
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design #memories .album-actions a{
   border:0!important;
-  background:#e9f5ef!important;
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
+  background:var(--tm-card-bg-nested)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   box-shadow:none!important
 }
 html body.tm-new-design #memories .trip-summary-text{
@@ -739,7 +739,7 @@ html body.tm-new-design #group .group-message:not(.mine) .message-sender{
 }
 
 /* Final page contrast and always-visible mobile navigation. */
-html body.tm-new-design main.content>section:is(
+html:not([data-theme="dark"]) body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
 ) :where(h1,h2,h3,h4,strong,p,span,small,label){
   color:#173f32!important;
@@ -1914,20 +1914,20 @@ html body.tm-new-design[data-trip-view="documents"] main.content #documents .vau
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="memories"] main.content #memories label.memory-file-picker{
-  background:#e9f5ef!important;
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
+  background:var(--tm-card-bg-nested)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="memories"] main.content #memories label.memory-file-picker *{
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="memories"] main.content #memories .album-actions a{
-  background:#e9f5ef!important;
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
+  background:var(--tm-card-bg-nested)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="group"] main.content #group .group-message:not(.mine){
@@ -2380,8 +2380,8 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
   .google-rating-link,.saved-calendar-link,.schedule-conflict-note,
   .activity-links a:not(.primary),.planned-activity a:not(.primary)
 ){
-  color:#174f3c!important;
-  -webkit-text-fill-color:#174f3c!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
@@ -2403,10 +2403,10 @@ html body.tm-new-design[data-trip-view="documents"] main.content #documents .vau
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-status:not(.error),
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-archive>header>b,
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-note-toggle{
-  background:#e7f4ed!important;
+  background:var(--tm-surface-selected)!important;
   border-color:#add3c1!important;
-  color:#17664e!important;
-  -webkit-text-fill-color:#17664e!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-unlock>small{
@@ -2492,10 +2492,10 @@ html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-
 }
 
 html body.tm-new-design[data-trip-view="group"] main.content #group :is(.collaboration-live,.group-privacy){
-  background:#edf8f3!important;
+  background:var(--tm-surface-selected)!important;
   border-color:#b9d9ca!important;
-  color:#205d48!important;
-  -webkit-text-fill-color:#205d48!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="group"] main.content #group :is(.collaboration-live,.group-privacy) *{
@@ -2508,8 +2508,8 @@ html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content sect
   .planned-activity.planned-activity,.saved-place.saved-place
 ) :is(.google-rating-link.google-rating-link,.saved-calendar-link.saved-calendar-link,a[href].google-rating-link,a[href].saved-calendar-link),
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan .schedule-conflict-note.schedule-conflict-note{
-  color:#174f3c!important;
-  -webkit-text-fill-color:#174f3c!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan :is(
@@ -2530,10 +2530,10 @@ html body.tm-new-design[data-trip-view="documents"][data-trip-view] main.content
   .vault-badge.vault-badge,.vault-status.vault-status:not(.error),
   .ai-notes-archive.ai-notes-archive>header>b,.ai-note-toggle.ai-note-toggle
 ){
-  background:#e7f4ed!important;
+  background:var(--tm-surface-selected)!important;
   border-color:#add3c1!important;
-  color:#17664e!important;
-  -webkit-text-fill-color:#17664e!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="documents"][data-trip-view] main.content section#documents#documents .vault-unlock.vault-unlock>small{
@@ -2555,10 +2555,10 @@ html body.tm-new-design[data-trip-view="documents"][data-trip-view] main.content
 html body.tm-new-design[data-trip-view="memories"][data-trip-view] main.content section#memories#memories :is(
   .memory-file-picker.memory-file-picker,a[href]
 ){
-  background:rgba(255,255,255,.95)!important;
-  border-color:rgba(255,255,255,.55)!important;
-  color:#174f3c!important;
-  -webkit-text-fill-color:#174f3c!important;
+  background:var(--tm-card-bg-nested)!important;
+  border-color:var(--tm-card-border)!important;
+  color:var(--tm-card-text)!important;
+  -webkit-text-fill-color:var(--tm-card-text)!important;
   text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="memories"][data-trip-view] main.content section#memories#memories :is(
