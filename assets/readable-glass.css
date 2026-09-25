@@ -2395,7 +2395,7 @@ html body.tm-new-design :is(
   border-color:color-mix(in srgb,var(--tm-brand-primary) 28%,var(--tm-card-control-border))!important;
   background:var(--tm-action-secondary)!important;
   color:var(--tm-accent-soft-text)!important;
-  -webkit-text-fill-color:currentColor!important
+  -webkit-text-fill-color:currentColor
 }
 html[data-theme="dark"] body.tm-new-design :is(
   .mobile-back,.mobile-destination-map,
@@ -2406,7 +2406,7 @@ html[data-theme="dark"] body.tm-new-design :is(
   #overview .overview-status-card a,
   #overview .navo-trip-types button:not(.is-selected)
 ){
-  color:#f7fafa!important
+  color:#f7fafa
 }
 html body.tm-new-design :is(
   #plan .day-add,
