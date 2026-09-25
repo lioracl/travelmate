@@ -576,13 +576,13 @@ body[data-trip-view="overview"] .overview-status-card>a{
   height:38px;
   display:grid;
   place-items:center;
-  border:1px solid var(--tm-card-control-border);
+  border:1px solid color-mix(in srgb,var(--tm-brand-primary) 28%,var(--tm-card-control-border));
   border-radius:999px;
-  background:var(--tm-card-control);
-  color:var(--tm-card-link);
+  background:var(--tm-action-secondary);
+  color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
 }
 body[data-trip-view="overview"] .overview-status-card>a:is(:hover,:focus-visible){
-  background:var(--tm-card-control-selected);
+  background:var(--tm-action-secondary-hover);
   outline:0;
 }
 @media(max-width:760px){
