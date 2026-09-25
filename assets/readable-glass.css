@@ -2097,36 +2097,14 @@ html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-h
   -webkit-text-fill-color:currentColor;
 }
 
-/* Material roles: one mapping, no page-specific material ownership. */
+/* Documents and resource lists keep structural wrappers transparent.
+   Glass belongs only to useful content cards, avoiding blur-on-blur stacking. */
 html body[data-trip-kind="custom"].tm-new-design main.content :is(
-  .overview-status-card,.trip-home-actions,.section-head,
-  #plan .generated-day>div,
-  #places>.nearby-panel,
-  #budget .budget-smart-summary,#budget .expense-workspace,#budget .currency-converter,#budget .budget-charts,
-  #documents .document-vault,#documents .doc-list,
-  #transport .transport-card,#transport .service-card,
-  #getaways .service-card,
-  #group .collaboration-heading,
-  #memories .album-card,#memories .memory-card,#memories .trip-summary-card
+  #documents .document-vault,#documents .doc-list,#destination-info .resource-links
 ){
-  -webkit-backdrop-filter:var(--tm-surface-blur)!important;
-  backdrop-filter:var(--tm-surface-blur)!important
-}
-html body[data-trip-kind="custom"].tm-new-design main.content :is(
-  #plan .planned-activity,#plan .saved-place,
-  #places .nearby-result,
-  #budget .expense-record,
-  #documents .doc-row,#documents .doc-category-file,
-  #destination-info .resource-link
-){
-  -webkit-backdrop-filter:var(--tm-surface-blur-nested)!important;
-  backdrop-filter:var(--tm-surface-blur-nested)!important
-}
-
-/* Structural wrappers stay transparent; nested controls do not stack blur unnecessarily. */
-html body[data-trip-kind="custom"].tm-new-design main.content :is(
-  #plan .generated-day,#destination-info .resource-links
-){
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important
 }
