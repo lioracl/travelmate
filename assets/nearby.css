@@ -111,3 +111,124 @@
   #places .nearby-location-selector{gap:8px}
 }
 @media(max-width:350px){#places .nearby-category-chips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Mobile feedback pass — saved places shelf + resilient control labels. */
+.saved-places-shelf{
+  display:grid;
+  gap:10px;
+  margin:10px 0 16px;
+  padding:12px 0 2px;
+  border-top:1px solid var(--tm-card-border);
+  background:transparent
+}
+.saved-places-shelf[hidden]{display:none}
+.saved-places-shelf__head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px
+}
+.saved-places-shelf__head>div{display:grid;gap:2px}
+.saved-places-shelf__head span{
+  color:var(--tm-card-secondary);
+  font-size:12px;
+  font-weight:800
+}
+.saved-places-shelf__head strong{
+  color:var(--tm-card-heading);
+  font-size:17px
+}
+.saved-places-shelf__head small{
+  max-width:280px;
+  color:var(--tm-card-muted);
+  font-size:11px;
+  line-height:1.45;
+  text-align:start
+}
+.saved-places-shelf__list{display:grid;gap:8px}
+.saved-places-shelf__item{
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  padding:10px 11px;
+  border:1px solid var(--tm-card-border);
+  border-radius:13px;
+  background:var(--tm-card-bg-compact);
+  color:var(--tm-card-text);
+  -webkit-backdrop-filter:var(--tm-surface-blur-nested);
+  backdrop-filter:var(--tm-surface-blur-nested)
+}
+.saved-places-shelf__icon{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:var(--tm-action-secondary);
+  color:var(--tm-card-link)
+}
+.saved-places-shelf__item>div{min-width:0}
+.saved-places-shelf__item strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.saved-places-shelf__item small{
+  display:block;
+  margin-top:2px;
+  color:var(--tm-card-secondary);
+  font-size:11px;
+  line-height:1.4
+}
+.saved-places-shelf__item>a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-width:0;
+  min-height:40px;
+  padding:0 10px;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:10px;
+  background:var(--tm-action-secondary);
+  color:var(--tm-card-control-text);
+  font-weight:800;
+  text-decoration:none
+}
+#places :is(
+  .nearby-mode-bar button,
+  .nearby-category-chips button,
+  .nearby-category-drawer button,
+  .nearby-category-search-results button,
+  .nearby-execute-actions button,
+  .hotel-fix-toggle,
+  .tm-place-card__primary-actions>button,
+  .tm-place-card__secondary-actions :is(a,button)
+){
+  min-width:0;
+  max-width:100%;
+  height:auto;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  line-height:1.2;
+  text-align:center
+}
+@media(max-width:760px){
+  .saved-places-shelf__head{
+    align-items:stretch;
+    flex-direction:column;
+    gap:4px
+  }
+  .saved-places-shelf__head small{max-width:none}
+  .saved-places-shelf__item{
+    grid-template-columns:36px minmax(0,1fr) auto;
+    padding:9px
+  }
+  .saved-places-shelf__item>a span{display:none}
+  #places .nearby-mode-bar button{padding:8px 6px}
+  #places .nearby-category-chips button{padding:8px 7px}
+}
