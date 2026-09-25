@@ -2,10 +2,14 @@
   'use strict';
 
   var release = {
-    version: '1.55.20',
-    label: 'Glass polish & contrast hardening',
+    version: '1.55.21',
+    label: 'Mobile glass & saved places clarity',
     date: '25 בספטמבר 2026',
     highlights: [
+      'Mobile feedback: Weather ו-Photo Glass משתמשים כעת ב-blur רגוע יותר של 12px; Glass ראשי ב-14px ו-Nested Glass ב-10px כדי לשמור את תמונת היעד חדה ונוכחת יותר.',
+      'Documents: מעטפת הכספת חזרה להיות structural ושקופה במקום כרטיס Glass גדול נוסף; כרטיסי המסמך והפעולות נשארים המשטחים האמיתיים.',
+      'Places: נוסף אזור ברור ״מקומות שמורים״ עם מונה, סטטוס תזמון וקישור מפה, כך שמקום שנשמר בלי יום ושעה כבר לא נעלם מהמשתמש.',
+      'Mobile control fit: פקדי Places ו-Documents מאפשרים wrapping מבוקר כדי למנוע טקסט שיוצא מגבולות הכפתור במסכים צרים.',
       'Glass polish: כרטיסי Glass ראשיים ופנימיים שקופים יותר תוך שמירת blur של 18px/14px; Weather נשאר Photo Glass עם blur של 20px.',
       'Dark contrast hardening: תוקנו Primary/Secondary/Selected controls, Plan day headers, Places mode selection ו-Navo recommendation banner בכל שש ערכות הצבע.',
       'QA: מטריצת 60 מצבים של 6 Themes × Light/Dark × 5 מסכי ליבה ומטריצת 20 מצבים של כל המסכים עברו ללא White Blockers, contrast failures או horizontal overflow.',
