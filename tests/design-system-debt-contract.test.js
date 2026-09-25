@@ -175,7 +175,7 @@ test('Accent personalization changes only central semantic brand tokens', () => 
 test('Account settings expose the persisted accent choices accessibly', () => {
   const home = read(path.join(root, 'assets/home.js'));
   const theme = read(path.join(root, 'assets/theme.js'));
-  for (const accent of ['ocean', 'forest', 'violet', 'coral']) assert.match(home, new RegExp('data-accent-choice="' + accent + '"'));
+  for (const accent of ['ocean', 'emerald', 'teal', 'sunset', 'plum', 'pink']) assert.match(home, new RegExp('data-accent-choice="' + accent + '"'));
   assert.match(home, /fieldset class="account-accent-picker"/);
   assert.match(home, /aria-label="בחירת צבע ממשק"/);
   assert.match(theme, /localStorage\.setItem\(ACCENT_KEY, accent\)/);
