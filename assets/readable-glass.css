@@ -1508,6 +1508,10 @@ html body.tm-new-design[data-trip-view="budget"] #budget#budget :is(.currency-co
   --tm-card-blur:none
 }
 
+html body.tm-new-design[data-trip-view="documents"] #documents#documents .doc-row{
+  --tm-card-blur:none
+}
+
 html body.tm-new-design[data-trip-view="plan"] #plan#plan .past-days-strip{
   border-color:var(--tm-card-border);
   background:var(--tm-card-bg-nested);

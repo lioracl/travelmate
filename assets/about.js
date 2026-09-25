@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.26',
+    version: '1.55.27',
     label: 'Cold-start performance hardening',
     date: '25 בספטמבר 2026',
     highlights: [
+      'Documents performance: repeated document rows no longer allocate backdrop blur; only the section header and vault authentication surface keep Glass blur.',
       'Budget performance: converter results and expense rows no longer stack nested backdrop blur inside their parent Budget surfaces.',
       'Places performance: opaque search controls and Saved Places shelf items no longer stack nested backdrop blur inside the main Places glass panel.',
       'Plan performance: planned activities and saved places no longer stack nested backdrop blur inside day cards; only the day surface and planner toolbar keep main Glass blur.',
