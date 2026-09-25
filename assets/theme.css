@@ -1493,7 +1493,7 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
 }
 
 /* Mobile layout authority: the single source of truth for trip header geometry. */
-html body.tm-new-design main.content>section:is(
+html:not([data-theme="dark"]) body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories,#destination-info
 ) :where(h1,h2,h3,h4,strong,p,span,small,label){
   color:#173f32!important;
