@@ -103,3 +103,9 @@ test('Budget nested result and expense rows do not stack backdrop blur',()=>{
   const glass=read('assets/readable-glass.css');
   assert.match(glass,/data-trip-view="budget"[^\n]*#budget#budget :is\(\.currency-converter-result,\.expense-record\)\{\s*--tm-card-blur:none/);
 });
+
+
+test('Document rows do not allocate repeated backdrop blur layers',()=>{
+  const glass=read('assets/readable-glass.css');
+  assert.match(glass,/data-trip-view="documents"[^\n]*#documents#documents \.doc-row\{\s*--tm-card-blur:none/);
+});
