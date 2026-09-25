@@ -136,10 +136,10 @@ test('getaway destination geocoding waits for the first search submit', () => {
 });
 
 test('service worker precaches startup essentials and runtime-caches feature-only bundles', () => {
-  assert.match(serviceWorker, /security-center\.js/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/security-center\.js'/);
   assert.match(serviceWorker, /trip-redesign\.js/);
   assert.match(serviceWorker, /theme\.js/);
-  assert.match(serviceWorker, /document-vault\.js/);
+  assert.doesNotMatch(serviceWorker, /'\.\/assets\/document-vault\.js'/);
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/ai-assistant\.js'/);
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/smart-hub\.js'/);
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/trip-intelligence\.js'/);
