@@ -2214,3 +2214,96 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.c
     --tm-card-control:rgba(255,255,255,.88)
   }
 }
+
+
+/* User-selectable accent themes: semantic roles, not hard-coded component colors. */
+html[data-accent]{
+  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 18%,#F4F3EF);
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 26%,#F4F3EF);
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 34%,#F4F3EF);
+  --tm-action-ghost-hover:color-mix(in srgb,var(--tm-brand-primary) 16%,transparent);
+  --tm-surface-selected:color-mix(in srgb,var(--tm-brand-primary) 18%,rgba(255,255,255,.78));
+  --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 18%,rgba(255,255,255,.84));
+  --tm-card-border-hover:color-mix(in srgb,var(--tm-brand-primary) 58%,transparent);
+  --tm-border-control:color-mix(in srgb,var(--tm-brand-primary) 25%,rgba(24,35,38,.24));
+  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-primary) 38%,transparent);
+  --tm-card-link:var(--tm-brand-primary-dark);
+  --tm-card-icon:var(--tm-brand-primary);
+  --tm-info:var(--tm-brand-primary-dark)
+}
+html[data-theme="dark"][data-accent]{
+  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,#E7EFEC);
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 32%,#E7EFEC);
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 40%,#E7EFEC);
+  --tm-surface-selected:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(18,38,32,.88));
+  --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 26%,#E7EFEC);
+  --tm-card-border-hover:color-mix(in srgb,var(--tm-brand-soft) 62%,transparent);
+  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-soft) 52%,transparent);
+  --tm-card-link:var(--tm-brand-soft);
+  --tm-card-icon:var(--tm-brand-soft)
+}
+
+/* The destination photo stays dominant; the chosen theme only tints glass by a small amount. */
+html:not([data-theme="dark"])[data-accent] body[data-trip-kind="custom"].tm-new-design{
+  --tm-glass-large-bg:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 7%,rgba(255,255,255,.84)),
+    color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(226,241,233,.74)));
+  --tm-glass-large-bg-hover:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 9%,rgba(255,255,255,.9)),
+    color-mix(in srgb,var(--tm-brand-primary) 7%,rgba(231,245,238,.8)));
+  --tm-card-bg:var(--tm-glass-large-bg);
+  --tm-card-bg-nested:color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(239,247,243,.76));
+  --tm-card-bg-compact:color-mix(in srgb,var(--tm-brand-primary) 4%,rgba(247,251,249,.76));
+  --tm-overview-card:var(--tm-glass-large-bg);
+  --tm-overview-card-soft:color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(255,255,255,.76))
+}
+html[data-theme="dark"][data-accent] body[data-trip-kind="custom"].tm-new-design{
+  --tm-glass-large-bg:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 11%,rgba(17,34,29,.84)),
+    color-mix(in srgb,var(--tm-brand-primary) 8%,rgba(10,26,22,.76)));
+  --tm-glass-large-bg-hover:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 15%,rgba(17,34,29,.88)),
+    color-mix(in srgb,var(--tm-brand-primary) 11%,rgba(10,26,22,.8)));
+  --tm-card-bg:var(--tm-glass-large-bg);
+  --tm-card-bg-nested:color-mix(in srgb,var(--tm-brand-primary) 8%,rgba(19,37,31,.76));
+  --tm-card-bg-compact:color-mix(in srgb,var(--tm-brand-primary) 6%,rgba(20,39,33,.76))
+}
+
+/* Secondary controls use a themed soft fill; form fields remain neutral for readability. */
+html body.tm-new-design[data-trip-kind="custom"] main.content :is(
+  .planner-action:not(.primary):not(.planner-danger),
+  .planner-more>summary,
+  .nearby-category-chips button,
+  .nearby-mode-bar button,
+  .nearby-map-button,
+  .tm-place-card__primary-actions button:not(.nearby-search),
+  .documents-category-nav button,
+  .doc-row>button:not([data-delete]),
+  .budget-settings-toggle,
+  .budget-chart-actions button,
+  .lodging-toggle,
+  .auto-place-launch
+){
+  border-color:color-mix(in srgb,var(--tm-brand-primary) 30%,var(--tm-card-control-border))!important;
+  background:var(--tm-action-secondary)!important;
+  color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;
+  -webkit-text-fill-color:currentColor!important
+}
+html body.tm-new-design[data-trip-kind="custom"] main.content :is(
+  .nearby-category-chips button.active,
+  .nearby-category-chips button[aria-pressed="true"],
+  .nearby-mode-bar button.active,
+  .nearby-mode-bar button[aria-pressed="true"],
+  .documents-category-nav button.active,
+  .documents-category-nav button[aria-selected="true"]
+){
+  border-color:var(--tm-brand-primary)!important;
+  background:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(255,255,255,.8))!important;
+  color:var(--tm-brand-primary-dark)!important
+}
+
+/* Keep semantic states independent of user-selected accent. */
+html body.tm-new-design :is(.danger,[data-delete],[data-remove],[data-delete-expense]){
+  --tm-control-current-bg:var(--tm-action-danger);
+  --tm-control-current-border:var(--tm-action-danger)
+}
