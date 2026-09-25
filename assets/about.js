@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.29',
+    version: '1.55.30',
     label: 'Cold-start performance hardening',
     date: '25 בספטמבר 2026',
     highlights: [
+      'Overview performance: ארבעת כרטיסי ה-status החוזרים משתמשים כעת ב-Nested surface ללא backdrop blur נוסף; Weather וה-Header נשארים Glass פעיל.',
       'Plan performance: כרטיסי יום משתמשים כעת ב-Nested surface ללא backdrop blur נוסף; ה-Toolbar נשאר Glass ראשי כדי לצמצם שכבות GPU במסכים עם ימים רבים.',
       'Transport performance: empty-state and repeated info service cards no longer allocate nested backdrop blur; only primary Transport surfaces keep Glass blur.',
       'Documents performance: repeated document rows no longer allocate backdrop blur; only the section header and vault authentication surface keep Glass blur.',
