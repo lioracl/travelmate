@@ -1278,7 +1278,7 @@ html[data-theme][data-theme] body.tm-new-design main.content :is(
   .fare-card,.getaway-result,.getaway-card,.car-rental-card,.transport-result,
   .transport-search-card,.members-card,.invite-result,.shared-place-card,
   .message-place-card,.chat-card,.ai-notes-panel,.ai-login-card,.ai-error-card,
-  .document-vault,.document-vault-panel,.vault-auth,.gps-consent-card,.gps-place-heading,
+  .document-vault-panel,.vault-auth,.gps-consent-card,.gps-place-heading,
   .weather-insight,.weather-live-day,.weather-forecast-panel
 ){
   border-color:var(--tm-card-border);
