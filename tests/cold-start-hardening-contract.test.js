@@ -53,9 +53,11 @@ test('Mate hydrates its reserved Overview slot and loads assistant runtime on de
   assert.match(intelligence,/ensureAssistant\?window\.TravelMateFeatures\.ensureAssistant\(\):Promise\.resolve\(\)/);
 });
 
-test('navigation boot no longer performs an unsolicited initial smooth scroll',()=>{
+test('navigation boot uses query-state navigation without legacy hash shield or initial scroll',()=>{
   const navigation=read('assets/navigation-memory.js');
-  assert.match(navigation,/function scrollToCurrent\(\)/);
-  assert.match(navigation,/updateExitButtons\(\);\s*\}\)\(\);\s*$/);
-  assert.doesNotMatch(navigation,/updateExitButtons\(\);\s*scrollToCurrent\(\);\s*\}\)\(\);\s*$/);
+  assert.match(navigation,/history\.scrollRestoration = 'manual'/);
+  assert.match(navigation,/searchParams\.set\('view', 'overview'\)/);
+  assert.doesNotMatch(navigation,/guardDepth|travelMateTripGuard|armTripShield|restoreProtectedOverview/);
+  assert.doesNotMatch(navigation,/scrollIntoView\(\{ behavior: 'smooth'/);
+  assert.doesNotMatch(navigation,/location\.hash\.replace/);
 });
