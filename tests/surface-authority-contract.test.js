@@ -83,3 +83,9 @@ test('feature surfaces consume semantic tokens instead of hardcoded light colors
   assert.match(intelligence,/\.navo-trip-banner\{[\s\S]*color:var\(--tm-card-text\)/);
   assert.match(intelligence,/\.navo-trip-banner p\{[^}]*color:var\(--tm-card-secondary\)/);
 });
+
+
+test('Plan nested activity and saved-place cards do not stack backdrop blur',()=>{
+  const glass=read('assets/readable-glass.css');
+  assert.match(glass,/data-trip-view="plan"[^\n]*#plan#plan :is\(\.planned-activity,\.saved-place\)\{\s*--tm-card-blur:none/);
+});
