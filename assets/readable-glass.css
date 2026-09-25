@@ -1500,7 +1500,7 @@ html body.tm-new-design[data-trip-view="places"] #places#places>.auto-place-laun
   -webkit-text-fill-color:currentColor;
   text-shadow:none
 }
-html body.tm-new-design[data-trip-view="plan"] #plan#plan .planned-activity{
+html body.tm-new-design[data-trip-view="plan"] #plan#plan :is(.planned-activity,.saved-place){
   --tm-card-blur:none
 }
 
