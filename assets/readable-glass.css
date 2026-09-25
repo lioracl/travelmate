@@ -2167,3 +2167,12 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.c
 ) :is(.section-head,.card,.panel,.module,.generated-day>div,.planned-activity,.saved-place,.nearby-panel,.nearby-result,.doc-row,.expense-workspace,.expense-record,.budget-charts,.currency-converter,.transport-card,.service-card,.group-card,.album-card,.memory-card,.trip-summary-card){
   text-shadow:none;
 }
+
+
+/* Design correction: collapsed Plan days retain a useful day header only. */
+html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div>:not(.day-heading){
+  display:none
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div{
+  padding-block:6px
+}
