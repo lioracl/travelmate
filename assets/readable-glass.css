@@ -2107,3 +2107,72 @@ body.tm-new-design[data-trip-view] main.content :is(#transport,#getaways,#group,
     min-height:44px
   }
 }
+
+
+/* Design correction: destination photography belongs to the hero; trip content uses readable surfaces. */
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design{
+  --tm-trip-page-bg:#eaf0ed;
+  --tm-readable-surface:#f8fbf9;
+  --tm-readable-surface-soft:#ffffff;
+  --tm-readable-border:rgba(34,73,59,.16);
+  --tm-readable-text:#173f32;
+  --tm-readable-muted:#5b7168;
+  --tm-readable-control:#ffffff;
+  --tm-readable-control-text:#173f32;
+  --tm-readable-shadow:0 8px 24px rgba(31,67,54,.08);
+  --tm-glass-large-bg:linear-gradient(135deg,#f8fbf9,#eef5f1);
+  --tm-glass-large-bg-hover:linear-gradient(135deg,#ffffff,#edf6f1);
+  --tm-card-bg:var(--tm-glass-large-bg);
+  --tm-card-bg-nested:#f0f6f3;
+  --tm-card-bg-compact:#f5f8f6;
+  --tm-card-bg-hover:var(--tm-glass-large-bg-hover);
+  --tm-card-border:rgba(34,73,59,.16);
+  --tm-card-border-hover:rgba(20,125,146,.42);
+  --tm-card-shadow:0 8px 24px rgba(31,67,54,.08);
+  --tm-card-shadow-compact:0 3px 10px rgba(31,67,54,.06);
+  --tm-card-shadow-hover:0 11px 28px rgba(31,67,54,.11);
+  --tm-card-text:#173f32;
+  --tm-card-heading:#173f32;
+  --tm-card-secondary:#5b7168;
+  --tm-card-muted:#71847c;
+  --tm-card-link:#0b6476;
+  --tm-card-icon:#147d92;
+  --tm-card-control:#ffffff;
+  --tm-card-control-border:rgba(34,73,59,.22);
+  --tm-card-control-text:#173f32;
+  --tm-card-control-selected:#dceff1;
+  --tm-overview-card:linear-gradient(135deg,#f8fbf9,#eef5f1);
+  --tm-overview-card-soft:#ffffff;
+  --tm-overview-border:rgba(34,73,59,.16);
+  --tm-overview-text:#173f32;
+  --tm-overview-muted:#5b7168;
+  background-color:var(--tm-trip-page-bg);
+}
+html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
+  --tm-trip-page-bg:#101916;
+  background-color:var(--tm-trip-page-bg);
+}
+html body[data-trip-kind="custom"].tm-new-design main.content{
+  background:var(--tm-trip-page-bg);
+}
+html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-hero{
+  color:#fff;
+}
+html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-hero :is(h1,p,span,strong,a,button,i){
+  color:inherit;
+  -webkit-text-fill-color:currentColor;
+}
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.content :is(
+  #plan,#places,#budget,#documents,#transport,#getaways,#group,#memories,#destination-info
+) :is(.section-head,.card,.panel,.module,.generated-day>div,.planned-activity,.saved-place,.nearby-panel,.nearby-result,.doc-row,.expense-workspace,.expense-record,.budget-charts,.currency-converter,.transport-card,.service-card,.group-card,.album-card,.memory-card,.trip-summary-card){
+  text-shadow:none;
+}
+
+
+/* Design correction: collapsed Plan days retain a useful day header only. */
+html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div>:not(.day-heading){
+  display:none
+}
+html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div{
+  padding-block:6px
+}

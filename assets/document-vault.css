@@ -93,3 +93,22 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
 #documents .vault-head{gap:12px}
 #documents .vault-list{gap:8px}
 @media(max-width:650px){#documents .doc-row{padding:11px 12px}#documents .doc-category-file-actions{gap:7px}#documents .doc-category-file-actions button{min-height:40px!important}}
+
+/* Design correction: document categories read as compact rows on phones. */
+@media(max-width:650px){
+  #documents [data-document-category-list]{gap:7px}
+  #documents .doc-row{
+    min-height:72px;
+    grid-template-columns:40px minmax(0,1fr) auto;
+    align-items:center;
+    gap:9px;
+    padding:9px 10px
+  }
+  #documents .doc-row>.icon{width:40px;height:40px}
+  #documents .doc-row>div:nth-child(2){min-width:0}
+  #documents .doc-row>div:nth-child(2)>strong{font-size:14px}
+  #documents .doc-row>div:nth-child(2)>span{margin-top:2px;font-size:11px;line-height:1.35}
+  #documents .doc-row>button{min-width:74px;min-height:42px;padding-inline:10px}
+  #documents .doc-row.has-documents{grid-template-columns:40px minmax(0,1fr) auto}
+  #documents .doc-category-files{grid-column:1/-1}
+}
