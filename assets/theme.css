@@ -2355,9 +2355,9 @@ html body.tm-new-design main.content #documents .ai-notes-archive .ai-note-answe
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan :is(
   .day-heading.day-heading,.day-tab.day-tab
 ){
-  background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(237,244,239,.8))!important;
+  background:color-mix(in srgb,var(--tm-accent-soft,#D7EDF2) 14%,rgba(248,252,250,.64))!important;
   background-color:transparent!important;
-  border:1px solid rgba(255,255,255,.7)!important;
+  border:1px solid color-mix(in srgb,var(--tm-brand-primary,#147D92) 24%,rgba(255,255,255,.58))!important;
   border-radius:14px!important;
   color:#26332e!important;
   -webkit-text-fill-color:#26332e!important;
@@ -2370,10 +2370,10 @@ html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content sect
   -webkit-text-fill-color:currentColor!important
 }
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan .day-add.day-add{
-  background:rgba(255,255,255,.94)!important;
-  border:1px solid var(--tm-card-border)!important;
-  color:#176b4e!important;
-  -webkit-text-fill-color:#176b4e!important
+  background:var(--tm-action-secondary)!important;
+  border:1px solid color-mix(in srgb,var(--tm-brand-primary,#147D92) 30%,var(--tm-card-border))!important;
+  color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;
+  -webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important
 }
 /* Keep pale controls readable inside the dark weather-card glass. */
 html body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
