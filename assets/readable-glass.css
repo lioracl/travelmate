@@ -1504,7 +1504,7 @@ html body.tm-new-design[data-trip-view="plan"] #plan#plan :is(.planned-activity,
   --tm-card-blur:none
 }
 
-html body.tm-new-design[data-trip-view="budget"] #budget#budget .currency-converter-result{
+html body.tm-new-design[data-trip-view="budget"] #budget#budget :is(.currency-converter-result,.expense-record){
   --tm-card-blur:none
 }
 
