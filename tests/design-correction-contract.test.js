@@ -7,13 +7,14 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
-test('trip photo is owned by the hero while light content uses opaque readable surfaces', () => {
+test('trip photo is owned by the app background while content uses readable glass surfaces', () => {
   const trip = read('assets/trip-redesign.css');
   const glass = read('assets/readable-glass.css');
-  assert.match(trip, /hero\.custom-hero\{[^}]*var\(--trip-bg-image/);
-  assert.match(glass, /Design correction: destination photography belongs to the hero/);
-  assert.match(glass, /--tm-readable-surface:#f8fbf9/);
-  assert.match(glass, /--tm-readable-surface-soft:#ffffff/);
+  assert.match(trip, /body:not\(\.home-page\)\{color:#111;background-color:#10241e;background-image:linear-gradient/);
+  assert.match(trip, /hero\.custom-hero\{[^}]*background:linear-gradient/);
+  assert.match(glass, /Destination photo background: trip content uses readable glass surfaces/);
+  assert.match(glass, /--tm-readable-surface:rgba\(248,252,250,\.78\)/);
+  assert.match(glass, /--tm-readable-surface-soft:rgba\(255,255,255,\.72\)/);
   assert.match(glass, /--tm-card-text:#173f32/);
 });
 
