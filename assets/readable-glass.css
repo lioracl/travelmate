@@ -646,7 +646,7 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-card-shadow-hover:inset 0 1px 0 rgba(255,255,255,.24),0 13px 30px rgba(0,0,0,.18);
   --tm-surface-blur:blur(14px) saturate(112%);
   --tm-surface-blur-nested:blur(10px) saturate(108%);
-  --tm-surface-blur-photo:blur(12px) saturate(108%);
+  --tm-surface-blur-photo:blur(8px) saturate(104%);
   --tm-card-blur:var(--tm-surface-blur);
   --tm-large-surface-blur:var(--tm-surface-blur);
   --tm-material-blur:var(--tm-surface-blur);

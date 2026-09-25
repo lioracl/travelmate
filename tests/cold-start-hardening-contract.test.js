@@ -45,6 +45,9 @@ test('Weather hydrates its reserved slot and is excluded from generic control he
   assert.match(weather,/hero\.querySelector\('\[data-weather-top-widget\]'\)/);
   assert.match(glass,/:is\(button:not\(\.weather-top-widget\),a\[href\]\)\{/);
   assert.match(weatherCss,/white-space:nowrap;overflow:hidden;text-overflow:ellipsis/);
+  assert.match(weather,/function scheduleInitialLoad\(ui\)/);
+  assert.match(weather,/requestIdleCallback\(run, \{ timeout: 1000 \}\)/);
+  assert.match(weather,/scheduleInitialLoad\(ui\)/);
 });
 
 test('Mate hydrates its reserved Overview slot and loads assistant runtime on demand',()=>{

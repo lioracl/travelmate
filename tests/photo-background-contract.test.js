@@ -23,7 +23,7 @@ test('trip content stays transparent and cards use glass surfaces', () => {
   assert.match(css, /Surface Authority 2\.0/);
   assert.match(css, /main\.content[\s\S]*background:transparent/);
   assert.match(css, /--tm-surface-blur:blur\(14px\) saturate\(112%\)/);
-  assert.match(css, /--tm-surface-blur-photo:blur\(12px\) saturate\(108%\)/);
+  assert.match(css, /--tm-surface-blur-photo:blur\(8px\) saturate\(104%\)/);
 });
 
 test('dark mobile background keeps the destination image with a darker scrim', () => {

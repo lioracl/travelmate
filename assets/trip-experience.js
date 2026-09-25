@@ -163,7 +163,7 @@
   async function loadRate() {
     var cacheKey = 'travelmate-eur-rates:' + state.localCurrency;
     var cached = readJson(cacheKey, null);
-    if (cached && Number(cached.rate) > 0 && Date.now() - Number(cached.savedAt || 0) < 43200000) { state.rates = cached.rates || { ILS: Number(cached.rate) }; state.ilsRates = cached.ilsRates || state.ilsRates; state.rate = Number(cached.rate || state.rates.ILS); state.rateDate = cached.date || ''; state.rateSource = cached.source || 'ECB דרך Frankfurter'; state.rateSourceUrl = cached.sourceUrl || 'https://frankfurter.dev/'; renderCurrency(); renderCurrencyConverter(); }
+    if (cached && Number(cached.rate) > 0 && Date.now() - Number(cached.savedAt || 0) < 43200000) { state.rates = cached.rates || { ILS: Number(cached.rate) }; state.ilsRates = cached.ilsRates || state.ilsRates; state.rate = Number(cached.rate || state.rates.ILS); state.rateDate = cached.date || ''; state.rateSource = cached.source || 'ECB דרך Frankfurter'; state.rateSourceUrl = cached.sourceUrl || 'https://frankfurter.dev/'; renderCurrency(); renderCurrencyConverter(); return; }
     try {
       var symbols = ['ILS','USD','GBP','JPY','CHF','CZK','PLN','HUF','RON','CAD','AUD','NZD','DKK','SEK','NOK','TRY','CNY','KRW','INR','THB','MXN','BRL','ZAR',state.localCurrency].filter(function (item, index, list) { return item !== 'EUR' && list.indexOf(item) === index; }).join(',');
       var data;

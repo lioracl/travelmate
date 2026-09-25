@@ -186,6 +186,11 @@ test('currency rates prefer browser-compatible providers before the legacy Frank
 });
 
 
+test('fresh cached currency rates skip a redundant network refresh', () => {
+  assert.match(tripExperience, /renderCurrency\(\); renderCurrencyConverter\(\); return; \}/);
+});
+
+
 test('planner replace-day controls expose an accessible name', () => {
   assert.match(smartPlanTools, /setAttribute\('aria-label', 'החלפת התוכנית ליום '/);
   assert.match(smartPlanTools, /fa-rotate" aria-hidden="true/);

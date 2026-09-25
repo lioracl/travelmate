@@ -2,10 +2,13 @@
   'use strict';
 
   var release = {
-    version: '1.55.29',
-    label: 'Cold-start performance hardening',
-    date: '25 בספטמבר 2026',
+    version: '1.55.30',
+    label: 'Weather and cold-start polish',
+    date: '26 בספטמבר 2026',
     highlights: [
+      'Weather: טשטוש Photo Glass הופחת מ־12px ל־8px כדי לשמור על תחושת זכוכית בלי להכביד על צילום היעד.',
+      'Cold start: כרטיס מזג האוויר נבנה מיד, אך בקשת התחזית נדחית ל־browser idle כדי להפחית תחרות עם First Paint ונכסי היעד.',
+      'Budget performance: שערי מטבע טריים מהמטמון מוצגים מיד ללא בקשת רשת חוזרת, ושני hidden overrides מיותרים הוסרו מ־Places.',
       'Plan performance: כרטיסי יום משתמשים כעת ב-Nested surface ללא backdrop blur נוסף; ה-Toolbar נשאר Glass ראשי כדי לצמצם שכבות GPU במסכים עם ימים רבים.',
       'Transport performance: empty-state and repeated info service cards no longer allocate nested backdrop blur; only primary Transport surfaces keep Glass blur.',
       'Documents performance: repeated document rows no longer allocate backdrop blur; only the section header and vault authentication surface keep Glass blur.',

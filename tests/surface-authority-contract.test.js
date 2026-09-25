@@ -25,7 +25,7 @@ test('glass uses blur instead of opacity escalation',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/--tm-surface-blur:blur\(14px\) saturate\(112%\)/);
   assert.match(css,/--tm-surface-blur-nested:blur\(10px\) saturate\(108%\)/);
-  assert.match(css,/--tm-surface-blur-photo:blur\(12px\) saturate\(108%\)/);
+  assert.match(css,/--tm-surface-blur-photo:blur\(8px\) saturate\(104%\)/);
   assert.doesNotMatch(css,/--tm-weather-card-blur:blur\(4px\)/);
 });
 

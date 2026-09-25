@@ -178,6 +178,8 @@
     finally { state.loading = false; }
   }
 
+  function scheduleInitialLoad(ui) { var run = function () { load(ui, false); }; if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 1000 }); else window.setTimeout(run, 250); }
+
   function open(ui) { ui.backdrop.classList.add('open'); ui.button.setAttribute('aria-expanded', 'true'); var closeButton = ui.backdrop.querySelector('[data-weather-close]'); if (closeButton) closeButton.focus(); }
   function close(ui) { ui.backdrop.classList.remove('open'); ui.button.setAttribute('aria-expanded', 'false'); }
 
@@ -187,5 +189,5 @@
   ui.backdrop.querySelector('[data-weather-close]').addEventListener('click', function () { close(ui); ui.button.focus(); });
   ui.backdrop.addEventListener('click', function (event) { if (event.target === ui.backdrop) close(ui); });
   document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && ui.backdrop.classList.contains('open')) close(ui); });
-  load(ui, false);
+  scheduleInitialLoad(ui);
 })();
