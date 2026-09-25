@@ -1614,9 +1614,9 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
   color:var(--tm-card-link)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #places>.nearby-panel.place-planner .nearby-status{
-  border:1px solid var(--tm-card-control-border);
-  background:var(--tm-card-control);
-  color:var(--tm-card-text);
+  border:1px solid var(--tm-card-border);
+  background:var(--tm-card-bg-compact);
+  color:var(--tm-card-secondary);
   -webkit-text-fill-color:currentColor;
   box-shadow:var(--tm-card-shadow-compact)
 }
