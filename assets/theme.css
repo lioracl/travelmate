@@ -618,14 +618,6 @@ html body.tm-new-design[data-trip-view] main.content>section>.section-head :is(b
   border-radius:11px!important
 }
 
-html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
-  padding:0 0 12px!important;
-  
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important
-}
 html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions{
   align-items:center!important
 }
