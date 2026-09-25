@@ -1596,7 +1596,7 @@ html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar :is(button
 html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-action.primary{
   width:auto!important;
   padding:0 14px!important;
-  background:#137454!important
+  background:var(--tm-action-primary)!important
 }
 html body.tm-new-design[data-trip-view="plan"] #plan .day-heading-actions :is(.day-add,.day-replace){
   border:0!important;
@@ -2331,18 +2331,18 @@ html body.tm-new-design main.content #documents .ai-notes-archive .ai-note-answe
     -webkit-text-fill-color:#173f32!important
   }
   html body.tm-new-design[data-trip-view="plan"] main.content section#plan#plan .planner-action.planner-action{
-    background:#f8fcfa!important;
-    border:1px solid #8fbea9!important;
-    color:#17513d!important;
-    -webkit-text-fill-color:#17513d!important
+    background:var(--tm-action-secondary)!important;
+    border:1px solid color-mix(in srgb,var(--tm-brand-primary) 34%,var(--tm-card-control-border))!important;
+    color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;
+    -webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important
   }
   html body.tm-new-design[data-trip-view="plan"] main.content section#plan#plan .planner-action.planner-action *{
-    color:#17513d!important;
-    -webkit-text-fill-color:#17513d!important
+    color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;
+    -webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important
   }
   html body.tm-new-design[data-trip-view="plan"] main.content section#plan#plan .planner-action.planner-action.primary{
-    background:linear-gradient(135deg,#126c51,#22865f)!important;
-    border-color:#126c51!important;
+    background:linear-gradient(135deg,var(--tm-action-primary-active),var(--tm-action-primary))!important;
+    border-color:var(--tm-action-primary-active)!important;
     color:#fff!important;
     -webkit-text-fill-color:#fff!important
   }
