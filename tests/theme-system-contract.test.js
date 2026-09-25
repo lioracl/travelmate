@@ -77,3 +77,14 @@ test('theme picker is keyboard-visible and responsive',()=>{
   assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
   assert.match(css,/@media\(max-width:680px\)[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
+
+
+test('app chrome inherits the selected accent without recoloring semantic states',()=>{
+  const glass=read('assets/readable-glass.css');
+  const themeCss=read('assets/theme.css');
+  assert.match(glass,/--tm-chrome-surface:color-mix\(in srgb,var\(--tm-brand-primary-dark\)/);
+  assert.match(glass,/--tm-chrome-border:color-mix\(in srgb,var\(--tm-brand-primary\)/);
+  assert.match(themeCss,/background:var\(--tm-chrome-surface,var\(--tm-surface-dark-glass-strong\)\)!important/);
+  assert.match(themeCss,/background:var\(--tm-action-secondary\)!important/);
+  assert.match(themeCss,/background:var\(--tm-action-danger\)/);
+});
