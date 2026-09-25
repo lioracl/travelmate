@@ -495,6 +495,7 @@
   }
 
   var accountPanel = createAccountPanel();
+  if (window.TravelMateTheme && window.TravelMateTheme.refreshAccentChoices) window.TravelMateTheme.refreshAccentChoices();
   var authForm = accountPanel.querySelector('[data-cloud-auth-form]');
   var passwordForm = accountPanel.querySelector('[data-cloud-password-form]');
   var sessionPanel = accountPanel.querySelector('[data-cloud-session]');
