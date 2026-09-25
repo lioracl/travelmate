@@ -113,7 +113,11 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.doesNotMatch(source, /loadStructure|deferredStructureScripts|structureScripts|structureStyles/);
   assert.match(source, /ensureLazyNavigation\(\)/);
   assert.match(source, /dynamicSectionViews=\{transport:true,getaways:true,group:true,memories:true\}/);
-  assert.match(source, /requestIdleCallback\(run,\{timeout:2600\}\)/);
+  assert.match(source, /assistant:\{styles:\['ai-assistant\.css','smart-hub\.css'\],scripts:\['ai-assistant\.js','smart-hub\.js'\]\}/);
+  assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
+  assert.match(source, /scheduleIdleFeature\('assistant',2200\)/);
+  assert.match(source, /scheduleIdleFeature\('account',4200\)/);
+  assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
 });
 
 test('Turnstile is armed on auth interaction instead of loading at startup', () => {
