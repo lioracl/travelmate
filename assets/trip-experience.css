@@ -281,3 +281,18 @@
   #budget .budget-charts>header{grid-template-columns:1fr}
   #budget .budget-charts>header button{width:100%}
 }
+
+
+/* Pixel polish: keep Budget summary visible and defer category-detail bars on phones. */
+#budget .budget-chart-actions{display:flex;align-items:center;gap:8px}
+#budget [data-budget-chart-details]{display:none}
+@media(max-width:620px){
+  #budget .budget-charts{padding:14px}
+  #budget .budget-charts>header{grid-template-columns:minmax(0,1fr) auto}
+  #budget .budget-charts>header>div:first-child p{display:none}
+  #budget .budget-chart-actions{display:grid;grid-template-columns:1fr;gap:6px}
+  #budget .budget-chart-actions button{width:auto;min-height:40px;padding:0 10px}
+  #budget [data-budget-chart-details]{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+  #budget .budget-chart-bars{display:none}
+  #budget .budget-charts.mobile-details-open .budget-chart-bars{display:grid;margin-top:12px}
+}

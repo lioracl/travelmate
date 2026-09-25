@@ -308,12 +308,24 @@
     var charts = document.createElement('section');
     charts.className = 'budget-charts';
     charts.dataset.budgetCharts = '';
-    charts.innerHTML = '<header><div><small>תמונת מצב קצרה</small><h3>מתוכנן לעומת ביצוע</h3><p>הגרף מתעדכן אוטומטית מכל הוצאה שנשמרת.</p></div><button type="button" data-budget-chart-edit><i class="fa-solid fa-sliders"></i> עריכת תקציב</button></header><div class="budget-compact-visual"><div class="budget-chart-meter" data-budget-chart-meter><div><strong>0%</strong><span>נוצל</span></div><span class="budget-meter-track"><i></i></span></div><div class="budget-chart-summary" data-budget-chart-summary></div></div><div class="budget-chart-bars" data-budget-chart-bars></div>';
+    charts.innerHTML = '<header><div><small>תמונת מצב קצרה</small><h3>מתוכנן לעומת ביצוע</h3><p>הגרף מתעדכן אוטומטית מכל הוצאה שנשמרת.</p></div><div class="budget-chart-actions"><button type="button" data-budget-chart-details aria-expanded="false"><i class="fa-solid fa-chart-column"></i> פירוט</button><button type="button" data-budget-chart-edit><i class="fa-solid fa-sliders"></i> עריכת תקציב</button></div></header><div class="budget-compact-visual"><div class="budget-chart-meter" data-budget-chart-meter><div><strong>0%</strong><span>נוצל</span></div><span class="budget-meter-track"><i></i></span></div><div class="budget-chart-summary" data-budget-chart-summary></div></div><div class="budget-chart-bars" data-budget-chart-bars></div>';
     panel.insertAdjacentElement('afterend', charts);
     charts.insertAdjacentElement('afterend', panel.querySelector('[data-expense-records]'));
+    var chartDetailsButton = charts.querySelector('[data-budget-chart-details]');
+    chartDetailsButton.onclick = function () {
+      var open = !charts.classList.contains('mobile-details-open');
+      charts.classList.toggle('mobile-details-open', open);
+      chartDetailsButton.setAttribute('aria-expanded', String(open));
+      chartDetailsButton.innerHTML = '<i class="fa-solid fa-chart-column"></i> ' + (open ? 'הסתר פירוט' : 'פירוט');
+    };
     charts.querySelector('[data-budget-chart-edit]').onclick = function () {
       charts.classList.toggle('editing');
       var editor = panel.querySelector('.budget-columns-editor');
+      if (charts.classList.contains('editing')) {
+        charts.classList.add('mobile-details-open');
+        chartDetailsButton.setAttribute('aria-expanded', 'true');
+        chartDetailsButton.innerHTML = '<i class="fa-solid fa-chart-column"></i> הסתר פירוט';
+      }
       if (editor) {
         editor.hidden = !charts.classList.contains('editing');
         if (!editor.hidden) editor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
