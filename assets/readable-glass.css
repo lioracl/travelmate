@@ -1501,9 +1501,9 @@ html body.tm-new-design[data-trip-view="places"] #places#places>.auto-place-laun
   text-shadow:none
 }
 html body.tm-new-design[data-trip-view="plan"] #plan#plan .past-days-strip{
-  border-color:var(--tm-card-control-border);
-  background:var(--tm-card-control);
-  color:var(--tm-card-control-text);
+  border-color:var(--tm-card-border);
+  background:var(--tm-card-bg-nested);
+  color:var(--tm-card-text);
   -webkit-text-fill-color:currentColor;
   box-shadow:var(--tm-card-shadow-compact);
   -webkit-backdrop-filter:none;
