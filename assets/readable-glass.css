@@ -998,6 +998,12 @@ html body.tm-new-design main.content :is(
   padding:var(--tm-card-padding)!important
 }
 
+html body.tm-new-design[data-trip-view="plan"] #plan .generated-day>div{
+  --tm-card-surface:var(--tm-card-bg-nested);
+  --tm-card-elevation:var(--tm-card-shadow-compact);
+  --tm-card-blur:none
+}
+
 html body.tm-new-design main.content :is(
   .section-head,.module,.plan-card,.doc-row,.expense,.expense-row,.expense-record,.receipt-card,.day-tab,
   .day-item,.planned-activity,.saved-place,.nearby-result,.resource-link,.fare-row,
