@@ -596,18 +596,18 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-days{
 
 html body.tm-new-design[data-trip-view] main.content>section.section>.section-head.section-head,
 html body.tm-new-design[data-trip-view] main.content>section.section>.section-head.section-head>div{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  color:var(--tm-card-heading)!important;
+  -webkit-text-fill-color:var(--tm-card-heading)!important
 }
 html body.tm-new-design[data-trip-view] main.content>section.section>.section-head.section-head>div>h1,
 html body.tm-new-design[data-trip-view] main.content>section.section>.section-head.section-head>div>p{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  text-shadow:0 1px 12px rgba(0,0,0,.22)!important
+  color:var(--tm-card-heading)!important;
+  -webkit-text-fill-color:var(--tm-card-heading)!important;
+  text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view] main.content section.section[id].section[id] > div.section-head.section-head > div > :is(h1,p){
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  color:var(--tm-card-heading)!important;
+  -webkit-text-fill-color:var(--tm-card-heading)!important
 }
 
 html body.tm-new-design[data-trip-view] main.content>section>.section-head{
@@ -1615,10 +1615,10 @@ html body.tm-new-design[data-trip-view="plan"] #plan .day-timeline>:is(.planned-
 }
 
 html body.tm-new-design .ai-orb{
-  width:54px!important;
-  min-width:54px!important;
-  height:54px!important;
-  min-height:54px!important;
+  width:48px!important;
+  min-width:48px!important;
+  height:48px!important;
+  min-height:48px!important;
   border:0!important;
   border-radius:18px!important;
   background:var(--tm-brand-primary)!important;
@@ -2366,8 +2366,8 @@ html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content sect
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan :is(
   .day-heading.day-heading,.day-tab.day-tab
 ) *{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important
 }
 html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content section#plan#plan .day-add.day-add{
   background:rgba(255,255,255,.94)!important;
