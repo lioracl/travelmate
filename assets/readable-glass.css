@@ -2067,6 +2067,9 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design{
   --tm-card-control-border:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(55,95,80,.22));
   --tm-card-control-text:var(--tm-accent-soft-text,#0B5869);
   --tm-card-control-selected:var(--tm-surface-selected);
+  --tm-control-current-text:var(--tm-card-control-text);
+  --tm-control-current-bg:var(--tm-action-secondary);
+  --tm-control-current-border:var(--tm-card-control-border);
   --tm-card-blur:none;
   --tm-large-surface-blur:var(--tm-glass-blur);
   --tm-material-blur:var(--tm-glass-blur);
@@ -2122,6 +2125,9 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
   --tm-card-control-border:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(255,255,255,.2));
   --tm-card-control-text:#F7FAFA;
   --tm-card-control-selected:var(--tm-surface-selected);
+  --tm-control-current-text:var(--tm-card-control-text);
+  --tm-control-current-bg:var(--tm-action-secondary);
+  --tm-control-current-border:var(--tm-card-control-border);
   --tm-card-blur:none;
   --tm-large-surface-blur:var(--tm-glass-blur);
   --tm-material-blur:var(--tm-glass-blur);
