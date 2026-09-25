@@ -3,8 +3,22 @@
 
   var STORAGE_KEY = 'travelmate-theme';
   var ACCENT_KEY = 'travelmate-accent';
-  var ACCENTS = Object.freeze({ ocean: ['#147D92','#0F6F82','#0B5869','#A9DCE7'], forest: ['#176B52','#145D47','#0E4C3A','#A9D9C8'], violet: ['#6D5DA8','#5D4E95','#493D78','#C8BDEB'], coral: ['#B85F4A','#A34E3C','#843B2D','#E8B8AC'] });
+  var LEGACY_ACCENTS = Object.freeze({ forest: 'emerald', violet: 'plum', coral: 'sunset' });
+  var ACCENTS = Object.freeze({
+    ocean: Object.freeze({ label: 'אוקיינוס', primary: '#147D92', strong: '#0F6F82', dark: '#0B5869', soft: '#D7EDF2' }),
+    emerald: Object.freeze({ label: 'אמרלד', primary: '#176B52', strong: '#145D47', dark: '#0E4C3A', soft: '#D8ECE4' }),
+    teal: Object.freeze({ label: 'טורקיז', primary: '#0B6F73', strong: '#095F63', dark: '#074E51', soft: '#D8ECEC' }),
+    sunset: Object.freeze({ label: 'שקיעה', primary: '#A34E3C', strong: '#8F4233', dark: '#743328', soft: '#F3DED8' }),
+    plum: Object.freeze({ label: 'שזיף', primary: '#674177', strong: '#59376A', dark: '#492D58', soft: '#E8DDED' }),
+    pink: Object.freeze({ label: 'ורוד', primary: '#A23D6F', strong: '#8F345F', dark: '#74294D', soft: '#F4DCE8' })
+  });
   var root = document.documentElement;
+
+  function normalizeAccent(accent) {
+    if (ACCENTS[accent]) return accent;
+    if (LEGACY_ACCENTS[accent]) return LEGACY_ACCENTS[accent];
+    return 'ocean';
+  }
 
   function readTheme() {
     try {
@@ -14,24 +28,54 @@
     return 'light';
   }
 
-  function readAccent() { try { var saved = localStorage.getItem(ACCENT_KEY); if (ACCENTS[saved]) return saved; } catch (error) {} return 'ocean'; }
-
-  function applyAccent(accent) {
-    accent = ACCENTS[accent] ? accent : 'ocean';
-    var palette = ACCENTS[accent];
-    root.dataset.accent = accent;
-    root.style.setProperty('--tm-brand-primary', palette[0]);
-    root.style.setProperty('--tm-brand-primary-strong', palette[1]);
-    root.style.setProperty('--tm-brand-primary-dark', palette[2]);
-    root.style.setProperty('--tm-brand-soft', palette[3]);
-    root.style.setProperty('--tm-action-primary', palette[0]);
-    root.style.setProperty('--tm-action-primary-hover', palette[1]);
-    root.style.setProperty('--tm-action-primary-active', palette[2]);
-    document.querySelectorAll('[data-accent-choice]').forEach(function (button) { var selected = button.dataset.accentChoice === accent; button.classList.toggle('active', selected); button.setAttribute('aria-pressed', String(selected)); });
-    window.dispatchEvent(new CustomEvent('travelmate:accent-change', { detail: { accent: accent } }));
+  function readAccent() {
+    var saved = '';
+    try { saved = localStorage.getItem(ACCENT_KEY) || ''; } catch (error) {}
+    var accent = normalizeAccent(saved);
+    if (saved && saved !== accent) {
+      try { localStorage.setItem(ACCENT_KEY, accent); } catch (error) {}
+    }
+    return accent;
   }
 
-  function saveAccent(accent) { accent = ACCENTS[accent] ? accent : 'ocean'; try { localStorage.setItem(ACCENT_KEY, accent); } catch (error) {} applyAccent(accent); }
+  function decorateAccentChoices(accent) {
+    document.querySelectorAll('[data-accent-choice]').forEach(function (button) {
+      var choice = normalizeAccent(button.dataset.accentChoice);
+      var palette = ACCENTS[choice];
+      if (palette) {
+        button.style.setProperty('--accent-swatch', palette.primary);
+        button.style.setProperty('--accent-swatch-soft', palette.soft);
+        if (!button.getAttribute('title')) button.setAttribute('title', palette.label);
+      }
+      var selected = choice === accent;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function applyAccent(accent) {
+    accent = normalizeAccent(accent);
+    var palette = ACCENTS[accent];
+    root.dataset.accent = accent;
+    root.style.setProperty('--tm-brand-primary', palette.primary);
+    root.style.setProperty('--tm-brand-primary-strong', palette.strong);
+    root.style.setProperty('--tm-brand-primary-dark', palette.dark);
+    root.style.setProperty('--tm-brand-soft', palette.soft);
+    root.style.setProperty('--tm-action-primary', palette.primary);
+    root.style.setProperty('--tm-action-primary-hover', palette.strong);
+    root.style.setProperty('--tm-action-primary-active', palette.dark);
+    root.style.setProperty('--tm-accent-soft', palette.soft);
+    root.style.setProperty('--tm-accent-soft-text', palette.dark);
+    root.style.setProperty('--tm-accent-swatch', palette.primary);
+    decorateAccentChoices(accent);
+    window.dispatchEvent(new CustomEvent('travelmate:accent-change', { detail: { accent: accent, palette: palette } }));
+  }
+
+  function saveAccent(accent) {
+    accent = normalizeAccent(accent);
+    try { localStorage.setItem(ACCENT_KEY, accent); } catch (error) {}
+    applyAccent(accent);
+  }
 
   function applyTheme(theme) {
     theme = theme === 'dark' ? 'dark' : 'light';
@@ -60,17 +104,28 @@
 
   function createToggle() {
     document.querySelectorAll('[data-theme-toggle]').forEach(function (button) { button.remove(); });
+    decorateAccentChoices(readAccent());
   }
 
   applyTheme(readTheme());
   applyAccent(readAccent());
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      createToggle();
-    });
+    document.addEventListener('DOMContentLoaded', createToggle);
   } else {
     createToggle();
   }
-  document.addEventListener('click', function (event) { var choice = event.target.closest('[data-accent-choice]'); if (choice) saveAccent(choice.dataset.accentChoice); });
-  window.TravelMateTheme = { get: readTheme, set: saveTheme, getAccent: readAccent, setAccent: saveAccent, accents: ACCENTS };
+
+  document.addEventListener('click', function (event) {
+    var choice = event.target.closest('[data-accent-choice]');
+    if (choice) saveAccent(choice.dataset.accentChoice);
+  });
+
+  window.TravelMateTheme = {
+    get: readTheme,
+    set: saveTheme,
+    getAccent: readAccent,
+    setAccent: saveAccent,
+    accents: ACCENTS,
+    normalizeAccent: normalizeAccent
+  };
 })();
