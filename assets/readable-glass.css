@@ -1512,6 +1512,10 @@ html body.tm-new-design[data-trip-view="documents"] #documents#documents .doc-ro
   --tm-card-blur:none
 }
 
+html body.tm-new-design[data-trip-view="transport"] #transport#transport .service-card.service-info-link{
+  --tm-card-blur:none
+}
+
 html body.tm-new-design[data-trip-view="plan"] #plan#plan .past-days-strip{
   border-color:var(--tm-card-border);
   background:var(--tm-card-bg-nested);
