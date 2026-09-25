@@ -382,10 +382,10 @@ html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actio
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions a:first-child{
+  --tm-overview-muted:var(--tm-text-on-action);
+  --tm-overview-green:var(--tm-text-on-action);
   border-color:var(--tm-action-primary-active)!important;
   background:var(--tm-action-primary)!important;
-  color:var(--tm-text-on-action)!important;
-  -webkit-text-fill-color:var(--tm-text-on-action)!important;
   box-shadow:inset 3px 0 0 var(--tm-action-primary-active)!important
 }
 
