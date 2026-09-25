@@ -65,6 +65,12 @@ test('accent themes use semantic tokens while danger remains semantic',()=>{
   assert.match(css,/--tm-control-current-bg:var\(--tm-action-danger\)/);
 });
 
+test('Plan primary follows the theme while destructive action stays red',()=>{
+  const themeCss=read('assets/theme.css');
+  assert.match(themeCss,/planner-action\.planner-action\.primary[\s\S]*var\(--tm-action-primary/);
+  assert.match(themeCss,/planner-action\.planner-action\.planner-danger[\s\S]*var\(--tm-action-danger\)/);
+});
+
 test('theme picker is keyboard-visible and responsive',()=>{
   const css=read('assets/security-center.css');
   assert.match(css,/\.settings-accent-picker button:focus-visible/);
