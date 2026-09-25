@@ -2,10 +2,15 @@
   'use strict';
 
   var release = {
-    version: '1.55.18',
-    label: 'Six-palette theme system',
+    version: '1.55.19',
+    label: 'Surface Authority 2.0',
     date: '25 בספטמבר 2026',
     highlights: [
+      'Surface Authority 2.0: לכל מסכי הטיול יש כעת מודל חומר אחד עם Canvas, Glass, Nested, Control ו-Photo Glass במקום כמה מערכות CSS מתחרות.',
+      'Weather עבר ל-Photo Glass שקוף יותר עם blur של 20px; כרטיסים ראשיים משתמשים ב-18px וכרטיסים פנימיים ב-14px, כך שהצילום נשאר נוכח בלי לפגוע בקריאות.',
+      'הוסרו בעלי חומר ישנים מ-Overview, Places ומובייל, וכספת המסמכים ו-empty state של תחבורה הועברו לאותם semantic surface tokens.',
+      'Surface/text tokens משויכים יחד ב-Light וב-Dark כדי למנוע חזרה של טקסט לבן על כרטיס לבן; שדות קלט נשארים אטומים יותר בכוונה.',
+      'נוסף fallback ל-prefers-reduced-transparency שמעלה אטימות למשתמשים שמבקשים פחות שקיפות.',
       'Theme System חדש: המשתמש יכול לבחור בין Ocean, Emerald, Teal, Sunset, Plum ו-Pink מתוך ההגדרות.',
       'צבע הערכה משפיע כעת גם על ה-App Chrome, הניווט ו-Mate בגוון מאופק, תוך שמירת WhatsApp, Danger, Warning ו-Success בצבעים הסמנטיים שלהם.',
       'White Blocker Audit: מעטפות מסך גדולות ב-Plan, Budget, Documents, Transport, Getaways, Group ו-Memories אינן יוצרות עוד לוחות לבנים שמסתירים את תמונת היעד; שדות קלט נשארים ניטרליים וקריאים.',

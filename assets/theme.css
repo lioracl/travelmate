@@ -271,8 +271,7 @@ body.tm-new-design .auto-place-preview-item.excluded .auto-place-preview-copy{
 
 /* Structural wrappers remain transparent instead of becoming nested cards. */
 body.tm-new-design[data-trip-view="plan"] #plan .generated-day,
-body.tm-new-design[data-trip-view="documents"] #documents,
-body.tm-new-design[data-trip-view="documents"] #documents .document-vault{
+body.tm-new-design[data-trip-view="documents"] #documents{
   border:0!important;
   background:transparent!important;
   box-shadow:none!important;

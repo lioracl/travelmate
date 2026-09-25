@@ -642,10 +642,13 @@ html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overvie
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 26px rgba(0,0,0,.14);
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.12),0 4px 12px rgba(0,0,0,.1);
   --tm-card-shadow-hover:inset 0 1px 0 rgba(255,255,255,.24),0 13px 30px rgba(0,0,0,.18);
-  --tm-card-blur:none;
-  --tm-large-surface-blur:none;
-  --tm-material-blur:none;
-  --tm-weather-card-blur:blur(4px) saturate(105%);
+  --tm-surface-blur:blur(18px) saturate(118%);
+  --tm-surface-blur-nested:blur(14px) saturate(114%);
+  --tm-surface-blur-photo:blur(20px) saturate(112%);
+  --tm-card-blur:var(--tm-surface-blur);
+  --tm-large-surface-blur:var(--tm-surface-blur);
+  --tm-material-blur:var(--tm-surface-blur);
+  --tm-weather-card-blur:var(--tm-surface-blur-photo);
   --tm-card-padding:20px;
   --tm-card-padding-compact:14px;
   --tm-card-text:#F7FAFA;
@@ -1002,7 +1005,7 @@ html body.tm-new-design main.content :is(
   --tm-card-surface:var(--tm-card-bg-compact);
   --tm-card-elevation:var(--tm-card-shadow-compact);
   --tm-card-corner:var(--tm-card-radius-compact);
-  --tm-card-blur:none;
+  --tm-card-blur:var(--tm-surface-blur-nested);
   padding:var(--tm-card-padding-compact)!important
 }
 
@@ -1014,7 +1017,7 @@ html body.tm-new-design main.content :is(
 ){
   --tm-card-surface:var(--tm-card-bg-nested);
   --tm-card-elevation:var(--tm-card-shadow-compact);
-  --tm-card-blur:none
+  --tm-card-blur:var(--tm-surface-blur-nested)
 }
 
 html body.tm-new-design main.content :is(
@@ -1144,56 +1147,9 @@ html body.tm-new-design[data-trip-view="overview"] .assistant-actions button{min
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-mobile-header-height:72px;
   --tm-overview-weather-height:118px;
-  --tm-surface-dark-glass-strong:rgba(18,56,63,.22);
-  --tm-surface-dark-glass-soft:rgba(16,30,34,.04);
-  --tm-control-surface:rgba(244,243,239,.78);
-  --tm-material-blur:none;
   --tm-photo-scrim-start:rgba(18,56,63,.08);
   --tm-photo-scrim-mid:rgba(18,56,63,.11);
-  --tm-photo-scrim-end:rgba(18,56,63,.14);
-  --tm-overview-card:var(--tm-glass-large-bg);
-  --tm-overview-card-soft:var(--tm-surface-dark-glass-soft);
-  --tm-overview-border:var(--tm-border-on-dark);
-  --tm-overview-text:var(--tm-text-on-photo);
-  --tm-overview-muted:var(--tm-text-on-photo-secondary);
-  --tm-overview-green:var(--tm-brand-primary);
-  --tm-overview-green-soft:rgba(169,220,231,.48);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.14),rgba(16,30,34,.16));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.16),rgba(16,30,34,.18));
-  --tm-weather-card-text:var(--tm-text-on-photo);
-  --tm-card-bg:var(--tm-glass-large-bg);
-  --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
-  --tm-card-bg-compact:rgba(16,30,34,.06);
-  --tm-card-bg-hover:var(--tm-glass-large-bg-hover);
-  --tm-card-text:var(--tm-text-on-photo);
-  --tm-card-heading:var(--tm-text-on-photo);
-  --tm-card-secondary:var(--tm-text-on-photo-secondary);
-  --tm-card-muted:var(--tm-text-on-photo-muted);
-  --tm-card-link:var(--tm-brand-soft);
-  --tm-card-icon:var(--tm-brand-soft);
-  --tm-card-border:var(--tm-border-on-dark);
-  --tm-card-border-hover:var(--tm-brand-primary);
-  --tm-card-shadow:0 6px 18px rgba(0,0,0,.12);
-  --tm-card-shadow-compact:0 2px 8px rgba(0,0,0,.08);
-  --tm-card-control:var(--tm-control-surface);
-  --tm-card-control-border:rgba(24,35,38,.26);
-  --tm-card-control-text:var(--tm-control-text);
-  --tm-card-control-placeholder:#5A666A;
-  --tm-card-control-selected:rgba(169,220,231,.48);
-  --tm-card-blur:none;
-  --tm-weather-card-blur:blur(4px) saturate(104%);
-  --tm-custom-overview-surface:var(--tm-glass-large-bg);
-  --tm-custom-overview-subtle:var(--tm-card-bg-nested);
-  --tm-overview-green-soft:var(--tm-card-control-selected);
-  --tm-card-bg:var(--tm-custom-overview-surface);
-  --tm-app-glass-screen:var(--tm-custom-overview-surface);
-  --tm-app-glass-card:var(--tm-custom-overview-subtle);
-  --tm-app-glass-card-strong:var(--tm-custom-overview-subtle);
-  --tm-app-glass-border:var(--tm-border-subtle);
-  --tm-app-glass-border-soft:var(--tm-border-subtle);
-  --tm-app-glass-text:var(--tm-text-on-photo);
-  --tm-app-glass-muted:var(--tm-text-on-photo-secondary);
-  --tm-app-glass-shadow:var(--tm-card-shadow)
+  --tm-photo-scrim-end:rgba(18,56,63,.14)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .custom-hero :is(h1,p,.hero-country-line,.hero-back,.share){
   color:var(--tm-text-on-photo);
@@ -1250,43 +1206,9 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .ai-orb-badge{
   -webkit-text-fill-color:var(--tm-control-text)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-surface-dark-glass-strong:rgba(18,56,63,.24);
-  --tm-surface-dark-glass-soft:rgba(16,30,34,.06);
-  --tm-control-surface:rgba(244,243,239,.8);
-  --tm-material-blur:none;
   --tm-photo-scrim-start:rgba(18,56,63,.1);
   --tm-photo-scrim-mid:rgba(18,56,63,.13);
-  --tm-photo-scrim-end:rgba(18,56,63,.16);
-  --tm-overview-card:var(--tm-glass-large-bg);
-  --tm-overview-card-soft:var(--tm-surface-dark-glass-soft);
-  --tm-overview-border:var(--tm-border-on-dark);
-  --tm-overview-text:var(--tm-text-on-photo);
-  --tm-overview-muted:var(--tm-text-on-photo-secondary);
-  --tm-overview-green:var(--tm-brand-primary);
-  --tm-overview-green-soft:rgba(169,220,231,.52);
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(16,30,34,.15),rgba(16,30,34,.17));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(16,30,34,.17),rgba(16,30,34,.19));
-  --tm-card-text:var(--tm-text-on-photo);
-  --tm-card-heading:var(--tm-text-on-photo);
-  --tm-card-secondary:var(--tm-text-on-photo-secondary);
-  --tm-card-muted:var(--tm-text-on-photo-muted);
-  --tm-card-link:var(--tm-brand-soft);
-  --tm-card-icon:var(--tm-brand-soft);
-  --tm-card-bg:var(--tm-glass-large-bg);
-  --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
-  --tm-card-bg-compact:rgba(16,30,34,.06);
-  --tm-card-bg-hover:var(--tm-glass-large-bg-hover);
-  --tm-card-border:var(--tm-border-on-dark);
-  --tm-card-border-hover:var(--tm-brand-primary);
-  --tm-card-shadow:0 6px 18px rgba(0,0,0,.16);
-  --tm-card-shadow-compact:0 2px 8px rgba(0,0,0,.1);
-  --tm-card-control:var(--tm-control-surface);
-  --tm-card-control-border:rgba(24,35,38,.3);
-  --tm-card-control-text:var(--tm-control-text);
-  --tm-card-control-placeholder:#5A666A;
-  --tm-card-control-selected:rgba(169,220,231,.52);
-  --tm-card-blur:none;
-  --tm-weather-card-blur:blur(4px) saturate(104%)
+  --tm-photo-scrim-end:rgba(18,56,63,.16)
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
@@ -1452,58 +1374,18 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
 
 /* Three reference components: material comes only from the shared tm-card tokens. */
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-surface-dark-glass-strong:rgba(18,56,63,.22);
-  --tm-surface-dark-glass-soft:rgba(16,30,34,.04);
-  --tm-control-surface:rgba(244,243,239,.78);
-  --tm-material-blur:none;
   --tm-photo-scrim-start:rgba(24,35,38,.08);
   --tm-photo-scrim-mid:rgba(24,35,38,.11);
   --tm-photo-scrim-end:rgba(24,35,38,.14);
-  --tm-card-text:var(--tm-text-on-photo);
-  --tm-card-heading:var(--tm-text-on-photo);
-  --tm-card-secondary:var(--tm-text-on-photo-secondary);
-  --tm-card-muted:var(--tm-text-on-photo-muted);
-  --tm-card-control-text:var(--tm-control-text);
-  --tm-card-link:var(--tm-brand-primary);
-  --tm-card-icon:var(--tm-brand-primary);
-  --tm-card-bg:var(--tm-glass-large-bg);
-  --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
-  --tm-card-bg-compact:rgba(16,30,34,.06);
-  --tm-card-border:var(--tm-border-on-dark);
-  --tm-card-shadow:0 6px 18px rgba(0,0,0,.12);
-  --tm-card-shadow-compact:0 2px 8px rgba(24,35,38,.06);
-  --tm-card-control:var(--tm-control-surface);
-  --tm-card-control-border:rgba(24,35,38,.26);
-  --tm-card-control-placeholder:#5A666A;
-  --tm-card-border-hover:var(--tm-brand-primary);
-  --tm-card-control-selected:rgba(169,220,231,.48);
-  --tm-card-control-focus:var(--tm-brand-primary);
-  --tm-places-control-blur:none;
-  --tm-places-picker-bg:var(--tm-surface-neutral);
-  --tm-card-blur:none
+  --tm-places-control-blur:var(--tm-surface-blur-nested);
+  --tm-places-picker-bg:var(--tm-surface-control)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-surface-dark-glass-strong:rgba(18,56,63,.24);
-  --tm-surface-dark-glass-soft:rgba(16,30,34,.06);
-  --tm-control-surface:rgba(244,243,239,.8);
-  --tm-material-blur:none;
   --tm-photo-scrim-start:rgba(24,35,38,.1);
   --tm-photo-scrim-mid:rgba(24,35,38,.13);
   --tm-photo-scrim-end:rgba(24,35,38,.16);
-  --tm-card-bg:var(--tm-glass-large-bg);
-  --tm-card-bg-nested:var(--tm-surface-dark-glass-soft);
-  --tm-card-bg-compact:rgba(16,30,34,.06);
-  --tm-card-border:var(--tm-border-on-dark);
-  --tm-card-shadow:0 8px 22px rgba(0,0,0,.24);
-  --tm-card-shadow-compact:0 3px 10px rgba(0,0,0,.16);
-  --tm-card-control:var(--tm-control-surface);
-  --tm-card-control-border:rgba(24,35,38,.3);
-  --tm-card-control-text:var(--tm-control-text);
-  --tm-card-control-placeholder:#5A666A;
-  --tm-card-border-hover:var(--tm-brand-primary);
-  --tm-card-control-selected:rgba(169,220,231,.52);
-  --tm-places-control-blur:none;
-  --tm-places-picker-bg:var(--tm-surface-neutral)
+  --tm-places-control-blur:var(--tm-surface-blur-nested);
+  --tm-places-picker-bg:var(--tm-surface-control)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] main.content>section#places{
   border:0;
@@ -1905,7 +1787,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"] #place
     --tm-glass-bg:rgba(16,30,34,.94);
     --tm-readable-surface:linear-gradient(135deg,rgba(16,30,34,.94),rgba(18,56,63,.92));
     --tm-readable-surface-soft:rgba(16,30,34,.9);
-    --tm-card-blur:none
+    --tm-card-blur:var(--tm-surface-blur-nested)
   }
 }
 
@@ -1988,29 +1870,8 @@ html body .tm-skip-link:focus-visible{
   pointer-events:auto
 }
 
-/* Phone glass must remain legible over detailed destination photography. */
-@media(max-width:650px){
-  html body[data-trip-kind="custom"].tm-new-design[data-trip-view]{
-    --tm-glass-large-bg:linear-gradient(135deg,rgba(16,30,34,.56),rgba(18,56,63,.48));
-    --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(16,30,34,.62),rgba(18,56,63,.54));
-    --tm-surface-dark-glass:rgba(16,30,34,.52);
-    --tm-surface-dark-glass-strong:rgba(18,56,63,.62);
-    --tm-surface-dark-glass-soft:rgba(16,30,34,.34);
-    --tm-card-border:rgba(255,255,255,.34);
-    --tm-border-on-dark:rgba(255,255,255,.3);
-    --tm-border-on-dark-strong:rgba(255,255,255,.4);
-    --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 10px 28px rgba(0,0,0,.24);
-    --tm-card-control:rgba(215,236,239,.94);
-    --tm-control-surface:rgba(215,236,239,.94)
-  }
-  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] :is(
-    .mobile-header,.custom-hero,.card,.module,.weather-top-widget,.nearby-card,.saved-place,
-    .generated-day,.plan-card,.budget-card,.navo-trip-banner
-  ){
-    border-color:var(--tm-card-border)!important
-  }
-}
-
+/* Mobile uses the same Surface Authority 2.0 materials as desktop.
+   Only geometry belongs in mobile-specific rules; surface opacity is not redefined here. */
 
 /* Night design system pass — shared geometry and interaction authority for core trip screens. */
 :root{
@@ -2112,81 +1973,157 @@ body.tm-new-design[data-trip-view] main.content :is(#transport,#getaways,#group,
 }
 
 
-/* Destination photo background: trip content uses readable glass surfaces over the app-wide destination image. */
-html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design{
+/* Surface Authority 2.0 — one material model for all custom-trip screens.
+   Canvas = destination photo. Glass = translucent + blur. Nested = lighter depth.
+   Controls = readable input/action surface. Photo glass = dark translucent material. */
+html body[data-trip-kind="custom"].tm-new-design{
   --tm-trip-page-bg:transparent;
   --tm-page-section-surface:transparent;
   --tm-page-section-border:transparent;
   --tm-page-section-shadow:none;
+
+  --tm-surface-glass:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(250,253,251,.58)),
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 3%,rgba(228,241,234,.46)));
+  --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(247,251,249,.48));
+  --tm-surface-control:rgba(255,255,255,.84);
+  --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.28),rgba(11,45,50,.22));
+  --tm-surface-border:color-mix(in srgb,var(--tm-brand-primary,#147D92) 18%,rgba(255,255,255,.62));
+  --tm-surface-border-strong:color-mix(in srgb,var(--tm-brand-primary,#147D92) 34%,rgba(255,255,255,.56));
+  --tm-surface-text:#173f32;
+  --tm-surface-text-muted:#526d63;
+  --tm-surface-photo-text:#F7FAFA;
+  --tm-surface-photo-muted:rgba(247,250,250,.78);
+
   --tm-readable-surface:transparent;
-  --tm-readable-surface-soft:color-mix(in srgb,var(--tm-accent-soft,#D7EDF2) 12%,rgba(248,252,250,.58));
-  --tm-readable-border:color-mix(in srgb,var(--tm-brand-primary,#147D92) 20%,rgba(255,255,255,.52));
-  --tm-readable-text:#173f32;
-  --tm-readable-muted:#526d63;
+  --tm-readable-surface-soft:var(--tm-surface-glass);
+  --tm-readable-border:var(--tm-surface-border);
+  --tm-readable-text:var(--tm-surface-text);
+  --tm-readable-muted:var(--tm-surface-text-muted);
   --tm-readable-control:var(--tm-action-secondary);
-  --tm-readable-control-text:var(--tm-accent-soft-text,#0B5869);
-  --tm-readable-shadow:0 10px 30px rgba(8,39,29,.14);
-  --tm-glass-large-bg:linear-gradient(135deg,rgba(255,255,255,.82),rgba(226,241,233,.72));
-  --tm-glass-large-bg-hover:linear-gradient(135deg,rgba(255,255,255,.9),rgba(231,245,238,.8));
-  --tm-card-bg:var(--tm-glass-large-bg);
-  --tm-card-bg-nested:rgba(239,247,243,.72);
-  --tm-card-bg-compact:rgba(247,251,249,.72);
+  --tm-readable-control-text:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
+  --tm-readable-shadow:0 10px 28px rgba(8,39,29,.12);
+
+  --tm-glass-large-bg:var(--tm-surface-glass);
+  --tm-glass-large-bg-hover:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 6%,rgba(250,253,251,.66)),
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 5%,rgba(228,241,234,.54)));
+  --tm-card-bg:var(--tm-surface-glass);
+  --tm-card-bg-nested:var(--tm-surface-nested);
+  --tm-card-bg-compact:var(--tm-surface-nested);
   --tm-card-bg-hover:var(--tm-glass-large-bg-hover);
-  --tm-card-border:rgba(255,255,255,.56);
-  --tm-card-border-hover:rgba(20,125,146,.5);
-  --tm-card-shadow:0 10px 30px rgba(8,39,29,.15);
-  --tm-card-shadow-compact:0 4px 14px rgba(8,39,29,.11);
-  --tm-card-shadow-hover:0 14px 34px rgba(8,39,29,.2);
-  --tm-card-text:#173f32;
-  --tm-card-heading:#173f32;
-  --tm-card-secondary:#4f675e;
+  --tm-card-border:var(--tm-surface-border);
+  --tm-card-border-hover:var(--tm-brand-primary);
+  --tm-card-shadow:0 10px 28px rgba(8,39,29,.12);
+  --tm-card-shadow-compact:0 4px 12px rgba(8,39,29,.08);
+  --tm-card-shadow-hover:0 14px 32px rgba(8,39,29,.16);
+  --tm-card-text:var(--tm-surface-text);
+  --tm-card-heading:var(--tm-surface-text);
+  --tm-card-secondary:var(--tm-surface-text-muted);
   --tm-card-muted:#687d74;
-  --tm-card-link:#0b6476;
-  --tm-card-icon:#147d92;
-  --tm-card-control:rgba(255,255,255,.86);
-  --tm-card-control-border:rgba(55,95,80,.22);
+  --tm-card-link:var(--tm-brand-primary-dark);
+  --tm-card-icon:var(--tm-brand-primary);
+  --tm-card-control:var(--tm-surface-control);
+  --tm-card-control-border:rgba(55,95,80,.24);
   --tm-card-control-text:#173f32;
-  --tm-card-control-selected:rgba(213,237,239,.86);
-  --tm-overview-card:linear-gradient(135deg,rgba(255,255,255,.8),rgba(226,241,233,.7));
-  --tm-overview-card-soft:rgba(255,255,255,.74);
-  --tm-overview-border:rgba(255,255,255,.54);
-  --tm-overview-text:#173f32;
-  --tm-overview-muted:#4f675e;
+  --tm-card-control-placeholder:#5A666A;
+  --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 16%,rgba(255,255,255,.82));
+
+  --tm-overview-card:var(--tm-surface-glass);
+  --tm-overview-card-soft:var(--tm-surface-nested);
+  --tm-overview-border:var(--tm-surface-border);
+  --tm-overview-text:var(--tm-surface-text);
+  --tm-overview-muted:var(--tm-surface-text-muted);
+
+  --tm-weather-card-bg:var(--tm-surface-photo);
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(8,24,20,.34),rgba(11,45,50,.28));
+  --tm-weather-card-text:var(--tm-surface-photo-text);
+  --tm-weather-card-blur:var(--tm-surface-blur-photo);
+
+  --tm-glass-shell-bg:var(--tm-surface-glass);
+  --tm-glass-shell-border:var(--tm-surface-border);
+  --tm-accent-soft:#D7EDF2;
+  --tm-accent-soft-text:var(--tm-brand-primary-dark);
+  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 18%,rgba(244,243,239,.9));
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 26%,rgba(244,243,239,.92));
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(244,243,239,.94));
+  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 30%,rgba(5,20,16,.78));
+  --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(255,255,255,.24));
   background-color:transparent;
 }
+
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
-  --tm-trip-page-bg:transparent;
-  --tm-page-section-surface:transparent;
-  --tm-page-section-border:transparent;
-  --tm-page-section-shadow:none;
-  --tm-readable-surface:transparent;
-  --tm-readable-surface-soft:color-mix(in srgb,var(--tm-brand-primary,#147D92) 9%,rgba(12,31,25,.62));
+  --tm-surface-glass:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 8%,rgba(12,31,25,.54)),
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 6%,rgba(8,24,20,.48)));
+  --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary,#147D92) 7%,rgba(15,34,28,.44));
+  --tm-surface-control:color-mix(in srgb,var(--tm-brand-primary,#147D92) 8%,rgba(17,38,31,.86));
+  --tm-surface-photo:linear-gradient(135deg,rgba(5,18,15,.34),rgba(8,32,35,.28));
+  --tm-surface-border:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(255,255,255,.22));
+  --tm-surface-border-strong:color-mix(in srgb,var(--tm-brand-primary) 42%,rgba(255,255,255,.26));
+  --tm-surface-text:#F7FAFA;
+  --tm-surface-text-muted:rgba(247,250,250,.78);
+  --tm-surface-photo-text:#F7FAFA;
+  --tm-surface-photo-muted:rgba(247,250,250,.78);
+
   --tm-readable-control:var(--tm-action-secondary);
-  --tm-readable-control-text:#f7fafa;
-  --tm-card-bg:linear-gradient(135deg,rgba(17,34,29,.82),rgba(10,26,22,.72));
-  --tm-card-bg-nested:rgba(19,37,31,.72);
-  --tm-card-bg-compact:rgba(20,39,33,.72);
-  --tm-card-control:rgba(25,46,39,.82);
-  background-color:transparent;
+  --tm-readable-control-text:#F7FAFA;
+  --tm-card-control-text:#F7FAFA;
+  --tm-card-control-placeholder:rgba(247,250,250,.62);
+  --tm-card-muted:rgba(247,250,250,.68);
+  --tm-card-link:color-mix(in srgb,var(--tm-brand-primary) 48%,#fff);
+  --tm-card-icon:color-mix(in srgb,var(--tm-brand-primary) 58%,#fff);
+  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(18,42,34,.82));
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(18,42,34,.86));
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 44%,rgba(18,42,34,.9));
+  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 24%,rgba(4,15,12,.88));
+  --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 42%,rgba(255,255,255,.18));
 }
-html body[data-trip-kind="custom"].tm-new-design main.content{
+
+/* Canvas never becomes a card. */
+html body[data-trip-kind="custom"].tm-new-design main.content,
+html body[data-trip-kind="custom"].tm-new-design main.content :is(
+  #overview,#plan,#places,#budget,#documents,#transport,#getaways,#group,#memories,#destination-info
+){
   background:transparent;
 }
+
+/* Hero copy is the only content family that always uses photo text. */
 html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-hero{
-  color:#fff;
+  color:var(--tm-surface-photo-text);
 }
 html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-hero :is(h1,p,span,strong,a,button,i){
   color:inherit;
   -webkit-text-fill-color:currentColor;
 }
-html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.content :is(
-  #plan,#places,#budget,#documents,#transport,#getaways,#group,#memories,#destination-info
-) :is(.section-head,.card,.panel,.module,.generated-day>div,.planned-activity,.saved-place,.nearby-panel,.nearby-result,.doc-row,.expense-workspace,.expense-record,.budget-charts,.currency-converter,.transport-card,.service-card,.group-card,.album-card,.memory-card,.trip-summary-card){
-  text-shadow:none;
+
+/* Weather is photo-glass: more transparent, more blur, stable white text. */
+html body[data-trip-kind="custom"].tm-new-design .weather-top-widget{
+  border-color:rgba(255,255,255,.28);
+  background:var(--tm-surface-photo);
+  color:var(--tm-surface-photo-text);
+  box-shadow:0 10px 28px rgba(0,0,0,.16);
+  -webkit-backdrop-filter:var(--tm-surface-blur-photo);
+  backdrop-filter:var(--tm-surface-blur-photo);
+}
+html body[data-trip-kind="custom"].tm-new-design .weather-top-widget :is(
+  .weather-top-copy small,.weather-top-chevron
+){
+  color:var(--tm-surface-photo-muted);
 }
 
+/* Theme affects interaction and tint, never semantic danger/success meaning. */
+html[data-accent]{
+  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-primary) 38%,transparent);
+  --tm-border-control:color-mix(in srgb,var(--tm-brand-primary) 25%,rgba(24,35,38,.24));
+  --tm-info:var(--tm-brand-primary-dark);
+}
+html body.tm-new-design :is(.danger,[data-delete],[data-remove],[data-delete-expense]){
+  --tm-control-current-bg:var(--tm-action-danger);
+  --tm-control-current-border:var(--tm-action-danger)
+}
 
-/* Design correction: collapsed Plan days retain a useful day header only. */
+/* Collapsed Plan days keep only their useful day header. */
 html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div>:not(.day-heading){
   display:none
 }
@@ -2194,240 +2131,16 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapse
   padding-block:6px
 }
 
-
-/* Photo-background restore: cards float over the destination image instead of forming a white page. */
-html body[data-trip-kind="custom"].tm-new-design main.content :is(
-  #overview,#plan,#places,#budget,#documents,#transport,#getaways,#group,#memories,#destination-info
-){
-  background:transparent;
-}
-html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.content :is(
-  .overview-status-card,.trip-home-actions,.planner-toolbar,.planner-composer,.generated-day>div,
-  .planned-activity,.saved-place,.nearby-panel,.nearby-result,.lodging-setup,.budget-smart-summary,
-  .expense-workspace,.currency-converter,.expense-record,.budget-charts,.document-vault,.doc-row,
-  .doc-category-file,.transport-card,.service-card,.group-card,.album-card,.memory-card,.trip-summary-card
-){
-  backdrop-filter:blur(16px) saturate(118%);
-  -webkit-backdrop-filter:blur(16px) saturate(118%);
-}
-html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.content :is(
-  .generated-day>div,.nearby-panel,.lodging-setup,.budget-smart-summary,.expense-workspace,
-  .currency-converter,.budget-charts,.document-vault,.transport-card,.service-card,.group-card,
-  .album-card,.memory-card,.trip-summary-card
-){
-  border-color:rgba(255,255,255,.58);
-  box-shadow:0 12px 34px rgba(8,39,29,.15);
-}
-@media(max-width:650px){
-  html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design{
-    --tm-readable-surface:transparent;
-    --tm-readable-surface-soft:color-mix(in srgb,var(--tm-accent-soft,#D7EDF2) 12%,rgba(248,252,250,.62));
-    --tm-glass-large-bg:linear-gradient(135deg,color-mix(in srgb,var(--tm-brand-primary,#147D92) 6%,rgba(255,255,255,.68)),rgba(229,242,235,.58));
-    --tm-card-bg-nested:color-mix(in srgb,var(--tm-accent-soft,#D7EDF2) 8%,rgba(240,248,244,.64));
-    --tm-card-control:rgba(255,255,255,.84)
+/* Accessibility: honor reduced-transparency environments when supported. */
+@media (prefers-reduced-transparency:reduce){
+  html body[data-trip-kind="custom"].tm-new-design{
+    --tm-surface-glass:color-mix(in srgb,var(--tm-brand-primary) 4%,rgba(248,252,250,.94));
+    --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary) 4%,rgba(247,251,249,.96));
+    --tm-surface-photo:rgba(8,24,20,.88)
   }
-}
-
-
-/* User-selectable accent themes: semantic roles, not hard-coded component colors. */
-html[data-accent]{
-  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 18%,#F4F3EF);
-  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 26%,#F4F3EF);
-  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 34%,#F4F3EF);
-  --tm-action-ghost-hover:color-mix(in srgb,var(--tm-brand-primary) 16%,transparent);
-  --tm-surface-selected:color-mix(in srgb,var(--tm-brand-primary) 18%,rgba(255,255,255,.78));
-  --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 18%,rgba(255,255,255,.84));
-  --tm-card-border-hover:color-mix(in srgb,var(--tm-brand-primary) 58%,transparent);
-  --tm-border-control:color-mix(in srgb,var(--tm-brand-primary) 25%,rgba(24,35,38,.24));
-  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-primary) 38%,transparent);
-  --tm-card-link:var(--tm-brand-primary-dark);
-  --tm-card-icon:var(--tm-brand-primary);
-  --tm-info:var(--tm-brand-primary-dark)
-}
-html[data-theme="dark"][data-accent]{
-  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,#E7EFEC);
-  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 32%,#E7EFEC);
-  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 40%,#E7EFEC);
-  --tm-surface-selected:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(18,38,32,.88));
-  --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 26%,#E7EFEC);
-  --tm-card-border-hover:color-mix(in srgb,var(--tm-brand-soft) 62%,transparent);
-  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-soft) 52%,transparent);
-  --tm-card-link:var(--tm-brand-soft);
-  --tm-card-icon:var(--tm-brand-soft)
-}
-
-/* The destination photo stays dominant; the chosen theme only tints glass by a small amount. */
-html:not([data-theme="dark"])[data-accent] body[data-trip-kind="custom"].tm-new-design{
-  --tm-glass-large-bg:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-brand-primary) 7%,rgba(255,255,255,.84)),
-    color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(226,241,233,.74)));
-  --tm-glass-large-bg-hover:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-brand-primary) 9%,rgba(255,255,255,.9)),
-    color-mix(in srgb,var(--tm-brand-primary) 7%,rgba(231,245,238,.8)));
-  --tm-card-bg:var(--tm-glass-large-bg);
-  --tm-card-bg-nested:color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(239,247,243,.76));
-  --tm-card-bg-compact:color-mix(in srgb,var(--tm-brand-primary) 4%,rgba(247,251,249,.76));
-  --tm-overview-card:var(--tm-glass-large-bg);
-  --tm-overview-card-soft:color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(255,255,255,.76))
-}
-html[data-theme="dark"][data-accent] body[data-trip-kind="custom"].tm-new-design{
-  --tm-glass-large-bg:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-brand-primary) 11%,rgba(17,34,29,.84)),
-    color-mix(in srgb,var(--tm-brand-primary) 8%,rgba(10,26,22,.76)));
-  --tm-glass-large-bg-hover:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-brand-primary) 15%,rgba(17,34,29,.88)),
-    color-mix(in srgb,var(--tm-brand-primary) 11%,rgba(10,26,22,.8)));
-  --tm-card-bg:var(--tm-glass-large-bg);
-  --tm-card-bg-nested:color-mix(in srgb,var(--tm-brand-primary) 8%,rgba(19,37,31,.76));
-  --tm-card-bg-compact:color-mix(in srgb,var(--tm-brand-primary) 6%,rgba(20,39,33,.76))
-}
-
-/* Secondary controls use a themed soft fill; form fields remain neutral for readability. */
-html body.tm-new-design[data-trip-kind="custom"] main.content :is(
-  .planner-action:not(.primary):not(.planner-danger),
-  .planner-more>summary,
-  .nearby-category-chips button,
-  .nearby-mode-bar button,
-  .nearby-map-button,
-  .tm-place-card__primary-actions button:not(.nearby-search),
-  .documents-category-nav button,
-  .doc-row>button:not([data-delete]),
-  .budget-settings-toggle,
-  .budget-chart-actions button,
-  .lodging-toggle,
-  .auto-place-launch
-){
-  --tm-control-current-bg:var(--tm-action-secondary);
-  --tm-control-current-border:color-mix(in srgb,var(--tm-brand-primary) 30%,var(--tm-card-control-border));
-  --tm-control-current-text:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
-  --tm-card-control:var(--tm-action-secondary);
-  --tm-card-control-border:var(--tm-control-current-border);
-  --tm-card-control-text:var(--tm-control-current-text)
-}
-html body.tm-new-design[data-trip-kind="custom"] main.content :is(
-  .nearby-category-chips button.active,
-  .nearby-category-chips button[aria-pressed="true"],
-  .nearby-mode-bar button.active,
-  .nearby-mode-bar button[aria-pressed="true"],
-  .documents-category-nav button.active,
-  .documents-category-nav button[aria-selected="true"]
-){
-  --tm-control-current-bg:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(255,255,255,.8));
-  --tm-control-current-border:var(--tm-brand-primary);
-  --tm-control-current-text:var(--tm-brand-primary-dark);
-  --tm-card-control:var(--tm-control-current-bg);
-  --tm-card-control-border:var(--tm-control-current-border);
-  --tm-card-control-text:var(--tm-control-current-text)
-}
-
-/* Keep semantic states independent of user-selected accent. */
-html body.tm-new-design :is(.danger,[data-delete],[data-remove],[data-delete-expense]){
-  --tm-control-current-bg:var(--tm-action-danger);
-  --tm-control-current-border:var(--tm-action-danger)
-}
-
-
-/* Theme system 2026: semantic accent surfaces + white-blocker correction.
-   Rich destination photography remains visible; neutral inputs stay readable. */
-html body.tm-new-design{
-  --tm-accent-soft:#D7EDF2;
-  --tm-accent-soft-text:#0B5869;
-  --tm-action-secondary:color-mix(in srgb,var(--tm-accent-soft) 82%,rgba(255,255,255,.58));
-  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 13%,var(--tm-accent-soft));
-  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 22%,var(--tm-accent-soft));
-  --tm-surface-selected:color-mix(in srgb,var(--tm-accent-soft) 78%,rgba(255,255,255,.24));
-  --tm-focus-ring:color-mix(in srgb,var(--tm-brand-primary) 38%,transparent);
-  --tm-card-border-hover:color-mix(in srgb,var(--tm-brand-primary) 52%,rgba(255,255,255,.32));
-  --tm-card-link:var(--tm-brand-primary-dark);
-  --tm-card-icon:var(--tm-brand-primary);
-  --tm-glass-shell-bg:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-accent-soft) 18%,rgba(255,255,255,.62)),
-    rgba(239,247,243,.54));
-  --tm-glass-shell-border:color-mix(in srgb,var(--tm-brand-primary) 22%,rgba(255,255,255,.58));
-  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 30%,rgba(5,20,16,.78));
-  --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(255,255,255,.24));
-}
-html[data-theme="dark"] body.tm-new-design{
-  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(18,42,34,.82));
-  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(18,42,34,.86));
-  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 44%,rgba(18,42,34,.9));
-  --tm-surface-selected:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(18,42,34,.78));
-  --tm-glass-shell-bg:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-brand-primary) 10%,rgba(13,31,26,.66)),
-    rgba(8,24,20,.56));
-  --tm-glass-shell-border:color-mix(in srgb,var(--tm-brand-primary) 38%,rgba(255,255,255,.2));
-  --tm-card-link:color-mix(in srgb,var(--tm-brand-primary) 48%,#fff);
-  --tm-card-icon:color-mix(in srgb,var(--tm-brand-primary) 58%,#fff);
-  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 24%,rgba(4,15,12,.88));
-  --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 42%,rgba(255,255,255,.18));
-}
-
-/* Large shells must not become opaque white screens over the destination photo. */
-html body[data-trip-kind="custom"].tm-new-design main.content :is(
-  .section-head,
-  #plan .generated-day>div,
-  #places .nearby-panel,
-  #places .lodging-setup,
-  #budget .budget-smart-summary,
-  #budget .expense-workspace,
-  #budget .currency-converter,
-  #budget .budget-charts,
-  #documents .document-vault,
-  #documents .ai-notes-archive,
-  #transport .transport-card,
-  #transport .service-card,
-  #getaways .service-card,
-  #group .collaboration-heading,
-  #memories .album-card,
-  #memories .memory-card,
-  #memories .trip-summary-card
-){
-  background:var(--tm-glass-shell-bg);
-  border-color:var(--tm-glass-shell-border);
-  -webkit-backdrop-filter:blur(18px) saturate(120%);
-  backdrop-filter:blur(18px) saturate(120%);
-  box-shadow:0 12px 34px rgba(7,34,26,.14)
-}
-
-/* Nested content can be more opaque than shells, but should still reveal depth. */
-html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.content :is(
-  #plan .planned-activity,
-  #plan .saved-place,
-  #documents .doc-row,
-  #budget .expense-record
-){
-  background:color-mix(in srgb,var(--tm-accent-soft) 12%,rgba(255,255,255,.72))
-}
-
-/* Secondary actions use the selected theme instead of defaulting to white. */
-html body.tm-new-design :is(
-  .mobile-back,.mobile-destination-map,
-  .smart-hub-launch,
-  #plan .day-add,
-  #transport .official-fares,
-  #memories .album-card>a,
-  #overview .overview-status-card a,
-  #overview .navo-trip-types button:not(.is-selected)
-){
-  border-color:color-mix(in srgb,var(--tm-brand-primary) 28%,var(--tm-card-control-border));
-  background:var(--tm-action-secondary);
-  color:var(--tm-accent-soft-text);
-  -webkit-text-fill-color:currentColor
-}
-html[data-theme="dark"] body.tm-new-design :is(
-  .mobile-back,.mobile-destination-map,
-  .smart-hub-launch,
-  #plan .day-add,
-  #transport .official-fares,
-  #memories .album-card>a,
-  #overview .overview-status-card a,
-  #overview .navo-trip-types button:not(.is-selected)
-){
-  color:#f7fafa
-}
-html body.tm-new-design :is(
-  #plan .day-add,
-  #overview .navo-trip-types button:not(.is-selected)
-):is(:hover,:focus-visible){
-  background:var(--tm-action-secondary-hover)
+  html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
+    --tm-surface-glass:rgba(12,31,25,.94);
+    --tm-surface-nested:rgba(15,34,28,.96);
+    --tm-surface-photo:rgba(5,18,15,.9)
+  }
 }

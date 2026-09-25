@@ -331,14 +331,6 @@ body.tm-new-design[data-trip-view="documents"] #documents > .section-head > .pil
   height:28px;
   background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='1.45' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4m0 0-4 4m4-4 4 4'/%3E%3Cpath d='M5 14v5h14v-5'/%3E%3C/svg%3E");
 }
-body.tm-new-design[data-trip-view="documents"] #documents .document-vault{
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
-}
-
 /* Daily plan: the day wrapper is structural, so it does not need its own glass panel. */
 body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
   background:transparent!important;

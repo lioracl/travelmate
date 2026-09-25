@@ -57,11 +57,11 @@ test('settings and account expose the same six palette choices',()=>{
 
 test('accent themes use semantic tokens while danger remains semantic',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/User-selectable accent themes: semantic roles/);
+  assert.match(css,/Surface Authority 2\.0/);
   assert.match(css,/--tm-action-secondary:color-mix/);
   assert.match(css,/--tm-card-control-selected:color-mix/);
   assert.match(css,/--tm-card-link:var\(--tm-brand-primary-dark\)/);
-  assert.match(css,/Keep semantic states independent of user-selected accent/);
+  assert.match(css,/Theme affects interaction and tint, never semantic danger\/success meaning/);
   assert.match(css,/--tm-control-current-bg:var\(--tm-action-danger\)/);
 });
 
