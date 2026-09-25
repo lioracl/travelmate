@@ -2365,11 +2365,11 @@ html body[data-trip-kind="custom"].tm-new-design main.content :is(
   #memories .memory-card,
   #memories .trip-summary-card
 ){
-  background:var(--tm-glass-shell-bg)!important;
-  border-color:var(--tm-glass-shell-border)!important;
-  -webkit-backdrop-filter:blur(18px) saturate(120%)!important;
-  backdrop-filter:blur(18px) saturate(120%)!important;
-  box-shadow:0 12px 34px rgba(7,34,26,.14)!important
+  background:var(--tm-glass-shell-bg);
+  border-color:var(--tm-glass-shell-border);
+  -webkit-backdrop-filter:blur(18px) saturate(120%);
+  backdrop-filter:blur(18px) saturate(120%);
+  box-shadow:0 12px 34px rgba(7,34,26,.14)
 }
 
 /* Nested content can be more opaque than shells, but should still reveal depth. */
@@ -2379,7 +2379,7 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design main.c
   #documents .doc-row,
   #budget .expense-record
 ){
-  background:color-mix(in srgb,var(--tm-accent-soft) 12%,rgba(255,255,255,.72))!important
+  background:color-mix(in srgb,var(--tm-accent-soft) 12%,rgba(255,255,255,.72))
 }
 
 /* Secondary actions use the selected theme instead of defaulting to white. */
@@ -2392,9 +2392,9 @@ html body.tm-new-design :is(
   #overview .overview-status-card a,
   #overview .navo-trip-types button:not(.is-selected)
 ){
-  border-color:color-mix(in srgb,var(--tm-brand-primary) 28%,var(--tm-card-control-border))!important;
-  background:var(--tm-action-secondary)!important;
-  color:var(--tm-accent-soft-text)!important;
+  border-color:color-mix(in srgb,var(--tm-brand-primary) 28%,var(--tm-card-control-border));
+  background:var(--tm-action-secondary);
+  color:var(--tm-accent-soft-text);
   -webkit-text-fill-color:currentColor
 }
 html[data-theme="dark"] body.tm-new-design :is(
@@ -2412,5 +2412,5 @@ html body.tm-new-design :is(
   #plan .day-add,
   #overview .navo-trip-types button:not(.is-selected)
 ):is(:hover,:focus-visible){
-  background:var(--tm-action-secondary-hover)!important
+  background:var(--tm-action-secondary-hover)
 }
