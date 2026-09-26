@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.30',
-    label: 'Weather and cold-start polish',
+    version: '1.55.31',
+    label: 'CSS architecture cleanup — Phase 1A',
     date: '26 בספטמבר 2026',
     highlights: [
+      'CSS architecture: Phase 1A reduced theme !important debt, removed superseded legacy overrides, repaired unmatched CSS braces, and added regression ceilings to prevent the debt from growing again.',
       'Weather: טשטוש Photo Glass הופחת מ־12px ל־8px כדי לשמור על תחושת זכוכית בלי להכביד על צילום היעד.',
       'Cold start: כרטיס מזג האוויר נבנה מיד, אך בקשת התחזית נדחית ל־browser idle כדי להפחית תחרות עם First Paint ונכסי היעד.',
       'Budget performance: שערי מטבע טריים מהמטמון מוצגים מיד ללא בקשת רשת חוזרת, ושני hidden overrides מיותרים הוסרו מ־Places.',
