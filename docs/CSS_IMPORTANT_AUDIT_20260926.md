@@ -75,3 +75,19 @@ Every milestone must pass contract tests plus mobile/desktop visual regression b
 - Chrome Headless rendered 390px and 1440px smoke screenshots successfully.
 
 Next: Phase 1B should consolidate duplicated Plan toolbar/day rules first, then Budget mobile geometry, with screenshot comparison at each batch.
+
+
+## Phase 1B execution result — Plan + Budget ownership
+
+- `theme.css` reduced from **1,097** to **810** `!important` declarations (**-287** in this phase).
+- Whole-app CSS debt reduced from **2,173** to **1,886** `!important` declarations.
+- Combined reduction since the original audit baseline: **2,583 → 1,886** (**-697 / ~27%**).
+- Plan geometry moved to `auto-planner.css` with normal cascade declarations; `readable-glass.css` remains the material/color owner.
+- Removed superseded Plan toolbar generations (compact icon toolbar, earlier mobile grids, historical badge/day-rail geometry) while keeping the explicit collapsed-day visibility compatibility rule.
+- Budget layout and responsive geometry moved to `trip-experience.css`; duplicated `budget-limit-mode`, hero, editor and mobile viewport authority blocks were removed from `theme.css`.
+- Updated the existing mobile Plan contract so it verifies the same three-action layout in the feature owner rather than requiring `!important` in `theme.css`.
+- Specificity debt now: `html body` **219**, repeated IDs **22**, WebKit text-fill important **117**, geometry important **122**.
+- Extended Plan/Budget/design/performance contract suite: **97/97 PASS**.
+- Local HTTP smoke: Plan page, Budget page, `auto-planner.css`, `trip-experience.css`, and `theme.css` all returned HTTP 200.
+
+Next recommended phase: consolidate Documents/Places/Navigation ownership, then attack `readable-glass.css` only after the lower theme pressure is removed.

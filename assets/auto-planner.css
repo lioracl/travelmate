@@ -43,3 +43,102 @@
   #plan .planner-more{grid-column:auto}
   #plan .planner-more>summary{width:100%;min-height:46px;padding-inline:7px;font-size:11px}
 }
+
+
+/* Plan geometry authority — Phase 1B.
+   Material/color remain owned by readable-glass.css. */
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:16px
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions{
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolbar-actions button{
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  max-width:none;
+  min-height:50px;
+  height:auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:9px 12px;
+  font-size:13px;
+  line-height:1.2;
+  align-self:center
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolbar-actions button i{
+  flex:0 0 auto;
+  font-size:17px;
+  -webkit-text-stroke:0
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolbar-actions button:is(:hover,:focus-visible){
+  transform:translateY(-1px)
+}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:46px;
+  padding:0 15px;
+  border-radius:999px;
+  font-weight:900;
+  transition:transform .2s ease,background .2s ease
+}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge i{
+  font-size:12px;
+  transition:transform .22s ease
+}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>.badge i{transform:rotate(180deg)}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge:is(:hover,:focus-visible){transform:translateY(-1px)}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.day-heading,
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day>div>.day-heading{cursor:pointer}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed{min-height:68px;padding-block:10px}
+
+@media(max-width:1000px){
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto;
+    gap:10px
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
+    grid-column:1;
+    grid-row:1;
+    justify-self:center;
+    margin:0 auto
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day>div{
+    grid-column:1;
+    grid-row:2;
+    width:100%;
+    min-width:0
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .day-heading{
+    width:100%;
+    min-height:0;
+    text-align:center
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .day-heading>div{width:100%;min-width:0}
+}
+@media(max-width:700px){
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{gap:8px}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolbar-actions button{
+    min-height:46px;
+    padding:7px 6px;
+    font-size:11px
+  }
+}

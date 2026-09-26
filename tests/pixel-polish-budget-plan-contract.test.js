@@ -23,7 +23,8 @@ test('Plan uses a single mobile action row and keeps three actions', () => {
   const theme = read('assets/theme.css');
   const css = read('assets/auto-planner.css');
   const js = read('assets/auto-planner.js');
-  assert.match(theme, /planner-toolbar-actions\{\s*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+  assert.doesNotMatch(theme, /planner-toolbar-actions\{\s*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+  assert.match(css, /planner-toolbar-actions\{\s*grid-template-columns:repeat\(3,minmax\(0,1fr\)\);/);
   assert.match(css, /#plan \.planner-more\{grid-column:auto\}/);
   assert.match(css, /#plan \.trip-calendar-hint\{display:none\}/);
   assert.match(js, /data-open-trip-calendar/);
