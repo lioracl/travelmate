@@ -40,9 +40,9 @@ body:not(.home-page) .weather-top-widget{position:relative;z-index:3;margin:0 0 
 @media(max-width:1000px){body:not(.home-page) .sidebar{display:none}body:not(.home-page) .content{margin-right:0;padding:14px}body:not(.home-page) .mobile-header{display:flex}body:not(.home-page) .hero{min-height:380px;padding:34px 20px}body:not(.home-page) .section:not(.hero){padding:20px}}
 @media(max-width:650px){body:not(.home-page) .hero{min-height:270px;align-items:center;justify-content:center;padding:58px 14px 14px}body:not(.home-page) .hero h1{font-size:38px}body:not(.home-page) .hero-country-flag{position:static!important;transform:none;margin-bottom:6px}body:not(.home-page) .quick-grid,body:not(.home-page) .modules{grid-template-columns:1fr}body:not(.home-page) .section:not(.hero){padding:16px}body:not(.home-page) .weather-live-grid{overflow-x:auto;grid-auto-flow:column;grid-auto-columns:minmax(250px,82vw)}}
 
-body:not(.home-page) .custom-hero{align-items:center;justify-content:flex-start;text-align:right;padding:64px 72px}.custom-hero .hero-copy{width:min(680px,70%);margin-left:auto;text-align:right!important}.custom-hero .status{display:none}.custom-hero h1{margin:0 0 12px;font-size:clamp(68px,9vw,118px)}.custom-hero .hero-country-line{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:12px;color:#fff;font:300 clamp(20px,2.4vw,30px) "Rubik",sans-serif}.custom-hero .hero-country-line [data-country-flag]{font-size:1.1em}.custom-hero .hero-back{top:24px;right:28px;padding:6px 0;border:0!important;background:transparent!important;color:#fff;font:300 14px "Rubik",sans-serif;box-shadow:none!important;backdrop-filter:none!important}.custom-hero .share{position:absolute;top:24px;left:28px;width:38px;height:38px;padding:0;display:grid;place-items:center;border:0!important;background:transparent!important;color:#fff;font-size:22px;box-shadow:none!important;backdrop-filter:none!important}.custom-hero .share i{margin:0}@media(max-width:650px){body:not(.home-page) .custom-hero{padding:74px 22px 32px}.custom-hero .hero-copy{width:100%}.custom-hero h1{font-size:58px}.custom-hero .hero-country-line{font-size:19px}.custom-hero .hero-back{right:18px}.custom-hero .share{left:18px}}
+body:not(.home-page) .custom-hero{align-items:center;justify-content:flex-start;text-align:right;padding:64px 72px}.custom-hero .hero-copy{width:min(680px,70%);margin-left:auto;text-align:right}.custom-hero .status{display:none}.custom-hero h1{margin:0 0 12px;font-size:clamp(68px,9vw,118px)}.custom-hero .hero-country-line{display:flex;align-items:center;justify-content:flex-start;gap:10px;margin-bottom:12px;color:#fff;font:300 clamp(20px,2.4vw,30px) "Rubik",sans-serif}.custom-hero .hero-country-line [data-country-flag]{font-size:1.1em}.custom-hero .hero-back{top:24px;right:28px;padding:6px 0;border:0;background:transparent;color:#fff;font:300 14px "Rubik",sans-serif;box-shadow:none;backdrop-filter:none}.custom-hero .share{position:absolute;top:24px;left:28px;width:38px;height:38px;padding:0;display:grid;place-items:center;border:0;background:transparent;color:#fff;font-size:22px;box-shadow:none;backdrop-filter:none}.custom-hero .share i{margin:0}@media(max-width:650px){body:not(.home-page) .custom-hero{padding:74px 22px 32px}.custom-hero .hero-copy{width:100%}.custom-hero h1{font-size:58px}.custom-hero .hero-country-line{font-size:19px}.custom-hero .hero-back{right:18px}.custom-hero .share{left:18px}}
 
-body:not(.home-page) .hero.custom-hero{border:0!important;outline:0!important;background:linear-gradient(90deg,rgba(4,18,14,.12),rgba(4,18,14,.3))!important;box-shadow:none!important}.hero.custom-hero:before{background:transparent!important}.hero.custom-hero .hero-back,.hero.custom-hero .share{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important}
+body:not(.home-page) .hero.custom-hero{border:0;outline:0;background:linear-gradient(90deg,rgba(4,18,14,.12),rgba(4,18,14,.3));box-shadow:none}.hero.custom-hero:before{background:transparent}.hero.custom-hero .hero-back,.hero.custom-hero .share{border:0;outline:0;background:transparent;box-shadow:none}
 
 html[dir="rtl"] body:not(.home-page){background-color:#071611;background-image:linear-gradient(90deg,var(--tm-photo-scrim-start,rgba(0,0,0,.38)),var(--tm-photo-scrim-mid,rgba(0,0,0,.62)) 72%,var(--tm-photo-scrim-end,rgba(0,0,0,.7))),var(--trip-bg-image,linear-gradient(135deg,#0e614b,#071611));background-position:center;background-size:cover;background-attachment:fixed;background-repeat:no-repeat}body:not(.home-page):after{background:none}
 @media(max-width:900px){
@@ -268,11 +268,11 @@ body.tm-new-design:not([data-trip-kind="custom"])[data-trip-view="places"] #plac
 /* Documents view: keep the destination image visible and leave only useful controls. */
 body.tm-new-design[data-trip-view="documents"] #documents{
   position:relative;
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
 }
 body.tm-new-design[data-trip-view="documents"] #documents > .section-head{
   position:relative;
@@ -320,14 +320,7 @@ body.tm-new-design[data-trip-view="documents"] #documents > .section-head > .pil
   height:28px;
   background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='1.45' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4m0 0-4 4m4-4 4 4'/%3E%3Cpath d='M5 14v5h14v-5'/%3E%3C/svg%3E");
 }
-/* Daily plan: the day wrapper is structural, so it does not need its own glass panel. */
-body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  backdrop-filter:none!important;
-  -webkit-backdrop-filter:none!important;
-}
+/* Daily plan wrapper material is owned by auto-planner.css and readable-glass.css. */
 
 /* Critical plan media sizing: prevents full-size images before feature CSS arrives. */
 #plan .saved-place-image,#plan .planned-activity img,#plan .activity-image{display:block;width:96px;height:96px;max-width:96px;max-height:96px;object-fit:cover;border-radius:12px;background:var(--tm-card-bg-compact)}
@@ -881,4 +874,24 @@ body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) main.content
     white-space:normal;
     line-height:1.45
   }
+}
+
+
+/* Phase 9 — Hero material authority.
+   Preserves the rendered hero material while removing legacy specificity escalation. */
+body.tm-new-design main.content #overview.custom-hero{
+  border:0;
+  outline:0;
+  background:linear-gradient(90deg,rgba(4,18,14,.12),rgba(4,18,14,.3));
+  box-shadow:none
+}
+body.tm-new-design main.content #overview.custom-hero:before{background:transparent}
+body.tm-new-design main.content #overview.custom-hero>.hero-copy{text-align:right}
+body.tm-new-design main.content #overview.custom-hero :is(.hero-back,.share){
+  border:0;
+  outline:0;
+  background:transparent;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
 }

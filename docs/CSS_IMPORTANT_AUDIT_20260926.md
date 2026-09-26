@@ -202,3 +202,20 @@ Next recommended cleanup: visual-runtime validation of Group/Memories/Currency f
 - Focused Phase 8/Surface/Documents suite: **71/71 PASS** after the Documents cleanup.
 
 Remaining Theme `!important` rules are predominantly global theme backgrounds, icon reset/fallback, body overlay suppression, mobile/tap-target safety and select-option contrast. Treat these as deliberate global exceptions until a dedicated runtime pass proves they can be de-escalated.
+
+
+## Phase 9 execution result — Weather and shared material cleanup
+
+- Whole-app CSS debt reduced from **548** to **439** `!important` declarations (**-109** in this phase).
+- Combined reduction since the original audit baseline: **2,583 → 439** (**-2,144 / ~83%**).
+- `weather-widget.css`: historical Weather modal escalation reduced to **0** `!important`.
+- Weather nested cards (`.weather-insight`, `.weather-live-day`) were removed from generic Modal/Glass material ownership so Weather can own them through normal cascade.
+- Weather shell colors now flow through `--tm-overlay-*` variables and secondary/close button colors through `--tm-control-current-*` variables.
+- Runtime Chrome computed-style QA verified desktop/mobile Weather contrast, layout and controls after de-escalation.
+- Runtime QA exposed a real dependency: the global unboxed-icon reset was overriding `.weather-live-day-icon`. The root selector was corrected to exclude that component rather than restoring `!important` inside Weather.
+- `readable-glass.css`: **191 → 185**.
+- `trip-redesign.css`: **92 → 64**.
+- Documents top-level wrapper no longer needs forced transparent material overrides after the Phase 8 Glass exclusion.
+- Focused Theme/Surface/Weather/Performance suite remained green after the refactor.
+
+Remaining debt is concentrated in shared Design System material, modal infrastructure, intentional global fallbacks, and a small number of feature-specific control/layout exceptions. Further reduction should be performed as a separate ownership pass rather than by bulk removal.

@@ -16,7 +16,8 @@ const cssFiles = {
   autoPlanner: path.join(root, 'assets/auto-planner.css'),
   tripExperience: path.join(root, 'assets/trip-experience.css'),
   collaboration: path.join(root, 'assets/collaboration.css'),
-  placeAutoFill: path.join(root, 'assets/place-auto-fill.css')
+  placeAutoFill: path.join(root, 'assets/place-auto-fill.css'),
+  weatherWidget: path.join(root, 'assets/weather-widget.css')
 };
 
 function read(file) {
@@ -38,23 +39,25 @@ test('design-system CSS debt does not grow while ownership is being consolidated
     autoPlanner: importantCount(read(cssFiles.autoPlanner)),
     tripExperience: importantCount(read(cssFiles.tripExperience)),
     collaboration: importantCount(read(cssFiles.collaboration)),
-    placeAutoFill: importantCount(read(cssFiles.placeAutoFill))
+    placeAutoFill: importantCount(read(cssFiles.placeAutoFill)),
+    weatherWidget: importantCount(read(cssFiles.weatherWidget))
   };
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
   assert.equal(counts.base, 0, `styles.css must remain free of !important debt; found ${counts.base}`);
   assert.ok(counts.theme <= 32, `theme.css !important debt grew to ${counts.theme}`);
-  assert.ok(counts.readableGlass <= 191, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
-  assert.ok(counts.tripRedesign <= 92, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
+  assert.ok(counts.readableGlass <= 185, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
+  assert.ok(counts.tripRedesign <= 64, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
   assert.ok(counts.cloudSync <= 1, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
   assert.ok(counts.homeOrganizer <= 2, `home-organizer.css !important debt grew to ${counts.homeOrganizer}`);
   assert.equal(counts.autoPlanner, 0, `auto-planner.css must remain free of !important debt; found ${counts.autoPlanner}`);
   assert.ok(counts.tripExperience <= 8, `trip-experience.css !important debt grew to ${counts.tripExperience}`);
   assert.ok(counts.collaboration <= 6, `collaboration.css !important debt grew to ${counts.collaboration}`);
   assert.ok(counts.placeAutoFill <= 2, `place-auto-fill.css !important debt grew to ${counts.placeAutoFill}`);
+  assert.equal(counts.weatherWidget, 0, `weather-widget.css must remain free of !important debt; found ${counts.weatherWidget}`);
   assert.ok(
-    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill <= 334,
-    `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill}`
+    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget <= 300,
+    `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget}`
   );
 });
 
@@ -423,4 +426,19 @@ test('Phase 8 keeps Group, Memories and Currency semantic ownership out of Theme
   assert.match(glass, /:not\(\.message-sender\):not\(\.collaboration-live\)/);
   assert.doesNotMatch(theme, /group-message|collaboration-live|group-privacy|memory-file-picker|album-actions|trip-summary-text|currency-insight|data-fee-edit/);
   assert.match(app, /Promise\.all\(\(feature\.styles\|\|\[\]\)\.map\(loadStyle\)\)\.then\(function\(\)\{return loadSequence\(feature\.scripts\|\|\[\]\)\}\)/);
+});
+
+
+test('Phase 9 keeps Weather as a zero-escalation component owner', () => {
+  const weather = read(cssFiles.weatherWidget);
+  const glass = read(cssFiles.readableGlass);
+  const modal = read(path.join(root, 'assets/modal-system.css'));
+  const theme = read(cssFiles.theme);
+
+  assert.equal(importantCount(weather), 0);
+  assert.match(weather, /--tm-overlay-surface:linear-gradient/);
+  assert.match(weather, /--tm-control-current-bg:#eef8f3/);
+  assert.doesNotMatch(modal, /weather-live-day|weather-insight/);
+  assert.doesNotMatch(glass, /\.weather-insight,.weather-live-day/);
+  assert.match(theme, /:not\(\.weather-live-day-icon\)/);
 });

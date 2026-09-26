@@ -71,7 +71,7 @@ html body :is(
 }
 
 /* Nested overlay content is a non-blurred surface; the shell is the single Glass layer. */
-.modal :is(.forecast-day,.day-item,.action-options button,.weather-live-day,.weather-insight),
+.modal :is(.forecast-day,.day-item,.action-options button),
 .trip-calendar-dialog :is(article,.trip-calendar-agenda),
 .invite-card :is(.invite-result,.invite-hero-icon),
 .chat-place-picker :is(.chat-place-list>button,.chat-place-hero),

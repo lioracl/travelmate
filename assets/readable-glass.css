@@ -26,7 +26,7 @@ html body.tm-new-design main.content>.external-resources{
 }
 
 html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
-  .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
+  .section-head,.card,.panel,.module,.planned-activity,.saved-place,
   .day-heading,.day-tab,.day-item,.lodging-day-card,.airport-day-card,.trip-anchor,
   .planner-toolbar,.planner-composer,.nearby-result,.auto-place-launch,
   .doc-row,.ai-notes-archive,.expense-workspace,.expense-record,.receipt-card,
@@ -117,13 +117,7 @@ html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#p
   -webkit-text-fill-color:#fff!important
 }
 
-/* The plan has legacy light rules in several feature styles; keep its hierarchy explicit. */
-html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day{
-  display:grid!important;
-  border:0!important;
-  background:transparent!important;
-  box-shadow:none!important
-}
+/* Plan wrapper geometry/material is owned by auto-planner.css; nested cards remain Glass-owned. */
 
 html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day>div,
 html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day>.badge,
@@ -165,10 +159,6 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     .group-card,.album-card,.memory-card
   ){
     border-width:2px!important
-  }
-  html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day{
-    grid-template-columns:1fr!important;
-    gap:10px!important
   }
   html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day>.badge{
     justify-self:center!important
@@ -903,7 +893,7 @@ html body.tm-new-design main.content :is(
   .transport-search-card,.members-card,.invite-result,.shared-place-card,
   .message-place-card,.chat-card,.ai-notes-panel,.ai-login-card,.ai-error-card,
   .document-vault-panel,.vault-auth,.gps-consent-card,.gps-place-heading,
-  .weather-insight,.weather-live-day,.weather-forecast-panel
+  .weather-forecast-panel
 ),
 html body.home-page :is(.trip-archive,.home-about){
   border:1px solid var(--tm-card-border)!important;
@@ -1233,7 +1223,7 @@ html[data-theme][data-theme] body.tm-new-design main.content :is(
   .transport-search-card,.members-card,.invite-result,.shared-place-card,
   .message-place-card,.chat-card,.ai-notes-panel,.ai-login-card,.ai-error-card,
   .document-vault-panel,.vault-auth,.gps-consent-card,.gps-place-heading,
-  .weather-insight,.weather-live-day,.weather-forecast-panel
+  .weather-forecast-panel
 ){
   border-color:var(--tm-card-border);
   background:var(--tm-card-surface,var(--tm-card-bg))!important;
@@ -2077,7 +2067,7 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
 /* Canvas never becomes a card. */
 html body[data-trip-kind="custom"].tm-new-design main.content,
 html body[data-trip-kind="custom"].tm-new-design main.content :is(
-  #overview,#plan,#places,#budget,#documents,#transport,#getaways,#group,#memories,#destination-info
+  #plan,#places,#budget,#documents,#transport,#getaways,#group,#memories,#destination-info
 ){
   background:transparent;
 }

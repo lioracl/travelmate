@@ -128,7 +128,7 @@ html body :where(
   .icon,.mark,.forecast-icon,.day-dot,.avatar-small,
   .memory-icon,.message-place-pin,.transport-result-icon,.invite-hero-icon,
   [class$="-icon"],[class*="-icon "]
-):not(.maplibregl-map *),
+):not(.maplibregl-map *):not(.weather-live-day-icon),
 html body .auto-place-launch>i:first-child,
 html body .auto-place-dialog h3>span,
 html body .auto-place-origins i,
