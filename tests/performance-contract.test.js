@@ -167,13 +167,15 @@ test('Overpass mirrors are hedged instead of both starting immediately', () => {
   assert.match(autoFill, /if \(index === 0\) startRequest\(\)/);
 });
 
-test('mobile trip header has one high-specificity geometry authority', () => {
-  const source = fs.readFileSync(path.join(root, 'assets/theme.css'), 'utf8');
-  const authorities = source.match(/html body:not\(\.home-page\) \.mobile-header\{\s*position:(?:fixed|sticky)!important;/g) || [];
+test('mobile trip header geometry has one feature owner without important escalation', () => {
+  const theme = fs.readFileSync(path.join(root, 'assets/theme.css'), 'utf8');
+  const redesign = fs.readFileSync(path.join(root, 'assets/trip-redesign.css'), 'utf8');
+  const authorities = redesign.match(/body:not\(\.home-page\) \.mobile-header\{\s*position:(?:fixed|sticky);/g) || [];
   assert.equal(authorities.length, 1);
-  assert.match(source, /Mobile layout authority: the single source of truth for trip header geometry/);
-  assert.doesNotMatch(source, /padding-top:94px!important/);
-  assert.doesNotMatch(source, /\+ 84px\)!important/);
+  assert.match(redesign, /Navigation geometry authority — Phase 2/);
+  assert.doesNotMatch(theme, /\.mobile-header\{\s*position:(?:fixed|sticky)!important/);
+  assert.doesNotMatch(redesign, /padding-top:94px/);
+  assert.doesNotMatch(redesign, /\+ 84px\)/);
 });
 
 

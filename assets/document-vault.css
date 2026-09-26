@@ -138,3 +138,111 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
     flex:1 1 82px
   }
 }
+
+
+/* Documents semantic-state authority — Phase 2.
+   Shared card/control material remains owned by readable-glass.css. */
+#documents .vault-unlock>small{
+  --tm-card-secondary:#6f3e19;
+  padding:10px 12px;
+  border:1px solid #efb37f;
+  border-radius:11px;
+  background:color-mix(in srgb,var(--tm-warning) 14%,var(--tm-card-bg-nested));
+  color:var(--tm-card-secondary);
+  -webkit-text-fill-color:currentColor;
+  line-height:1.4;
+  text-shadow:none
+}
+#documents .vault-unlock>small *{color:inherit;-webkit-text-fill-color:currentColor;text-shadow:none}
+
+#documents .vault-status:not(:empty){
+  --tm-card-secondary:#17664e;
+  padding:11px 13px;
+  border:1px solid #add3c1;
+  border-radius:12px;
+  background:#e7f4ed;
+  color:var(--tm-card-secondary);
+  -webkit-text-fill-color:currentColor;
+  font-weight:800;
+  text-shadow:none
+}
+#documents .vault-status.error:not(:empty){
+  --tm-card-secondary:#8f2532;
+  border-color:#e2a1a9;
+  background:#ffe9ec;
+  color:var(--tm-card-secondary);
+  -webkit-text-fill-color:currentColor;
+  box-shadow:inset 4px 0 0 #cf5262
+}
+#documents :is(.vault-badge,.ai-notes-archive>header>b,.ai-note-toggle){
+  --tm-card-heading:#17664e;
+  --tm-card-text:#17664e;
+  --tm-card-secondary:#17664e;
+  border-color:#add3c1;
+  background:#e7f4ed;
+  color:#17664e;
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none
+}
+#documents :is(.vault-badge,.ai-notes-archive>header>b,.ai-note-toggle) *{
+  color:inherit;
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none
+}
+
+#documents .ai-notes-archive{
+  --tm-navo-surface:#edf8f2;
+  --tm-navo-surface-soft:#e8f1ee;
+  --tm-navo-text:#182326;
+  --tm-navo-text-secondary:#4d5f63;
+  --tm-navo-accent:#0b5869;
+  --tm-navo-danger:#a2261d;
+  background:linear-gradient(145deg,var(--tm-card-bg-nested),var(--tm-card-bg));
+  color:var(--tm-navo-text);
+  -webkit-text-fill-color:currentColor
+}
+#documents .ai-notes-archive :is(h3,p,strong,small,summary,.ai-note-toggle){
+  color:inherit;
+  -webkit-text-fill-color:currentColor
+}
+#documents .ai-notes-list details{
+  background:var(--tm-navo-surface);
+  border-color:rgba(18,88,105,.28);
+  color:var(--tm-navo-text);
+  -webkit-text-fill-color:currentColor
+}
+#documents .ai-notes-list :is(summary,.ai-note-answer,footer){
+  background:transparent;
+  color:var(--tm-navo-text);
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none
+}
+#documents .ai-note-answer{
+  background:#f8fcfa;
+  color:#304c41;
+  -webkit-text-fill-color:currentColor
+}
+#documents .ai-notes-list :is(summary,.ai-note-answer) :is(strong,small,span){
+  color:inherit;
+  -webkit-text-fill-color:currentColor
+}
+#documents .ai-notes-list summary small{color:var(--tm-navo-text-secondary)}
+#documents .ai-notes-list summary strong,
+#documents .ai-note-answer :is(h3,strong,b){color:var(--tm-navo-accent)}
+#documents .ai-notes-list footer button{
+  --tm-control-current-bg:var(--tm-navo-surface-soft);
+  --tm-control-current-border:rgba(11,88,105,.36);
+  --tm-control-current-text:var(--tm-navo-accent);
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  text-shadow:none
+}
+#documents .ai-notes-list footer button[data-delete-ai-note]{
+  --tm-control-current-bg:color-mix(in srgb,var(--tm-error) 10%,var(--tm-card-control));
+  --tm-control-current-border:rgba(162,38,29,.46);
+  --tm-control-current-text:var(--tm-navo-danger)
+}
+#documents .ai-notes-list footer button *{color:inherit;-webkit-text-fill-color:currentColor}

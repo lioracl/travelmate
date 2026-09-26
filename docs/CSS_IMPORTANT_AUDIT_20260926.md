@@ -91,3 +91,18 @@ Next: Phase 1B should consolidate duplicated Plan toolbar/day rules first, then 
 - Local HTTP smoke: Plan page, Budget page, `auto-planner.css`, `trip-experience.css`, and `theme.css` all returned HTTP 200.
 
 Next recommended phase: consolidate Documents/Places/Navigation ownership, then attack `readable-glass.css` only after the lower theme pressure is removed.
+
+
+## Phase 2 execution result — Documents + Places + mobile Navigation
+
+- `theme.css` reduced from **810** to **624** `!important` declarations (**-186** in this phase).
+- Whole-app CSS debt reduced from **1,886** to **1,700**.
+- Combined reduction since the original audit baseline: **2,583 → 1,700** (**-883 / ~34%**).
+- Places header-search and controls geometry moved to `nearby.css` with normal cascade rules; shared Places material remains owned by `readable-glass.css`.
+- Documents semantic states and Mate/AI Notes presentation moved to `document-vault.css` using semantic variables and color-mix instead of new specificity escalation.
+- Removed all **96** Documents `!important` declarations that were living in `theme.css`.
+- Mobile header geometry, menu-button fallback styling, sidebar-about order, and scrollbar ownership moved to `trip-redesign.css`; mobile drawer material remains owned by the existing final authority in `readable-glass.css`.
+- Specificity debt now: `html body` **159**, repeated IDs **19**, WebKit text-fill important **87**, geometry important **100**.
+- Extended asset/design/theme/performance suite: **102/102 PASS**.
+
+Next recommended phase: reduce `readable-glass.css` itself and then address `cloud-sync.css`, starting with duplicated surface/control rules rather than broad visual changes.

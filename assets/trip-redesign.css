@@ -588,3 +588,53 @@ body[data-trip-view="overview"] .overview-status-card>a:is(:hover,:focus-visible
   body[data-trip-view="overview"] .overview-status-icon{width:42px;height:42px}
   body[data-trip-view="overview"] .overview-status-card strong{font-size:16px}
 }
+
+
+/* Navigation geometry authority — Phase 2.
+   Drawer/card material remains owned by readable-glass.css. */
+body:not(.home-page) .workspace>.sidebar nav .sidebar-about{order:999}
+@media(min-width:1001px){
+  body:not(.home-page) .workspace>.sidebar,
+  body:not(.home-page) .workspace>.sidebar nav{scrollbar-width:none}
+  body:not(.home-page) .workspace>.sidebar::-webkit-scrollbar,
+  body:not(.home-page) .workspace>.sidebar nav::-webkit-scrollbar{display:none}
+}
+@media(max-width:1000px){
+  body:not(.home-page) main.content{padding-top:76px}
+  body:not(.home-page) .mobile-header{
+    position:fixed;
+    top:max(8px,env(safe-area-inset-top));
+    right:8px;
+    left:8px;
+    width:auto;
+    z-index:1250
+  }
+  body:not(.home-page) .network-usage-meter.in-trip{
+    top:calc(max(8px,env(safe-area-inset-top)) + 68px)
+  }
+}
+
+
+/* Mobile navigation fallback material — Phase 2.
+   Custom-trip material is finalized later by readable-glass.css. */
+@media(max-width:1000px){
+  body:not(.home-page):not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) .mobile-header{
+    width:100%;
+    min-width:0;
+    background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
+    border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
+    color:var(--tm-text-on-photo);
+    box-shadow:var(--tm-card-shadow-compact);
+    -webkit-backdrop-filter:blur(8px) saturate(108%);
+    backdrop-filter:blur(8px) saturate(108%)
+  }
+  body:not(.home-page):not([data-trip-kind="custom"][data-trip-view="overview"]) :where(.mobile-menu-button,.mobile-back){
+    flex:0 0 40px;
+    width:40px;
+    height:40px;
+    background:var(--tm-action-secondary);
+    border:1px solid color-mix(in srgb,var(--tm-brand-primary) 30%,var(--tm-card-control-border));
+    color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
+    -webkit-text-fill-color:currentColor
+  }
+}

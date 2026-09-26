@@ -307,117 +307,10 @@ html body.tm-new-design[data-trip-view]:not([data-trip-view="overview"])[class] 
 html body.tm-new-design[data-trip-view]:not([data-trip-view="overview"])[class] main.content #overview.custom-hero>.hero-share-actions{
   align-self:center!important;
 }
-html body.tm-new-design[data-trip-view]:not([data-trip-view="places"])[class] main.content #overview>.nearby-free-search{
-  display:none!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search{
-  order:3;
-  width:min(420px,42%);
-  margin-inline-start:auto!important;
-  margin-inline-end:0!important;
-  margin-block:0!important;
-  align-self:center!important;
-  padding:0!important;
-  display:block!important;
-  align-items:center!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search label{
-  position:relative!important;
-  display:block!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search label>span{
-  position:absolute!important;
-  width:1px!important;
-  height:1px!important;
-  overflow:hidden!important;
-  clip-path:inset(50%)!important;
-  white-space:nowrap!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search input{
-  width:100%!important;
-  min-height:46px!important;
-  border:1px solid rgba(255,255,255,.26)!important;
-  border-radius:999px!important;
-  padding-inline:18px 52px!important;
-  background:rgba(8,25,20,.24)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.14)!important;
-  -webkit-backdrop-filter:blur(14px) saturate(130%)!important;
-  backdrop-filter:blur(14px) saturate(130%)!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search input::placeholder{
-  color:rgba(255,255,255,.7)!important;
-  -webkit-text-fill-color:rgba(255,255,255,.7)!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search .nearby-header-search-icon{
-  position:absolute!important;
-  left:18px!important;
-  top:50%!important;
-  z-index:2;
-  margin:0!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  font-size:16px!important;
-  pointer-events:none;
-  transform:translateY(-50%);
-}
-
-/* Weather-card buttons: compact glass controls with a clear hover/focus state. */
-html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
-  .nearby-search,.nearby-map-button
-):not(body[data-trip-kind="custom"] #places *){
-  border:1px solid rgba(255,255,255,.28)!important;
-  border-radius:14px!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.07))!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 8px 20px rgba(0,0,0,.08)!important;
-  -webkit-backdrop-filter:blur(14px) saturate(135%)!important;
-  backdrop-filter:blur(14px) saturate(135%)!important;
-  text-shadow:0 1px 8px rgba(0,0,0,.28)!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #places :where(
-  .nearby-search,.nearby-map-button
-):not(body[data-trip-kind="custom"] #places *):is(:hover,:focus-visible){
-  border-color:rgba(255,255,255,.48)!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.11))!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 24px rgba(0,0,0,.12)!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #places .nearby-controls{
-  grid-template-columns:minmax(160px,1.1fr) minmax(110px,.65fr) auto auto auto!important;
-  gap:10px!important;
-  align-items:end!important;
-}
-html body.tm-new-design[data-trip-view="places"][class] main.content #places .nearby-controls>button{
-  min-height:46px!important;
-  padding-inline:12px!important;
-  white-space:nowrap;
-  font-size:13px!important;
-}
-@media(max-width:1100px){
-  html body.tm-new-design[data-trip-view="places"][class] main.content #places .nearby-controls{
-    grid-template-columns:1fr 1fr!important;
-  }
-  html body.tm-new-design[data-trip-view="places"][class] main.content #places .nearby-controls>button{
-    width:100%;
-  }
-}
+/* Places controls are owned by nearby.css; material is owned by readable-glass.css. */
 @media(max-width:850px){
   html body.tm-new-design[data-trip-view]:not([data-trip-view="overview"])[class] main.content #overview.custom-hero{
     min-height:124px!important;
-  }
-  html body.tm-new-design[data-trip-view="places"][class] main.content #overview>.nearby-free-search{
-    order:4;
-    width:100%;
-    flex:0 0 100%!important;
-    margin:8px 0 0!important;
   }
 }
 
@@ -461,25 +354,6 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-days{
     margin:0!important;
     padding:12px!important;
     overflow-x:hidden!important
-  }
-  body:not(.home-page):not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) .mobile-header{
-    width:100%;
-    min-width:0;
-    background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong))!important;
-    border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark))!important;
-    color:var(--tm-text-on-photo)!important;
-    box-shadow:var(--tm-card-shadow-compact)!important;
-    -webkit-backdrop-filter:blur(8px) saturate(108%)!important;
-    backdrop-filter:blur(8px) saturate(108%)!important
-  }
-  body:not(.home-page):not([data-trip-kind="custom"][data-trip-view="overview"]) :where(.mobile-menu-button,.mobile-back){
-    flex:0 0 40px;
-    width:40px!important;
-    height:40px!important;
-    background:var(--tm-action-secondary)!important;
-    border:1px solid color-mix(in srgb,var(--tm-brand-primary) 30%,var(--tm-card-control-border))!important;
-    color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;
-    -webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important
   }
   body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) #overview.custom-hero{
     width:100%!important;
@@ -552,39 +426,6 @@ html body.tm-new-design[data-trip-view] main.content>section>.section-head :is(b
 }
 
 /* Semantic banners keep their own readable palette instead of inheriting white text. */
-html body.tm-new-design #documents .vault-unlock small{
-  border:0!important;
-  background:#fff0e6!important;
-  color:#713b16!important;
-  -webkit-text-fill-color:#713b16!important;
-  box-shadow:inset 4px 0 0 #dc7b35!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content section#documents .document-vault .vault-unlock>small,
-html body.tm-new-design[data-trip-view="documents"] main.content section#documents .document-vault .vault-unlock>small *{
-  color:#713b16!important;
-  -webkit-text-fill-color:#713b16!important;
-  text-shadow:none!important
-}
-html body.tm-new-design #documents .vault-unlock small :where(i,strong,span){
-  color:#713b16!important;
-  -webkit-text-fill-color:#713b16!important
-}
-html body.tm-new-design #documents .vault-status:not(:empty){
-  padding:11px 13px!important;
-  border:0!important;
-  border-radius:12px!important;
-  background:#e8f5ef!important;
-  color:#14583f!important;
-  -webkit-text-fill-color:#14583f!important;
-  font-weight:800!important
-}
-html body.tm-new-design #documents .vault-status.error:not(:empty){
-  background:#ffe9ec!important;
-  color:#8f2532!important;
-  -webkit-text-fill-color:#8f2532!important;
-  box-shadow:inset 4px 0 0 #cf5262!important
-}
-
 html body.tm-new-design #memories .memory-file-picker{
   border:0!important;
   background:#e9f5ef!important;
@@ -902,19 +743,7 @@ body.tm-new-design .ai-icon-button{
     -webkit-text-fill-color:#145941!important
   }
 }
-@media(max-width:1000px){
-  html body:not(.home-page) .workspace>.sidebar{
-    border:0!important;
-    border-radius:0 24px 24px 0!important;
-    background:linear-gradient(145deg,color-mix(in srgb,var(--tm-accent-soft) 10%,rgba(250,253,251,.98)),color-mix(in srgb,var(--tm-accent-soft) 22%,rgba(236,245,241,.97)))!important;
-    box-shadow:0 20px 55px rgba(12,62,46,.24)!important
-  }
-  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about),
-  html body:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
-    border:0!important;
-    box-shadow:none!important
-  }
-}
+
 
 /* Plan geometry is owned by auto-planner.css; mobile header positioning remains below. */
 
@@ -926,22 +755,7 @@ html body.tm-new-design main.content>section:is(
   -webkit-text-fill-color:#173f32!important;
   text-shadow:none!important
 }
-@media(max-width:1000px){
-  html body:not(.home-page) main.content{
-    padding-top:76px!important
-  }
-  html body:not(.home-page) .mobile-header{
-    position:fixed!important;
-    top:max(8px,env(safe-area-inset-top))!important;
-    right:8px!important;
-    left:8px!important;
-    width:auto!important;
-    z-index:1250!important
-  }
-  html body:not(.home-page) .network-usage-meter.in-trip{
-    top:calc(max(8px,env(safe-area-inset-top)) + 68px)!important
-  }
-}
+
 
 @media(min-width:1001px){
   html body.tm-new-design .sidebar .trip-logout .tip,
@@ -1045,21 +859,6 @@ body.home-page.is-authenticated .trip-date-state{
     -webkit-text-fill-color:#0f6b4d!important
   }
 }
-html body.tm-new-design #documents :is(
-  .vault-session,.vault-drop,.doc-row,.doc-category-file
-){
-  border:0!important;
-  border-radius:14px!important;
-  background:rgba(255,255,255,.12)!important;
-  color:#fff!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.2)!important
-}
-html body.tm-new-design #documents :is(
-  .vault-session,.vault-drop,.doc-row,.doc-category-file
-) :where(h1,h2,h3,h4,p,strong,span,small,i){
-  color:var(--tm-card-text)!important;
-  -webkit-text-fill-color:var(--tm-card-text)!important
-}
 html body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar button:is(
   [data-open-trip-calendar],[data-new-activity]
 ){
@@ -1102,19 +901,6 @@ body.home-page.is-authenticated .home-sidebar-utilities>.trip-logout :is(i,.tip)
 /* 1.35.3 — calmer daily planner controls and collapsible days. */
 html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div{
   display:block!important;
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .document-vault .vault-unlock>small,
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .document-vault .vault-unlock>small *{
-  background:#fff0e6!important;
-  color:#713b16!important;
-  -webkit-text-fill-color:#713b16!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-status.error:not(:empty){
-  background:#ffe9ec!important;
-  color:#8f2532!important;
-  -webkit-text-fill-color:#8f2532!important;
-  text-shadow:none!important
 }
 html body.tm-new-design[data-trip-view="memories"] main.content #memories label.memory-file-picker{
   background:#e9f5ef!important;
@@ -1304,14 +1090,9 @@ html body.tm-new-design #transport p.transport-note{
 
 /* Stable trip rendering and clear transport controls */
 html body.tm-new-design:not(.home-page)::before{display:none!important;content:none!important;animation:none!important}
-html body.tm-new-design .sidebar nav .sidebar-about{order:999!important}
 html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport p.transport-note.transport-note{background:linear-gradient(135deg,#315d4d,#21493b)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 
 html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#getaways)>.section-head .mark{display:none!important}
-html body.tm-new-design main.content #documents .ai-notes-archive{background:linear-gradient(145deg,#edf8f2,#fff)!important;color:#173f32!important;-webkit-text-fill-color:#173f32!important}
-html body.tm-new-design main.content #documents .ai-notes-archive :is(h3,p,strong,small,summary,.ai-note-toggle){color:#173f32!important;-webkit-text-fill-color:#173f32!important}
-html body.tm-new-design main.content #documents .ai-notes-archive .ai-note-answer{color:#304c41!important;-webkit-text-fill-color:#304c41!important;background:#f8fcfa!important}
-
 @media(max-width:900px){
   html body.tm-new-design[data-trip-view="transport"] main.content section#transport#transport{
     color:#173f32!important;
@@ -1386,98 +1167,6 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan .schedule-conf
   -webkit-text-fill-color:#7a4a0d!important
 }
 
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-badge,
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-status:not(.error),
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-archive>header>b,
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-note-toggle{
-  background:#e7f4ed!important;
-  border-color:#add3c1!important;
-  color:#17664e!important;
-  -webkit-text-fill-color:#17664e!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-unlock>small{
-  background:#fff0e6!important;
-  border-color:#efb37f!important;
-  color:#6f3e19!important;
-  -webkit-text-fill-color:#6f3e19!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .vault-unlock>small *{
-  color:inherit!important;
-  -webkit-text-fill-color:inherit!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list details{
-  --tm-navo-surface:#f4f7f5;
-  --tm-navo-surface-soft:#e8f1ee;
-  --tm-navo-text:#182326;
-  --tm-navo-text-secondary:#4d5f63;
-  --tm-navo-accent:#0b5869;
-  --tm-navo-danger:#a2261d;
-  background:var(--tm-navo-surface)!important;
-  border-color:rgba(18,88,105,.28)!important;
-  color:var(--tm-navo-text)!important;
-  -webkit-text-fill-color:var(--tm-navo-text)!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list summary,
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-note-answer,
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer{
-  background:transparent!important;
-  color:var(--tm-navo-text)!important;
-  -webkit-text-fill-color:var(--tm-navo-text)!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list :is(summary,.ai-note-answer) :is(strong,small,span){
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list summary small{
-  color:var(--tm-navo-text-secondary)!important;
-  -webkit-text-fill-color:var(--tm-navo-text-secondary)!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list summary strong,
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-note-answer :is(h3,strong,b){
-  color:var(--tm-navo-accent)!important;
-  -webkit-text-fill-color:var(--tm-navo-accent)!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button{
-  min-height:44px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
-  background:var(--tm-navo-surface-soft)!important;
-  border-color:rgba(11,88,105,.36)!important;
-  color:var(--tm-navo-accent)!important;
-  -webkit-text-fill-color:var(--tm-navo-accent)!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button[data-delete-ai-note]{
-  background:#fff1ef!important;
-  border-color:rgba(162,38,29,.46)!important;
-  color:var(--tm-navo-danger)!important;
-  -webkit-text-fill-color:var(--tm-navo-danger)!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button:hover{
-  background:#dbeae6!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button[data-delete-ai-note]:hover{
-  background:#ffe3df!important
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button:active{transform:translateY(1px)}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button:focus-visible{
-  outline:3px solid rgba(20,125,146,.34);
-  outline-offset:2px
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button:disabled{
-  opacity:.55;
-  cursor:not-allowed
-}
-html body.tm-new-design[data-trip-view="documents"] main.content #documents .ai-notes-list footer button *{
-  color:inherit!important;
-  -webkit-text-fill-color:inherit!important
-}
-
 html body.tm-new-design[data-trip-view="group"] main.content #group :is(.collaboration-live,.group-privacy){
   background:#edf8f3!important;
   border-color:#b9d9ca!important;
@@ -1511,32 +1200,6 @@ html body.tm-new-design[data-trip-view="plan"][data-trip-view] main.content sect
   border-color:#e8c98d!important;
   color:#7a4a0d!important;
   -webkit-text-fill-color:#7a4a0d!important
-}
-
-html body.tm-new-design[data-trip-view="documents"][data-trip-view] main.content section#documents#documents :is(
-  .vault-badge.vault-badge,.vault-status.vault-status:not(.error),
-  .ai-notes-archive.ai-notes-archive>header>b,.ai-note-toggle.ai-note-toggle
-){
-  background:#e7f4ed!important;
-  border-color:#add3c1!important;
-  color:#17664e!important;
-  -webkit-text-fill-color:#17664e!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="documents"][data-trip-view] main.content section#documents#documents .vault-unlock.vault-unlock>small{
-  background:#fff0e6!important;
-  border-color:#efb37f!important;
-  color:#6f3e19!important;
-  -webkit-text-fill-color:#6f3e19!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="documents"][data-trip-view] main.content section#documents#documents :is(
-  .vault-badge,.vault-status:not(.error),.vault-unlock>small,
-  .ai-notes-archive>header>b,.ai-note-toggle
-) *{
-  color:inherit!important;
-  -webkit-text-fill-color:inherit!important;
-  text-shadow:none!important
 }
 
 html body.tm-new-design[data-trip-view="memories"][data-trip-view] main.content section#memories#memories :is(

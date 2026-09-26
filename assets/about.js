@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.32',
-    label: 'CSS architecture cleanup — Phase 1B',
+    version: '1.55.33',
+    label: 'CSS architecture cleanup — Phase 2',
     date: '26 בספטמבר 2026',
     highlights: [
+      'CSS architecture: Phase 2 moved Documents, Places and mobile Navigation ownership out of theme.css, reducing theme !important debt from 810 to 624 and whole-app CSS debt to 1,700.',
       'CSS architecture: Phase 1B moved Plan geometry to auto-planner.css and Budget layout to trip-experience.css, reducing theme !important debt from 1,097 to 810 while preserving the shared material authority in readable-glass.css.',
       'CSS architecture: Phase 1A reduced theme !important debt, removed superseded legacy overrides, repaired unmatched CSS braces, and added regression ceilings to prevent the debt from growing again.',
       'Weather: טשטוש Photo Glass הופחת מ־12px ל־8px כדי לשמור על תחושת זכוכית בלי להכביד על צילום היעד.',

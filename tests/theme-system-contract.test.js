@@ -81,10 +81,12 @@ test('theme picker is keyboard-visible and responsive',()=>{
 
 test('app chrome inherits the selected accent without recoloring semantic states',()=>{
   const glass=read('assets/readable-glass.css');
+  const redesign=read('assets/trip-redesign.css');
   const themeCss=read('assets/theme.css');
   assert.match(glass,/--tm-chrome-surface:color-mix\(in srgb,var\(--tm-brand-primary-dark\)/);
   assert.match(glass,/--tm-chrome-border:color-mix\(in srgb,var\(--tm-brand-primary\)/);
-  assert.match(themeCss,/background:var\(--tm-chrome-surface,var\(--tm-surface-dark-glass-strong\)\)!important/);
-  assert.match(themeCss,/background:var\(--tm-action-secondary\)!important/);
+  assert.match(redesign,/background:var\(--tm-chrome-surface,var\(--tm-surface-dark-glass-strong\)\);/);
+  assert.match(redesign,/background:var\(--tm-action-secondary\);/);
+  assert.doesNotMatch(redesign,/tm-chrome-surface[^;]*!important/);
   assert.match(themeCss,/background:var\(--tm-action-danger\)/);
 });
