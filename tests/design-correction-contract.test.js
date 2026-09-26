@@ -22,7 +22,9 @@ test('trip photo is owned by the app background while content uses readable glas
 test('light section and Plan day headings no longer force white text', () => {
   const theme = read('assets/theme.css');
   const glass = read('assets/readable-glass.css');
-  assert.match(theme, /section-head\.section-head[\s\S]*color:var\(--tm-card-heading\)!important/);
+  assert.match(glass, /main\.content :is\(\.section-head\)\{[\s\S]*color:var\(--tm-card-text\)!important/);
+  assert.match(glass, /main\.content \.section-head :where\([\s\S]*text-shadow:none/);
+  assert.doesNotMatch(theme, /section-head\.section-head[\s\S]*color:var\(--tm-card-heading\)!important/);
   assert.match(glass, /data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*color:var\(--tm-readable-text\)!important/);
   assert.match(glass, /data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*:where\(h2,h3,h4,p,span,strong,b,small,time\)[\s\S]*color:inherit!important/);
   assert.doesNotMatch(theme, /day-heading\.day-heading,.day-tab\.day-tab[\s\S]*!important/);
@@ -52,6 +54,8 @@ test('mobile Places and Documents use progressive compact layouts', () => {
 test('Mate launcher is compact on trip screens', () => {
   const theme = read('assets/theme.css');
   const ai = read('assets/ai-assistant.css');
-  assert.match(theme, /width:48px!important;\s*min-width:48px!important;\s*height:48px!important/);
+  assert.match(ai, /Phase 7 — Mate launcher and header visual authority/);
+  assert.match(ai, /body\.tm-new-design \.ai-orb\{[\s\S]*width:48px;[\s\S]*min-width:48px;[\s\S]*height:48px;[\s\S]*min-height:48px;/);
+  assert.doesNotMatch(theme, /html body\.tm-new-design \.ai-orb\{[\s\S]*width:48px!important/);
   assert.match(ai, /smaller mobile Mate launcher with safe-area clearance/);
 });

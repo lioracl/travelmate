@@ -40,3 +40,39 @@
   .ai-orb-badge{right:-2px;top:-4px;padding:2px 5px;font-size:9px}
   body:not(.home-page) main.content{padding-bottom:max(96px,calc(72px + env(safe-area-inset-bottom)))}
 }
+
+
+/* Phase 7 — Mate launcher and header visual authority.
+   Preserves the compact launcher previously forced from theme.css. */
+body.tm-new-design .ai-orb{
+  width:48px;
+  min-width:48px;
+  height:48px;
+  min-height:48px;
+  border:0;
+  border-radius:18px;
+  background:var(--tm-brand-primary);
+  color:var(--tm-text-on-brand);
+  -webkit-text-fill-color:var(--tm-text-on-brand);
+  box-shadow:0 13px 30px rgba(11,88,105,.34),inset 0 1px 0 rgba(255,255,255,.2)
+}
+body.tm-new-design .ai-orb:after{content:"";display:none}
+body.tm-new-design .ai-orb :is(i,svg){color:#fff;fill:currentColor}
+body.tm-new-design .ai-orb-ring{
+  border-color:color-mix(in srgb,var(--tm-brand-primary) 42%,transparent)
+}
+body.tm-new-design .ai-panel-header{
+  border-bottom:1px solid var(--tm-border-on-dark,rgba(255,255,255,.16));
+  background:var(--tm-chrome-surface,rgba(16,30,34,.9));
+  color:var(--tm-text-on-photo);
+  -webkit-text-fill-color:var(--tm-text-on-photo)
+}
+body.tm-new-design .ai-panel-title small{color:#d9eee7}
+body.tm-new-design .ai-avatar,
+body.tm-new-design .ai-icon-button{
+  border:1px solid color-mix(in srgb,var(--tm-brand-primary) 24%,var(--tm-card-control-border));
+  background:var(--tm-action-secondary);
+  color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
+  -webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))
+}
+body.tm-new-design .ai-orb-ring{animation:none}

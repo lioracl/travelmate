@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.37',
-    label: 'CSS architecture cleanup — Phase 6',
+    version: '1.55.38',
+    label: 'CSS architecture cleanup — Phase 7',
     date: '26 בספטמבר 2026',
     highlights: [
+      'CSS architecture: Phase 7 consolidated shared section headers, trip-frame and hero geometry, Mate launcher/header ownership, and Transport presentation out of legacy Theme escalation. Whole-app !important debt dropped from 752 to 620 while preserving current rendered geometry.',
       'CSS architecture: Phase 6 moved Plan and Budget ownership out of legacy Theme overrides, reduced auto-planner.css to zero !important, trip-experience.css to five behavioral exceptions, place-auto-fill.css to two hidden-state exceptions, and reduced whole-app CSS debt from 1,099 to 752.',
       'CSS architecture: Phase 5 consolidated mobile and desktop Navigation ownership, removed all navigation-specific !important escalation across the six navigation owners, and reduced whole-app CSS debt from 1,270 to 1,099.',
       'CSS architecture: Phase 4 removed !important from the base stylesheet, consolidated Home ownership, reduced cloud-sync.css to one behavioral exception, and brought whole-app CSS debt from 1,462 to 1,270.',

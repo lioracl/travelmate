@@ -168,3 +168,21 @@ Next recommended phase: Plan/Budget ownership cleanup inside `theme.css` and the
 - Focused Plan/Budget/Surface/Theme/Performance suite: **93/93 PASS** after all Phase 6 changes.
 
 Next recommended phase: audit the remaining shared global selectors in `theme.css` and `readable-glass.css`; do not classify multi-screen design-system rules as Plan/Budget debt simply because their selector lists include those screens.
+
+
+## Phase 7 execution result — shared/global ownership
+
+- Whole-app CSS debt reduced from **752** to **620** `!important` declarations (**-132** in this phase).
+- Combined reduction since the original audit baseline: **2,583 → 620** (**-1,963 / ~76%**).
+- `theme.css`: **241 → 109**.
+- Shared section-header text/spacing ownership now lives in `readable-glass.css`; legacy page-specific header escalation was removed from Theme.
+- Trip frame and Hero geometry moved to `trip-redesign.css` with the same currently rendered desktop/mobile values, but without Theme `!important` escalation.
+- Mate launcher/header visual ownership moved to `ai-assistant.css`; the launcher remains 48px as before.
+- Transport dark note and official-fares presentation are owned by `transport-planner.css`; duplicate Theme overrides were removed.
+- `readable-glass.css` remains at **191** `!important` declarations; a newly introduced section-header width escalation was removed instead of raising the debt ceiling.
+- Focused Theme/Surface/Design/Performance suite: **90/90 PASS**.
+
+### Intentionally retained for a later visual-runtime pass
+Group, Memories and global Currency contrast overrides remain in `theme.css` for now. They participate in lazy-loaded feature transitions and removing or moving them without browser/mobile visual verification could cause transient white-on-white or contrast flashes. They are therefore treated as known semantic exceptions rather than blindly removed debt.
+
+Next recommended cleanup: visual-runtime validation of Group/Memories/Currency followed by feature-owner migration only where no loading-state regression is observed.

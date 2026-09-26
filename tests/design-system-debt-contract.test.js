@@ -41,7 +41,7 @@ test('design-system CSS debt does not grow while ownership is being consolidated
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
   assert.equal(counts.base, 0, `styles.css must remain free of !important debt; found ${counts.base}`);
-  assert.ok(counts.theme <= 241, `theme.css !important debt grew to ${counts.theme}`);
+  assert.ok(counts.theme <= 109, `theme.css !important debt grew to ${counts.theme}`);
   assert.ok(counts.readableGlass <= 191, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
   assert.ok(counts.tripRedesign <= 92, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
   assert.ok(counts.cloudSync <= 1, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
@@ -50,7 +50,7 @@ test('design-system CSS debt does not grow while ownership is being consolidated
   assert.ok(counts.tripExperience <= 5, `trip-experience.css !important debt grew to ${counts.tripExperience}`);
   assert.ok(counts.placeAutoFill <= 2, `place-auto-fill.css !important debt grew to ${counts.placeAutoFill}`);
   assert.ok(
-    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.placeAutoFill <= 534,
+    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.placeAutoFill <= 402,
     `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.placeAutoFill}`
   );
 });
@@ -383,4 +383,23 @@ test('Phase 6 keeps Plan, Budget and auto-place with feature ownership', () => {
   assert.match(budget, /#budget \.receipt-preview\[hidden\]\{display:none!important\}/);
   assert.match(autoPlace, /\.saved-place-editor\[hidden\]\{display:none!important\}/);
   assert.match(autoPlace, /\.auto-place-stay-dates\[hidden\]\{display:none!important\}/);
+});
+
+
+test('Phase 7 keeps shared frame, Mate and Transport ownership out of Theme', () => {
+  const theme = read(cssFiles.theme);
+  const redesign = read(cssFiles.tripRedesign);
+  const ai = read(path.join(root, 'assets/ai-assistant.css'));
+  const transport = read(path.join(root, 'assets/transport-planner.css'));
+
+  assert.match(redesign, /Phase 7 — trip frame and hero geometry authority/);
+  assert.match(redesign, /data-trip-view\]:not\(\[data-trip-view="overview"\]\)[\s\S]*min-height:56px/);
+  assert.match(ai, /Phase 7 — Mate launcher and header visual authority/);
+  assert.match(ai, /body\.tm-new-design \.ai-orb\{[\s\S]*width:48px;/);
+  assert.match(transport, /#transport \.transport-note\{[^}]*background:linear-gradient\(135deg,#315d4d,#21493b\)!important/);
+
+  assert.doesNotMatch(theme, /#overview\.custom-hero\{[\s\S]{0,240}!important/);
+  assert.doesNotMatch(theme, /html body\.tm-new-design \.ai-orb\{[\s\S]{0,300}!important/);
+  assert.doesNotMatch(theme, /#transport \.transport-note\{[\s\S]{0,300}!important/);
+  assert.doesNotMatch(theme, /section-head\.section-head[\s\S]{0,300}!important/);
 });

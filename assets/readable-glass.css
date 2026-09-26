@@ -14,7 +14,7 @@
 }
 
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#plan),
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places,#plan)),
 html body.tm-new-design main.content>.external-resources{
   border:1.5px solid var(--tm-page-section-border)!important;
   background:var(--tm-page-section-surface)!important;
@@ -25,7 +25,7 @@ html body.tm-new-design main.content>.external-resources{
   backdrop-filter:var(--tm-card-blur)!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
   .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
   .day-heading,.day-tab,.day-item,.lodging-day-card,.airport-day-card,.trip-anchor,
   .planner-toolbar,.planner-composer,.nearby-result,.auto-place-launch,
@@ -43,7 +43,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   opacity:1
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
   .section-head,.card,.panel,.module,.generated-day,.planned-activity,.saved-place,
   .day-heading,.day-tab,.day-item,.lodging-day-card,.airport-day-card,.trip-anchor,
   .planner-toolbar,.planner-composer,.nearby-result,.auto-place-launch,
@@ -57,7 +57,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   opacity:1!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
   small,.muted,.day-summary,.saved-place-type,.activity-copy small,
   .trip-anchor-copy small,.trip-anchor-copy p
 ):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
@@ -65,7 +65,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   -webkit-text-fill-color:var(--tm-readable-muted)!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(input,select,textarea):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(input,select,textarea):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1px solid var(--tm-border-control)!important;
   background:var(--tm-surface-control)!important;
   color:var(--tm-control-text)!important;
@@ -74,13 +74,13 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   text-shadow:none!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(input,textarea):not(body[data-trip-kind="custom"][data-trip-view="overview"] *)::placeholder{
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(input,textarea):not(body[data-trip-kind="custom"][data-trip-view="overview"] *)::placeholder{
   color:var(--tm-text-secondary)!important;
   -webkit-text-fill-color:var(--tm-text-secondary)!important;
   opacity:1!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)
 ):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1px solid var(--tm-border-control)!important;
@@ -91,14 +91,14 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   opacity:1!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
   button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)
 ):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) *{
   color:inherit!important;
   -webkit-text-fill-color:inherit!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
   .primary,button[type="submit"],.nearby-search,.lodging-navigate,.airport-navigate,
   .lodging-actions button,.trip-anchor>a
 ):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
@@ -109,7 +109,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is
   text-shadow:0 1px 4px rgba(0,0,0,.28)!important
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
+html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
   .primary,button[type="submit"],.nearby-search,.lodging-navigate,.airport-navigate,
   .lodging-actions button,.trip-anchor>a
 ):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) *{
@@ -157,8 +157,8 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
 }
 
 @media(max-width:650px){
-  html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#plan),
-  html body.tm-new-design main.content>section.section:not(.hero):not(#places) :is(
+  html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places,#plan)),
+  html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
     .section-head,.card,.panel,.module,.planned-activity,.saved-place,.day-heading,
     .lodging-day-card,.airport-day-card,.nearby-result,.doc-row,
     .expense-record,.receipt-card,.transport-card,.service-card,.getaway-result,
@@ -175,7 +175,7 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
   }
 }
 
-/* Phase 5 — final mobile drawer material authority.
+/* Phase 5 Ã¢â‚¬â€ final mobile drawer material authority.
    Geometry lives in trip-redesign.css; open/closed state lives in mobile-menu.css. */
 @media(max-width:1000px){
   html body.tm-new-design:not(.home-page) .workspace>.sidebar{
@@ -1262,7 +1262,16 @@ html[data-theme][data-theme] body.tm-new-design main.content :is(.section-head){
   box-shadow:var(--tm-card-shadow)!important;
   text-shadow:none!important
 }
-html[data-theme][data-theme] body.tm-new-design main.content .section-head{padding:var(--tm-card-padding)!important}
+html[data-theme][data-theme] body.tm-new-design main.content .section-head :where(
+  h1,h2,h3,h4,p,span,strong,b,small,label,legend,time
+){text-shadow:none}
+html body.tm-new-design main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+){--tm-section-head-padding-bottom:13px}
+html[data-theme][data-theme] body.tm-new-design main.content .section-head{
+  width:100%;
+  padding:var(--tm-card-padding) var(--tm-card-padding) var(--tm-section-head-padding-bottom,var(--tm-card-padding))!important
+}
 
 @media(max-width:650px){
   :root{--tm-card-padding:16px;--tm-card-padding-compact:12px}
@@ -1845,7 +1854,7 @@ html body .tm-skip-link:focus-visible{
 /* Mobile uses the same Surface Authority 2.0 materials as desktop.
    Only geometry belongs in mobile-specific rules; surface opacity is not redefined here. */
 
-/* Night design system pass — shared geometry and interaction authority for core trip screens. */
+/* Night design system pass Ã¢â‚¬â€ shared geometry and interaction authority for core trip screens. */
 :root{
   --tm-core-radius-xl:22px;
   --tm-core-radius-lg:18px;
@@ -1865,6 +1874,11 @@ body.tm-new-design[data-trip-view] main.content :is(
   #overview,#plan,#places,#budget,#documents
 ) :is(button:not(.weather-top-widget),a[href]){
   min-height:var(--tm-core-control-h)
+}
+body.tm-new-design[data-trip-view] main.content>section:is(
+  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
+) :is(button:not([data-copy-ai-note]):not([data-delete-ai-note]),.pill-btn,.service-link){
+  min-height:42px
 }
 body.tm-new-design[data-trip-view] main.content :is(
   #plan,#places,#budget,#documents
@@ -1950,7 +1964,7 @@ body[data-trip-view]:not([data-trip-view="overview"]) [data-navo-trip-banner]{
   display:none
 }
 
-/* Surface Authority 2.0 — one material model for all custom-trip screens.
+/* Surface Authority 2.0 Ã¢â‚¬â€ one material model for all custom-trip screens.
    Canvas = destination photo. Glass = translucent + blur. Nested = lighter depth.
    Controls = readable input/action surface. Photo glass = dark translucent material. */
 html body[data-trip-kind="custom"].tm-new-design{

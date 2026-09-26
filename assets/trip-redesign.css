@@ -795,3 +795,90 @@ body:not(.home-page) .workspace>.sidebar nav .sidebar-about{order:999}
     transform:none
   }
 }
+
+
+/* Phase 7 — trip frame and hero geometry authority.
+   These values preserve the current rendered geometry while removing Theme escalation. */
+body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) main.content #overview.custom-hero{
+  min-height:56px;
+  padding-block:4px;
+  align-items:center
+}
+body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) main.content #overview.custom-hero>.hero-copy{
+  align-self:center;
+  align-items:center;
+  margin-block:0
+}
+body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) main.content #overview.custom-hero>.hero-back,
+body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) main.content #overview.custom-hero>.hero-share-actions{
+  align-self:center
+}
+
+@media(max-width:1000px){
+  html,body{
+    width:100%;
+    max-width:100%;
+    overflow-x:clip
+  }
+  body:not(.home-page) .workspace,
+  body:not(.home-page) main.content,
+  body:not(.home-page) main.content>section{
+    min-width:0;
+    max-width:100%
+  }
+  body:not(.home-page) main.content{
+    width:100%;
+    margin:0;
+    padding:12px;
+    overflow-x:hidden
+  }
+  body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) #overview.custom-hero{
+    width:100%;
+    max-width:100%;
+    min-height:112px;
+    padding:12px 14px;
+    gap:8px;
+    overflow:hidden
+  }
+  body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) #overview.custom-hero>.hero-copy{
+    width:min(100%,calc(100% - 108px));
+    min-width:0;
+    flex:1 1 auto
+  }
+  body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) #overview.custom-hero :where(h1,p,.hero-country-line){
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap
+  }
+}
+
+@media(max-width:650px){
+  body.tm-new-design[data-trip-view="overview"] main.content #overview.custom-hero{
+    min-height:286px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    gap:10px;
+    padding:58px 14px 14px
+  }
+  body.tm-new-design[data-trip-view="overview"] main.content #overview.custom-hero>.hero-copy{
+    position:relative;
+    z-index:3;
+    width:100%;
+    max-width:none;
+    margin:0;
+    padding:9px 11px;
+    border:0;
+    border-radius:13px;
+    background:rgba(16,30,34,.16);
+    box-shadow:none
+  }
+  body.tm-new-design[data-trip-view="overview"] main.content #overview.custom-hero>.hero-copy>p{
+    margin:.35rem 0 0;
+    color:#f7fff9;
+    -webkit-text-fill-color:#f7fff9;
+    white-space:normal;
+    line-height:1.45
+  }
+}
