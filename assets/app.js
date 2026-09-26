@@ -1,6 +1,6 @@
 var appScript=document.currentScript;
 (function(){
-  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260926-4'}catch(error){return'20260926-4'}})();
+  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260926-5'}catch(error){return'20260926-5'}})();
   var loadedStyles={},loadedScripts={};
   var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css'];
   var finalStyle='readable-glass.css';

@@ -334,13 +334,13 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .modules>.module
 ){
   border:1px solid var(--tm-overview-border)!important;
-  background:var(--tm-overview-card)!important;
-  background-image:var(--tm-overview-card)!important;
-  color:var(--tm-overview-text)!important;
-  -webkit-text-fill-color:var(--tm-overview-text)!important;
-  -webkit-backdrop-filter:var(--tm-card-blur)!important;
-  backdrop-filter:var(--tm-card-blur)!important;
-  text-shadow:none!important
+  background:var(--tm-overview-card);
+  background-image:var(--tm-overview-card);
+  color:var(--tm-overview-text);
+  -webkit-text-fill-color:var(--tm-overview-text);
+  -webkit-backdrop-filter:var(--tm-card-blur);
+  backdrop-filter:var(--tm-card-blur);
+  text-shadow:none
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -350,7 +350,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .dashboard>.right-stack>.panel
 ){
   border-radius:20px!important;
-  box-shadow:var(--tm-overview-shadow)!important
+  box-shadow:var(--tm-overview-shadow)
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -358,63 +358,63 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .dashboard>.panel,
   .dashboard>.right-stack>.panel
 ){
-  padding:20px!important
+  padding:20px
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions{
-  padding:20px!important
+  padding:20px
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions nav{
-  gap:10px!important;
-  margin-top:14px!important;
-  background:transparent!important
+  gap:10px;
+  margin-top:14px;
+  background:transparent
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions a{
-  min-height:64px!important;
-  padding:14px 15px!important;
-  gap:10px!important;
+  min-height:64px;
+  padding:14px 15px;
+  gap:10px;
   border-radius:16px!important;
-  background:var(--tm-overview-card-soft)!important;
-  box-shadow:none!important;
-  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background-color .16s ease!important
+  background:var(--tm-overview-card-soft);
+  box-shadow:none;
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background-color .16s ease
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions a:first-child{
   --tm-overview-muted:var(--tm-text-on-action);
   --tm-overview-green:var(--tm-text-on-action);
   border-color:var(--tm-action-primary-active)!important;
-  background:var(--tm-action-primary)!important;
-  box-shadow:inset 3px 0 0 var(--tm-action-primary-active)!important
+  background:var(--tm-action-primary);
+  box-shadow:inset 3px 0 0 var(--tm-action-primary-active)
 }
 
 html[dir="rtl"] body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions a:first-child{
-  box-shadow:inset -3px 0 0 var(--tm-overview-green)!important
+  box-shadow:inset -3px 0 0 var(--tm-overview-green)
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .quick-grid{
-  gap:16px!important
+  gap:16px
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .quick-grid>.card{
-  min-height:104px!important;
-  padding:18px!important;
+  min-height:104px;
+  padding:18px;
   border-radius:18px!important;
-  box-shadow:0 2px 4px rgba(20,45,36,.025),0 8px 22px rgba(20,45,36,.055)!important
+  box-shadow:0 2px 4px rgba(20,45,36,.025),0 8px 22px rgba(20,45,36,.055)
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .modules{
-  gap:12px!important
+  gap:12px
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .modules>.module{
-  min-height:78px!important;
-  padding:16px 18px!important;
+  min-height:78px;
+  padding:16px 18px;
   border-radius:16px!important;
-  background:var(--tm-overview-card-soft)!important;
-  box-shadow:none!important;
-  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background-color .16s ease!important
+  background:var(--tm-overview-card-soft);
+  box-shadow:none;
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background-color .16s ease
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -426,9 +426,9 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .dashboard>.right-stack>.panel,
   .modules>.module
 ) :where(h1,h2,h3,h4,strong,b){
-  color:var(--tm-overview-text)!important;
-  -webkit-text-fill-color:var(--tm-overview-text)!important;
-  text-shadow:none!important
+  color:var(--tm-overview-text);
+  -webkit-text-fill-color:var(--tm-overview-text);
+  text-shadow:none
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -440,9 +440,9 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .dashboard>.right-stack>.panel,
   .modules>.module
 ) :where(p,small,span,time){
-  color:var(--tm-overview-muted)!important;
-  -webkit-text-fill-color:var(--tm-overview-muted)!important;
-  text-shadow:none!important
+  color:var(--tm-overview-muted);
+  -webkit-text-fill-color:var(--tm-overview-muted);
+  text-shadow:none
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -450,10 +450,10 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .modules>.module,
   .quick-grid>.card
 ) :where(i,.icon){
-  color:var(--tm-overview-green)!important;
-  -webkit-text-fill-color:var(--tm-overview-green)!important;
-  -webkit-text-stroke:0!important;
-  text-shadow:none!important
+  color:var(--tm-overview-green);
+  -webkit-text-fill-color:var(--tm-overview-green);
+  -webkit-text-stroke:0;
+  text-shadow:none
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -461,14 +461,14 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .assistant-title>.icon,
   .modules>.module>.icon
 ){
-  width:auto!important;
-  min-width:0!important;
-  height:auto!important;
-  padding:0!important;
+  width:auto;
+  min-width:0;
+  height:auto;
+  padding:0;
   border:0!important;
   border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important
+  background:transparent;
+  box-shadow:none
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -476,10 +476,10 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .modules>.module,
   .quick-grid>button.card
 ):is(:hover,:focus-visible){
-  transform:translateY(-1px)!important;
+  transform:translateY(-1px);
   border-color:var(--tm-overview-border-hover)!important;
-  background:var(--tm-card-bg-hover)!important;
-  box-shadow:var(--tm-overview-shadow-hover)!important
+  background:var(--tm-card-bg-hover);
+  box-shadow:var(--tm-overview-shadow-hover)
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -487,8 +487,8 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .modules>.module,
   .quick-grid>button.card
 ):focus-visible{
-  outline:3px solid var(--tm-focus-ring)!important;
-  outline-offset:3px!important
+  outline:3px solid var(--tm-focus-ring);
+  outline-offset:3px
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(
@@ -497,24 +497,24 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .quick-grid>article.card,
   .trip-overview-summary>article.card
 ):hover{
-  transform:none!important
+  transform:none
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(.timeline-item,.alert-row){
   border-color:#e7edea!important;
-  background:var(--tm-overview-card-soft)!important;
-  color:var(--tm-overview-text)!important;
-  -webkit-text-fill-color:var(--tm-overview-text)!important;
-  box-shadow:none!important;
-  text-shadow:none!important
+  background:var(--tm-overview-card-soft);
+  color:var(--tm-overview-text);
+  -webkit-text-fill-color:var(--tm-overview-text);
+  box-shadow:none;
+  text-shadow:none
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .progress{
-  background:#e8efeb!important
+  background:#e8efeb
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content .progress>i{
-  background:var(--tm-overview-green)!important
+  background:var(--tm-overview-green)
 }
 
 html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"]{
@@ -535,7 +535,7 @@ html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"] main.conte
   .modules>.module,
   .quick-grid>button.card
 ):is(:hover,:focus-visible){
-  background:#22342c!important
+  background:#22342c
 }
 
 @media(max-width:650px){
@@ -546,10 +546,10 @@ html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"] main.conte
     .modules,
     .trip-home-actions nav
   ){
-    grid-template-columns:minmax(0,1fr)!important;
-    width:100%!important;
-    max-width:100%!important;
-    gap:10px!important
+    grid-template-columns:minmax(0,1fr);
+    width:100%;
+    max-width:100%;
+    gap:10px
   }
   html body.tm-new-design[data-trip-view="overview"] main.content :is(
     .trip-overview-summary>.card,
@@ -559,9 +559,9 @@ html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"] main.conte
     .dashboard>.right-stack>.panel,
     .modules>.module
   ){
-    width:100%!important;
-    min-width:0!important;
-    max-width:100%!important
+    width:100%;
+    min-width:0;
+    max-width:100%
   }
   html body.tm-new-design[data-trip-view="overview"] main.content :is(
     .trip-overview-summary>.card,
@@ -569,59 +569,26 @@ html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"] main.conte
     .dashboard>.panel,
     .dashboard>.right-stack>.panel
   ){
-    padding:16px!important;
+    padding:16px;
     border-radius:20px!important
   }
   html body.tm-new-design[data-trip-view="overview"] main.content .quick-grid>.card{
-    min-height:0!important;
-    padding:16px!important
+    min-height:0;
+    padding:16px
   }
   html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions a{
-    min-height:54px!important;
-    padding:12px 14px!important;
-    flex-direction:row!important;
-    justify-content:flex-start!important;
-    text-align:start!important
+    min-height:54px;
+    padding:12px 14px;
+    flex-direction:row;
+    justify-content:flex-start;
+    text-align:start
   }
   html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions a i{
-    width:20px!important;
-    font-size:17px!important
+    width:20px;
+    font-size:17px
   }
   html body.tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{grid-template-columns:1fr}
   html body.tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact button{justify-self:start;width:auto}
-}
-
-/* Specificity bridge for legacy duplicated theme selectors; Overview only. */
-html body.tm-new-design.tm-new-design[data-trip-view="overview"][data-trip-view="overview"]:not([data-trip-kind="custom"]) main.content.content :is(
-  .trip-overview-summary.trip-overview-summary>.card.card,
-  .quick-grid.quick-grid>.card.card,
-  .modules.modules>.module.module
-){
-  background:var(--tm-overview-card-soft)!important;
-  background-image:var(--tm-overview-card-soft)!important;
-  -webkit-backdrop-filter:var(--tm-card-blur)!important;
-  backdrop-filter:var(--tm-card-blur)!important;
-  box-shadow:var(--tm-card-shadow-compact)!important
-}
-
-html body.tm-new-design.tm-new-design[data-trip-view="overview"][data-trip-view="overview"] main.content.content :is(
-  .trip-overview-summary.trip-overview-summary>.card.card,
-  .quick-grid.quick-grid>.card.card
-){
-  border-radius:18px!important;
-  box-shadow:0 2px 4px rgba(20,45,36,.025),0 8px 22px rgba(20,45,36,.055)!important
-}
-
-html body.tm-new-design.tm-new-design[data-trip-view="overview"][data-trip-view="overview"] main.content.content .modules.modules>.module.module{
-  border-radius:16px!important
-}
-
-html[data-theme="dark"] body.tm-new-design.tm-new-design[data-trip-view="overview"][data-trip-view="overview"]:not([data-trip-kind="custom"]) main.content.content :is(
-  .trip-overview-summary.trip-overview-summary>.card.card,
-  .quick-grid.quick-grid>.card.card,
-  .modules.modules>.module.module
-){
-  background:var(--tm-overview-card-soft)!important
 }
 
 /* Canonical application-wide semantic material contract. */
@@ -1487,7 +1454,7 @@ html body.tm-new-design[data-trip-view="places"] #places#places>.nearby-panel :i
 html body.tm-new-design[data-trip-view="places"] #places#places>.nearby-panel :is(
   .nearby-category-chips button,.nearby-category-drawer button,.nearby-category-search-results button,
   .nearby-mode-bar button
-) :is(span,i){color:var(--tm-card-control-text)!important;-webkit-text-fill-color:currentColor!important;text-shadow:none}
+) :is(span,i){color:var(--tm-card-control-text);-webkit-text-fill-color:currentColor;text-shadow:none}
 html body.tm-new-design[data-trip-view="places"] #places#places>.auto-place-launch{
   --tm-control-current-bg:var(--tm-action-secondary);
   --tm-control-current-border:var(--tm-card-control-border);

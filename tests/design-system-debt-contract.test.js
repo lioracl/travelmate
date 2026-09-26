@@ -9,7 +9,8 @@ const root = path.resolve(__dirname, '..');
 const cssFiles = {
   theme: path.join(root, 'assets/theme.css'),
   readableGlass: path.join(root, 'assets/readable-glass.css'),
-  tripRedesign: path.join(root, 'assets/trip-redesign.css')
+  tripRedesign: path.join(root, 'assets/trip-redesign.css'),
+  cloudSync: path.join(root, 'assets/cloud-sync.css')
 };
 
 function read(file) {
@@ -24,16 +25,18 @@ test('design-system CSS debt does not grow while ownership is being consolidated
   const counts = {
     theme: importantCount(read(cssFiles.theme)),
     readableGlass: importantCount(read(cssFiles.readableGlass)),
-    tripRedesign: importantCount(read(cssFiles.tripRedesign))
+    tripRedesign: importantCount(read(cssFiles.tripRedesign)),
+    cloudSync: importantCount(read(cssFiles.cloudSync))
   };
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
   assert.ok(counts.theme <= 624, `theme.css !important debt grew to ${counts.theme}`);
-  assert.ok(counts.readableGlass <= 358, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
+  assert.ok(counts.readableGlass <= 268, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
   assert.ok(counts.tripRedesign <= 114, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
+  assert.ok(counts.cloudSync <= 19, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
   assert.ok(
-    counts.theme + counts.readableGlass + counts.tripRedesign <= 1096,
-    `combined design-system !important debt grew to ${counts.theme + counts.readableGlass + counts.tripRedesign}`
+    counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync <= 1025,
+    `combined design-system !important debt grew to ${counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync}`
   );
 });
 
@@ -123,8 +126,10 @@ test('Overview quick actions have one final visual owner', () => {
 
   assert.doesNotMatch(theme, /body\.tm-new-design \.trip-home-actions (?:nav|a)\{/);
   assert.doesNotMatch(tripRedesign, /body\.tm-new-design \.trip-home-actions (?:nav|a)(?: i)?\{/);
-  assert.match(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions a\{[^}]*min-height:64px!important/);
-  assert.match(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions nav\{[^}]*gap:10px!important/);
+  assert.match(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions a\{[^}]*min-height:64px;/);
+  assert.doesNotMatch(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions a\{[^}]*min-height:64px!important/);
+  assert.match(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions nav\{[^}]*gap:10px;/);
+  assert.doesNotMatch(readableGlass, /\[data-trip-view="overview"\] main\.content \.trip-home-actions nav\{[^}]*gap:10px!important/);
 });
 
 test('Overview budget material is owned by readable glass', () => {
@@ -285,4 +290,15 @@ test('Navo dialog contains keyboard focus while open', () => {
   assert.match(ai, /event\.key !== 'Tab'/);
   assert.match(ai, /event\.shiftKey && document\.activeElement === first/);
   assert.match(ai, /document\.activeElement === last/);
+});
+
+
+test('Phase 3 keeps Cloud Account and Overview on one final authority', () => {
+  const cloud = read(cssFiles.cloudSync);
+  const glass = read(cssFiles.readableGlass);
+  assert.match(cloud, /2026-07-31 reference restoration/);
+  assert.match(cloud, /2026-08-27 — focused login-control system/);
+  assert.doesNotMatch(cloud, /width:min\(940px,100%\)/);
+  assert.doesNotMatch(cloud, /Account panel: keep authenticated and signed-out states readable over the photo/);
+  assert.doesNotMatch(glass, /Specificity bridge for legacy duplicated theme selectors/);
 });

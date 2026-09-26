@@ -106,3 +106,19 @@ Next recommended phase: consolidate Documents/Places/Navigation ownership, then 
 - Extended asset/design/theme/performance suite: **102/102 PASS**.
 
 Next recommended phase: reduce `readable-glass.css` itself and then address `cloud-sync.css`, starting with duplicated surface/control rules rather than broad visual changes.
+
+
+## Phase 3 execution result — Readable Glass + Cloud Account
+
+- `readable-glass.css` reduced from **358** to **268** `!important` declarations (**-90**).
+- `cloud-sync.css` reduced from **167** to **19** (**-148 / ~89%**).
+- Whole-app CSS debt reduced from **1,700** to **1,462** in this phase.
+- Combined reduction since the original audit baseline: **2,583 → 1,462** (**-1,121 / ~43%**).
+- Removed the obsolete Overview specificity bridge and de-escalated Overview material to normal cascade except the legacy border/radius contracts still required against `styles.css`.
+- Consolidated Cloud Account from multiple historical layout generations into the 2026-07-31 layout authority plus the 2026-08-27 focused login-control authority.
+- Retained only Cloud Account `!important` declarations with a documented competitor in `styles.css` (global button font weight and `.cloud-account form button` primary-action rules), plus the hidden-state contract.
+- Current Places material authority is already mostly normal cascade; remaining large Places/Navigation counts in `readable-glass.css` come primarily from older broad/global authority selectors rather than the current Places feature block.
+- Focused Phase 3 design/asset/performance suite: **103/103 PASS**.
+- Full repository suite: **257/259** under the default Node environment. The two failures were environment/contract issues outside the Phase 3 diff: one test could not resolve Git from PATH, and one line-ending-sensitive AI marker test expected LF in a CRLF file. The Git-dependent concurrency suite passed **19/19** with GitHub Desktop Git added to PATH, and the Navo duplicate-prevention assertion passed with CRLF normalized in memory.
+
+Next recommended phase: reduce the legacy global authority at the top of `readable-glass.css` together with the broad card/button rules in `styles.css`, then consolidate Navigation against `mobile-menu.css`. Do not continue stripping Places-specific material blindly.

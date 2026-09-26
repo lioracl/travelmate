@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.33',
-    label: 'CSS architecture cleanup — Phase 2',
+    version: '1.55.34',
+    label: 'CSS architecture cleanup — Phase 3',
     date: '26 בספטמבר 2026',
     highlights: [
+      'CSS architecture: Phase 3 consolidated Readable Glass and the Cloud Account cascade, reducing readable-glass.css from 358 to 268 !important declarations, cloud-sync.css from 167 to 19, and whole-app CSS debt from 1,700 to 1,462.',
       'CSS architecture: Phase 2 moved Documents, Places and mobile Navigation ownership out of theme.css, reducing theme !important debt from 810 to 624 and whole-app CSS debt to 1,700.',
       'CSS architecture: Phase 1B moved Plan geometry to auto-planner.css and Budget layout to trip-experience.css, reducing theme !important debt from 1,097 to 810 while preserving the shared material authority in readable-glass.css.',
       'CSS architecture: Phase 1A reduced theme !important debt, removed superseded legacy overrides, repaired unmatched CSS braces, and added regression ceilings to prevent the debt from growing again.',
