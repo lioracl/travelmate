@@ -15,6 +15,7 @@ const cssFiles = {
   homeOrganizer: path.join(root, 'assets/home-organizer.css'),
   autoPlanner: path.join(root, 'assets/auto-planner.css'),
   tripExperience: path.join(root, 'assets/trip-experience.css'),
+  collaboration: path.join(root, 'assets/collaboration.css'),
   placeAutoFill: path.join(root, 'assets/place-auto-fill.css')
 };
 
@@ -36,22 +37,24 @@ test('design-system CSS debt does not grow while ownership is being consolidated
     homeOrganizer: importantCount(read(cssFiles.homeOrganizer)),
     autoPlanner: importantCount(read(cssFiles.autoPlanner)),
     tripExperience: importantCount(read(cssFiles.tripExperience)),
+    collaboration: importantCount(read(cssFiles.collaboration)),
     placeAutoFill: importantCount(read(cssFiles.placeAutoFill))
   };
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
   assert.equal(counts.base, 0, `styles.css must remain free of !important debt; found ${counts.base}`);
-  assert.ok(counts.theme <= 109, `theme.css !important debt grew to ${counts.theme}`);
+  assert.ok(counts.theme <= 32, `theme.css !important debt grew to ${counts.theme}`);
   assert.ok(counts.readableGlass <= 191, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
   assert.ok(counts.tripRedesign <= 92, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
   assert.ok(counts.cloudSync <= 1, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
   assert.ok(counts.homeOrganizer <= 2, `home-organizer.css !important debt grew to ${counts.homeOrganizer}`);
   assert.equal(counts.autoPlanner, 0, `auto-planner.css must remain free of !important debt; found ${counts.autoPlanner}`);
-  assert.ok(counts.tripExperience <= 5, `trip-experience.css !important debt grew to ${counts.tripExperience}`);
+  assert.ok(counts.tripExperience <= 8, `trip-experience.css !important debt grew to ${counts.tripExperience}`);
+  assert.ok(counts.collaboration <= 6, `collaboration.css !important debt grew to ${counts.collaboration}`);
   assert.ok(counts.placeAutoFill <= 2, `place-auto-fill.css !important debt grew to ${counts.placeAutoFill}`);
   assert.ok(
-    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.placeAutoFill <= 402,
-    `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.placeAutoFill}`
+    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill <= 334,
+    `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill}`
   );
 });
 
@@ -368,7 +371,7 @@ test('Phase 6 keeps Plan, Budget and auto-place with feature ownership', () => {
   assert.match(planner, /Phase 6 — Plan behavior, layout safety and action semantics authority/);
   assert.match(autoPlace, /Phase 6 — Auto-place behavior\/state authority/);
   assert.equal(importantCount(planner), 0);
-  assert.equal(importantCount(budget), 5);
+  assert.equal(importantCount(budget), 8);
   assert.equal(importantCount(autoPlace), 2);
 
   assert.doesNotMatch(theme, /section#plan#plan[\s\S]{0,600}!important/);
@@ -381,6 +384,8 @@ test('Phase 6 keeps Plan, Budget and auto-place with feature ownership', () => {
   assert.match(budget, /#budget \[data-expenses\]\{display:none!important\}/);
   assert.match(budget, /\.receipt-preview-open\{overflow:hidden!important\}/);
   assert.match(budget, /#budget \.receipt-preview\[hidden\]\{display:none!important\}/);
+  assert.match(budget, /#memories \.memory-file-picker\{[\s\S]*color:#174f3c!important;[\s\S]*-webkit-text-fill-color:#174f3c!important;/);
+  assert.match(budget, /#memories \.album-actions a\{[\s\S]*border:0 solid rgba\(255,255,255,\.55\)!important;/);
   assert.match(autoPlace, /\.saved-place-editor\[hidden\]\{display:none!important\}/);
   assert.match(autoPlace, /\.auto-place-stay-dates\[hidden\]\{display:none!important\}/);
 });
@@ -402,4 +407,20 @@ test('Phase 7 keeps shared frame, Mate and Transport ownership out of Theme', ()
   assert.doesNotMatch(theme, /html body\.tm-new-design \.ai-orb\{[\s\S]{0,300}!important/);
   assert.doesNotMatch(theme, /#transport \.transport-note\{[\s\S]{0,300}!important/);
   assert.doesNotMatch(theme, /section-head\.section-head[\s\S]{0,300}!important/);
+});
+
+
+test('Phase 8 keeps Group, Memories and Currency semantic ownership out of Theme', () => {
+  const theme = read(cssFiles.theme);
+  const glass = read(cssFiles.readableGlass);
+  const collaboration = read(cssFiles.collaboration);
+  const experience = read(cssFiles.tripExperience);
+  const app = read(path.join(root, 'assets/app.js'));
+
+  assert.match(collaboration, /Phase 8 — Group semantic contrast authority/);
+  assert.match(experience, /Phase 8 — Memories semantic contrast authority/);
+  assert.match(experience, /Phase 8 — Currency theme semantics without Theme escalation/);
+  assert.match(glass, /:not\(\.message-sender\):not\(\.collaboration-live\)/);
+  assert.doesNotMatch(theme, /group-message|collaboration-live|group-privacy|memory-file-picker|album-actions|trip-summary-text|currency-insight|data-fee-edit/);
+  assert.match(app, /Promise\.all\(\(feature\.styles\|\|\[\]\)\.map\(loadStyle\)\)\.then\(function\(\)\{return loadSequence\(feature\.scripts\|\|\[\]\)\}\)/);
 });

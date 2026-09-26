@@ -17,3 +17,20 @@
 #group .group-chat{padding:13px}
 #group .group-composer{padding:10px}
 @media(max-width:760px){#group .chat-card{height:min(520px,66dvh)}#group .group-card>header{padding:12px 13px}#group .member-list{padding:5px 12px}}
+/* Phase 8 — Group semantic contrast authority. */
+#group .group-message:not(.mine){
+  --sender-bg:#eef7f2;--sender-ink:#24664f;
+  --tm-card-heading:#18362c;--tm-card-secondary:#18362c;
+  background:var(--sender-bg);color:#18362c;-webkit-text-fill-color:#18362c
+}
+#group .group-message.sender-tone-1:not(.mine){--sender-bg:#edf3fb;--sender-ink:#3e628d}
+#group .group-message.sender-tone-2:not(.mine){--sender-bg:#fff1ea;--sender-ink:#925337}
+#group .group-message.sender-tone-3:not(.mine){--sender-bg:#f3effb;--sender-ink:#67508c}
+#group .group-message.sender-tone-4:not(.mine){--sender-bg:#fff8df;--sender-ink:#806723}
+#group .group-message.sender-tone-5:not(.mine){--sender-bg:#eaf6f7;--sender-ink:#267078}
+#group .group-message:not(.mine) .message-sender{color:var(--sender-ink);-webkit-text-fill-color:var(--sender-ink)}
+#group :is(.collaboration-live,.group-privacy){
+  --tm-card-heading:#205d48;--tm-card-secondary:#205d48;
+  background:#edf8f3;border-color:#b9d9ca;color:#205d48!important;
+  -webkit-text-fill-color:#205d48!important;text-shadow:none
+}

@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.38',
-    label: 'CSS architecture cleanup — Phase 7',
+    version: '1.55.39',
+    label: 'CSS architecture cleanup — Phase 8',
     date: '26 בספטמבר 2026',
     highlights: [
+      'CSS architecture: Phase 8 moved Group, Memories and Currency semantic contrast out of Theme, made Documents a structural wrapper by exclusion instead of override, and reduced whole-app !important debt from 620 to 548.',
       'CSS architecture: Phase 7 consolidated shared section headers, trip-frame and hero geometry, Mate launcher/header ownership, and Transport presentation out of legacy Theme escalation. Whole-app !important debt dropped from 752 to 620 while preserving current rendered geometry.',
       'CSS architecture: Phase 6 moved Plan and Budget ownership out of legacy Theme overrides, reduced auto-planner.css to zero !important, trip-experience.css to five behavioral exceptions, place-auto-fill.css to two hidden-state exceptions, and reduced whole-app CSS debt from 1,099 to 752.',
       'CSS architecture: Phase 5 consolidated mobile and desktop Navigation ownership, removed all navigation-specific !important escalation across the six navigation owners, and reduced whole-app CSS debt from 1,270 to 1,099.',

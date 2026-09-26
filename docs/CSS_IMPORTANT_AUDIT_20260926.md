@@ -186,3 +186,19 @@ Next recommended phase: audit the remaining shared global selectors in `theme.cs
 Group, Memories and global Currency contrast overrides remain in `theme.css` for now. They participate in lazy-loaded feature transitions and removing or moving them without browser/mobile visual verification could cause transient white-on-white or contrast flashes. They are therefore treated as known semantic exceptions rather than blindly removed debt.
 
 Next recommended cleanup: visual-runtime validation of Group/Memories/Currency followed by feature-owner migration only where no loading-state regression is observed.
+
+
+## Phase 8 execution result — Group, Memories, Currency and Documents
+
+- Whole-app CSS debt reduced from **620** to **548** `!important` declarations (**-72** in this phase).
+- Combined reduction since the original audit baseline: **2,583 → 548** (**-2,035 / ~79%**).
+- `theme.css`: **109 → 32**.
+- Group sender tones, message contrast, collaboration-live and privacy semantics are owned by `collaboration.css`.
+- Memories upload, album action and summary contrast are owned by `trip-experience.css`.
+- Currency dark-theme semantics are owned by `trip-experience.css`, using semantic card variables instead of Theme escalation.
+- Documents is now excluded from top-level page material rules in `readable-glass.css`; the old six-property transparent-wrapper override was removed from Theme rather than moved elsewhere.
+- Browser cascade harness verified Group, Memories and Currency computed colors in Light/Dark and desktop/mobile contexts; no white-on-white result was observed.
+- Full-page headless Chrome/Edge dump was unavailable in this environment (empty DOM output), so phone/interactive full-page visual QA remains the final runtime check.
+- Focused Phase 8/Surface/Documents suite: **71/71 PASS** after the Documents cleanup.
+
+Remaining Theme `!important` rules are predominantly global theme backgrounds, icon reset/fallback, body overlay suppression, mobile/tap-target safety and select-option contrast. Treat these as deliberate global exceptions until a dedicated runtime pass proves they can be de-escalated.

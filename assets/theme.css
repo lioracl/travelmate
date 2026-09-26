@@ -76,11 +76,6 @@ html[data-theme="dark"] body.tm-new-design .custom-hero :where(.hero-copy,h1,.he
 html[data-theme="dark"] body.tm-new-design .trip-home-actions>div :where(p,h2){
   color:#f3f5f4!important
 }
-html[data-theme="dark"] body.tm-new-design :where(.currency-insight,.currency-insight.compact){
-  border-color:rgba(255,255,255,.16)!important;
-  background:rgba(5,17,14,.72)!important;color:#f3f5f4!important
-}
-html[data-theme="dark"] body.tm-new-design .currency-insight :where(a,small,span){color:inherit!important}
 @media(min-width:1001px){
   html[data-theme="dark"] body.tm-new-design .sidebar :is(a,button) i{
     -webkit-text-stroke-color:rgba(243,245,244,.92)
@@ -128,16 +123,6 @@ body.tm-new-design .sidebar>.theme-toggle{display:none}
     text-shadow:0 1px 10px rgba(0,0,0,.3)
   }
 }
-/* Documents keeps its structural wrapper transparent; Plan owns this in auto-planner.css. */
-body.tm-new-design[data-trip-view="documents"] #documents{
-  border:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-  text-shadow:inherit!important;
-}
-
 /* Icons stay unboxed across the product. */
 html body :where(
   .icon,.mark,.forecast-icon,.day-dot,.avatar-small,
@@ -163,60 +148,6 @@ html body .collaboration-signed-out>i{
 html body.tm-new-design[data-trip-view] main.content>section>.section-head :is(button,a,.pill-btn,.trip-action-back){
   min-height:44px!important;
   border-radius:11px!important
-}
-
-/* Semantic banners keep their own readable palette instead of inheriting white text. */
-html body.tm-new-design #memories .memory-file-picker{
-  border:0!important;
-  background:#e9f5ef!important;
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
-  box-shadow:inset 0 0 0 1px rgba(23,93,69,.16)!important
-}
-html body.tm-new-design #memories .memory-file-picker :where(span,small,strong,i){
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important
-}
-html body.tm-new-design[data-trip-view="memories"] main.content section#memories .memory-card form label.memory-file-picker,
-html body.tm-new-design[data-trip-view="memories"] main.content section#memories .memory-card form label.memory-file-picker *{
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
-  text-shadow:none!important
-}
-html body.tm-new-design #memories .album-actions a{
-  border:0!important;
-  background:#e9f5ef!important;
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
-  box-shadow:none!important
-}
-html body.tm-new-design #memories .trip-summary-text{
-  border:0!important;
-  background:rgba(7,49,38,.58)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important
-}
-
-/* A stable, soft color identity for every chat participant. */
-html body.tm-new-design #group .group-message:not(.mine){
-  --sender-bg:#eef7f2;
-  --sender-ink:#24664f;
-  background:var(--sender-bg)!important;
-  color:#18362c!important;
-  -webkit-text-fill-color:#18362c!important
-}
-html body.tm-new-design #group .group-message.sender-tone-1:not(.mine){--sender-bg:#edf3fb;--sender-ink:#3e628d}
-html body.tm-new-design #group .group-message.sender-tone-2:not(.mine){--sender-bg:#fff1ea;--sender-ink:#925337}
-html body.tm-new-design #group .group-message.sender-tone-3:not(.mine){--sender-bg:#f3effb;--sender-ink:#67508c}
-html body.tm-new-design #group .group-message.sender-tone-4:not(.mine){--sender-bg:#fff8df;--sender-ink:#806723}
-html body.tm-new-design #group .group-message.sender-tone-5:not(.mine){--sender-bg:#eaf6f7;--sender-ink:#267078}
-html body.tm-new-design #group .group-message:not(.mine) :where(p,strong,small,time){
-  color:#18362c!important;
-  -webkit-text-fill-color:#18362c!important
-}
-html body.tm-new-design #group .group-message:not(.mine) .message-sender{
-  color:var(--sender-ink)!important;
-  -webkit-text-fill-color:var(--sender-ink)!important
 }
 
 @media(max-width:1000px){
@@ -329,38 +260,6 @@ body.home-page.is-authenticated .home-sidebar-utilities>.trip-logout :is(i,.tip)
     -webkit-backdrop-filter:none
   }
 }
-/* 1.35.3 — calmer daily planner controls and collapsible days. */
-html body.tm-new-design[data-trip-view="memories"] main.content #memories label.memory-file-picker{
-  background:#e9f5ef!important;
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="memories"] main.content #memories label.memory-file-picker *{
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="memories"] main.content #memories .album-actions a{
-  background:#e9f5ef!important;
-  color:#175d45!important;
-  -webkit-text-fill-color:#175d45!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="group"] main.content #group .group-message:not(.mine){
-  background:var(--sender-bg,#eef7f2)!important;
-  color:#18362c!important;
-  -webkit-text-fill-color:#18362c!important
-}
-html body.tm-new-design[data-trip-view="group"] main.content #group .group-message:not(.mine) :is(p,strong,small,time){
-  color:#18362c!important;
-  -webkit-text-fill-color:#18362c!important
-}
-html body.tm-new-design[data-trip-view="group"] main.content #group .group-message:not(.mine) .message-sender{
-  color:var(--sender-ink,#24664f)!important;
-  -webkit-text-fill-color:var(--sender-ink,#24664f)!important
-}
-
 /* 1.30.1 - full day editing, gentle overlap notices and reliable auto-fill controls. */
 /* 1.31 — stable weather-card headers and no animated visual rail. */
 html body.tm-new-design .network-usage-meter::before,
@@ -372,51 +271,10 @@ html body.tm-new-design main.content :is(input,textarea,[contenteditable="true"]
 html body.tm-new-design:not(.home-page)::before{display:none!important;content:none!important;animation:none!important}
 html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#getaways)>.section-head .mark{display:none!important}
 
-html body.tm-new-design[data-trip-view="group"] main.content #group :is(.collaboration-live,.group-privacy){
-  background:#edf8f3!important;
-  border-color:#b9d9ca!important;
-  color:#205d48!important;
-  -webkit-text-fill-color:#205d48!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="group"] main.content #group :is(.collaboration-live,.group-privacy) *{
-  color:inherit!important;
-  -webkit-text-fill-color:inherit!important
-}
-
-
-html body.tm-new-design[data-trip-view="memories"][data-trip-view] main.content section#memories#memories :is(
-  .memory-file-picker.memory-file-picker,a[href]
-){
-  background:rgba(255,255,255,.95)!important;
-  border-color:rgba(255,255,255,.55)!important;
-  color:#174f3c!important;
-  -webkit-text-fill-color:#174f3c!important;
-  text-shadow:none!important
-}
-html body.tm-new-design[data-trip-view="memories"][data-trip-view] main.content section#memories#memories :is(
-  .memory-file-picker.memory-file-picker,a[href]
-) *{
-  color:inherit!important;
-  -webkit-text-fill-color:inherit!important;
-  text-shadow:none!important
-}
 /* 1.35.8 — a calm card with an unmistakable edge. */
 
 
 /* 1.42.4 — mobile metadata spacing and focused contrast repairs. */
-html body.tm-new-design [data-currency-insight] button[data-fee-edit]{
-  border:1px solid rgba(173,231,207,.88)!important;
-  background:linear-gradient(135deg,#176f52,#0d573f)!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  box-shadow:0 7px 18px rgba(3,42,30,.24)!important;
-  opacity:1!important
-}
-html body.tm-new-design [data-currency-insight] button[data-fee-edit] *{
-  color:inherit!important;
-  -webkit-text-fill-color:inherit!important
-}
 
 /* Budget layout/material moved to trip-experience.css and readable-glass.css in Phase 1B. */
 html body.tm-new-design main.content select option{
