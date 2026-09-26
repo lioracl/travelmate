@@ -136,3 +136,19 @@ Next recommended phase: reduce the legacy global authority at the top of `readab
 - New guardrails require `styles.css` to stay at zero `!important`, keep Cloud Sync at one behavioral exception, keep Home Organizer at two or fewer, and prevent Cloud Account/Home legacy ownership from returning to `theme.css`.
 
 Next recommended phase: consolidate Navigation ownership across `trip-redesign.css`, `mobile-menu.css`, and the remaining Navigation authority in `readable-glass.css`, then revisit Plan/Budget leftovers in `theme.css`.
+
+
+## Phase 5 execution result — Navigation consolidation
+
+- Whole-app CSS debt reduced from **1,270** to **1,099** `!important` declarations (**-171**).
+- Combined reduction since the original audit baseline: **2,583 → 1,099** (**-1,484 / ~57%**).
+- `mobile-menu.css`: **26 → 0**. It now owns only drawer open/closed state, shade behavior, reduced motion, and mobile/desktop control visibility.
+- `trip-redesign.css`: **114 → 92**. It owns drawer/header geometry, responsive layout, LTR/RTL placement, and utility-control geometry.
+- `readable-glass.css`: **268 → 191**. The 77-declaration mobile drawer specificity layer was replaced with normal-cascade material rules.
+- `theme.css`: **531 → 500**. Sidebar theme rules are desktop fallbacks without specificity escalation; mobile material no longer leaks from Theme.
+- `security-center.css`: **14 → 3** and `admin-center.css`: **8 → 4** by removing launcher-specific escalation while preserving security/admin modal behavior.
+- Navigation-specific `!important` debt across `readable-glass.css`, `trip-redesign.css`, `theme.css`, `mobile-menu.css`, `security-center.css`, and `admin-center.css` is now **0**.
+- Ownership contract: **state = mobile-menu.css**, **geometry = trip-redesign.css**, **material = readable-glass.css**, **feature launchers = security/admin defaults**, **Theme = desktop semantic fallback only**.
+- Added a regression guardrail that rejects any new navigation `!important` in those six files.
+
+Next recommended phase: Plan/Budget ownership cleanup inside `theme.css` and their feature styles. Navigation should now be treated as closed unless a visual/runtime regression is found.

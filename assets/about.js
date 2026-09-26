@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.35',
-    label: 'CSS architecture cleanup — Phase 4',
+    version: '1.55.36',
+    label: 'CSS architecture cleanup — Phase 5',
     date: '26 בספטמבר 2026',
     highlights: [
+      'CSS architecture: Phase 5 consolidated mobile and desktop Navigation ownership, removed all navigation-specific !important escalation across the six navigation owners, and reduced whole-app CSS debt from 1,270 to 1,099.',
       'CSS architecture: Phase 4 removed !important from the base stylesheet, consolidated Home ownership, reduced cloud-sync.css to one behavioral exception, and brought whole-app CSS debt from 1,462 to 1,270.',
       'CSS architecture: Phase 3 consolidated Readable Glass and the Cloud Account cascade, reducing readable-glass.css from 358 to 268 !important declarations, cloud-sync.css from 167 to 19, and whole-app CSS debt from 1,700 to 1,462.',
       'CSS architecture: Phase 2 moved Documents, Places and mobile Navigation ownership out of theme.css, reducing theme !important debt from 810 to 624 and whole-app CSS debt to 1,700.',

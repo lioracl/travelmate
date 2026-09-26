@@ -72,13 +72,11 @@ html[dir="rtl"] body:not(.home-page){background-color:#071611;background-image:l
 
 body:not(.home-page) .sidebar{border:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}body:not(.home-page) .sidebar nav a,body:not(.home-page) .sidebar nav a:hover,body:not(.home-page) .sidebar nav a.active,body:not(.home-page) .live-button,body:not(.home-page) .live-button:hover,body:not(.home-page) .sidebar-service,body:not(.home-page) .sidebar-service:hover{border:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}body:not(.home-page) .sidebar nav a i,body:not(.home-page) .live-button i,body:not(.home-page) .sidebar-service i{color:transparent;-webkit-text-stroke:1.25px rgba(255,255,255,.92);filter:drop-shadow(0 1px 3px rgba(0,0,0,.45))}body:not(.home-page) .sidebar nav a.active i{color:transparent;-webkit-text-stroke-color:#f97c22}body:not(.home-page) .trip-logout{border:0;background:transparent;box-shadow:none;color:transparent}body:not(.home-page) .trip-logout i{color:transparent;-webkit-text-stroke:1.25px #e40516;font-size:19px}body:not(.home-page) .weather-top-widget{margin:14px 0 0}
 
-body:not(.home-page) .sidebar .sidebar-service,body:not(.home-page) .sidebar .sidebar-service:hover{border:0!important;background:transparent!important;box-shadow:none!important}body:not(.home-page) .sidebar .sidebar-service i{color:transparent!important;-webkit-text-stroke:1.25px rgba(255,255,255,.92)}
 
 .trip-map-dialog{display:grid;place-items:center;padding:24px}.trip-map-dialog[hidden]{display:none}.trip-map-dialog>div{width:min(980px,100%);height:min(720px,calc(100dvh - 48px));display:grid;grid-template-rows:auto 1fr}.trip-map-dialog header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px}.trip-map-dialog header span{font:300 12px "Rubik",sans-serif;color:#f97c22}.trip-map-dialog h2{margin:3px 0 0;font:300 24px "Rubik",sans-serif}.trip-map-dialog button{width:38px;height:38px;border:0;background:transparent;font-size:20px}.trip-map-dialog iframe{width:100%;height:100%;border:0;background:#e9eee9}@media(max-width:650px){.trip-map-dialog{padding:10px}.trip-map-dialog>div{height:calc(100dvh - 20px)}}
 
 body:not(.home-page) .sidebar .brand-dot{border-radius:50%}
 body:not(.home-page) .sidebar nav a.active i{color:#f97c22;-webkit-text-stroke:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.45))}
-body:not(.home-page) .sidebar nav a.sidebar-service,body:not(.home-page) .sidebar nav a.sidebar-service:hover{border:0!important;background:transparent!important;box-shadow:none!important}
 body:not(.home-page) .trip-logout,body:not(.home-page) .trip-logout:hover{border:0;background:transparent;box-shadow:none}
 body:not(.home-page) .trip-logout i{color:transparent;-webkit-text-stroke:1.25px rgba(255,255,255,.92);filter:drop-shadow(0 1px 3px rgba(0,0,0,.45))}
 
@@ -86,11 +84,6 @@ html[dir="rtl"] body:not(.home-page){color:#111;background-color:#10241e;backgro
 body:not(.home-page) .custom-hero,body:not(.home-page) .custom-hero h1,body:not(.home-page) .custom-hero p,body:not(.home-page) .custom-hero .hero-country-line,body:not(.home-page) .custom-hero .hero-back,body:not(.home-page) .custom-hero .share{color:#fff}
 body:not(.home-page) .custom-hero .share i{color:transparent;-webkit-text-stroke:1.25px #111;filter:drop-shadow(0 1px 2px rgba(255,255,255,.65))}
 body:not(.home-page) .section-head h1,body:not(.home-page) .section-head p{color:#111}
-body:not(.home-page) .sidebar nav a i,body:not(.home-page) .live-button i,body:not(.home-page) .sidebar-service i,body:not(.home-page) .trip-logout i{color:transparent!important;-webkit-text-stroke:1.25px rgba(17,17,17,.92)!important;filter:drop-shadow(0 1px 2px rgba(255,255,255,.55))}
-body:not(.home-page) .sidebar nav a.active i{color:#147D92!important;-webkit-text-stroke:0}
-body:not(.home-page) .sidebar,body:not(.home-page) .sidebar *{box-shadow:none!important}
-body:not(.home-page) .sidebar nav a i,body:not(.home-page) .live-button i,body:not(.home-page) .sidebar-service i,body:not(.home-page) .trip-logout i{filter:none}
-body:not(.home-page) .sidebar>.trip-logout{margin-top:auto!important;margin-bottom:0;width:48px;height:48px;min-height:48px;padding:0;border:0!important;border-radius:2px!important;background:transparent!important;color:#414846!important}
 body:not(.home-page) .sidebar>.trip-logout .tip{color:#fff}
 body:not(.home-page) .sidebar>.trip-logout:hover .tip,body:not(.home-page) .sidebar>.trip-logout:focus-visible .tip{opacity:1;transition-delay:1s}
 body:not(.home-page) .hero .weather-top-widget{position:absolute;right:auto;left:28px;bottom:24px;z-index:4;width:min(300px,calc(100% - 56px));margin:0}
@@ -110,10 +103,6 @@ body[data-trip-view="overview"] .custom-hero .hero-copy{width:min(340px,50%)}
 body[data-trip-view="overview"] .custom-hero h1{font-size:clamp(34px,4.5vw,59px)}
 body[data-trip-view="overview"] .custom-hero .hero-country-line{font-size:clamp(14px,1.2vw,15px)}
 body[data-trip-view="overview"] .custom-hero p{font-size:clamp(12px,1vw,14px)}
-body:not(.home-page) .sidebar nav a i,
-body:not(.home-page) .live-button i,
-body:not(.home-page) .sidebar-service i,
-body:not(.home-page) .trip-logout i{-webkit-text-stroke-color:#414846!important}
 body[data-trip-view="overview"] .hero .weather-top-widget{top:50%;left:104px;bottom:auto;transform:translateY(-50%)}
 body[data-trip-view="overview"] .trip-overview-summary{grid-template-columns:1fr;width:100%}
 body[data-trip-view="overview"] .trip-overview-summary .budget-card{grid-column:1/-1;width:100%;max-width:none}
@@ -343,7 +332,7 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
 /* Critical plan media sizing: prevents full-size images before feature CSS arrives. */
 #plan .saved-place-image,#plan .planned-activity img,#plan .activity-image{display:block;width:96px;height:96px;max-width:96px;max-height:96px;object-fit:cover;border-radius:12px;background:var(--tm-card-bg-compact)}
 @media(max-width:650px){#plan .saved-place-image,#plan .planned-activity img,#plan .activity-image{width:78px;height:78px;max-width:78px;max-height:78px}}
-@media(max-width:1000px){html body.tm-new-design .mobile-header strong{display:flex;align-items:center;justify-content:center;gap:8px}html body.tm-new-design .mobile-header .mobile-destination-map,html body.tm-new-design .mobile-header .mobile-trip-whatsapp{display:grid!important;place-items:center;width:34px;height:34px;flex:0 0 34px;border:1px solid rgba(24,111,82,.3);border-radius:11px;background:rgba(255,255,255,.72);color:#176b4e!important;box-shadow:0 5px 14px rgba(20,75,58,.09);text-decoration:none}html body.tm-new-design .mobile-header .mobile-trip-whatsapp{border-color:rgba(27,139,79,.42);background:#e2f5e9!important;color:#137643!important;padding:0}html body.tm-new-design .mobile-header :is(.mobile-destination-map,.mobile-trip-whatsapp):active{transform:scale(.96)}html body.tm-new-design .custom-hero>.hero-share-actions{display:none!important}}@media(min-width:1001px){.mobile-destination-map,.mobile-trip-whatsapp{display:none!important}}
+@media(max-width:1000px){html body.tm-new-design .mobile-header strong{display:flex;align-items:center;justify-content:center;gap:8px}html body.tm-new-design .mobile-header .mobile-destination-map,html body.tm-new-design .mobile-header .mobile-trip-whatsapp{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border:1px solid rgba(24,111,82,.3);border-radius:11px;background:rgba(255,255,255,.72);color:#176b4e;box-shadow:0 5px 14px rgba(20,75,58,.09);text-decoration:none}html body.tm-new-design .mobile-header .mobile-trip-whatsapp{border-color:rgba(27,139,79,.42);background:#e2f5e9;color:#137643;padding:0}html body.tm-new-design .mobile-header :is(.mobile-destination-map,.mobile-trip-whatsapp):active{transform:scale(.96)}html body.tm-new-design .custom-hero>.hero-share-actions{display:none!important}}@media(min-width:1001px){.mobile-destination-map,.mobile-trip-whatsapp{display:none}}
 
 /* The only trip-exit control on mobile is the large arrow in the sticky header. */
 @media(max-width:1000px){
@@ -636,5 +625,173 @@ body:not(.home-page) .workspace>.sidebar nav .sidebar-about{order:999}
     border:1px solid color-mix(in srgb,var(--tm-brand-primary) 30%,var(--tm-card-control-border));
     color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
     -webkit-text-fill-color:currentColor
+  }
+}
+
+
+/* Mobile drawer geometry authority — Phase 5.
+   Open/closed state lives in mobile-menu.css; visual material lives in readable-glass.css. */
+@media(max-width:1000px){
+  body:not(.home-page) .workspace>.sidebar{
+    display:flex;
+    position:fixed;
+    z-index:1300;
+    top:0;
+    right:0;
+    bottom:auto;
+    left:auto;
+    width:min(88vw,360px);
+    height:100dvh;
+    margin:0;
+    padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));
+    align-items:stretch;
+    overflow:hidden;
+    border-radius:24px 0 0 24px
+  }
+  html[dir="ltr"] body:not(.home-page) .workspace>.sidebar{
+    right:auto;
+    left:0;
+    border-radius:0 24px 24px 0
+  }
+  body:not(.home-page) .workspace>.sidebar .logo{
+    width:100%;
+    height:auto;
+    min-height:52px;
+    margin:0 0 8px;
+    padding:0 4px;
+    display:flex;
+    justify-content:flex-start
+  }
+  body:not(.home-page) .workspace>.sidebar .logo strong{display:block}
+  body:not(.home-page) .workspace>.sidebar .back{
+    display:flex;
+    align-items:center;
+    gap:8px
+  }
+  body:not(.home-page) .workspace>.sidebar .destination-mini{
+    display:flex;
+    flex:0 0 auto;
+    margin:6px 0 12px
+  }
+  body:not(.home-page) .workspace>.sidebar nav{
+    width:100%;
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    padding:2px 2px 12px;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    touch-action:pan-y;
+    -webkit-overflow-scrolling:touch
+  }
+  body:not(.home-page) .workspace>.sidebar nav a,
+  body:not(.home-page) .workspace>.sidebar nav .sidebar-about,
+  body:not(.home-page) .workspace>.sidebar .live-button,
+  body:not(.home-page) .workspace>.sidebar .sidebar-service{
+    width:100%;
+    min-height:50px;
+    flex:0 0 auto;
+    justify-content:flex-start;
+    gap:14px;
+    padding:0 16px;
+    text-align:right
+  }
+  body:not(.home-page) .workspace>.sidebar nav :is(a,button) i,
+  body:not(.home-page) .workspace>.sidebar .live-button i,
+  body:not(.home-page) .workspace>.sidebar .sidebar-service i{
+    width:24px;
+    text-align:center
+  }
+  body:not(.home-page) .workspace>.sidebar .tip{
+    position:static;
+    width:auto;
+    padding:0;
+    overflow:visible;
+    opacity:1;
+    visibility:visible;
+    transform:none;
+    transition:none;
+    pointer-events:auto
+  }
+  body:not(.home-page) .workspace>.sidebar>.trip-logout{
+    width:100%;
+    min-height:48px;
+    flex:0 0 auto;
+    margin:8px 0 0
+  }
+}
+@media(max-width:430px){
+  body:not(.home-page) .workspace>.sidebar{width:min(92vw,340px)}
+}
+
+
+/* Desktop icon/navigation fallback — Phase 5.
+   Mobile drawer material is finalized by readable-glass.css. */
+@media(min-width:1001px){
+  body:not(.home-page) .sidebar .sidebar-service,
+  body:not(.home-page) .sidebar .sidebar-service:hover,
+  body:not(.home-page) .sidebar nav a.sidebar-service,
+  body:not(.home-page) .sidebar nav a.sidebar-service:hover{
+    border:0;
+    background:transparent;
+    box-shadow:none
+  }
+  body:not(.home-page) .sidebar nav a i,
+  body:not(.home-page) .live-button i,
+  body:not(.home-page) .sidebar-service i,
+  body:not(.home-page) .trip-logout i{
+    color:transparent;
+    -webkit-text-stroke:1.25px rgba(17,17,17,.92);
+    -webkit-text-stroke-color:#414846;
+    filter:none
+  }
+  body:not(.home-page) .sidebar nav a.active i{
+    color:#147D92;
+    -webkit-text-stroke:0
+  }
+  body:not(.home-page) .sidebar,
+  body:not(.home-page) .sidebar *{box-shadow:none}
+  body:not(.home-page) .sidebar>.trip-logout{
+    margin-top:auto;
+    margin-bottom:0;
+    width:48px;
+    height:48px;
+    min-height:48px;
+    padding:0;
+    border:0;
+    border-radius:2px;
+    background:transparent;
+    color:#414846
+  }
+}
+
+
+/* Mobile drawer utility-control geometry — Phase 5. */
+@media(max-width:1000px){
+  body:not(.home-page) .workspace>.sidebar>.admin-center-launcher,
+  body:not(.home-page) .workspace>.sidebar>.security-center-launcher{
+    width:calc(100% - 8px);
+    min-height:48px;
+    margin:5px 4px 0;
+    padding:0 15px;
+    justify-content:flex-start;
+    gap:12px
+  }
+  body:not(.home-page) .workspace>.sidebar>.trip-logout{
+    width:calc(100% - 8px);
+    min-height:48px;
+    margin:7px 4px 0;
+    padding:0 15px;
+    display:flex;
+    justify-content:flex-start;
+    gap:12px
+  }
+  body:not(.home-page) .workspace>.sidebar>.trip-logout :is(i,.tip,span){
+    position:static;
+    visibility:visible;
+    transform:none
   }
 }

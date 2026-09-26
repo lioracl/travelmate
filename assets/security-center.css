@@ -1,9 +1,9 @@
 .security-center-launcher{position:relative;display:flex;align-items:center;justify-content:center;gap:.55rem;border:0;cursor:pointer;color:inherit;background:transparent;font:inherit}
 .home-sidebar>.security-center-launcher,.sidebar>.security-center-launcher{flex:0 0 auto;width:44px;min-height:44px;margin-top:auto;border:1px solid rgba(184,222,207,.78);border-radius:14px;color:#125b46;background:rgba(239,250,245,.94);box-shadow:0 7px 20px rgba(1,40,29,.14)}
 .sidebar>.security-center-launcher{width:54px;margin-inline:auto}.security-center-launcher i{font-size:18px}
-.security-center-launcher .security-launcher-label{display:block;min-width:0;overflow:visible;color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;-webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))!important;font-size:.78rem;font-weight:900;white-space:nowrap}
-.security-center-launcher,.home-sidebar>.security-center-launcher,.sidebar>.security-center-launcher{color:var(--tm-security-launcher-color,#125b46)!important;-webkit-text-fill-color:var(--tm-security-launcher-color,#125b46)!important;background:var(--tm-action-secondary)!important;border-color:color-mix(in srgb,var(--tm-brand-primary) 34%,var(--tm-card-control-border))!important}
-.security-center-launcher i{color:var(--tm-security-launcher-color,#125b46)!important;-webkit-text-fill-color:var(--tm-security-launcher-color,#125b46)!important}
+.security-center-launcher .security-launcher-label{display:block;min-width:0;overflow:visible;color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));-webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));font-size:.78rem;font-weight:900;white-space:nowrap}
+.security-center-launcher,.home-sidebar>.security-center-launcher,.sidebar>.security-center-launcher{color:var(--tm-security-launcher-color,#125b46);-webkit-text-fill-color:var(--tm-security-launcher-color,#125b46);background:var(--tm-action-secondary);border-color:color-mix(in srgb,var(--tm-brand-primary) 34%,var(--tm-card-control-border))}
+.security-center-launcher i{color:var(--tm-security-launcher-color,#125b46);-webkit-text-fill-color:var(--tm-security-launcher-color,#125b46)}
 .security-center-backdrop{position:fixed;inset:0;z-index:10050;display:grid;place-items:center;padding:18px;background:rgba(2,20,16,.74);backdrop-filter:blur(10px)}
 .security-center-backdrop[hidden]{display:none}.security-center-open{overflow:hidden}
 .security-center{width:min(680px,100%);max-height:min(850px,92dvh);overflow:auto;border:1px solid rgba(208,239,226,.78);border-radius:28px;background:linear-gradient(145deg,rgba(247,255,251,.98),rgba(223,242,233,.96));box-shadow:0 28px 80px rgba(0,20,15,.36);color:#153e33;padding:24px;direction:inherit}
@@ -20,7 +20,7 @@ html[data-theme="dark"] .security-center{color:#eefbf5;background:linear-gradien
 @media(min-width:1001px){.sidebar>.security-center-launcher{width:100%;justify-content:flex-start;padding-inline:12px}.home-sidebar>.security-center-launcher{width:auto;padding-inline:12px}}
 @media(max-width:680px){.security-center-backdrop{padding:0;align-items:end}.security-center{max-height:94dvh;border-radius:26px 26px 0 0;padding:18px}.security-mfa-head{align-items:center}.settings-row{grid-template-columns:42px 1fr}.settings-options{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}.sidebar>.security-center-launcher{width:calc(100% - 24px);justify-content:flex-start;padding-inline:17px;margin-inline:12px}.home-sidebar>.security-center-launcher .security-launcher-label{display:none}}
 .security-center-backdrop{z-index:2147482200!important}
-.sidebar>.admin-center-launcher{margin-top:0!important}
+.sidebar>.admin-center-launcher{margin-top:0}
 
 
 /* Theme customization: simple six-swatch picker using semantic accent tokens. */
@@ -65,4 +65,4 @@ html[data-theme="dark"] .settings-accent-picker button{
 .settings-row-accent>i{background:var(--tm-action-secondary);color:var(--tm-brand-primary-dark)}
 .settings-accent-picker button.active span{color:var(--accent-swatch)}
 html[data-theme="dark"] .settings-row-accent>i{color:#f7fafa}
-html[data-theme="dark"] .security-center-launcher{color:#f7fafa!important;-webkit-text-fill-color:#f7fafa!important}
+html[data-theme="dark"] .security-center-launcher{color:#f7fafa;-webkit-text-fill-color:#f7fafa}

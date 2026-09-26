@@ -35,13 +35,13 @@ test('design-system CSS debt does not grow while ownership is being consolidated
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
   assert.equal(counts.base, 0, `styles.css must remain free of !important debt; found ${counts.base}`);
-  assert.ok(counts.theme <= 531, `theme.css !important debt grew to ${counts.theme}`);
-  assert.ok(counts.readableGlass <= 268, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
-  assert.ok(counts.tripRedesign <= 114, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
+  assert.ok(counts.theme <= 500, `theme.css !important debt grew to ${counts.theme}`);
+  assert.ok(counts.readableGlass <= 191, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
+  assert.ok(counts.tripRedesign <= 92, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
   assert.ok(counts.cloudSync <= 1, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
   assert.ok(counts.homeOrganizer <= 2, `home-organizer.css !important debt grew to ${counts.homeOrganizer}`);
   assert.ok(
-    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer <= 916,
+    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer <= 786,
     `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer}`
   );
 });
@@ -322,4 +322,29 @@ test('Phase 4 keeps base and Home ownership de-escalated', () => {
   assert.equal((cloud.match(/!important\b/g) || []).length, 1);
   assert.match(cloud, /\.cloud-account \[hidden\]\{display:none!important\}/);
   assert.ok((home.match(/!important\b/g) || []).length <= 2);
+});
+
+
+test('Phase 5 navigation ownership has zero important escalation', () => {
+  const navFiles = [
+    'assets/readable-glass.css',
+    'assets/trip-redesign.css',
+    'assets/theme.css',
+    'assets/mobile-menu.css',
+    'assets/security-center.css',
+    'assets/admin-center.css'
+  ];
+  const navSelector = /sidebar|mobile-header|mobile-menu|trip-logout|sidebar-about|security-center-launcher|admin-center-launcher/;
+  for (const file of navFiles) {
+    const source = read(path.join(root, file)).replace(/\/\*[\s\S]*?\*\//g, '');
+    const blocks = source.match(/[^{}]+\{[^{}]*\}/g) || [];
+    const debt = blocks.filter((block) => {
+      const open = block.indexOf('{');
+      return open !== -1 && navSelector.test(block.slice(0, open)) && /!important\b/.test(block.slice(open + 1));
+    });
+    assert.equal(debt.length, 0, `${file} navigation must stay free of !important escalation`);
+  }
+  assert.match(read(path.join(root, 'assets/mobile-menu.css')), /Mobile navigation state authority — Phase 5/);
+  assert.match(read(path.join(root, 'assets/trip-redesign.css')), /Mobile drawer geometry authority — Phase 5/);
+  assert.match(read(path.join(root, 'assets/readable-glass.css')), /final mobile drawer material authority/);
 });
