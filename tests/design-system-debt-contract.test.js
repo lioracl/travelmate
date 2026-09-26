@@ -7,10 +7,12 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const cssFiles = {
+  base: path.join(root, 'assets/styles.css'),
   theme: path.join(root, 'assets/theme.css'),
   readableGlass: path.join(root, 'assets/readable-glass.css'),
   tripRedesign: path.join(root, 'assets/trip-redesign.css'),
-  cloudSync: path.join(root, 'assets/cloud-sync.css')
+  cloudSync: path.join(root, 'assets/cloud-sync.css'),
+  homeOrganizer: path.join(root, 'assets/home-organizer.css')
 };
 
 function read(file) {
@@ -23,20 +25,24 @@ function importantCount(source) {
 
 test('design-system CSS debt does not grow while ownership is being consolidated', () => {
   const counts = {
+    base: importantCount(read(cssFiles.base)),
     theme: importantCount(read(cssFiles.theme)),
     readableGlass: importantCount(read(cssFiles.readableGlass)),
     tripRedesign: importantCount(read(cssFiles.tripRedesign)),
-    cloudSync: importantCount(read(cssFiles.cloudSync))
+    cloudSync: importantCount(read(cssFiles.cloudSync)),
+    homeOrganizer: importantCount(read(cssFiles.homeOrganizer))
   };
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
-  assert.ok(counts.theme <= 624, `theme.css !important debt grew to ${counts.theme}`);
+  assert.equal(counts.base, 0, `styles.css must remain free of !important debt; found ${counts.base}`);
+  assert.ok(counts.theme <= 531, `theme.css !important debt grew to ${counts.theme}`);
   assert.ok(counts.readableGlass <= 268, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
   assert.ok(counts.tripRedesign <= 114, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
-  assert.ok(counts.cloudSync <= 19, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
+  assert.ok(counts.cloudSync <= 1, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
+  assert.ok(counts.homeOrganizer <= 2, `home-organizer.css !important debt grew to ${counts.homeOrganizer}`);
   assert.ok(
-    counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync <= 1025,
-    `combined design-system !important debt grew to ${counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync}`
+    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer <= 916,
+    `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer}`
   );
 });
 
@@ -301,4 +307,19 @@ test('Phase 3 keeps Cloud Account and Overview on one final authority', () => {
   assert.doesNotMatch(cloud, /width:min\(940px,100%\)/);
   assert.doesNotMatch(cloud, /Account panel: keep authenticated and signed-out states readable over the photo/);
   assert.doesNotMatch(glass, /Specificity bridge for legacy duplicated theme selectors/);
+});
+
+
+test('Phase 4 keeps base and Home ownership de-escalated', () => {
+  const base = read(cssFiles.base);
+  const theme = read(cssFiles.theme);
+  const cloud = read(cssFiles.cloudSync);
+  const home = read(cssFiles.homeOrganizer);
+
+  assert.doesNotMatch(base, /!important\b/);
+  assert.doesNotMatch(theme, /body\.home-page \.cloud-account-split/);
+  assert.doesNotMatch(theme, /Authenticated trips overview refinements/);
+  assert.equal((cloud.match(/!important\b/g) || []).length, 1);
+  assert.match(cloud, /\.cloud-account \[hidden\]\{display:none!important\}/);
+  assert.ok((home.match(/!important\b/g) || []).length <= 2);
 });

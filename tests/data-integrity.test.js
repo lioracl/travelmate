@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 
 function sourceSlice(file, start, end) {
-  const source = fs.readFileSync(path.join(root, file), 'utf8');
+  const source = fs.readFileSync(path.join(root, file), 'utf8').replace(/\r\n/g, '\n');
   const from = source.indexOf(start);
   const to = source.indexOf(end, from);
   assert.notEqual(from, -1, `Missing start marker in ${file}`);

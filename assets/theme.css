@@ -97,76 +97,6 @@ html[data-theme="dark"] body.home-page.is-authenticated :where(
 }
 @media(max-width:700px){.theme-toggle .tip{display:none}}
 
-/* Authenticated trips overview refinements. */
-body.home-page.is-authenticated main.content{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  column-gap:18px;
-  align-content:start
-}
-body.home-page.is-authenticated :where(.trip-area-head,#active-trips){
-  grid-column:1/-1
-}
-body.home-page.is-authenticated .trip-area-head{
-  padding:4px 2px!important;
-  border:0!important;
-  background:transparent!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-  box-shadow:none!important
-}
-body.home-page.is-authenticated .trip-area-head span{
-  background:transparent!important;
-  border:0!important
-}
-body.home-page.is-authenticated #active-trips>.trip-card-shell{overflow:hidden}
-body.home-page.is-authenticated .trip-copy{
-  right:16px;bottom:16px;left:16px;
-  padding:14px 16px
-}
-body.home-page.is-authenticated .trip-copy .tag{
-  padding:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-  color:#fff!important
-}
-body.home-page.is-authenticated #active-trips>.add-destination{
-  min-height:160px;
-  border:0!important;
-  background:transparent!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-  box-shadow:none!important
-}
-body.home-page.is-authenticated .add-destination :is(strong,small){
-  display:none!important
-}
-body.home-page.is-authenticated .add-destination .icon{
-  width:96px!important;
-  height:96px!important;
-  border:0!important;
-  background:transparent!important;
-  font-size:64px!important;
-  color:#fff!important
-}
-body.home-page.is-authenticated :where(.trip-archive,.home-about){
-  align-self:stretch;
-  margin-top:24px!important
-}
-body.home-page.is-authenticated .home-sidebar nav i{
-  font-size:19px!important;
-  font-weight:900!important;
-  -webkit-text-stroke:0!important;
-  opacity:.88
-}
-@media(max-width:800px){
-  body.home-page.is-authenticated main.content{grid-template-columns:1fr}
-  body.home-page.is-authenticated :where(.trip-archive,.home-about){grid-column:1}
-  body.home-page.is-authenticated #active-trips>.add-destination{min-height:120px}
-}
-
 /* Trip overview refinements */
 body.tm-new-design .sidebar .brand-dot{
   display:grid;
@@ -562,53 +492,13 @@ body.tm-new-design main.content>section:is(
   padding:20px!important;
   border-radius:22px!important
 }
-body.home-page .cloud-account-backdrop .cloud-account-split{
-  border:0!important;
-  border-radius:24px!important;
-  background-image:linear-gradient(135deg,rgba(238,248,243,.97),rgba(209,234,221,.94)),url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1400&q=86')!important;
-  background-blend-mode:screen!important;
-  color:#173f32!important;
-  box-shadow:0 28px 80px rgba(12,62,46,.3)!important
-}
-body.home-page .cloud-account-split :where(.cloud-account-copy h2,.cloud-account-copy strong,.cloud-auth-field,.cloud-auth-intro strong){
-  color:#173f32!important;
-  -webkit-text-fill-color:#173f32!important
-}
-body.home-page .cloud-account-split :where(.cloud-account-copy small,.cloud-auth-intro span,.cloud-social-separator){
-  color:#55766a!important;
-  -webkit-text-fill-color:#55766a!important
-}
-body.home-page .cloud-account-split .cloud-auth-input input{
-  min-height:48px!important;
-  border:1px solid rgba(20,101,75,.25)!important;
-  border-radius:13px!important;
-  background:#fff!important;
-  color:#173f32!important;
-  box-shadow:0 5px 14px rgba(20,89,65,.08)!important
-}
-body.home-page .cloud-account-split form .cloud-login-submit{
-  min-height:46px!important;
-  border-radius:13px!important;
-  background:linear-gradient(135deg,#237f60,#145941)!important;
-  color:#fff!important;
-  font-weight:800!important
-}
-body.home-page .cloud-account-split form .cloud-create-account{
-  min-height:42px!important;
-  padding:8px 14px!important;
-  border:1px solid rgba(20,101,75,.28)!important;
-  border-radius:13px!important;
-  background:rgba(255,255,255,.7)!important;
-  color:#145941!important;
-  -webkit-text-fill-color:#145941!important;
-  text-decoration:none!important
-}
-body.home-page .cloud-account-split .cloud-account-close{
-  border:1px solid rgba(20,101,75,.22)!important;
-  background:rgba(255,255,255,.78)!important;
-  color:#145941!important;
-  -webkit-text-fill-color:#145941!important
-}
+
+
+
+
+
+
+
 
 
 
@@ -802,50 +692,6 @@ html body.tm-new-design .ai-orb:after{
 html body.tm-new-design .ai-orb :is(i,svg){
   color:#fff!important;
   fill:currentColor!important
-}
-
-body.home-page.is-authenticated .home-sidebar{
-  border:0!important;
-  border-radius:0 0 18px 18px!important;
-  background:rgba(18,56,63,.22)!important;
-  backdrop-filter:blur(8px) saturate(104%);
-  -webkit-backdrop-filter:blur(8px) saturate(104%);
-  box-shadow:0 6px 18px rgba(0,0,0,.12)!important
-}
-body.home-page.is-authenticated .home-sidebar nav :is(a,button),
-body.home-page.is-authenticated .home-sidebar-logo{
-  border:0!important;
-  background:var(--tm-home-header-action-background,transparent)!important;
-  box-shadow:none!important;
-  color:var(--tm-home-header-action-color,rgba(255,255,255,.86))!important
-}
-body.home-page.is-authenticated .home-sidebar nav a.active{
-  color:var(--tm-brand-soft,#A9DCE7)!important;
-  background:rgba(20,125,146,.09)!important;
-  box-shadow:none!important
-}
-body.home-page.is-authenticated .home-sidebar .home-new-trip-action{
-  --tm-home-header-action-background:var(--tm-brand-primary,#147D92);
-  --tm-home-header-action-color:#fff
-}
-body.home-page.is-authenticated .home-sidebar nav :is(a,button):focus-visible,
-body.home-page.is-authenticated .home-sidebar-utilities> :is(a,button):focus-visible{
-  outline:3px solid var(--tm-brand-soft,#A9DCE7);
-  outline-offset:2px
-}
-body.home-page.is-authenticated .trip-activity-toggle{
-  border:0!important;
-  background:rgba(244,243,239,.78)!important;
-  color:#182326!important;
-  box-shadow:0 4px 12px rgba(0,0,0,.12)!important
-}
-body.home-page.is-authenticated .trip-activity-toggle.active{
-  background:#147D92!important
-}
-body.home-page.is-authenticated .trip-date-state{
-  border:0!important;
-  background:rgba(244,243,239,.78)!important;
-  color:#182326!important
 }
 
 @media(min-width:1001px){
@@ -1253,24 +1099,6 @@ html body.tm-new-design[data-trip-view="plan"] main.content section#plan#plan .p
   color:#fff!important;
   -webkit-text-fill-color:#fff!important
 }
-html body.home-page.is-authenticated :where(.trip-archive,.home-about){
-  align-self:start!important;
-  border:2px solid rgba(226,255,244,.5)!important;
-  background:linear-gradient(145deg,rgba(10,47,38,.88),rgba(7,29,25,.78))!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 18px 46px rgba(0,0,0,.24)!important;
-  color:#f7fff9!important
-}
-html body.home-page.is-authenticated :where(.trip-archive,.home-about) :where(h2,h3,strong,b,span,p,small,i){
-  color:#f7fff9!important;
-  -webkit-text-fill-color:#f7fff9!important;
-  opacity:1!important
-}
-html body.home-page.is-authenticated .home-about button{
-  background:rgba(255,255,255,.94)!important;
-  color:#145640!important;
-  -webkit-text-fill-color:#145640!important
-}
-
 /* 1.42.4 — mobile metadata spacing and focused contrast repairs. */
 html body.tm-new-design [data-currency-insight] button[data-fee-edit]{
   border:1px solid rgba(173,231,207,.88)!important;

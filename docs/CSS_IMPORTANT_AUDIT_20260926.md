@@ -122,3 +122,17 @@ Next recommended phase: reduce `readable-glass.css` itself and then address `clo
 - Full repository suite: **257/259** under the default Node environment. The two failures were environment/contract issues outside the Phase 3 diff: one test could not resolve Git from PATH, and one line-ending-sensitive AI marker test expected LF in a CRLF file. The Git-dependent concurrency suite passed **19/19** with GitHub Desktop Git added to PATH, and the Navo duplicate-prevention assertion passed with CRLF normalized in memory.
 
 Next recommended phase: reduce the legacy global authority at the top of `readable-glass.css` together with the broad card/button rules in `styles.css`, then consolidate Navigation against `mobile-menu.css`. Do not continue stripping Places-specific material blindly.
+
+
+## Phase 4 execution result — Legacy global layer + Home ownership
+
+- `styles.css` reduced from **17** to **0** `!important` declarations. The base stylesheet now provides defaults instead of forcing feature layers to escalate specificity.
+- `cloud-sync.css` reduced from **19** to **1**; the only remaining declaration is the behavioral `.cloud-account [hidden]{display:none!important}` contract.
+- `theme.css` reduced from **624** to **531** by removing obsolete Cloud Account rules and three historical Home component generations now owned by `cloud-sync.css` and `home-organizer.css`.
+- `home-organizer.css` reduced from **66** to **2** `!important` declarations, retaining only explicit visibility contracts.
+- Whole-app CSS debt reduced from **1,462** to **1,270** in this phase.
+- Combined reduction since the original audit baseline: **2,583 → 1,270** (**-1,313 / ~51%**).
+- Test infrastructure hardened: data-integrity source slicing now normalizes CRLF/LF so marker-based checks are platform-independent.
+- New guardrails require `styles.css` to stay at zero `!important`, keep Cloud Sync at one behavioral exception, keep Home Organizer at two or fewer, and prevent Cloud Account/Home legacy ownership from returning to `theme.css`.
+
+Next recommended phase: consolidate Navigation ownership across `trip-redesign.css`, `mobile-menu.css`, and the remaining Navigation authority in `readable-glass.css`, then revisit Plan/Budget leftovers in `theme.css`.

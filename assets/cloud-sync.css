@@ -4,7 +4,7 @@
 
 /* Account launcher remains theme-aware; dialog authority starts below. */
 html body.home-page .landing-nav [data-cloud-account-open],
-html body.home-page .home-sidebar [data-cloud-account-open]{color:var(--tm-account-launcher-color,#fff)!important;-webkit-text-fill-color:var(--tm-account-launcher-color,#fff);background:var(--tm-account-launcher-background,rgba(5,49,38,.88))!important;border:1px solid var(--tm-account-launcher-border,rgba(255,255,255,.28))!important}
+html body.home-page .home-sidebar [data-cloud-account-open]{color:var(--tm-account-launcher-color,#fff);-webkit-text-fill-color:var(--tm-account-launcher-color,#fff);background:var(--tm-account-launcher-background,rgba(5,49,38,.88));border:1px solid var(--tm-account-launcher-border,rgba(255,255,255,.28))}
 
 /* 2026-07-31 reference restoration: photographic split account screen. */
 html body.home-page .cloud-account-backdrop{
@@ -105,7 +105,7 @@ html body.home-page .cloud-account-split form button:not(.cloud-login-submit):no
   padding:0 20px;
   border-radius:0;
   font-size:17px;
-  font-weight:700!important
+  font-weight:700
 }
 html body.home-page .cloud-account-split .cloud-account-session [data-cloud-sync-now]{
   margin:0;
@@ -116,9 +116,9 @@ html body.home-page .cloud-account-split .cloud-account-session [data-cloud-sync
 }
 html body.home-page .cloud-account-split .cloud-account-session button.secondary,
 html body.home-page .cloud-account-split form button.secondary{
-  border:1px solid rgba(255,255,255,.48)!important;
-  background:rgba(255,255,255,.035)!important;
-  color:#fff!important;
+  border:1px solid rgba(255,255,255,.48);
+  background:rgba(255,255,255,.035);
+  color:#fff;
   -webkit-text-fill-color:#fff;
   box-shadow:none;
   backdrop-filter:none;
@@ -248,17 +248,17 @@ html body.home-page .cloud-account-split form .cloud-login-submit{
   min-height:52px;
   margin-top:2px;
   padding:0 18px;
-  border:1px solid var(--tm-auth-action)!important;
+  border:1px solid var(--tm-auth-action);
   border-radius:14px;
-  background:var(--tm-auth-action)!important;
-  color:#fff!important;
+  background:var(--tm-auth-action);
+  color:#fff;
   -webkit-text-fill-color:#fff;
   box-shadow:0 8px 20px rgba(242,87,75,.2);
   font-size:16px;
-  font-weight:700!important;
+  font-weight:700;
   transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease
 }
-html body.home-page .cloud-account-split form .cloud-login-submit:hover:not(:disabled){background:var(--tm-auth-action-hover)!important;border-color:var(--tm-auth-action-hover)!important;transform:translateY(-1px)}
+html body.home-page .cloud-account-split form .cloud-login-submit:hover:not(:disabled){background:var(--tm-auth-action-hover);border-color:var(--tm-auth-action-hover);transform:translateY(-1px)}
 html body.home-page .cloud-account-split form .cloud-login-submit:focus-visible,
 html body.home-page .cloud-account-split .cloud-auth-secondary button:focus-visible{
   outline:3px solid rgba(246,197,110,.42);
@@ -282,17 +282,17 @@ html body.home-page .cloud-account-split .cloud-auth-secondary .cloud-create-acc
   min-height:34px;
   margin:0;
   padding:5px 2px;
-  border:0!important;
+  border:0;
   border-radius:6px;
-  background:transparent!important;
-  color:var(--tm-auth-muted)!important;
+  background:transparent;
+  color:var(--tm-auth-muted);
   -webkit-text-fill-color:var(--tm-auth-muted);
   box-shadow:none;
   font-size:12px;
-  font-weight:500!important;
+  font-weight:500;
   text-decoration:none
 }
-html body.home-page .cloud-account-split .cloud-auth-secondary .cloud-create-account:hover{color:#fff!important;-webkit-text-fill-color:#fff;text-decoration:underline;text-underline-offset:4px}
+html body.home-page .cloud-account-split .cloud-auth-secondary .cloud-create-account:hover{color:#fff;-webkit-text-fill-color:#fff;text-decoration:underline;text-underline-offset:4px}
 html body.home-page .cloud-account-split .security-captcha{margin:0;min-height:0}
 html body.home-page .cloud-account-split .security-captcha-development{
   display:flex;
