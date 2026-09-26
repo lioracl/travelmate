@@ -57,7 +57,8 @@ test('dynamic feature-loader assets all exist', () => {
   );
   assert.ok(names.size > 0, 'app.js dynamic feature list is empty');
   for (const name of names) {
-    assert.ok(fs.existsSync(path.join(root, 'assets', name)), 'dynamic feature asset missing: ' + name);
+    const file = name === 'sw.js' ? path.join(root, name) : path.join(root, 'assets', name);
+    assert.ok(fs.existsSync(file), 'dynamic feature asset missing: ' + name);
   }
 });
 
@@ -67,4 +68,13 @@ test('retired duplicate style layers stay removed', () => {
   }
   const app = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.doesNotMatch(app, /place-auto-fill-v2\.css/);
+});
+
+
+test('every entry point exposes PWA metadata without waiting for lazy features', () => {
+  for (const entry of htmlEntries) {
+    const source = fs.readFileSync(path.join(root, entry), 'utf8');
+    assert.match(source, /<meta name="theme-color" content="#12383F">/);
+    assert.match(source, /<link rel="manifest" href="(?:\.\.\/\.\.\/)?manifest\.webmanifest">/);
+  }
 });

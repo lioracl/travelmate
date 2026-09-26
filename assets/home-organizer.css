@@ -1,5 +1,5 @@
 .trip-area-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:24px 2px 10px}.trip-area-head h2{margin:0;font-size:24px}.trip-area-head span{display:inline-flex;min-width:30px;height:30px;align-items:center;justify-content:center;border-radius:999px;background:#e8f3ed;color:#1f7658;font-weight:900}.trip-card-shell{position:relative;min-width:0}.trip-card-shell .trip-card{height:100%}.trip-activity-toggle{position:absolute;z-index:5;top:24px;left:24px;display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:8px 12px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:rgba(255,255,255,.92);color:#716b67;font-weight:900;box-shadow:var(--shadow);backdrop-filter:blur(12px)}.trip-activity-toggle.active{background:#1f7658;color:#fff;border-color:#1f7658}.trip-activity-toggle i{font-size:9px}.trip-date-state{display:inline-flex;align-items:center;gap:6px;margin-bottom:9px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.9);color:#514b48;font-size:11px;font-weight:900}.trip-date-state.now{background:#dff5e9;color:#146347}.trip-archive{margin-top:26px;padding:18px;border:1px solid var(--line);border-radius:26px;background:rgba(255,255,255,.62);box-shadow:var(--shadow)}.trip-archive-toggle{width:100%;display:flex;align-items:center;gap:12px;border:0;background:transparent;color:var(--text);text-align:right}.trip-archive-toggle>i:first-child{width:44px;height:44px;display:grid;place-items:center;border-radius:15px;background:#f1ede8;color:#716b67}.trip-archive-toggle span{display:grid;gap:3px}.trip-archive-toggle small{color:var(--muted)}.trip-archive-toggle b{margin-right:auto;width:34px;height:34px;display:grid;place-items:center;border-radius:999px;background:#f1ede8}.trip-archive-toggle .fa-chevron-down{transition:.2s}.trip-archive-toggle[aria-expanded="true"] .fa-chevron-down{transform:rotate(180deg)}.trip-archive-list{margin-top:18px}.trip-archive-list[hidden]{display:none}.trip-archive-empty{padding:30px;text-align:center;color:var(--muted)}.trip-country-flag{line-height:1;filter:saturate(.95)}
-@media(max-width:800px){.trip-area-head{margin-top:18px}.trip-card-shell{min-height:360px}.trip-archive{padding:13px}.trip-archive-list{grid-template-columns:1fr}.trip-activity-toggle{top:18px;left:18px}.trip-flag{top:18px;right:18px}}
+@media(max-width:800px){.trip-area-head{margin-top:18px}.trip-card-shell{min-height:360px}.trip-archive{padding:13px}.trip-archive-list{grid-template-columns:1fr}.trip-activity-toggle{top:18px;left:auto;right:68px;width:40px;min-width:40px;height:40px;min-height:40px;padding:0;justify-content:center;border-radius:12px;backdrop-filter:none;-webkit-backdrop-filter:none}.trip-activity-toggle span{display:none}.trip-activity-toggle i{margin:0;font-size:12px}.trip-flag{top:18px;right:18px}}
 .home-hero-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.home-close-app{border:1px solid rgba(255,255,255,.72);cursor:pointer}.home-close-app:disabled{opacity:.72;cursor:wait}
 @media(max-width:680px){.home-hero-actions{width:100%;justify-content:flex-start}.home-hero-actions .share{min-height:42px}.home-close-app{background:rgba(255,255,255,.9);color:#403a37}}
 
@@ -112,21 +112,23 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
 }
 .home-page.is-authenticated .trip-area-head{
   margin:0 0 22px;
-  padding:22px 24px;
-  border:1px solid rgba(255,255,255,.26);
-  border-radius:2px;
-  background:rgba(255,255,255,.12);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+  padding:20px 22px;
+  border:1px solid rgba(255,255,255,.34);
+  border-radius:18px;
+  background:rgba(18,56,63,.94);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  box-shadow:0 10px 26px rgba(0,0,0,.16)
 }
 .home-page.is-authenticated .trip-area-head h2{
   color:#fff;
-  font:400 34px/1.1 Rubik,sans-serif;
+  font:700 32px/1.1 Rubik,sans-serif;
+  text-shadow:0 1px 3px rgba(0,0,0,.28)
 }
 .home-page.is-authenticated .trip-area-head span{
-  border-radius:2px;
+  border-radius:10px;
   background:rgba(255,255,255,.16);
-  color:#fff;
+  color:#fff
 }
 .home-page.is-authenticated #active-trips{
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -157,23 +159,30 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
   backdrop-filter:blur(12px);
 }
 .home-page.is-authenticated .add-destination{
-  border:1px solid rgba(255,255,255,.3);
-  border-radius:2px;
-  background:rgba(255,255,255,.14);
-  color:#fff;
-  box-shadow:none;
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(169,220,231,.72);
+  border-radius:18px;
+  background:rgba(247,250,250,.9);
+  color:#12383f;
+  box-shadow:0 10px 26px rgba(0,0,0,.14);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px)
+}
+.home-page.is-authenticated .add-destination strong{
+  color:#12383f;
+  -webkit-text-fill-color:#12383f;
+  font-weight:800
 }
 .home-page.is-authenticated .add-destination small{
-  max-width:220px;
-  color:rgba(255,255,255,.7);
+  max-width:260px;
+  color:#52676b;
+  -webkit-text-fill-color:#52676b
 }
 .home-page.is-authenticated .add-destination .icon{
-  border:1px solid rgba(255,255,255,.34);
-  border-radius:2px;
-  background:transparent;
-  color:#fff;
+  border:1px solid rgba(20,125,146,.28);
+  border-radius:14px;
+  background:rgba(20,125,146,.1);
+  color:#147d92;
+  -webkit-text-fill-color:#147d92
 }
 
 @media(max-width:800px){
@@ -206,8 +215,25 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
     padding:96px 16px 86px;
   }
   .home-page.is-authenticated #active-trips{
-    grid-template-columns:1fr;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:14px
   }
+  .home-page.is-authenticated #active-trips>.trip-card-shell,
+  .home-page.is-authenticated #active-trips>.trip-card{
+    width:100%;
+    min-height:390px
+  }
+  .home-page.is-authenticated #active-trips>.add-destination{
+    width:100%;
+    min-height:150px;
+    padding:22px 18px
+  }
+  .home-page.is-authenticated .trip-area-head{
+    margin-bottom:14px;
+    padding:16px 18px
+  }
+  .home-page.is-authenticated .trip-area-head h2{font-size:28px}
 }
 
 .landing-login{min-height:32px;height:32px;padding:0 12px;background:var(--secondary);border-radius:999px;font-size:11px;line-height:1;box-shadow:none}.landing-login:hover{background:#dc6410}
@@ -218,11 +244,8 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
 
 .landing-intro{z-index:100;margin-top:42px;text-shadow:0 3px 22px rgba(0,0,0,.82)}.landing-intro h1{margin:0;font-size:clamp(42px,5.4vw,72px);line-height:1;font-weight:300}.landing-intro p{margin-top:12px;color:rgba(255,255,255,.88);font-size:clamp(14px,1.6vw,19px);font-weight:300}.destination-carousel{z-index:3;margin-top:-62px}.carousel-track{z-index:1}@media(max-width:800px){.landing-intro{margin-top:34px}.destination-carousel{margin-top:-48px}}@media(max-width:500px){.landing-intro{margin-top:30px}.landing-intro h1{font-size:38px}.landing-intro p{font-size:14px}.destination-carousel{margin-top:-32px}}
 
-/* Authenticated trips header: text-only actions on this screen. */
+/* Authenticated trips header labels: icon visibility is owned by the shared header rule below. */
 .home-page.is-authenticated .home-sidebar-logo .tip{display:none}
-.home-page.is-authenticated .home-sidebar-logo i{display:none}
-.home-page.is-authenticated .home-sidebar nav i,
-.home-page.is-authenticated .home-sidebar-utilities i{display:none}
 .home-page.is-authenticated .home-sidebar nav :is(a,button),
 .home-page.is-authenticated .home-sidebar-utilities> :is(a,button){
   width:auto;
@@ -276,9 +299,29 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
     padding-inline:13px;
     gap:8px
   }
-  .home-page.is-authenticated .home-sidebar nav .tip{display:inline}
-  .home-page.is-authenticated .home-sidebar nav .home-new-trip-action{min-width:104px}
-  .home-page.is-authenticated .home-sidebar nav .home-more-toggle{min-width:72px}
+  .home-page.is-authenticated .home-sidebar nav .tip{display:inline;font-weight:700}
+  .home-page.is-authenticated .home-sidebar nav{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px
+  }
+  .home-page.is-authenticated .home-sidebar nav .home-archive-action{display:none}
+  .home-page.is-authenticated .home-sidebar nav :is(.home-current-view,.home-new-trip-action,.home-more-toggle){
+    width:100%;
+    min-width:0;
+    padding-inline:8px;
+    justify-content:center;
+    border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.06);
+    color:#fff;
+    -webkit-text-fill-color:#fff;
+    font-weight:700
+  }
+  .home-page.is-authenticated .home-sidebar nav :is(.home-current-view,.home-new-trip-action,.home-more-toggle) :is(i,.tip){
+    color:inherit;
+    -webkit-text-fill-color:currentColor;
+    opacity:1
+  }
   .home-page.is-authenticated .home-sidebar nav .home-more-toggle{display:flex}
   .home-page.is-authenticated .home-sidebar-utilities{
     position:absolute;
@@ -292,11 +335,11 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
     max-height:calc(100dvh - 100px);
     overflow:auto;
     padding:10px;
-    border:1px solid rgba(255,255,255,.22);
+    border:1px solid rgba(255,255,255,.24);
     border-radius:18px;
-    background:rgba(18,56,63,.78);
-    -webkit-backdrop-filter:blur(8px) saturate(104%);
-    backdrop-filter:blur(8px) saturate(104%);
+    background:rgba(18,56,63,.97);
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
     box-shadow:0 10px 28px rgba(0,0,0,.22)
   }
   .home-page.is-authenticated .home-sidebar-utilities.is-open{display:grid}
@@ -340,14 +383,29 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
 .trip-date-editor-close{position:absolute;top:16px;left:16px;width:42px;height:42px;border:1px solid #d7e4de;border-radius:50%;background:#fff;color:#173e31;font-size:18px}.trip-date-editor-error{min-height:20px;color:#b42318}.trip-date-editor-save{min-height:50px;border:0;border-radius:14px;background:#176b50;color:#fff;font:inherit;font-weight:900}
 .home-page.is-authenticated .home-sidebar-logo i,.home-page.is-authenticated .home-sidebar nav i,.home-page.is-authenticated .home-sidebar-utilities i{display:inline-block;color:currentColor;-webkit-text-stroke:0;font-size:19px;font-weight:900}
 @media(max-width:800px){
-  .trip-edit-dates{top:66px;left:18px}
-  .trip-delete{top:116px;left:18px}
-  .home-page.is-authenticated .home-sidebar{background:#12383F;color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.24)}
+  .trip-edit-dates,
+  .trip-delete{
+    top:66px;
+    width:40px;
+    min-width:40px;
+    height:40px;
+    min-height:40px;
+    padding:0;
+    justify-content:center;
+    border-radius:12px
+  }
+  .trip-edit-dates{left:18px}
+  .trip-delete{top:66px;left:64px}
+  .trip-edit-dates span,
+  .trip-delete span{display:none}
+  .trip-edit-dates i,
+  .trip-delete i{margin:0;font-size:15px}
+  .home-page.is-authenticated .home-sidebar{background:#12383F;color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.24);backdrop-filter:none;-webkit-backdrop-filter:none}
   .home-page.is-authenticated .home-sidebar nav :is(a,button),.home-page.is-authenticated .home-sidebar-logo{color:#fff}
 }
 @media(max-width:520px){
-  .trip-date-editor{grid-template-columns:1fr;padding:22px 16px}.trip-date-editor label{grid-column:1/-1}
-  .trip-edit-dates{min-width:116px;padding:0 12px;justify-content:center;font-size:11px}
+  .trip-date-editor{grid-template-columns:1fr;padding:22px 16px}
+  .trip-date-editor label{grid-column:1/-1}
 }
 
 /* 1.37.5 — readable, stable glass for the signed-in trips dashboard. */

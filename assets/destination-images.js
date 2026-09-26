@@ -4,6 +4,7 @@
   var CACHE_KEY = 'travelmate-destination-images-v7';
   var FALLBACK = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=82';
   var PRAGUE_IMAGE = 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Prague_castle_panorama.jpg/1280px-Prague_castle_panorama.jpg';
+  var PRAGUE_HERO_IMAGE = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Prague%20castle%20panorama.jpg?width=2200';
   var HAIFA_IMAGE = 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Haifa%20Bahai%20Gardens%20-%20landscape.jpg?width=2200';
   var pending = new Map();
 
@@ -92,6 +93,11 @@
 
   function apply(element, city, country) {
     if (!element) return Promise.resolve(FALLBACK);
+    if (/^(פראג|prague)$/i.test(String(city || '').trim()) && element.classList.contains('custom-hero')) {
+      element.style.backgroundImage = "url('" + PRAGUE_HERO_IMAGE + "')";
+      element.dataset.destinationImage = 'ready';
+      return Promise.resolve(PRAGUE_HERO_IMAGE);
+    }
     var saved = cached(city, country);
     if (saved) element.style.backgroundImage = "url('" + saved.replace(/'/g, '%27') + "')";
     return resolve(city, country).then(function (url) {

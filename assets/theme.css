@@ -1,34 +1,5 @@
 :root{color-scheme:light}
 html[data-theme="dark"]{color-scheme:dark}
-.theme-toggle{
-  position:relative;width:44px;height:44px;min-width:44px;display:grid;place-items:center;
-  padding:0;border:1px solid rgba(255,255,255,.66);border-radius:50%;
-  background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.36));
-  color:#0e614b;font:inherit;cursor:pointer;
-  -webkit-backdrop-filter:blur(20px) saturate(165%);
-  backdrop-filter:blur(20px) saturate(165%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.88),0 8px 24px rgba(14,97,75,.14);
-  transition:background .16s ease,transform .16s ease,box-shadow .16s ease
-}
-.theme-toggle:hover{
-  background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,255,255,.54));
-  transform:translateY(-1px);box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(14,97,75,.2)
-}
-.theme-toggle i{font-size:18px;color:inherit}
-.theme-toggle .tip{
-  position:absolute;z-index:150;width:max-content;padding:7px 10px;
-  border-radius:2px;background:rgba(255,255,255,.9);color:#414846;
-  font:300 12px Rubik,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.16);
-  opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s
-}
-.sidebar .theme-toggle .tip{right:calc(100% + 12px);top:50%;transform:translateY(-50%)}
-.home-sidebar .theme-toggle .tip{top:calc(100% + 8px);right:50%;transform:translateX(50%)}
-.theme-toggle:is(:hover,:focus-visible) .tip{opacity:1;visibility:visible;transition-delay:1s}
-.home-sidebar .theme-toggle{order:1}
-.home-sidebar nav{order:2}
-.home-sidebar>.trip-logout{order:3}
-.sidebar>.theme-toggle{margin-bottom:10px}
-
 html[data-theme="light"] body.tm-new-design{
   background-color:#d8e0dc!important;
   background-image:linear-gradient(90deg,var(--tm-photo-scrim-start,rgba(3,12,10,.3)),var(--tm-photo-scrim-mid,rgba(3,12,10,.4)) 72%,var(--tm-photo-scrim-end,rgba(3,12,10,.5))),var(--trip-bg-image,linear-gradient(135deg,#0e614b,#071611))!important
@@ -36,15 +7,6 @@ html[data-theme="light"] body.tm-new-design{
 html[data-theme="light"] body.tm-new-design .custom-hero :where(.hero-copy,h1,.hero-country-line,p,.hero-back,.share){
   color:#fff!important;text-shadow:0 1px 12px rgba(0,0,0,.34)
 }
-@media(min-width:1001px){
-  html[data-theme="light"] body.tm-new-design .sidebar :is(a,button):not(.theme-toggle){
-    color:rgba(255,255,255,.94)
-  }
-  html[data-theme="light"] body.tm-new-design .sidebar :is(a,button):not(.theme-toggle) i{
-    -webkit-text-stroke-color:rgba(255,255,255,.94)
-  }
-}
-
 html[data-theme="dark"] body{
   --text:#f3f5f4;--muted:#c0c7c4;--dark:#f3f5f4;
   --line:rgba(255,255,255,.16);color:#f3f5f4
@@ -54,14 +16,6 @@ html[data-theme="dark"] body.tm-new-design{
   --dark:#f3f5f4;--line:rgba(255,255,255,.16);color:#f3f5f4;
   background-color:#071611!important;
   background-image:linear-gradient(90deg,var(--tm-photo-scrim-start,rgba(3,12,10,.7)),var(--tm-photo-scrim-mid,rgba(3,12,10,.78)) 72%,var(--tm-photo-scrim-end,rgba(3,12,10,.84))),var(--trip-bg-image,linear-gradient(135deg,#0e614b,#071611))!important
-}
-html[data-theme="dark"] .theme-toggle{
-  border-color:rgba(255,255,255,.28);
-  background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.08));
-  color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 28px rgba(0,0,0,.24)
-}
-html[data-theme="dark"] .theme-toggle:hover{
-  background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.13))
 }
 html[data-theme="dark"] body.tm-new-design :where(h1,h2,h3,h4,strong,label,legend,p,small,span){color:inherit}
 html[data-theme="dark"] body.tm-new-design :where(input,select,textarea){
@@ -76,14 +30,6 @@ html[data-theme="dark"] body.tm-new-design .custom-hero :where(.hero-copy,h1,.he
 html[data-theme="dark"] body.tm-new-design .trip-home-actions>div :where(p,h2){
   color:#f3f5f4!important
 }
-@media(min-width:1001px){
-  html[data-theme="dark"] body.tm-new-design .sidebar :is(a,button) i{
-    -webkit-text-stroke-color:rgba(243,245,244,.92)
-  }
-  html[data-theme="dark"] body.tm-new-design .sidebar nav a.active i{
-    color:var(--tm-brand-primary);-webkit-text-stroke:0
-  }
-}
 html[data-theme="dark"] body.home-page.is-authenticated{
   color:#f3f5f4;background-color:#071611!important;background-blend-mode:multiply!important
 }
@@ -94,76 +40,17 @@ html[data-theme="dark"] body.home-page.is-authenticated :where(
   background:linear-gradient(135deg,rgba(12,29,25,.48),rgba(5,17,14,.24))!important;
   color:#f3f5f4!important
 }
-@media(max-width:700px){.theme-toggle .tip{display:none}}
 
 /* Trip overview refinements */
-body.tm-new-design .sidebar .brand-dot{
-  display:grid;
-  place-items:center;
-  border-radius:50%;
-  border:0;
-  background:transparent;
-  color:#fff;
-  box-shadow:none
-}
-body.tm-new-design .sidebar .brand-dot i{
-  color:#fff;
-  -webkit-text-stroke:0;
-  font-size:18px
-}
 /* Overview action-card material and responsive layout are owned by readable-glass.css. */
 
-body.tm-new-design .sidebar>.theme-toggle{display:none}
-
-/* Desktop sidebar label fallback; mobile drawer material is owned by readable-glass.css. */
-@media(min-width:1001px){
-  body.tm-new-design .sidebar :where(a,button,span,small,strong){
-    color:#fff;
-    -webkit-text-fill-color:#fff;
-    text-shadow:0 1px 10px rgba(0,0,0,.3)
-  }
-}
-/* Icons stay unboxed across the product. */
-html body :where(
-  .icon,.mark,.forecast-icon,.day-dot,.avatar-small,
-  .memory-icon,.message-place-pin,.transport-result-icon,.invite-hero-icon,
-  [class$="-icon"],[class*="-icon "]
-):not(.maplibregl-map *):not(.weather-live-day-icon),
-html body .auto-place-launch>i:first-child,
-html body .auto-place-dialog h3>span,
-html body .auto-place-origins i,
-html body .auto-place-keep i,
-html body .transport-title>span,
-html body .fare-row>i,
-html body .collaboration-signed-out>i{
-  border:0!important;
-  border-radius:0!important;
-  outline:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
 
 /* 1.29.5 — navigation clarity; legacy desktop sidebar overrides removed in favor of the final sidebar authority below. */
-
-html body.tm-new-design[data-trip-view] main.content>section>.section-head :is(button,a,.pill-btn,.trip-action-back){
-  min-height:44px!important;
-  border-radius:11px!important
-}
-
-@media(max-width:1000px){
-  html body.tm-new-design[data-trip-view] main.content>section>.section-head{
-    padding:14px!important
-  }
-}
 
 /* 1.29.3 — modern desktop navigation and exact weather-card pages. */
 
 
-html body.tm-new-design main.content>section:is(
-  #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
-) :is(.doc-row,.expense,.service-card,.transport-card,.group-card,.album-card,.memory-card,.trip-summary-card,.summary-card,.invite-card){
-  border-radius:17px!important
-}
+
 
 
 
@@ -183,36 +70,31 @@ html body.tm-new-design main.content>section:is(
 
 
 
-@media(max-width:430px){
-  body:not(.home-page) main.content{padding:8px!important}
-  body:not(.home-page) .section:not(.hero){padding:12px!important}
-}
-
 /* 1.29.0 — centered day badge and navigation that explains itself. */
 
 
 
 
-/* Final sidebar authority: one surface, no nested outlines. */
+/* Legacy desktop sidebar fallback only. tm-new-design material is owned by readable-glass.css. */
 @media(min-width:1001px){
-  html body:not(.home-page) .workspace>.sidebar{
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar{
     border-radius:24px;
     background:linear-gradient(145deg,color-mix(in srgb,var(--tm-accent-soft) 10%,rgba(248,253,250,.94)),color-mix(in srgb,var(--tm-accent-soft) 20%,rgba(236,245,241,.9)));
     box-shadow:0 16px 42px rgba(16,75,57,.16)
   }
-  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about),
-  html body:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar nav :is(a,.sidebar-about),
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar :is(.sidebar-service,.live-button){
     border-radius:14px
   }
-  html body:not(.home-page) .workspace>.sidebar nav a.active,
-  html body:not(.home-page) .workspace>.sidebar nav [aria-current="page"]{
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar nav a.active,
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar nav [aria-current="page"]{
     background:linear-gradient(135deg,#e7f4ed,#d1e9dc);
     color:#145941;
     -webkit-text-fill-color:#145941;
     box-shadow:inset 4px 0 0 #1d7656
   }
-  html body:not(.home-page) .workspace>.sidebar nav a.active :where(i,.tip),
-  html body:not(.home-page) .workspace>.sidebar nav [aria-current="page"] :where(i,.tip){
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar nav a.active :where(i,.tip),
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar nav [aria-current="page"] :where(i,.tip){
     color:#145941;
     -webkit-text-fill-color:#145941
   }
@@ -223,36 +105,25 @@ html body.tm-new-design main.content>section:is(
 
 
 
-@media(min-width:1001px){
-  html body.tm-new-design .sidebar .trip-logout .tip,
-  html body.tm-new-design .sidebar .trip-logout i{
-    color:#a52b22;
-    -webkit-text-fill-color:#a52b22
-  }
-}
-
 /* 1.29.4 — borderless navigation, exact weather glass and aligned itinerary. */
 
 
 
 
 @media(min-width:1001px){
-  html body:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about),
-  html body:not(.home-page) .workspace>.sidebar :is(.sidebar-service,.live-button){
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar nav :is(a,.sidebar-about),
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar :is(.sidebar-service,.live-button){
     color:#245c49;
     -webkit-text-fill-color:#245c49
   }
-  html body:not(.home-page) .workspace>.sidebar nav a.active{
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar nav a.active{
     color:#0f6b4d;
     -webkit-text-fill-color:#0f6b4d
   }
 }
-body.home-page.is-authenticated .home-sidebar-utilities>.trip-logout,
-body.home-page.is-authenticated .home-sidebar-utilities>.trip-logout :is(i,.tip){color:#ffb4ab;-webkit-text-fill-color:#ffb4ab}
-
 /* Desktop tooltip fallback; scrollbar geometry is owned by trip-redesign.css. */
 @media(min-width:1001px){
-  html body:not(.home-page) .workspace>.sidebar nav .tip{
+  html body:not(.home-page):not(.tm-new-design) .workspace>.sidebar nav .tip{
     border:0;
     background:transparent;
     box-shadow:none;
@@ -261,15 +132,8 @@ body.home-page.is-authenticated .home-sidebar-utilities>.trip-logout :is(i,.tip)
   }
 }
 /* 1.30.1 - full day editing, gentle overlap notices and reliable auto-fill controls. */
-/* 1.31 — stable weather-card headers and no animated visual rail. */
-html body.tm-new-design .network-usage-meter::before,
-html body.tm-new-design .network-usage-meter::after{animation:none!important}
 html body.tm-new-design main.content{caret-color:transparent}
 html body.tm-new-design main.content :is(input,textarea,[contenteditable="true"]){caret-color:auto}
-
-/* Stable trip rendering and clear transport controls */
-html body.tm-new-design:not(.home-page)::before{display:none!important;content:none!important;animation:none!important}
-html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#getaways)>.section-head .mark{display:none!important}
 
 /* 1.35.8 — a calm card with an unmistakable edge. */
 
@@ -277,7 +141,3 @@ html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#get
 /* 1.42.4 — mobile metadata spacing and focused contrast repairs. */
 
 /* Budget layout/material moved to trip-experience.css and readable-glass.css in Phase 1B. */
-html body.tm-new-design main.content select option{
-  background:#f7fffb!important;
-  color:#123f32!important
-}

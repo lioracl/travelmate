@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.40',
-    label: 'CSS architecture cleanup — Phase 9',
+    version: '1.55.41',
+    label: 'CSS architecture cleanup — Phase 10',
     date: '26 בספטמבר 2026',
     highlights: [
+      'CSS architecture: Phase 10 moved shared controls and overlay material to normal cascade, reduced modal-system.css to zero !important and network-usage.css to two behavioral hidden-state exceptions, and reduced whole-app !important debt from 439 to 341.',
       'CSS architecture: Phase 9 made Weather a zero-escalation component owner, removed Weather from generic Modal/Glass material selectors, consolidated Plan/Hero structural ownership, and reduced whole-app !important debt from 548 to 439.',
       'CSS architecture: Phase 8 moved Group, Memories and Currency semantic contrast out of Theme, made Documents a structural wrapper by exclusion instead of override, and reduced whole-app !important debt from 620 to 548.',
       'CSS architecture: Phase 7 consolidated shared section headers, trip-frame and hero geometry, Mate launcher/header ownership, and Transport presentation out of legacy Theme escalation. Whole-app !important debt dropped from 752 to 620 while preserving current rendered geometry.',

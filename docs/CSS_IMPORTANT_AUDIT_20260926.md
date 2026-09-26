@@ -219,3 +219,19 @@ Remaining Theme `!important` rules are predominantly global theme backgrounds, i
 - Focused Theme/Surface/Weather/Performance suite remained green after the refactor.
 
 Remaining debt is concentrated in shared Design System material, modal infrastructure, intentional global fallbacks, and a small number of feature-specific control/layout exceptions. Further reduction should be performed as a separate ownership pass rather than by bulk removal.
+
+
+## Phase 10 execution result — shared controls and modal system
+
+- Whole-app CSS debt reduced from **439** to **341** `!important` declarations (**-98** in this phase).
+- Combined reduction since the original audit baseline: **2,583 → 341** (**-2,242 / ~87%**).
+- `modal-system.css`: **43 → 0**.
+- `readable-glass.css`: **185 → 133**.
+- `network-usage.css`: **5 → 2**, retaining only `[hidden]{display:none!important}` behavioral-state contracts.
+- Shared secondary/primary/danger controls, focus-visible, disabled, input, invalid and icon states now resolve through normal cascade and semantic control variables.
+- Final overlay material ownership is asserted in `readable-glass.css`; modal-system.css remains structural/fallback infrastructure.
+- Runtime Chrome computed-style QA verified overlay shell, nested surface, secondary/primary/danger controls, disabled states, form fields, close button geometry and network meter in desktop/mobile contexts.
+- Runtime QA exposed one real regression: danger controls inside overlays inherited dark text. The root semantic selector was expanded so overlay danger controls again render white text on danger red without restoring `!important`.
+- Focused Modal/Controls/Accessibility/Surface suite: **95/95 PASS** before the final guardrail/version update.
+
+Remaining debt is now concentrated mainly in shared Glass material, trip-redesign feature-specific geometry, Theme global safety fallbacks and a small number of feature exceptions. Further reduction should proceed only through targeted owner migration and runtime visual proof.

@@ -21,9 +21,9 @@ html body :is(
   position:fixed;
   inset:0;
   z-index:var(--tm-overlay-layer);
-  background:var(--tm-overlay-backdrop)!important;
-  -webkit-backdrop-filter:var(--tm-overlay-backdrop-blur)!important;
-  backdrop-filter:var(--tm-overlay-backdrop-blur)!important;
+  background:var(--tm-overlay-backdrop);
+  -webkit-backdrop-filter:var(--tm-overlay-backdrop-blur);
+  backdrop-filter:var(--tm-overlay-backdrop-blur);
   overscroll-behavior:contain
 }
 html body :is(
@@ -38,16 +38,16 @@ html body :is(
   .floating-logout-dialog>div,.cloud-account-backdrop .cloud-account-split,.auto-place-dialog,
   .document-preview-modal,.smart-hub-modal,.ai-panel
 ){
-  border:1.5px solid var(--tm-overlay-border)!important;
-  border-radius:var(--tm-overlay-radius)!important;
-  background:var(--tm-overlay-surface)!important;
-  color:var(--tm-overlay-text)!important;
-  -webkit-text-fill-color:var(--tm-overlay-text)!important;
-  box-shadow:var(--tm-overlay-shadow)!important;
-  -webkit-backdrop-filter:var(--tm-overlay-blur)!important;
-  backdrop-filter:var(--tm-overlay-blur)!important;
-  text-shadow:none!important;
-  opacity:1!important
+  border:1.5px solid var(--tm-overlay-border);
+  border-radius:var(--tm-overlay-radius);
+  background:var(--tm-overlay-surface);
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:var(--tm-overlay-text);
+  box-shadow:var(--tm-overlay-shadow);
+  -webkit-backdrop-filter:var(--tm-overlay-blur);
+  backdrop-filter:var(--tm-overlay-blur);
+  text-shadow:none;
+  opacity:1
 }
 .ai-panel{--tm-overlay-blur:none}
 
@@ -57,8 +57,8 @@ html body :is(
   .floating-logout-dialog,.smart-hub-modal,.cloud-account-split,.auto-place-dialog,
   .document-preview-modal,.ai-panel
 ) :where(h1,h2,h3,h4,h5,h6,strong,b,time,label,legend){
-  color:var(--tm-overlay-text)!important;
-  -webkit-text-fill-color:var(--tm-overlay-text)!important
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:var(--tm-overlay-text)
 }
 :where(
   .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
@@ -66,8 +66,8 @@ html body :is(
   .floating-logout-dialog,.smart-hub-modal,.cloud-account-split,.auto-place-dialog,
   .document-preview-modal,.ai-panel
 ) :where(p,small,li){
-  color:var(--tm-overlay-muted)!important;
-  -webkit-text-fill-color:var(--tm-overlay-muted)!important
+  color:var(--tm-overlay-muted);
+  -webkit-text-fill-color:var(--tm-overlay-muted)
 }
 
 /* Nested overlay content is a non-blurred surface; the shell is the single Glass layer. */
@@ -77,13 +77,13 @@ html body :is(
 .chat-place-picker :is(.chat-place-list>button,.chat-place-hero),
 .place-directions-dialog :is(.directions-origin-options span,.direction-mode,.directions-address-needed),
 .place-share-dialog :is(.shared-place-card,.place-share-checklist,.place-share-checklist span){
-  border:1px solid var(--tm-overlay-border)!important;
-  border-radius:14px!important;
-  background:var(--tm-overlay-nested)!important;
-  color:var(--tm-overlay-text)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.1)!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important
+  border:1px solid var(--tm-overlay-border);
+  border-radius:14px;
+  background:var(--tm-overlay-nested);
+  color:var(--tm-overlay-text);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
 }
 
 .modal option,.invite-card option,.place-directions-dialog option,.place-share-dialog option{
@@ -94,40 +94,32 @@ html body :is(
 .modal-close,.invite-close,.trip-calendar-dialog>header button,.place-directions-dialog header button,
 .place-share-dialog header button,.vault-preview header button,.trip-map-dialog header button,
 .cloud-account-close{
-  width:42px!important;
-  height:42px!important;
-  min-width:42px!important;
-  min-height:42px!important;
-  display:grid!important;
-  place-items:center!important;
-  padding:0!important;
-  border-radius:50%!important;
-  line-height:1!important
+  width:42px;
+  height:42px;
+  min-width:42px;
+  min-height:42px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border-radius:50%;
+  line-height:1
 }
 .modal-close i,.about-close i,.invite-close i,.trip-calendar-dialog>header button i,
 .place-directions-dialog header button i,.place-share-dialog header button i,
 .vault-preview header button i,.trip-map-dialog header button i,.cloud-account-close i{
-  display:grid!important;
-  place-items:center!important;
+  display:grid;
+  place-items:center;
   width:100%;
   height:100%;
-  margin:0!important;
-  line-height:1!important
+  margin:0;
+  line-height:1
 }
 
 .place-directions-dialog>header,.place-directions-dialog>footer,.vault-preview header,.vault-preview footer{
-  border-color:var(--tm-overlay-border)!important;
-  background:var(--tm-overlay-nested)!important
+  border-color:var(--tm-overlay-border);
+  background:var(--tm-overlay-nested)
 }
 .cloud-login-submit[aria-busy=true]{opacity:.68;cursor:wait}
-
-/* The floating network control stays visible without a filled disc. */
-.network-usage-meter{
-  background:transparent!important;
-  box-shadow:none!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important
-}
 
 @media(max-width:640px){
   :root{--tm-overlay-radius:18px}

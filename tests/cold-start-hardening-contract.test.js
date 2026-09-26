@@ -7,11 +7,12 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = p => fs.readFileSync(path.join(root,p),'utf8');
 
-test('Prague background uses one optimized destination image owner',()=>{
+test('Prague keeps an optimized card image and a sharper hero image under one owner',()=>{
   const images=read('assets/destination-images.js');
   const redesign=read('assets/trip-redesign.js');
-  assert.match(images,/1280px-Prague_castle_panorama\.jpg/);
-  assert.doesNotMatch(images,/Prague%20castle%20panorama\.jpg\?width=2200/);
+  assert.match(images,/PRAGUE_IMAGE = '[^']*1280px-Prague_castle_panorama\.jpg'/);
+  assert.match(images,/PRAGUE_HERO_IMAGE = '[^']*Prague%20castle%20panorama\.jpg\?width=2200'/);
+  assert.match(images,/element\.classList\.contains\('custom-hero'\)[\s\S]*PRAGUE_HERO_IMAGE/);
   assert.doesNotMatch(redesign,/Prague%20castle%20panorama\.jpg|1280px-Prague_castle_panorama/);
   assert.match(images,/travelmate-destination-images-v7/);
 });
@@ -52,8 +53,10 @@ test('Weather hydrates its reserved slot and is excluded from generic control he
 
 test('Mate hydrates its reserved Overview slot and loads assistant runtime on demand',()=>{
   const intelligence=read('assets/trip-intelligence.js');
+  const app=read('assets/app.js');
   assert.match(intelligence,/document\.querySelector\('\[data-navo-trip-banner\]'\) \|\| document\.createElement\('aside'\)/);
   assert.match(intelligence,/ensureAssistant\?window\.TravelMateFeatures\.ensureAssistant\(\):Promise\.resolve\(\)/);
+  assert.doesNotMatch(app,/scheduleIdleFeature\('assistant'/);
 });
 
 test('navigation boot uses query-state navigation without legacy hash shield or initial scroll',()=>{
@@ -63,4 +66,14 @@ test('navigation boot uses query-state navigation without legacy hash shield or 
   assert.doesNotMatch(navigation,/guardDepth|travelMateTripGuard|armTripShield|restoreProtectedOverview/);
   assert.doesNotMatch(navigation,/scrollIntoView\(\{ behavior: 'smooth'/);
   assert.doesNotMatch(navigation,/location\.hash\.replace/);
+});
+
+
+test('All Trips resolves cloud destination images near the viewport instead of eagerly',()=>{
+  const home=read('assets/home.js');
+  assert.match(home,/new IntersectionObserver\(function \(entries\)/);
+  assert.match(home,/rootMargin: '240px 0px'/);
+  assert.match(home,/destinationImageObserver\.observe\(card\)/);
+  assert.match(home,/queueDestinationCardImage\(shell, trip\)/);
+  assert.match(home,/destinationImageObserver\.unobserve\(card\)/);
 });

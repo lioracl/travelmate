@@ -171,11 +171,13 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
   html body.tm-new-design:not(.home-page) .workspace>.sidebar{
     --tm-drawer-text:#123f32;
     --tm-drawer-muted:#49675d;
-    border:1px solid color-mix(in srgb,var(--tm-brand-primary) 30%,rgba(255,255,255,.52));
-    background:linear-gradient(155deg,color-mix(in srgb,var(--tm-accent-soft) 10%,rgba(248,253,250,.99)),color-mix(in srgb,var(--tm-accent-soft) 22%,rgba(236,245,241,.985)));
+    border:1px solid color-mix(in srgb,var(--tm-brand-primary) 26%,rgba(255,255,255,.7));
+    background:linear-gradient(155deg,rgba(250,253,252,.995),rgba(235,245,241,.99));
     color:var(--tm-drawer-text);
     -webkit-text-fill-color:var(--tm-drawer-text);
-    box-shadow:-18px 0 54px rgba(3,43,31,.28);
+    box-shadow:-18px 0 54px rgba(3,43,31,.24);
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
     text-shadow:none;
     opacity:1
   }
@@ -192,10 +194,19 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     filter:none;
     opacity:1
   }
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar .tip{
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none
+  }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar .destination-mini{
-    border:1px solid rgba(39,116,87,.32);
-    background:rgba(255,255,255,.62);
-    color:var(--tm-drawer-text)
+    border:1px solid rgba(39,116,87,.26);
+    background:rgba(255,255,255,.94);
+    color:var(--tm-drawer-text);
+    box-shadow:0 5px 14px rgba(9,67,49,.08)
   }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar .destination-mini small{
     color:var(--tm-drawer-muted);
@@ -211,6 +222,7 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     color:var(--tm-drawer-text);
     -webkit-text-fill-color:var(--tm-drawer-text);
     box-shadow:none;
+    font-weight:700;
     opacity:1
   }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar nav :is(a,.sidebar-about) :is(i,.tip),
@@ -226,11 +238,11 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     -webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))
   }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar nav a:is(.active,[aria-current="page"]){
-    border-color:var(--tm-action-primary-active);
-    background:linear-gradient(135deg,var(--tm-action-primary),var(--tm-action-primary-active));
+    border-color:var(--tm-brand-primary);
+    background:var(--tm-brand-primary);
     color:#fff;
     -webkit-text-fill-color:#fff;
-    box-shadow:0 8px 20px rgba(7,78,55,.2)
+    box-shadow:0 6px 16px rgba(7,78,105,.18)
   }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar nav a:is(.active,[aria-current="page"]) :is(i,.tip,span){
     color:#fff;
@@ -750,11 +762,11 @@ html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]
   button:not(.primary):not([type="submit"]):not([data-delete-ai-note]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
 ):not(.maplibregl-map *):not(.trip-home-actions a):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
 html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)){
-  border-color:var(--tm-control-current-border)!important;
-  background:var(--tm-control-current-bg)!important;
-  color:var(--tm-control-current-text)!important;
-  -webkit-text-fill-color:var(--tm-control-current-text)!important;
-  text-shadow:none!important
+  border-color:var(--tm-control-current-border);
+  background:var(--tm-control-current-bg);
+  color:var(--tm-control-current-text);
+  -webkit-text-fill-color:var(--tm-control-current-text);
+  text-shadow:none
 }
 
 html body.tm-new-design :is(.ghost,.tertiary,[data-variant="ghost"]){
@@ -774,24 +786,28 @@ html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-c
   --tm-control-current-bg:var(--tm-action-primary);
   --tm-control-current-border:var(--tm-action-primary-active);
   --tm-control-current-text:var(--tm-text-on-action);
-  border-color:var(--tm-control-current-border)!important;
-  background:var(--tm-control-current-bg)!important;
-  color:var(--tm-control-current-text)!important;
-  -webkit-text-fill-color:var(--tm-control-current-text)!important;
-  text-shadow:0 1px 4px rgba(0,30,21,.34)!important
+  border-color:var(--tm-control-current-border);
+  background:var(--tm-control-current-bg);
+  color:var(--tm-control-current-text);
+  -webkit-text-fill-color:var(--tm-control-current-text);
+  text-shadow:0 1px 4px rgba(0,30,21,.34)
 }
 
-html body.tm-new-design main.content :is(
+html body.tm-new-design :is(
+  main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,
+  .place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,
+  .trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal
+) :is(
   button.danger,.danger button,[data-delete],[data-remove],[data-delete-expense],
   [data-delete-saved-place],[data-delete-memory],[data-delete-document],[data-delete-ai-note]
 ){
   --tm-control-current-bg:var(--tm-action-danger);
   --tm-control-current-border:var(--tm-action-danger);
   --tm-control-current-text:#fff;
-  border-color:var(--tm-control-current-border)!important;
-  background:var(--tm-control-current-bg)!important;
-  color:var(--tm-control-current-text)!important;
-  -webkit-text-fill-color:var(--tm-control-current-text)!important
+  border-color:var(--tm-control-current-border);
+  background:var(--tm-control-current-bg);
+  color:var(--tm-control-current-text);
+  -webkit-text-fill-color:var(--tm-control-current-text)
 }
 
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):not(:disabled):not([aria-disabled="true"]):hover{
@@ -816,16 +832,16 @@ html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]
   --tm-control-current-text:var(--tm-control-text)
 }
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):focus-visible{
-  outline:3px solid var(--tm-focus-ring)!important;
-  outline-offset:3px!important
+  outline:3px solid var(--tm-focus-ring);
+  outline-offset:3px
 }
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):disabled,
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button,a[href],[role="button"],summary):not(.maplibregl-map *)[aria-disabled="true"]{
   --tm-control-current-bg:var(--tm-disabled-bg);
   --tm-control-current-border:var(--tm-disabled-border);
   --tm-control-current-text:var(--tm-disabled-text);
-  opacity:1!important;
-  cursor:not-allowed!important
+  opacity:1;
+  cursor:not-allowed
 }
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button,[role="button"])[aria-busy="true"],
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button,[role="button"]).is-loading{cursor:progress}
@@ -837,42 +853,42 @@ html body.tm-new-design :is(
   .chat-place-picker button,.place-directions-dialog button,.place-share-dialog button,
   .ai-panel button,.smart-hub-modal button,.auto-place-dialog button
 ) :where(i,svg){
-  color:currentColor!important;
-  -webkit-text-fill-color:currentColor!important;
-  -webkit-text-stroke:0!important;
-  filter:none!important
+  color:currentColor;
+  -webkit-text-fill-color:currentColor;
+  -webkit-text-stroke:0;
+  filter:none
 }
 
 html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(input,select,textarea),
 html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(input,select,textarea){
-  border:1px solid var(--tm-border-control)!important;
-  background:var(--tm-surface-control)!important;
-  color:var(--tm-control-text)!important;
-  -webkit-text-fill-color:var(--tm-control-text)!important;
-  caret-color:var(--tm-control-text)!important;
-  box-shadow:none!important;
-  text-shadow:none!important
+  border:1px solid var(--tm-border-control);
+  background:var(--tm-surface-control);
+  color:var(--tm-control-text);
+  -webkit-text-fill-color:var(--tm-control-text);
+  caret-color:var(--tm-control-text);
+  box-shadow:none;
+  text-shadow:none
 }
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(input,select,textarea):focus-visible{
-  border-color:var(--tm-card-focus)!important;
-  outline:3px solid var(--tm-focus-ring)!important;
-  outline-offset:1px!important
+  border-color:var(--tm-card-focus);
+  outline:3px solid var(--tm-focus-ring);
+  outline-offset:1px
 }
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(input,select,textarea):disabled{
-  border-color:var(--tm-disabled-border)!important;
-  background:var(--tm-disabled-bg)!important;
-  color:var(--tm-disabled-text)!important;
-  -webkit-text-fill-color:var(--tm-disabled-text)!important;
-  opacity:1!important
+  border-color:var(--tm-disabled-border);
+  background:var(--tm-disabled-bg);
+  color:var(--tm-disabled-text);
+  -webkit-text-fill-color:var(--tm-disabled-text);
+  opacity:1
 }
 html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(input,select,textarea)[aria-invalid="true"]{
-  border-color:var(--tm-error)!important;
-  outline-color:color-mix(in srgb,var(--tm-error) 32%,transparent)!important
+  border-color:var(--tm-error);
+  outline-color:color-mix(in srgb,var(--tm-error) 32%,transparent)
 }
 html body.tm-new-design main.content :is(input,textarea)::placeholder{
-  color:var(--tm-text-secondary)!important;
-  -webkit-text-fill-color:var(--tm-text-secondary)!important;
-  opacity:1!important
+  color:var(--tm-text-secondary);
+  -webkit-text-fill-color:var(--tm-text-secondary);
+  opacity:1
 }
 
 @media(max-width:650px){
@@ -896,16 +912,16 @@ html body.tm-new-design main.content :is(
   .weather-forecast-panel
 ),
 html body.home-page :is(.trip-archive,.home-about){
-  border:1px solid var(--tm-card-border)!important;
-  border-radius:var(--tm-card-corner,var(--tm-card-radius))!important;
-  background:var(--tm-card-surface,var(--tm-card-bg))!important;
-  background-color:transparent!important;
-  color:var(--tm-card-text)!important;
-  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important;
-  -webkit-backdrop-filter:var(--tm-card-blur)!important;
-  backdrop-filter:var(--tm-card-blur)!important;
-  text-shadow:none!important;
-  opacity:1!important
+  border:1px solid var(--tm-card-border);
+  border-radius:var(--tm-card-corner,var(--tm-card-radius));
+  background:var(--tm-card-surface,var(--tm-card-bg));
+  background-color:transparent;
+  color:var(--tm-card-text);
+  box-shadow:var(--tm-card-elevation,var(--tm-card-shadow));
+  -webkit-backdrop-filter:var(--tm-card-blur);
+  backdrop-filter:var(--tm-card-blur);
+  text-shadow:none;
+  opacity:1
 }
 
 /* The approved New Trip action card keeps its existing material while its owner moves here. */
@@ -1074,6 +1090,12 @@ html body.tm-new-design[data-trip-view="overview"] .budget-card{align-items:stre
 html body.tm-new-design[data-trip-view="overview"] .budget-card>div:first-child{display:grid;grid-template-columns:1fr auto;align-items:end;gap:2px 12px}
 html body.tm-new-design[data-trip-view="overview"] .budget-card>div:first-child>small{grid-column:1/-1}
 html body.tm-new-design[data-trip-view="overview"] .budget-card>div:first-child>strong{font-size:30px;line-height:1.1;margin:2px 0;font-weight:800;color:var(--tm-card-heading)}
+html body.tm-new-design[data-trip-view="overview"] .budget-card.is-over-budget{
+  border-color:color-mix(in srgb,var(--tm-error) 52%,var(--tm-card-border))
+}
+html body.tm-new-design[data-trip-view="overview"] .budget-card.is-over-budget>div:first-child>strong{
+  color:var(--tm-error)
+}
 html body.tm-new-design[data-trip-view="overview"] .budget-card .progress{grid-column:1/-1;margin-top:7px}
 html body.tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact{margin:0;padding:10px 0 0;border:0;border-top:1px solid var(--tm-card-border);border-radius:0;background:transparent;box-shadow:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 html body.tm-new-design[data-trip-view="overview"] .budget-card .currency-insight.compact span{font-size:12px;line-height:1.45}
@@ -1106,22 +1128,43 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .custom-hero .h
   color:var(--tm-text-on-photo-secondary);
   -webkit-text-fill-color:currentColor
 }
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar{
-  border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
-  background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
-  color:var(--tm-text-on-photo);
-  -webkit-text-fill-color:currentColor;
-  -webkit-backdrop-filter:blur(8px) saturate(104%);
-  backdrop-filter:blur(8px) saturate(104%)
-}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar nav a.active{
-  border-color:var(--tm-brand-primary);
-  background:var(--tm-brand-primary);
-  color:var(--tm-text-on-brand)
-}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar .brand-dot{
-  background:var(--tm-brand-primary);
-  color:var(--tm-text-on-brand)
+@media(min-width:1001px){
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar{
+    border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
+    background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
+    color:var(--tm-text-on-photo);
+    -webkit-text-fill-color:currentColor;
+    -webkit-backdrop-filter:blur(8px) saturate(104%);
+    backdrop-filter:blur(8px) saturate(104%)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar nav :is(a,.sidebar-about),
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar :is(.sidebar-service,.live-button){
+    color:var(--tm-text-on-photo);
+    -webkit-text-fill-color:currentColor
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar nav :is(a,.sidebar-about) :is(i,.tip,span),
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar :is(.sidebar-service,.live-button) :is(i,.tip,span){
+    color:inherit;
+    -webkit-text-fill-color:currentColor;
+    -webkit-text-stroke:0;
+    filter:none;
+    opacity:1
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar nav a.active{
+    border-color:var(--tm-brand-primary);
+    background:var(--tm-brand-primary);
+    color:var(--tm-text-on-brand)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar .brand-dot{
+    background:var(--tm-brand-primary);
+    color:var(--tm-text-on-brand)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar>.trip-logout,
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .workspace>.sidebar>.trip-logout :is(i,.tip,span){
+    color:#a52b22;
+    -webkit-text-fill-color:#a52b22;
+    -webkit-text-stroke:0
+  }
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header{
   border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
@@ -1146,6 +1189,31 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header 
   color:var(--tm-text-on-photo-muted);
   opacity:1
 }
+@media(max-width:1000px){
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header .mobile-menu-button{
+    flex:0 0 44px;
+    width:44px;
+    height:44px;
+    padding:0;
+    border:1px solid rgba(20,125,146,.28);
+    border-radius:12px;
+    background:rgba(247,250,250,.94);
+    color:#173f32;
+    -webkit-text-fill-color:#173f32;
+    box-shadow:0 4px 12px rgba(8,39,29,.1)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view].mobile-menu-open .mobile-header .mobile-menu-button{
+    background:#fff;
+    color:#173f32;
+    -webkit-text-fill-color:#173f32;
+    box-shadow:0 6px 16px rgba(8,39,29,.14)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header .mobile-menu-button i{
+    color:inherit;
+    -webkit-text-fill-color:currentColor;
+    font-size:20px
+  }
+}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .ai-orb-badge{
   background:var(--tm-accent-warm);
   color:var(--tm-control-text);
@@ -1158,15 +1226,15 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
 }
 @media(max-width:900px){
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header{
-    border:1px solid var(--tm-chrome-border,var(--tm-card-border));
+    border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
     background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
-    color:var(--tm-card-text);
+    color:var(--tm-text-on-photo);
     box-shadow:var(--tm-card-shadow-compact);
     -webkit-backdrop-filter:blur(8px) saturate(104%);
     backdrop-filter:blur(8px) saturate(104%)
   }
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
-    color:var(--tm-card-text);
+    color:var(--tm-text-on-photo);
     -webkit-text-fill-color:currentColor;
     text-shadow:none
   }
@@ -1183,6 +1251,12 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main
   --tm-app-glass-screen:var(--tm-card-bg);
   --tm-app-glass-border-soft:var(--tm-card-border);
   --tm-app-glass-shadow:var(--tm-card-shadow)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-overview-summary>.overview-status-card{
+  --tm-card-bg:var(--tm-surface-glass);
+  --tm-card-surface:var(--tm-surface-glass);
+  --tm-card-border:var(--tm-surface-border);
+  --tm-card-shadow:0 10px 28px rgba(8,39,29,.12)
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-overview-summary .budget-card{
   --tm-card-surface:var(--tm-custom-overview-surface);
@@ -1677,23 +1751,23 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-card{
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-card::after{display:none}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-overlay{
-  background:linear-gradient(180deg,rgba(24,35,38,0) 46%,rgba(24,35,38,.2))
+  background:linear-gradient(180deg,rgba(18,28,31,.02) 34%,rgba(14,25,29,.3) 62%,rgba(8,20,24,.7) 100%)
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
-  border:1px solid rgba(255,255,255,.24);
+  border:1px solid rgba(255,255,255,.32);
   border-radius:var(--tm-card-radius,18px);
   right:18px;
   bottom:18px;
   left:auto;
-  width:min(64%,260px);
-  padding:14px 16px;
-  background:rgba(16,30,34,.12);
+  width:min(72%,300px);
+  padding:15px 17px;
+  background:rgba(8,24,28,.72);
   color:var(--tm-card-text-on-photo);
   -webkit-text-fill-color:currentColor;
-  box-shadow:0 4px 14px rgba(0,0,0,.1);
+  box-shadow:0 6px 18px rgba(0,0,0,.2);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
-  text-shadow:0 1px 5px rgba(0,0,0,.36)
+  text-shadow:0 1px 4px rgba(0,0,0,.42)
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy,
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy :is(h2,p,span,strong,i){
@@ -1702,6 +1776,20 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy :
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy h2{font-weight:750}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy p{font-weight:500}
+html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy .tag{
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  -webkit-text-fill-color:#fff
+}
+@media(max-width:800px){
+  html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-copy{
+    right:18px;
+    left:18px;
+    width:auto;
+    max-width:none
+  }
+}
 html body.home-page.is-authenticated #active-trips>.trip-card-shell :is(.trip-edit-dates,.trip-delete){
   border:1px solid var(--tm-card-control-border);
   background:var(--tm-card-control);
@@ -1886,6 +1974,14 @@ body.tm-new-design[data-trip-view] main.content :is(
 ){
   border-radius:var(--tm-core-radius-lg)
 }
+body.tm-new-design[data-trip-view] main.content>section:is(
+  #transport,#car-rental,#getaways,#group,#memories
+) :is(
+  .service-card,.transport-card,.group-card,.album-card,.memory-card,
+  .trip-summary-card,.summary-card,.invite-card
+){
+  border-radius:var(--tm-core-radius-lg)
+}
 body.tm-new-design[data-trip-view] main.content :is(#plan,#places,#budget,#documents) h2{
   letter-spacing:-.015em;
   line-height:1.16
@@ -1975,6 +2071,7 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-surface-text-muted:#526d63;
   --tm-surface-photo-text:#F7FAFA;
   --tm-surface-photo-muted:rgba(247,250,250,.78);
+  --tm-custom-overview-surface:var(--tm-surface-glass);
 
   --tm-readable-surface:transparent;
   --tm-readable-surface-soft:var(--tm-surface-glass);
@@ -2064,6 +2161,27 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
   --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 42%,rgba(255,255,255,.18));
 }
 
+/* Overview clarity pass: keep the glass language, reduce optical blur and raise surface opacity. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
+  --tm-surface-blur:none;
+  --tm-surface-blur-nested:none;
+  --tm-surface-blur-photo:none
+}
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
+  --tm-surface-glass:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(250,253,251,.84)),
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 3%,rgba(228,241,234,.76)));
+  --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(247,251,249,.88));
+  --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.62),rgba(11,45,50,.56))
+}
+html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
+  --tm-surface-glass:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 8%,rgba(12,31,25,.82)),
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 6%,rgba(8,24,20,.76)));
+  --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary,#147D92) 7%,rgba(15,34,28,.84));
+  --tm-surface-photo:linear-gradient(135deg,rgba(5,18,15,.72),rgba(8,32,35,.66))
+}
+
 /* Canvas never becomes a card. */
 html body[data-trip-kind="custom"].tm-new-design main.content,
 html body[data-trip-kind="custom"].tm-new-design main.content :is(
@@ -2081,14 +2199,14 @@ html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-h
   -webkit-text-fill-color:currentColor;
 }
 
-/* Weather is photo-glass: more transparent, more blur, stable white text. */
+/* Weather keeps the photo-glass hierarchy without the milky blur. */
 html body[data-trip-kind="custom"].tm-new-design .weather-top-widget{
-  border-color:rgba(255,255,255,.28);
+  border-color:rgba(255,255,255,.32);
   background:var(--tm-surface-photo);
   color:var(--tm-surface-photo-text);
   box-shadow:0 10px 28px rgba(0,0,0,.16);
-  -webkit-backdrop-filter:var(--tm-surface-blur-photo);
-  backdrop-filter:var(--tm-surface-blur-photo);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
 }
 html body[data-trip-kind="custom"].tm-new-design .weather-top-widget :is(
   .weather-top-copy small,.weather-top-chevron
@@ -2127,4 +2245,131 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapse
     --tm-surface-nested:rgba(15,34,28,.96);
     --tm-surface-photo:rgba(5,18,15,.9)
   }
+}
+
+
+/* Phase 10 — Final Overlay Material Authority.
+   modal-system.css owns overlay structure/fallbacks; this final stylesheet owns rendered material. */
+html body :is(
+  .modal-backdrop,.about-backdrop,.trip-calendar-backdrop,.invite-dialog,.chat-place-dialog,
+  .vault-preview-backdrop,.place-directions-backdrop,.place-share-backdrop,.trip-map-dialog,
+  .trip-logout-dialog,.floating-logout-dialog,.cloud-account-backdrop,.auto-place-backdrop
+){
+  background:var(--tm-overlay-backdrop);
+  -webkit-backdrop-filter:var(--tm-overlay-backdrop-blur);
+  backdrop-filter:var(--tm-overlay-backdrop-blur)
+}
+
+html body :is(
+  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
+  .place-directions-dialog,.place-share-dialog,.trip-map-dialog>div,.trip-logout-dialog>div,
+  .floating-logout-dialog>div,.cloud-account-backdrop .cloud-account-split,.auto-place-dialog,
+  .document-preview-modal,.smart-hub-modal,.ai-panel
+){
+  border:1.5px solid var(--tm-overlay-border);
+  border-radius:var(--tm-overlay-radius);
+  background:var(--tm-overlay-surface);
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:var(--tm-overlay-text);
+  box-shadow:var(--tm-overlay-shadow);
+  -webkit-backdrop-filter:var(--tm-overlay-blur);
+  backdrop-filter:var(--tm-overlay-blur);
+  text-shadow:none;
+  opacity:1
+}
+
+html body :is(
+  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
+  .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
+  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split,.auto-place-dialog,
+  .document-preview-modal,.ai-panel
+) :where(h1,h2,h3,h4,h5,h6,strong,b,time,label,legend){
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:var(--tm-overlay-text)
+}
+html body :is(
+  .modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.vault-preview,
+  .place-directions-dialog,.place-share-dialog,.trip-map-dialog,.trip-logout-dialog,
+  .floating-logout-dialog,.smart-hub-modal,.cloud-account-split,.auto-place-dialog,
+  .document-preview-modal,.ai-panel
+) :where(p,small,li){
+  color:var(--tm-overlay-muted);
+  -webkit-text-fill-color:var(--tm-overlay-muted)
+}
+
+html body .modal :is(.forecast-day,.day-item,.action-options button),
+html body .trip-calendar-dialog :is(article,.trip-calendar-agenda),
+html body .invite-card :is(.invite-result,.invite-hero-icon),
+html body .chat-place-picker :is(.chat-place-list>button,.chat-place-hero),
+html body .place-directions-dialog :is(.directions-origin-options span,.direction-mode,.directions-address-needed),
+html body .place-share-dialog :is(.shared-place-card,.place-share-checklist,.place-share-checklist span){
+  border:1px solid var(--tm-overlay-border);
+  border-radius:14px;
+  background:var(--tm-overlay-nested);
+  color:var(--tm-overlay-text);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+
+html body :is(
+  .modal-close,.invite-close,.trip-calendar-dialog>header button,.place-directions-dialog header button,
+  .place-share-dialog header button,.vault-preview header button,.trip-map-dialog header button,
+  .cloud-account-close
+){
+  width:42px;
+  height:42px;
+  min-width:42px;
+  min-height:42px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border-radius:50%;
+  line-height:1
+}
+html body :is(
+  .modal-close i,.about-close i,.invite-close i,.trip-calendar-dialog>header button i,
+  .place-directions-dialog header button i,.place-share-dialog header button i,
+  .vault-preview header button i,.trip-map-dialog header button i,.cloud-account-close i
+){
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:100%;
+  margin:0;
+  line-height:1
+}
+
+html body :is(
+  .place-directions-dialog>header,.place-directions-dialog>footer,.vault-preview header,.vault-preview footer
+){
+  border-color:var(--tm-overlay-border);
+  background:var(--tm-overlay-nested)
+}
+
+
+/* Shared material authority: decorative icons stay unboxed. */
+html body :where(
+  .icon,.mark,.forecast-icon,.day-dot,.avatar-small,
+  .memory-icon,.message-place-pin,.transport-result-icon,.invite-hero-icon,
+  [class$="-icon"],[class*="-icon "]
+):not(.maplibregl-map *):not(.weather-live-day-icon),
+html body .auto-place-launch>i:first-child,
+html body .auto-place-dialog h3>span,
+html body .auto-place-origins i,
+html body .auto-place-keep i,
+html body .transport-title>span,
+html body .fare-row>i,
+html body .collaboration-signed-out>i{
+  border:0;
+  border-radius:0;
+  outline:0;
+  background:transparent;
+  box-shadow:none
+}
+
+/* Native option popups keep a stable readable light material. */
+html body.tm-new-design main.content select option{
+  background:#f7fffb;
+  color:#123f32
 }

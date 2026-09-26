@@ -55,6 +55,24 @@ test('surface text and control text are paired by theme',()=>{
   assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-card-control-text:#F7FAFA/);
 });
 
+test('Overview mobile chrome keeps on-photo contrast in both themes',()=>{
+  const css=read('assets/readable-glass.css');
+  assert.match(css,/data-trip-view="overview"\] \.mobile-header\{[^}]*color:var\(--tm-text-on-photo\)/);
+  assert.match(css,/data-trip-view="overview"\] \.mobile-header :is\([^}]+\)\{[^}]*color:var\(--tm-text-on-photo\)/);
+});
+
+test('custom trip mobile drawer keeps a crisp readable material and desktop chrome stays desktop-only',()=>{
+  const css=read('assets/readable-glass.css');
+  assert.match(css,/@media\(max-width:1000px\)\{[\s\S]*?\.workspace>\.sidebar\{[\s\S]*?--tm-drawer-text:#123f32;[\s\S]*?background:linear-gradient\(155deg,rgba\(250,253,252,\.995\),rgba\(235,245,241,\.99\)\);[\s\S]*?backdrop-filter:none/);
+  assert.match(css,/@media\(min-width:1001px\)\{[\s\S]*?data-trip-kind="custom"[\s\S]*?\.workspace>\.sidebar\{/);
+});
+
+test('Overview removes optical blur while keeping opaque-enough semantic surfaces',()=>{
+  const css=read('assets/readable-glass.css');
+  assert.match(css,/data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-surface-blur-photo:none/);
+  assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-surface-photo\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
+});
+
 test('reduced transparency has an opaque fallback',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/@media \(prefers-reduced-transparency:reduce\)/);

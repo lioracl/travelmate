@@ -437,7 +437,8 @@
     var projectedEuros = state.expenses.length ? averageEuros * timing.totalDays : 0;
     var plannedEuros = Number(state.trip && state.trip.budget || 0);
     var remainingEuros = Math.max(0, plannedEuros - spentEuros);
-    var safeTodayEuros = !state.budgetUnlimited && plannedEuros ? remainingEuros / Math.max(1, timing.remainingDays) : 0;
+    var overrunEuros = plannedEuros > 0 ? Math.max(0, spentEuros - plannedEuros) : 0;
+    var safeTodayEuros = !state.budgetUnlimited && plannedEuros && !overrunEuros ? remainingEuros / Math.max(1, timing.remainingDays) : 0;
     var top = Object.keys(totals).map(function (name) { return { name: name, euros: totals[name].total }; }).sort(function (a, b) { return b.euros - a.euros; })[0] || null;
     return {
       timing: timing,
@@ -447,6 +448,7 @@
       projectedEuros: projectedEuros,
       plannedEuros: plannedEuros,
       remainingEuros: remainingEuros,
+      overrunEuros: overrunEuros,
       safeTodayEuros: safeTodayEuros,
       usedPercent: !state.budgetUnlimited && plannedEuros ? Math.round(spentEuros / plannedEuros * 100) : 0,
       topCategory: top
@@ -490,7 +492,11 @@
       '<article><span>ממוצע ליום</span>' + budgetDualAmount(metrics.averageEuros) + '<em>' + metrics.timing.elapsedDays + ' ימים במעקב</em></article>'
     ];
     if (!unlimited && metrics.plannedEuros) {
-      cards.push('<article><span>אפשר להוציא ליום</span>' + budgetDualAmount(metrics.safeTodayEuros) + '<em>לפי היתרה ו־' + metrics.timing.remainingDays + ' ימים שנותרו</em></article>');
+      if (metrics.overrunEuros > 0) {
+        cards.push('<article class="budget-overrun-card"><span>חריגה מהתקציב</span>' + budgetDualAmount(metrics.overrunEuros) + '<em>' + metrics.usedPercent + '% מהמסגרת נוצלו</em></article>');
+      } else {
+        cards.push('<article><span>אפשר להוציא ליום</span>' + budgetDualAmount(metrics.safeTodayEuros) + '<em>לפי היתרה ו־' + metrics.timing.remainingDays + ' ימים שנותרו</em></article>');
+      }
     } else {
       cards.push('<article><span>קטגוריה מובילה</span><strong>' + topText + '</strong><em>מתוך כל ההוצאות שנרשמו</em></article>');
     }
@@ -508,10 +514,16 @@
     var totalSpentLocal = state.localCurrency === 'EUR' ? totalSpent : localFromEuros(totalSpent);
     var totalPlannedLocal = state.localCurrency === 'EUR' ? totalPlanned : localFromEuros(totalPlanned);
     var unlimited = state.budgetUnlimited;
-    var usedPercent = !unlimited && totalPlanned ? Math.min(100, Math.round(totalSpent / totalPlanned * 100)) : 0;
+    var usedPercent = !unlimited && totalPlanned ? Math.round(totalSpent / totalPlanned * 100) : 0;
+    var meterPercent = Math.min(100, Math.max(0, usedPercent));
+    var overrun = !unlimited && totalPlanned > 0 && totalSpent > totalPlanned;
+    var budgetDifference = overrun ? totalSpent - totalPlanned : Math.max(0, totalPlanned - totalSpent);
+    var budgetDifferenceLocal = state.localCurrency === 'EUR' ? budgetDifference : localFromEuros(budgetDifference);
     var elapsedDays = budgetTiming().elapsedDays;
-    summary.innerHTML = unlimited ? '<div><span>מצב</span><strong>ללא הגבלה</strong></div><div><span>הצטבר עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>ממוצע ליום</span><strong>' + money(totalSpentLocal / elapsedDays, state.localCurrency) + '</strong></div>' : '<div><span>מתוכנן</span><strong>' + money(totalPlannedLocal, state.localCurrency) + '</strong></div><div><span>בוצע</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>נותר</span><strong>' + money(Math.max(0, totalPlannedLocal - totalSpentLocal), state.localCurrency) + '</strong></div>';
-    (unlimited ? [0, totalSpent, totalSpent / elapsedDays] : [totalPlanned, totalSpent, Math.max(0, totalPlanned - totalSpent)]).forEach(function (euros, index) {
+    summary.innerHTML = unlimited
+      ? '<div><span>מצב</span><strong>ללא הגבלה</strong></div><div><span>הצטבר עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>ממוצע ליום</span><strong>' + money(totalSpentLocal / elapsedDays, state.localCurrency) + '</strong></div>'
+      : '<div><span>מתוכנן</span><strong>' + money(totalPlannedLocal, state.localCurrency) + '</strong></div><div><span>בוצע</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div class="' + (overrun ? 'budget-overrun-value' : '') + '"><span>' + (overrun ? 'חריגה' : 'נותר') + '</span><strong>' + money(budgetDifferenceLocal, state.localCurrency) + '</strong></div>';
+    (unlimited ? [0, totalSpent, totalSpent / elapsedDays] : [totalPlanned, totalSpent, budgetDifference]).forEach(function (euros, index) {
       var card = summary.children[index];
       if (card) card.insertAdjacentHTML('beforeend', secondaryMoneyFromEuros(euros));
     });
@@ -524,10 +536,11 @@
     var compactMeter = document.querySelector('[data-budget-chart-meter]');
     if (compactMeter) {
       compactMeter.classList.toggle('is-unlimited', unlimited);
+      compactMeter.classList.toggle('is-over-budget', overrun);
       compactMeter.querySelector('strong').textContent = unlimited ? money(totalSpentLocal, state.localCurrency) : usedPercent + '%';
-      compactMeter.querySelector('span:not(.budget-meter-track)').textContent = unlimited ? 'מצטבר' : 'נוצל';
-      compactMeter.querySelector('.budget-meter-track i').style.width = unlimited ? '100%' : usedPercent + '%';
-      compactMeter.setAttribute('aria-label', unlimited ? 'הוצאות מצטברות ללא הגבלת תקציב' : 'נוצלו ' + usedPercent + ' אחוזים מהתקציב');
+      compactMeter.querySelector('span:not(.budget-meter-track)').textContent = unlimited ? 'מצטבר' : overrun ? 'חריגה' : 'נוצל';
+      compactMeter.querySelector('.budget-meter-track i').style.width = unlimited ? '100%' : meterPercent + '%';
+      compactMeter.setAttribute('aria-label', unlimited ? 'הוצאות מצטברות ללא הגבלת תקציב' : overrun ? 'חריגה מהתקציב: נוצלו ' + usedPercent + ' אחוזים' : 'נוצלו ' + usedPercent + ' אחוזים מהתקציב');
     }
     var legacyRing = document.querySelector('#budget .budget-ring');
     if (legacyRing) {
@@ -536,24 +549,32 @@
     var heroMeter = document.querySelector('[data-budget-hero-meter]');
     if (heroMeter) {
       heroMeter.classList.toggle('is-unlimited', unlimited);
+      heroMeter.classList.toggle('is-over-budget', overrun);
       heroMeter.querySelector('strong').textContent = unlimited ? '∞' : usedPercent + '%';
-      heroMeter.querySelector('small').textContent = unlimited ? 'ללא הגבלה' : 'נוצל';
-      heroMeter.querySelector('i').style.width = unlimited ? '100%' : usedPercent + '%';
-      heroMeter.setAttribute('aria-label', unlimited ? 'תקציב ללא הגבלה' : 'נוצלו ' + usedPercent + ' אחוזים מהתקציב');
+      heroMeter.querySelector('small').textContent = unlimited ? 'ללא הגבלה' : overrun ? 'חריגה' : 'נוצל';
+      heroMeter.querySelector('i').style.width = unlimited ? '100%' : meterPercent + '%';
+      heroMeter.setAttribute('aria-label', unlimited ? 'תקציב ללא הגבלה' : overrun ? 'חריגה מהתקציב: נוצלו ' + usedPercent + ' אחוזים' : 'נוצלו ' + usedPercent + ' אחוזים מהתקציב');
     }
-    var heroCopy = document.querySelector('#budget .budget-hero>div:first-child'); if (heroCopy) heroCopy.innerHTML = '<span>נרשם עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong><p>' + (unlimited ? 'ללא הגבלה · הסכום עולה עם כל הוצאה שנשמרת לאורך הטיול' : totalPlanned ? 'נותרו ' + money(Math.max(0,totalPlannedLocal-totalSpentLocal),state.localCurrency) + ' מתוך ' + money(totalPlannedLocal,state.localCurrency) : 'הגדר תקציב כולל כדי לעקוב אחר היתרה') + '</p>';
-    var budgetSection = document.getElementById('budget'); if (budgetSection) budgetSection.classList.toggle('budget-unlimited-active', unlimited);
+    var heroCopy = document.querySelector('#budget .budget-hero>div:first-child');
+    if (heroCopy) heroCopy.innerHTML = '<span>נרשם עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong><p>' + (unlimited ? 'ללא הגבלה · הסכום עולה עם כל הוצאה שנשמרת לאורך הטיול' : totalPlanned ? overrun ? 'חריגה של ' + money(budgetDifferenceLocal, state.localCurrency) + ' מעל מסגרת של ' + money(totalPlannedLocal, state.localCurrency) : 'נותרו ' + money(budgetDifferenceLocal, state.localCurrency) + ' מתוך ' + money(totalPlannedLocal, state.localCurrency) : 'הגדר תקציב כולל כדי לעקוב אחר היתרה') + '</p>';
+    var budgetSection = document.getElementById('budget');
+    if (budgetSection) {
+      budgetSection.classList.toggle('budget-unlimited-active', unlimited);
+      budgetSection.classList.toggle('budget-overrun-active', overrun);
+    }
     renderBudgetSmartSummary();
     var activeCategories = state.budgetCategories.filter(function (item) { return state.expenses.some(function (expense) { return expenseCategoryParts(expense.category).category === item.name; }); });
     bars.innerHTML = activeCategories.length ? activeCategories.map(function (item, index) {
       var expenseTotal = totals[item.name] ? totals[item.name].total : 0;
       var planned = Math.max(0, Number(item.amount || 0));
-      var percent = unlimited ? (totalSpent ? Math.round(expenseTotal / totalSpent * 100) : 0) : planned ? Math.min(100, Math.round(expenseTotal / planned * 100)) : expenseTotal ? 100 : 0;
+      var percent = unlimited ? (totalSpent ? Math.round(expenseTotal / totalSpent * 100) : 0) : planned ? Math.round(expenseTotal / planned * 100) : expenseTotal ? 100 : 0;
+      var meterWidth = unlimited ? percent : Math.min(100, Math.max(0, percent));
+      var categoryOverrun = !unlimited && planned > 0 && expenseTotal > planned;
       var color = item.color || palette[index % palette.length];
       item.color = color;
       var spentLocal = state.localCurrency === 'EUR' ? expenseTotal : localFromEuros(expenseTotal);
       var plannedLocal = state.localCurrency === 'EUR' ? planned : localFromEuros(planned);
-      return '<article class="budget-chart-row"><div class="budget-chart-label"><span class="budget-chart-dot" style="--chart-color:' + escapeHtml(color) + '"></span><strong>' + escapeHtml(item.name) + '</strong><small>' + (unlimited ? money(spentLocal, state.localCurrency) + ' · ' + percent + '% מההוצאות' : money(spentLocal, state.localCurrency) + ' מתוך ' + money(plannedLocal, state.localCurrency)) + '</small></div><div class="budget-chart-track"><i style="width:' + percent + '%;--chart-color:' + escapeHtml(color) + '"></i></div><b>' + percent + '%</b><label class="budget-chart-color" title="צבע הקטגוריה"><input type="color" value="' + escapeHtml(color) + '" data-budget-chart-color="' + escapeHtml(item.id) + '"><span>צבע</span></label></article>';
+      return '<article class="budget-chart-row' + (categoryOverrun ? ' is-over-budget' : '') + '"><div class="budget-chart-label"><span class="budget-chart-dot" style="--chart-color:' + escapeHtml(color) + '"></span><strong>' + escapeHtml(item.name) + '</strong><small>' + (unlimited ? money(spentLocal, state.localCurrency) + ' · ' + percent + '% מההוצאות' : money(spentLocal, state.localCurrency) + ' מתוך ' + money(plannedLocal, state.localCurrency) + (categoryOverrun ? ' · חריגה' : '')) + '</small></div><div class="budget-chart-track"><i style="width:' + meterWidth + '%;--chart-color:' + escapeHtml(color) + '"></i></div><b>' + percent + '%</b><label class="budget-chart-color" title="צבע הקטגוריה"><input type="color" value="' + escapeHtml(color) + '" data-budget-chart-color="' + escapeHtml(item.id) + '"><span>צבע</span></label></article>';
     }).join('') : '<div class="budget-chart-empty"><i class="fa-solid fa-chart-pie"></i><strong>הגרף עדיין ריק</strong><span>לאחר הוספת הוצאה או קבלה, הקטגוריה המתאימה תופיע כאן אוטומטית.</span></div>';
     bars.querySelectorAll('[data-budget-chart-color]').forEach(function (input) {
       input.onchange = function () {

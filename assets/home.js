@@ -33,6 +33,30 @@
   var renderedTrips = new Map();
   var staticActivityKey = 'travelmate-static-trip-activity';
   var pendingShortcut = new URLSearchParams(location.search).get('shortcut') || '';
+  var destinationImageObserver = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      destinationImageObserver.unobserve(entry.target);
+      applyDestinationCardImage(entry.target);
+    });
+  }, { rootMargin: '240px 0px' }) : null;
+
+  function applyDestinationCardImage(card) {
+    if (!card || card.dataset.destinationImageRequested === 'true') return;
+    var images = window.TravelMateDestinationImages;
+    if (!images) return;
+    card.dataset.destinationImageRequested = 'true';
+    images.apply(card, card.dataset.destinationCity || '', card.dataset.destinationCountry || '');
+  }
+
+  function queueDestinationCardImage(shell, trip) {
+    var card = shell && shell.querySelector('.trip-card');
+    if (!card || !window.TravelMateDestinationImages) return;
+    card.dataset.destinationCity = trip.city || '';
+    card.dataset.destinationCountry = trip.country || '';
+    if (destinationImageObserver) destinationImageObserver.observe(card);
+    else applyDestinationCardImage(card);
+  }
 
   (function initHomeHeaderUtilities() {
     var sidebar = document.querySelector('.home-sidebar');
@@ -285,9 +309,7 @@
   function tripCard(trip) {
     var images = window.TravelMateDestinationImages;
     var background = images && images.cached(trip.city, trip.country) || images && images.fallback || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80';
-    var shell = cardShell(trip, false, 'trip/custom/index.html?id=' + encodeURIComponent(trip.id), background);
-    if (images) images.apply(shell.querySelector('.trip-card'), trip.city, trip.country);
-    return shell;
+    return cardShell(trip, false, 'trip/custom/index.html?id=' + encodeURIComponent(trip.id), background);
   }
 
   function tripIdentity(trip) {
@@ -306,14 +328,20 @@
 
   function renderTrips(trips) {
     if (!list) return;
-    document.querySelectorAll('[data-cloud-trip]').forEach(function (node) { node.remove(); });
+    document.querySelectorAll('[data-cloud-trip]').forEach(function (node) {
+      var card = node.querySelector('.trip-card');
+      if (destinationImageObserver && card) destinationImageObserver.unobserve(card);
+      node.remove();
+    });
     var archiveList = ensureArchive().querySelector('[data-archive-list]');
     renderedTrips = new Map(trips.map(function (trip) { return [String(trip.id), trip]; }));
     var canonicalTrips = Array.from(renderedTrips.values());
     removeShadowedStaticTrips(canonicalTrips);
     canonicalTrips.forEach(function (trip) {
       var active = dateState(trip).active;
-      (active ? list : archiveList).insertBefore(tripCard(trip), active ? addButton : null);
+      var shell = tripCard(trip);
+      (active ? list : archiveList).insertBefore(shell, active ? addButton : null);
+      queueDestinationCardImage(shell, trip);
     });
     updateCounts();
     handlePwaShortcut(canonicalTrips);

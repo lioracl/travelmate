@@ -1,8 +1,10 @@
 var appScript=document.currentScript;
 (function(){
-  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260926-11'}catch(error){return'20260926-11'}})();
+  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260927-12'}catch(error){return'20260927-12'}})();
   var loadedStyles={},loadedScripts={};
+  var isHomePage=Boolean(document.body&&document.body.classList.contains('home-page'));
   var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css'];
+  var homeBaseStyles=['language.css','network-usage.css','theme.css'];
   var finalStyle='readable-glass.css';
   var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
   var features={
@@ -55,18 +57,51 @@ var appScript=document.currentScript;
     })
   }
   function scheduleIdleFeature(view,delay){var run=function(){loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
-  function warmNonCritical(){scheduleIdleFeature('assistant',2200);scheduleIdleFeature('account',4200)}
+  function warmNonCritical(){scheduleIdleFeature('account',4200)}
   function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
-  ensureLazyNavigation();
-  var baseReady=Promise.all(baseStyles.map(loadStyle));
-  var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
-  var featureReady=baseReady.then(function(){return loadFeature(activeView())});
-  Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady]).then(function(){warmNonCritical()});
+  if(isHomePage){
+    var homeBaseReady=Promise.all(homeBaseStyles.map(loadStyle));
+    var homeCoreReady=homeBaseReady.then(function(){return loadSequence(['language.js','theme.js'])});
+    Promise.all([homeBaseReady,loadStyle(finalStyle),homeCoreReady]);
+  }else{
+    ensureLazyNavigation();
+    var baseReady=Promise.all(baseStyles.map(loadStyle));
+    var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
+    var featureReady=baseReady.then(function(){return loadFeature(activeView())});
+    Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady]).then(function(){warmNonCritical()});
+  }
   window.addEventListener('travelmate:viewchange',function(event){loadFeature(event.detail&&event.detail.view)});
   document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
   document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
   document.addEventListener('click',function(event){var button=event.target.closest&&event.target.closest('[data-lazy-about]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();loadFeature('about').then(function(){button.removeAttribute('data-lazy-about');button.click()})},true);
   window.TravelMateFeatures=Object.freeze({load:loadFeature,has:function(view){return Boolean(features[view])},ensureAssistant:function(){return loadFeature('assistant')},ensureAccount:function(){return loadFeature('account')}});
+})();
+
+window.addEventListener('beforeinstallprompt',function(event){
+  event.preventDefault();
+  window.TravelMateInstallPrompt=event;
+});
+
+(function scheduleServiceWorkerRegistration(){
+  if(!('serviceWorker' in navigator)||location.protocol==='file:'||window.__travelMateServiceWorkerScheduled)return;
+  window.__travelMateServiceWorkerScheduled=true;
+  var rootUrl=new URL('../',appScript.src);
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    window.dispatchEvent(new CustomEvent('travelmate:app-update-ready'));
+  });
+  function register(){
+    navigator.serviceWorker.register(new URL('sw.js?v='+encodeURIComponent(version),rootUrl).href,{updateViaCache:'none'}).then(function(registration){
+      window.TravelMateServiceWorkerRegistration=registration;
+      window.dispatchEvent(new CustomEvent('travelmate:service-worker-ready',{detail:{registration:registration}}));
+      registration.update().catch(function(){});
+    }).catch(function(){});
+  }
+  function schedule(){
+    if('requestIdleCallback' in window)requestIdleCallback(register,{timeout:3000});
+    else setTimeout(register,700);
+  }
+  if(document.readyState==='complete')schedule();
+  else window.addEventListener('load',schedule,{once:true});
 })();
 var lastModalTrigger=null;
 function closeModal(){document.querySelectorAll('.modal-backdrop.open').forEach(function(modal){modal.classList.remove('open')});if(lastModalTrigger&&document.contains(lastModalTrigger)){lastModalTrigger.focus()}lastModalTrigger=null}

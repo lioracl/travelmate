@@ -17,7 +17,9 @@ const cssFiles = {
   tripExperience: path.join(root, 'assets/trip-experience.css'),
   collaboration: path.join(root, 'assets/collaboration.css'),
   placeAutoFill: path.join(root, 'assets/place-auto-fill.css'),
-  weatherWidget: path.join(root, 'assets/weather-widget.css')
+  weatherWidget: path.join(root, 'assets/weather-widget.css'),
+  modalSystem: path.join(root, 'assets/modal-system.css'),
+  networkUsage: path.join(root, 'assets/network-usage.css')
 };
 
 function read(file) {
@@ -40,13 +42,15 @@ test('design-system CSS debt does not grow while ownership is being consolidated
     tripExperience: importantCount(read(cssFiles.tripExperience)),
     collaboration: importantCount(read(cssFiles.collaboration)),
     placeAutoFill: importantCount(read(cssFiles.placeAutoFill)),
-    weatherWidget: importantCount(read(cssFiles.weatherWidget))
+    weatherWidget: importantCount(read(cssFiles.weatherWidget)),
+    modalSystem: importantCount(read(cssFiles.modalSystem)),
+    networkUsage: importantCount(read(cssFiles.networkUsage))
   };
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
   assert.equal(counts.base, 0, `styles.css must remain free of !important debt; found ${counts.base}`);
   assert.ok(counts.theme <= 32, `theme.css !important debt grew to ${counts.theme}`);
-  assert.ok(counts.readableGlass <= 185, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
+  assert.ok(counts.readableGlass <= 133, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
   assert.ok(counts.tripRedesign <= 64, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
   assert.ok(counts.cloudSync <= 1, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
   assert.ok(counts.homeOrganizer <= 2, `home-organizer.css !important debt grew to ${counts.homeOrganizer}`);
@@ -55,9 +59,11 @@ test('design-system CSS debt does not grow while ownership is being consolidated
   assert.ok(counts.collaboration <= 6, `collaboration.css !important debt grew to ${counts.collaboration}`);
   assert.ok(counts.placeAutoFill <= 2, `place-auto-fill.css !important debt grew to ${counts.placeAutoFill}`);
   assert.equal(counts.weatherWidget, 0, `weather-widget.css must remain free of !important debt; found ${counts.weatherWidget}`);
+  assert.equal(counts.modalSystem, 0, `modal-system.css must remain free of !important debt; found ${counts.modalSystem}`);
+  assert.equal(counts.networkUsage, 2, `network-usage.css must keep only its two hidden-state !important contracts; found ${counts.networkUsage}`);
   assert.ok(
-    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget <= 300,
-    `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget}`
+    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget + counts.modalSystem + counts.networkUsage <= 250,
+    `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget + counts.modalSystem + counts.networkUsage}`
   );
 });
 
@@ -334,6 +340,8 @@ test('Phase 4 keeps base and Home ownership de-escalated', () => {
   assert.doesNotMatch(base, /!important\b/);
   assert.doesNotMatch(theme, /body\.home-page \.cloud-account-split/);
   assert.doesNotMatch(theme, /Authenticated trips overview refinements/);
+  assert.doesNotMatch(theme, /\.home-sidebar/);
+  assert.doesNotMatch(theme, /\.theme-toggle/);
   assert.equal((cloud.match(/!important\b/g) || []).length, 1);
   assert.match(cloud, /\.cloud-account \[hidden\]\{display:none!important\}/);
   assert.ok((home.match(/!important\b/g) || []).length <= 2);
@@ -410,6 +418,7 @@ test('Phase 7 keeps shared frame, Mate and Transport ownership out of Theme', ()
   assert.doesNotMatch(theme, /html body\.tm-new-design \.ai-orb\{[\s\S]{0,300}!important/);
   assert.doesNotMatch(theme, /#transport \.transport-note\{[\s\S]{0,300}!important/);
   assert.doesNotMatch(theme, /section-head\.section-head[\s\S]{0,300}!important/);
+  assert.doesNotMatch(theme, /body\.tm-new-design \.sidebar/);
 });
 
 
@@ -440,5 +449,37 @@ test('Phase 9 keeps Weather as a zero-escalation component owner', () => {
   assert.match(weather, /--tm-control-current-bg:#eef8f3/);
   assert.doesNotMatch(modal, /weather-live-day|weather-insight/);
   assert.doesNotMatch(glass, /\.weather-insight,.weather-live-day/);
-  assert.match(theme, /:not\(\.weather-live-day-icon\)/);
+  assert.match(glass, /:not\(\.weather-live-day-icon\)/);
+  assert.doesNotMatch(theme, /weather-live-day-icon/);
+});
+
+
+test('Phase 10 keeps overlays and shared controls on normal cascade', () => {
+  const glass = read(cssFiles.readableGlass);
+  const modal = read(cssFiles.modalSystem);
+  const network = read(cssFiles.networkUsage);
+
+  assert.equal(importantCount(modal), 0);
+  assert.equal(importantCount(network), 2);
+  assert.match(network, /\.floating-logout-dialog\[hidden\]\{display:none!important\}/);
+  assert.match(network, /\.network-usage-panel\[hidden\]\s*\{\s*display:none!important\s*\}/);
+  assert.match(glass, /Phase 10 — Final Overlay Material Authority/);
+  assert.doesNotMatch(glass, /--tm-control-current-(?:bg|text|border)[^}]*!important/);
+  assert.match(glass, /button\.danger[\s\S]*--tm-control-current-text:#fff/);
+  assert.match(network, /Phase 10 — Network meter owns its final floating material/);
+});
+
+
+test('All Trips responsive layout is owned by CSS instead of inline grid columns', () => {
+  const home = read(path.join(root, 'index.html'));
+  const organizer = read(cssFiles.homeOrganizer);
+  assert.doesNotMatch(home, /id="active-trips"[^>]*style="[^"]*grid-template-columns/i);
+  assert.match(organizer, /@media\(max-width:800px\)[\s\S]*#active-trips\{[\s\S]*grid-template-columns:1fr/);
+  assert.match(organizer, /@media\(max-width:600px\)[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+});
+
+test('Custom Overview cards restore their own surface after transparent container bridge', () => {
+  const glass = read(cssFiles.readableGlass);
+  assert.match(glass, /--tm-custom-overview-surface:var\(--tm-surface-glass\)/);
+  assert.match(glass, /trip-overview-summary>\.overview-status-card\{[\s\S]*--tm-card-bg:var\(--tm-surface-glass\);[\s\S]*--tm-card-surface:var\(--tm-surface-glass\)/);
 });

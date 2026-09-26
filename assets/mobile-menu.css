@@ -29,8 +29,9 @@
     inset:0;
     z-index:1240;
     border:0;
-    background:rgba(41,37,36,.5);
-    backdrop-filter:blur(4px)
+    background:rgba(18,28,31,.62);
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none
   }
   body.mobile-menu-open .mobile-menu-shade{display:block}
 }

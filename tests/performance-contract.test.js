@@ -115,7 +115,7 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.match(source, /dynamicSectionViews=\{transport:true,getaways:true,group:true,memories:true\}/);
   assert.match(source, /assistant:\{styles:\['ai-assistant\.css','smart-hub\.css'\],scripts:\['ai-assistant\.js','smart-hub\.js'\]\}/);
   assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
-  assert.match(source, /scheduleIdleFeature\('assistant',2200\)/);
+  assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
   assert.match(source, /scheduleIdleFeature\('account',4200\)/);
   assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
 });
@@ -219,4 +219,28 @@ test('skip link stays hidden until keyboard focus and does not steal initial foc
 
 test('home carousel excludes the known ORB-blocked Unsplash asset', () => {
   assert.doesNotMatch(homeScript, /photo-1470214304380-aadaedcfff1b/);
+});
+
+
+test('home boot loads only home essentials and keeps About lazy', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  const entry = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  assert.match(source, /homeBaseStyles=\['language\.css','network-usage\.css','theme\.css'\]/);
+  assert.match(source, /if\(isHomePage\)[\s\S]*homeBaseStyles\.map\(loadStyle\)[\s\S]*loadSequence\(\['language\.js','theme\.js'\]\)/);
+  assert.match(source, /\}else\{[\s\S]*loadFeature\(activeView\(\)\)/);
+  assert.equal((entry.match(/data-about-open data-lazy-about/g) || []).length, 2);
+});
+
+
+test('service worker registration is a delayed app bootstrap instead of a Smart Hub side effect', () => {
+  const app = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  const hub = fs.readFileSync(path.join(root, 'assets/smart-hub.js'), 'utf8');
+  assert.match(app, /window\.addEventListener\('load',schedule,\{once:true\}\)/);
+  assert.match(app, /requestIdleCallback\(register,\{timeout:3000\}\)/);
+  assert.match(app, /navigator\.serviceWorker\.register\(new URL\('sw\.js\?v='\+encodeURIComponent\(version\),rootUrl\)\.href,\{updateViaCache:'none'\}\)/);
+  assert.match(app, /window\.TravelMateInstallPrompt=event/);
+  assert.doesNotMatch(hub, /navigator\.serviceWorker\.register/);
+  assert.doesNotMatch(hub, /manifest\.webmanifest/);
+  assert.match(hub, /window\.TravelMateServiceWorkerRegistration/);
+  assert.match(hub, /window\.TravelMateInstallPrompt/);
 });

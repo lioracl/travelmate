@@ -4,27 +4,19 @@
   if (window.__travelMateSmartHubLoaded) return;
   window.__travelMateSmartHubLoaded = true;
 
-  var script = document.currentScript;
-  var rootUrl = new URL('../', script.src);
-  var manifest = document.createElement('link');
-  manifest.rel = 'manifest'; manifest.href = new URL('manifest.webmanifest', rootUrl).href;
-  document.head.appendChild(manifest);
-  var theme = document.createElement('meta'); theme.name = 'theme-color'; theme.content = '#292524'; document.head.appendChild(theme);
-  var serviceWorkerRegistration = null;
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.addEventListener('controllerchange', function () {
-      window.dispatchEvent(new CustomEvent('travelmate:app-update-ready'));
-    });
-    navigator.serviceWorker.register(new URL('sw.js', rootUrl).href, { updateViaCache: 'none' }).then(function (registration) {
-      serviceWorkerRegistration = registration;
-      registration.update().catch(function () {});
-    }).catch(function () {});
-  }
+  var serviceWorkerRegistration = window.TravelMateServiceWorkerRegistration || null;
+  window.addEventListener('travelmate:service-worker-ready', function (event) {
+    serviceWorkerRegistration = event.detail && event.detail.registration || window.TravelMateServiceWorkerRegistration || null;
+  });
 
   if (!/\/trip\//.test(location.pathname.replace(/\\/g, '/'))) return;
 
-  var state = { trip: null, ui: null, position: null, installPrompt: null };
-  window.addEventListener('beforeinstallprompt', function (event) { event.preventDefault(); state.installPrompt = event; });
+  var state = { trip: null, ui: null, position: null, installPrompt: window.TravelMateInstallPrompt || null };
+  window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+    state.installPrompt = event;
+    window.TravelMateInstallPrompt = event;
+  });
 
   function clean(value) { return String(value || '').replace(/[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]/gu, '').trim(); }
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }

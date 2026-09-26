@@ -142,8 +142,18 @@
       budgetMeta.textContent = expenses.length ? expenses.length + ' הוצאות נרשמו' + (spent ? ' · כ־' + compactMoney(spent, 'EUR') : '') : 'מעקב הוצאות פעיל';
     } else {
       var budget = Number(trip.budget || 0);
-      budgetTitle.textContent = budget ? compactMoney(Math.max(0, budget - spent), 'EUR') + ' נותרו' : 'טרם הוגדר תקציב';
-      budgetMeta.textContent = expenses.length ? 'הוצאו עד עכשיו כ־' + compactMoney(spent, 'EUR') + ' · ' + expenses.length + ' הוצאות' : budget ? 'עדיין לא נרשמו הוצאות' : 'אפשר להגדיר מסגרת או לבחור ללא הגבלה';
+      var budgetDelta = budget - spent;
+      var budgetOverrun = budget > 0 && budgetDelta < 0;
+      budgetTitle.textContent = budget
+        ? budgetOverrun
+          ? 'חריגה של ' + compactMoney(Math.abs(budgetDelta), 'EUR')
+          : compactMoney(budgetDelta, 'EUR') + ' נותרו'
+        : 'טרם הוגדר תקציב';
+      budgetMeta.textContent = expenses.length
+        ? 'הוצאו עד עכשיו כ־' + compactMoney(spent, 'EUR') + ' · ' + expenses.length + ' הוצאות'
+        : budget ? 'עדיין לא נרשמו הוצאות' : 'אפשר להגדיר מסגרת או לבחור ללא הגבלה';
+      var overviewBudgetCard = budgetTitle.closest('.budget-card');
+      if (overviewBudgetCard) overviewBudgetCard.classList.toggle('is-over-budget', budgetOverrun);
     }
 
     var lodging = overviewLodging(trip);

@@ -220,6 +220,17 @@
   margin-top:3px;
   color:var(--tm-action-primary);
 }
+#budget .budget-overrun-card{
+  border-color:color-mix(in srgb,var(--tm-error) 52%,var(--tm-card-border));
+  background:color-mix(in srgb,var(--tm-error) 8%,var(--tm-card-bg-nested))
+}
+#budget .budget-overrun-card :is(span,strong,small,em),
+#budget .budget-overrun-value :is(span,strong,small){
+  color:var(--tm-error)
+}
+#budget.budget-overrun-active .budget-smart-summary{
+  border-color:color-mix(in srgb,var(--tm-error) 44%,var(--tm-card-border))
+}
 #budget.budget-unlimited-active .budget-smart-summary{
   border-style:solid;
 }
@@ -390,6 +401,22 @@
 }
 #budget .budget-chart-meter.is-unlimited .budget-meter-track i,
 #budget .budget-hero-meter.is-unlimited>span i{background:linear-gradient(90deg,#55d49f,#e7b85f)}
+#budget :is(.budget-chart-meter,.budget-hero-meter).is-over-budget{
+  border-color:color-mix(in srgb,var(--tm-error) 52%,transparent)
+}
+#budget :is(.budget-chart-meter,.budget-hero-meter).is-over-budget :is(strong,small,span:not(.budget-meter-track)){
+  color:var(--tm-error)
+}
+#budget .budget-chart-meter.is-over-budget .budget-meter-track i,
+#budget .budget-hero-meter.is-over-budget>span i{
+  background:var(--tm-error)
+}
+#budget .budget-chart-row.is-over-budget :is(.budget-chart-label small,b){
+  color:var(--tm-error)
+}
+#budget .budget-chart-row.is-over-budget .budget-chart-track i{
+  background:var(--tm-error)
+}
 #budget .is-unlimited-budget{display:inline-flex;align-items:center;gap:6px}
 
 #budget .total-budget-editor>label>div{

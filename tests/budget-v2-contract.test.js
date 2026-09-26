@@ -9,6 +9,8 @@ const root = path.resolve(__dirname, '..');
 function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf8'); }
 const js = fs.readFileSync(path.join(root, 'assets', 'trip-experience.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'assets', 'trip-experience.css'), 'utf8');
+const customTrip = fs.readFileSync(path.join(root, 'assets', 'custom-trip.js'), 'utf8');
+const glass = fs.readFileSync(path.join(root, 'assets', 'readable-glass.css'), 'utf8');
 
 test('Budget V2 supports limited and unlimited modes explicitly', () => {
   assert.match(js, /value="limited"/);
@@ -30,6 +32,23 @@ test('unlimited mode uses spending-tracking language instead of remaining-budget
   assert.match(js, /מעקב הוצאות ללא תקרה/);
   assert.match(js, /כמה הוצאתי עד עכשיו\?/);
   assert.match(js, /state\.budgetUnlimited/);
+});
+
+test('Budget V2 exposes real overrun instead of zero remaining', () => {
+  assert.match(js, /overrunEuros/);
+  assert.match(js, /חריגה מהתקציב/);
+  assert.match(js, /budget-overrun-active/);
+  assert.match(js, /meterPercent = Math\.min\(100, Math\.max\(0, usedPercent\)\)/);
+  assert.match(customTrip, /חריגה של/);
+  assert.match(customTrip, /is-over-budget/);
+});
+
+test('Budget overrun styling uses semantic error tokens', () => {
+  assert.match(css, /budget-overrun-card/);
+  assert.match(css, /is-over-budget/);
+  assert.match(css, /var\(--tm-error\)/);
+  assert.match(glass, /budget-card\.is-over-budget/);
+  assert.match(glass, /var\(--tm-error\)/);
 });
 
 test('currency converter is promoted directly below the smart budget summary', () => {
