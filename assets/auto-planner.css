@@ -142,3 +142,211 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed{min
     font-size:11px
   }
 }
+
+
+/* Phase 6 — Plan behavior, layout safety and action semantics authority.
+   Shared card material remains owned by readable-glass.css. */
+body.tm-new-design[data-trip-view="plan"] #plan{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-height:420px;
+  opacity:1;
+  visibility:visible;
+  overflow:visible
+}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-days{
+  display:grid;
+  width:100%;
+  max-width:100%;
+  opacity:1;
+  visibility:visible
+}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
+  border:0;
+  background:transparent;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+
+body.tm-new-design[data-trip-view="plan"] #plan .planner-action{
+  min-height:42px;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:14px;
+  background:var(--tm-action-secondary);
+  color:var(--tm-card-control-text);
+  -webkit-text-fill-color:currentColor
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-action.primary,
+body.tm-new-design[data-trip-view="plan"] #plan [data-smart-build]{
+  border-color:var(--tm-action-primary-active);
+  background:linear-gradient(135deg,var(--tm-action-primary-active),var(--tm-action-primary));
+  color:var(--tm-text-on-action);
+  -webkit-text-fill-color:currentColor
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-action.planner-danger{
+  border-color:var(--tm-action-danger);
+  background:var(--tm-action-danger);
+  color:#fff;
+  -webkit-text-fill-color:currentColor
+}
+body.tm-new-design[data-trip-view="plan"] #plan :is(.planner-action.primary,.planner-action.planner-danger,[data-smart-build]) :is(i,span){
+  color:inherit;
+  -webkit-text-fill-color:currentColor
+}
+
+body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions){
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap
+}
+body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button{
+  width:auto;
+  min-width:44px;
+  min-height:44px;
+  height:44px;
+  padding:0 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:12px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
+  -webkit-text-fill-color:currentColor
+}
+body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button::after{
+  font-size:11px;
+  font-weight:800;
+  white-space:nowrap
+}
+body.tm-new-design[data-trip-view="plan"] #plan [data-toggle-done]::after,
+body.tm-new-design[data-trip-view="plan"] #plan [data-toggle-saved-done]::after{content:"הושלם"}
+body.tm-new-design[data-trip-view="plan"] #plan [data-edit]::after,
+body.tm-new-design[data-trip-view="plan"] #plan [data-edit-saved-place]::after{content:"עריכה"}
+body.tm-new-design[data-trip-view="plan"] #plan [data-delete]::after,
+body.tm-new-design[data-trip-view="plan"] #plan [data-delete-saved-place]::after{content:"מחיקה"}
+body.tm-new-design[data-trip-view="plan"] #plan [data-smart-replace-activity]::after,
+body.tm-new-design[data-trip-view="plan"] #plan [data-smart-replace-place]::after{content:"החלפה"}
+body.tm-new-design[data-trip-view="plan"] #plan :is([data-delete],[data-delete-saved-place]){
+  border-color:color-mix(in srgb,var(--tm-action-danger) 55%,var(--tm-card-control-border));
+  background:var(--tm-action-danger-soft);
+  color:var(--tm-action-danger);
+  -webkit-text-fill-color:currentColor
+}
+
+body.tm-new-design[data-trip-view="plan"] #plan .day-heading-actions :is(.day-add,.day-replace){
+  border:0;
+  background:transparent;
+  box-shadow:none
+}
+body.tm-new-design[data-trip-view="plan"] #plan .day-timeline:before{
+  right:7px;
+  width:3px;
+  background:linear-gradient(var(--tm-action-primary),rgba(255,255,255,.72))
+}
+body.tm-new-design[data-trip-view="plan"] #plan .day-timeline>:is(.planned-activity,.saved-place):before{
+  right:-25px;
+  top:20px;
+  box-sizing:content-box
+}
+body.tm-new-design .saved-place-editor .saved-place-day-field{min-width:180px}
+body.tm-new-design .saved-place-editor .saved-place-day-field select{
+  width:100%;
+  min-height:42px;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:12px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
+  font:inherit
+}
+body.tm-new-design .day-timeline :is(.planned-activity,.saved-place).soft-conflict,
+body.tm-new-design .day-timeline .planned-activity.conflict{
+  border-color:rgba(201,132,47,.46);
+  background:linear-gradient(135deg,rgba(255,251,242,.96),rgba(255,255,255,.9))
+}
+body.tm-new-design .day-timeline :is(.planned-activity,.saved-place).soft-conflict{
+  box-shadow:inset 4px 0 0 rgba(201,132,47,.62),0 8px 22px rgba(92,65,29,.08)
+}
+body.tm-new-design .schedule-conflict-note{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  width:max-content;
+  margin-top:5px;
+  padding:3px 8px;
+  border:1px solid #e8c98d;
+  border-radius:999px;
+  background:#fff4df;
+  color:#7a4a0d;
+  -webkit-text-fill-color:currentColor;
+  font-size:10px;
+  font-weight:800
+}
+body.tm-new-design[data-trip-view="plan"] #plan :is(.google-rating-link,.saved-calendar-link,.schedule-conflict-note,.activity-links a:not(.primary),.planned-activity a:not(.primary)){
+  color:var(--tm-card-link);
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none
+}
+body.tm-new-design[data-trip-view="plan"] #plan :is(.google-rating-link,.saved-calendar-link,.schedule-conflict-note,.activity-links a:not(.primary),.planned-activity a:not(.primary)) *{
+  color:inherit;
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none
+}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div{display:block}
+
+@media(max-width:1000px){
+  body.tm-new-design[data-trip-view="plan"] #plan,
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-days,
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day,
+  body.tm-new-design[data-trip-view="plan"] #plan .planned-activities,
+  body.tm-new-design[data-trip-view="plan"] #plan .planned-activity,
+  body.tm-new-design[data-trip-view="plan"] #plan .saved-place,
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar,
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{
+    min-width:0;
+    max-width:100%
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan{padding:0}
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day{padding:12px}
+  body.tm-new-design[data-trip-view="plan"] #plan .planned-activity{
+    grid-template-columns:52px minmax(0,1fr);
+    gap:8px;
+    padding:10px
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .activity-copy{
+    min-width:0;
+    overflow-wrap:anywhere
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons{
+    grid-column:1/-1;
+    width:100%;
+    justify-content:flex-end;
+    flex-wrap:wrap
+  }
+}
+@media(max-width:430px){
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day{padding:9px}
+}
+
+
+/* Compact toolbar shortcuts remain icon-first. */
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar button:is([data-open-trip-calendar],[data-new-activity]){
+  width:38px;
+  min-width:38px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:transparent;
+  -webkit-text-fill-color:transparent;
+  font-size:0;
+  box-shadow:none
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar button:is([data-open-trip-calendar],[data-new-activity]) i{
+  color:var(--tm-text-on-action);
+  -webkit-text-fill-color:currentColor;
+  font-size:18px
+}

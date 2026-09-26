@@ -66,9 +66,12 @@ test('accent themes use semantic tokens while danger remains semantic',()=>{
 });
 
 test('Plan primary follows the theme while destructive action stays red',()=>{
+  const planner=read('assets/auto-planner.css');
   const themeCss=read('assets/theme.css');
-  assert.match(themeCss,/planner-action\.planner-action\.primary[\s\S]*var\(--tm-action-primary/);
-  assert.match(themeCss,/planner-action\.planner-action\.planner-danger[\s\S]*var\(--tm-action-danger\)/);
+  assert.match(planner,/planner-action\.primary[\s\S]*var\(--tm-action-primary/);
+  assert.match(planner,/planner-action\.planner-danger[\s\S]*var\(--tm-action-danger\)/);
+  assert.doesNotMatch(themeCss,/planner-action\.planner-action\.primary[\s\S]*!important/);
+  assert.doesNotMatch(themeCss,/planner-action\.planner-action\.planner-danger[\s\S]*!important/);
 });
 
 test('theme picker is keyboard-visible and responsive',()=>{
@@ -82,11 +85,14 @@ test('theme picker is keyboard-visible and responsive',()=>{
 test('app chrome inherits the selected accent without recoloring semantic states',()=>{
   const glass=read('assets/readable-glass.css');
   const redesign=read('assets/trip-redesign.css');
+  const planner=read('assets/auto-planner.css');
   const themeCss=read('assets/theme.css');
   assert.match(glass,/--tm-chrome-surface:color-mix\(in srgb,var\(--tm-brand-primary-dark\)/);
   assert.match(glass,/--tm-chrome-border:color-mix\(in srgb,var\(--tm-brand-primary\)/);
   assert.match(redesign,/background:var\(--tm-chrome-surface,var\(--tm-surface-dark-glass-strong\)\);/);
   assert.match(redesign,/background:var\(--tm-action-secondary\);/);
   assert.doesNotMatch(redesign,/tm-chrome-surface[^;]*!important/);
-  assert.match(themeCss,/background:var\(--tm-action-danger\)/);
+  assert.match(glass,/--tm-control-current-bg:var\(--tm-action-danger\)/);
+  assert.match(planner,/planner-action\.planner-danger[\s\S]*background:var\(--tm-action-danger\)/);
+  assert.doesNotMatch(themeCss,/planner-action\.planner-action\.planner-danger[\s\S]*!important/);
 });

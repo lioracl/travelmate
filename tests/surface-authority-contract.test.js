@@ -76,9 +76,13 @@ test('surface polish keeps glass transparent and dark controls paired',()=>{
 
 test('feature surfaces consume semantic tokens instead of hardcoded light colors',()=>{
   const theme=read('assets/theme.css');
+  const glass=read('assets/readable-glass.css');
+  const planner=read('assets/auto-planner.css');
   const intelligence=read('assets/trip-intelligence.css');
-  assert.match(theme,/\.day-heading\.day-heading,.day-tab\.day-tab[\s\S]*background:var\(--tm-card-bg-nested\)!important/);
-  assert.match(theme,/\.day-heading\.day-heading,.day-tab\.day-tab[\s\S]*color:var\(--tm-card-text\)!important/);
+  assert.match(glass,/data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*background:var\(--tm-readable-surface-soft\)!important/);
+  assert.match(glass,/data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*color:var\(--tm-readable-text\)!important/);
+  assert.match(planner,/\.planner-action\{[\s\S]*background:var\(--tm-action-secondary\)/);
+  assert.doesNotMatch(theme,/section#plan#plan[\s\S]*\.day-heading\.day-heading[\s\S]*!important/);
   assert.match(intelligence,/\.navo-trip-banner\{[\s\S]*background:var\(--tm-card-bg-nested\)/);
   assert.match(intelligence,/\.navo-trip-banner\{[\s\S]*color:var\(--tm-card-text\)/);
   assert.match(intelligence,/\.navo-trip-banner p\{[^}]*color:var\(--tm-card-secondary\)/);

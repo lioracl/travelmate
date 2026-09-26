@@ -21,16 +21,21 @@ test('trip photo is owned by the app background while content uses readable glas
 
 test('light section and Plan day headings no longer force white text', () => {
   const theme = read('assets/theme.css');
+  const glass = read('assets/readable-glass.css');
   assert.match(theme, /section-head\.section-head[\s\S]*color:var\(--tm-card-heading\)!important/);
-  assert.match(theme, /day-heading\.day-heading,.day-tab\.day-tab[\s\S]*\*\{\s*color:inherit!important/);
+  assert.match(glass, /data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*color:var\(--tm-readable-text\)!important/);
+  assert.match(glass, /data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*:where\(h2,h3,h4,p,span,strong,b,small,time\)[\s\S]*color:inherit!important/);
+  assert.doesNotMatch(theme, /day-heading\.day-heading,.day-tab\.day-tab[\s\S]*!important/);
 });
 
 test('mobile Plan collapses only empty future days and keeps heading visible', () => {
   const js = read('assets/auto-planner.js');
+  const planner = read('assets/auto-planner.css');
   const theme = read('assets/theme.css');
   const glass = read('assets/readable-glass.css');
   assert.match(js, /index>0&&!activityCount&&!savedCount&&!hasNote/);
-  assert.match(theme, /generated-day\.day-collapsed>div\{\s*display:block!important/);
+  assert.match(planner, /generated-day\.day-collapsed>div\{display:block\}/);
+  assert.doesNotMatch(theme, /generated-day\.day-collapsed>div\{\s*display:block!important/);
   assert.match(glass, /generated-day\.day-collapsed>div>:not\(\.day-heading\)/);
 });
 

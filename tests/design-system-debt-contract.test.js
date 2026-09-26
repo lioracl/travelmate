@@ -12,7 +12,10 @@ const cssFiles = {
   readableGlass: path.join(root, 'assets/readable-glass.css'),
   tripRedesign: path.join(root, 'assets/trip-redesign.css'),
   cloudSync: path.join(root, 'assets/cloud-sync.css'),
-  homeOrganizer: path.join(root, 'assets/home-organizer.css')
+  homeOrganizer: path.join(root, 'assets/home-organizer.css'),
+  autoPlanner: path.join(root, 'assets/auto-planner.css'),
+  tripExperience: path.join(root, 'assets/trip-experience.css'),
+  placeAutoFill: path.join(root, 'assets/place-auto-fill.css')
 };
 
 function read(file) {
@@ -30,19 +33,25 @@ test('design-system CSS debt does not grow while ownership is being consolidated
     readableGlass: importantCount(read(cssFiles.readableGlass)),
     tripRedesign: importantCount(read(cssFiles.tripRedesign)),
     cloudSync: importantCount(read(cssFiles.cloudSync)),
-    homeOrganizer: importantCount(read(cssFiles.homeOrganizer))
+    homeOrganizer: importantCount(read(cssFiles.homeOrganizer)),
+    autoPlanner: importantCount(read(cssFiles.autoPlanner)),
+    tripExperience: importantCount(read(cssFiles.tripExperience)),
+    placeAutoFill: importantCount(read(cssFiles.placeAutoFill))
   };
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
   assert.equal(counts.base, 0, `styles.css must remain free of !important debt; found ${counts.base}`);
-  assert.ok(counts.theme <= 500, `theme.css !important debt grew to ${counts.theme}`);
+  assert.ok(counts.theme <= 241, `theme.css !important debt grew to ${counts.theme}`);
   assert.ok(counts.readableGlass <= 191, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
   assert.ok(counts.tripRedesign <= 92, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
   assert.ok(counts.cloudSync <= 1, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
   assert.ok(counts.homeOrganizer <= 2, `home-organizer.css !important debt grew to ${counts.homeOrganizer}`);
+  assert.equal(counts.autoPlanner, 0, `auto-planner.css must remain free of !important debt; found ${counts.autoPlanner}`);
+  assert.ok(counts.tripExperience <= 5, `trip-experience.css !important debt grew to ${counts.tripExperience}`);
+  assert.ok(counts.placeAutoFill <= 2, `place-auto-fill.css !important debt grew to ${counts.placeAutoFill}`);
   assert.ok(
-    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer <= 786,
-    `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer}`
+    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.placeAutoFill <= 534,
+    `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.placeAutoFill}`
   );
 });
 
@@ -347,4 +356,31 @@ test('Phase 5 navigation ownership has zero important escalation', () => {
   assert.match(read(path.join(root, 'assets/mobile-menu.css')), /Mobile navigation state authority — Phase 5/);
   assert.match(read(path.join(root, 'assets/trip-redesign.css')), /Mobile drawer geometry authority — Phase 5/);
   assert.match(read(path.join(root, 'assets/readable-glass.css')), /final mobile drawer material authority/);
+});
+
+
+test('Phase 6 keeps Plan, Budget and auto-place with feature ownership', () => {
+  const theme = read(cssFiles.theme);
+  const planner = read(cssFiles.autoPlanner);
+  const budget = read(cssFiles.tripExperience);
+  const autoPlace = read(cssFiles.placeAutoFill);
+
+  assert.match(planner, /Phase 6 — Plan behavior, layout safety and action semantics authority/);
+  assert.match(autoPlace, /Phase 6 — Auto-place behavior\/state authority/);
+  assert.equal(importantCount(planner), 0);
+  assert.equal(importantCount(budget), 5);
+  assert.equal(importantCount(autoPlace), 2);
+
+  assert.doesNotMatch(theme, /section#plan#plan[\s\S]{0,600}!important/);
+  assert.doesNotMatch(theme, /planner-action\.planner-action[\s\S]{0,300}!important/);
+  assert.doesNotMatch(theme, /section#budget#budget \.expense-workspace\.expense-workspace \.receipt-form\.receipt-form/);
+  assert.doesNotMatch(theme, /#budget \.budget-hero>div:first-child[\s\S]{0,300}!important/);
+
+  assert.match(budget, /\.tm-collapsed>:not\(\.section-head\)\{display:none!important\}/);
+  assert.match(budget, /\.receipt-form\[hidden\]\{display:none!important\}/);
+  assert.match(budget, /#budget \[data-expenses\]\{display:none!important\}/);
+  assert.match(budget, /\.receipt-preview-open\{overflow:hidden!important\}/);
+  assert.match(budget, /#budget \.receipt-preview\[hidden\]\{display:none!important\}/);
+  assert.match(autoPlace, /\.saved-place-editor\[hidden\]\{display:none!important\}/);
+  assert.match(autoPlace, /\.auto-place-stay-dates\[hidden\]\{display:none!important\}/);
 });

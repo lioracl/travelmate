@@ -19,11 +19,13 @@ test('mobile budget uses progressive disclosure without removing modes', () => {
 
 test('mobile core and secondary tap targets are hardened', () => {
   const css = read('assets/readable-glass.css');
+  const planner = read('assets/auto-planner.css');
+  const theme = read('assets/theme.css');
   assert.match(css, /Night polish 2: accessibility/);
   assert.match(css, /day-add,.day-replace,.activity-buttons button,.saved-place-actions button/);
   assert.match(css, /min-width:44px/);
-  const theme = read('assets/theme.css');
-  assert.match(theme, /min-width:44px!important;\s*min-height:44px!important;\s*height:44px!important/);
+  assert.match(planner, /activity-buttons,.saved-place-actions\)>button\{[\s\S]*min-width:44px;[\s\S]*min-height:44px;[\s\S]*height:44px;/);
+  assert.doesNotMatch(theme, /min-width:44px!important;\s*min-height:44px!important;\s*height:44px!important/);
   assert.match(css, /#transport,#getaways,#group,#memories,#destination-info/);
 });
 

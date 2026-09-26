@@ -152,3 +152,19 @@ Next recommended phase: consolidate Navigation ownership across `trip-redesign.c
 - Added a regression guardrail that rejects any new navigation `!important` in those six files.
 
 Next recommended phase: Plan/Budget ownership cleanup inside `theme.css` and their feature styles. Navigation should now be treated as closed unless a visual/runtime regression is found.
+
+
+## Phase 6 execution result — Plan + Budget ownership
+
+- Whole-app CSS debt reduced from **1,099** to **752** `!important` declarations (**-347** in this phase).
+- Combined reduction since the original audit baseline: **2,583 → 752** (**-1,831 / ~71%**).
+- `theme.css`: **500 → 241**. Plan-specific `!important` ownership in Theme is now **0**.
+- Plan behavior/layout/action semantics moved to `auto-planner.css` using normal cascade and semantic tokens; `auto-planner.css` remains at **0** `!important`.
+- Auto-place state ownership moved to `place-auto-fill.css`; its debt reduced **21 → 2**, retaining only explicit hidden-state contracts. Historical Auto-place Theme patches were removed.
+- Budget-specific high-specificity receipt/action/hero patches were removed from Theme. Remaining selectors that happen to include `#budget` in Theme are shared multi-screen rules, not Budget-specific ownership.
+- `trip-experience.css`: **74 → 5** `!important`, retaining only collapse/hidden/modal-scroll behavioral state contracts.
+- Updated Plan/Budget ownership tests so semantic surface/action assertions follow the current owners instead of requiring legacy duplicated-ID Theme selectors.
+- Added Phase 6 debt ceilings and ownership regression checks for `auto-planner.css`, `trip-experience.css`, and `place-auto-fill.css`.
+- Focused Plan/Budget/Surface/Theme/Performance suite: **93/93 PASS** after all Phase 6 changes.
+
+Next recommended phase: audit the remaining shared global selectors in `theme.css` and `readable-glass.css`; do not classify multi-screen design-system rules as Plan/Budget debt simply because their selector lists include those screens.
