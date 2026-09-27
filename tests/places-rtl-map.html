@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TravelMate Places RTL map check</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.css">
+  <style>html,body{height:100%;margin:0;font:16px Arial,sans-serif}#map{height:100%}#status{position:absolute;z-index:2;inset-block-start:8px;inset-inline-start:8px;padding:8px;background:#fff;color:#182326}</style>
+</head>
+<body>
+  <div id="status" role="status">טוען תוויות…</div>
+  <div id="map" aria-label="בדיקת תוויות בעברית ובערבית"></div>
+  <script src="https://unpkg.com/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script>
+  <script src="../assets/nearby.js"></script>
+  <script>
+    (async function () {
+      var status=document.getElementById('status');
+      try {
+        await window.TravelMateNearbyTest.enableRtlText(window.maplibregl);
+        var map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[35.2137,31.7683],zoom:13,attributionControl:false});
+        map.on('style.load',function () {
+          window.TravelMateNearbyTest.keepHebrewOrEnglishLabels(map);
+          map.addSource('rtl-check',{type:'geojson',data:{type:'FeatureCollection',features:[
+            {type:'Feature',geometry:{type:'Point',coordinates:[35.213,31.781]},properties:{name:'רחוב יפו 42'}},
+            {type:'Feature',geometry:{type:'Point',coordinates:[35.213,31.772]},properties:{name:'شارع صلاح الدين 42'}},
+            {type:'Feature',geometry:{type:'Point',coordinates:[35.213,31.762]},properties:{name:'כיכר הרפובליקה (Náměstí Republiky)'}},
+            {type:'Feature',geometry:{type:'Point',coordinates:[35.213,31.752]},properties:{name:'תחבורה ציבורית (Trams / Metro)'} }
+          ]}});
+          var symbol=map.getStyle().layers.find(function (layer) {return layer.type==='symbol'&&layer.layout&&layer.layout['text-font'];});
+          map.addLayer({id:'rtl-check-labels',type:'symbol',source:'rtl-check',layout:{'text-field':['get','name'],'text-font':symbol.layout['text-font'],'text-size':18,'text-allow-overlap':true},paint:{'text-color':'#12383f','text-halo-color':'#fff','text-halo-width':2}});
+          status.textContent='RTL: '+maplibregl.getRTLTextPluginStatus();
+          status.dataset.ready='true';
+        });
+      } catch (error) {status.textContent='RTL failed: '+error.message;status.dataset.error='true';}
+    })();
+  </script>
+</body>
+</html>
