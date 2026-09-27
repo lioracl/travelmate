@@ -442,3 +442,83 @@ test('explicit local conflict resolution rebases only after reading the current 
   assert.equal(stored.syncConflict, undefined);
   assert.equal(result.strategy, 'local');
 });
+
+test('viewer write rejection restores the authoritative cloud trip locally', async () => {
+  const local = {
+    id: 'viewer-restore',
+    ownerId: 'owner-1',
+    country: 'Test',
+    city: 'Local forbidden edit',
+    start: '2026-01-01',
+    end: '2026-01-02',
+    days: 1,
+    cloudRevision: 7,
+    syncStatus: 'synced'
+  };
+  const cloudRow = {
+    user_id: 'owner-1',
+    id: local.id,
+    country: 'Test',
+    city: 'Cloud authoritative',
+    start_date: '2026-01-01',
+    end_date: '2026-01-02',
+    budget: 0,
+    trip_type: 'solo',
+    days: 1,
+    revision: 7,
+    payload: { city: 'Cloud authoritative' },
+    updated_at: '2026-09-27T22:00:00.000Z',
+    deleted_at: null
+  };
+  const storage = new Map([
+    ['travelmate-active-user', 'viewer-1'],
+    ['travelmate-trips', JSON.stringify([local])]
+  ]);
+  const events = [];
+  const client = {
+    auth: {
+      getSession: async () => ({ data: { session: { user: { id: 'viewer-1' } } } })
+    },
+    rpc: async (name) => {
+      assert.equal(name, 'save_travel_trip');
+      return { error: { code: '42501', message: 'Trip edit forbidden' } };
+    },
+    from(table) {
+      assert.equal(table, 'travel_trips');
+      const query = {
+        select() { return query; },
+        eq() { return query; },
+        maybeSingle: async () => ({ error: null, data: cloudRow })
+      };
+      return query;
+    }
+  };
+  const context = {
+    console, setTimeout, clearTimeout,
+    CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; },
+    localStorage: {
+      getItem: (key) => storage.has(key) ? storage.get(key) : null,
+      setItem: (key, value) => storage.set(key, value),
+      removeItem: (key) => storage.delete(key)
+    },
+    window: {
+      crypto: { randomUUID: () => '88888888-8888-4888-8888-888888888888' },
+      __travelMateSupabaseClient: client,
+      dispatchEvent(event) { events.push(event); },
+      addEventListener() {}
+    },
+    document: {}
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+
+  await assert.rejects(
+    context.window.TravelMateCloud.saveTrip(local, 'viewer-1'),
+    (error) => error && error.code === '42501'
+  );
+
+  const stored = JSON.parse(storage.get('travelmate-trips'))[0];
+  assert.equal(stored.city, 'Cloud authoritative');
+  assert.equal(stored.cloudRevision, 7);
+  assert.equal(stored.syncStatus, 'synced');
+  assert.equal(events.filter((event) => event.type === 'travelmate:trip-write-forbidden').length, 1);
+});
