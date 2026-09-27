@@ -258,7 +258,7 @@ test('home boot loads only home essentials and keeps About lazy', () => {
   const entry = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   assert.match(source, /homeBaseStyles=\['language\.css','network-usage\.css','theme\.css'\]/);
   assert.match(source, /if\(isHomePage\)[\s\S]*homeBaseStyles\.map\(loadStyle\)[\s\S]*loadSequence\(\['language\.js','theme\.js'\]\)/);
-  assert.match(source, /\}else\{[\s\S]*loadFeature\(activeView\(\)\)/);
+  assert.match(source, /\}else\{[\s\S]*var initialView=activeView\(\)[\s\S]*loadFeature\(initialView\)/);
   assert.equal((entry.match(/data-about-open data-lazy-about/g) || []).length, 2);
 });
 
@@ -346,4 +346,11 @@ test('past-day enhancement avoids rewriting identical DOM and observer self-loop
   const source = fs.readFileSync(path.join(root, 'assets/auto-planner.js'), 'utf8');
   assert.match(source, /var nextStripHtml=past\.length/);
   assert.match(source, /if\(strip\.innerHTML!==nextStripHtml\)strip\.innerHTML=nextStripHtml/);
+});
+
+test('Overview defers trip intelligence until idle or explicit Overview intent', () => {
+  assert.match(appScript, /overview:\{styles:\['weather-widget\.css','trip-intelligence\.css'\],scripts:\['weather-widget\.js'\]\}/);
+  assert.match(appScript, /intelligence:\{styles:\[\],scripts:\['trip-intelligence\.js'\]\}/);
+  assert.match(appScript, /if\(initialView==='overview'\)scheduleIdleFeature\('intelligence',250\)/);
+  assert.match(appScript, /if\(link\.dataset\.view==='overview'\)loadFeature\('intelligence'\)/);
 });
