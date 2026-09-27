@@ -392,3 +392,53 @@ test('a conflict cannot be silently rebased into a later overwrite', async () =>
   assert.equal(payloads[1].syncConflict, undefined);
   assert.equal(events.filter((event) => event.type === 'travelmate:sync-conflict').length, 2);
 });
+
+test('explicit cloud conflict resolution replaces the local conflicted payload', async () => {
+  const local = { id: 'resolve-cloud', ownerId: 'user-1', country: 'Test', city: 'Local', start: '2026-01-01', end: '2026-01-02', days: 1, cloudRevision: 10, syncStatus: 'conflict', syncConflict: { serverRevision: 11 } };
+  const storage = new Map([['travelmate-active-user', 'user-1'], ['travelmate-trips', JSON.stringify([local])]]);
+  const cloudRow = { user_id: 'user-1', id: local.id, country: 'Test', city: 'Cloud', start_date: '2026-01-01', end_date: '2026-01-02', budget: 0, trip_type: 'solo', days: 1, revision: 11, payload: { city: 'Cloud' }, updated_at: '2026-09-13T12:00:00.000Z' };
+  const events = [];
+  const client = {
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }) },
+    from() { const query = { select() { return query; }, eq() { return query; }, maybeSingle: async () => ({ error: null, data: cloudRow }) }; return query; }
+  };
+  const context = { console, setTimeout, clearTimeout, CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; }, localStorage: { getItem: (key) => storage.has(key) ? storage.get(key) : null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) }, window: { __travelMateSupabaseClient: client, dispatchEvent(event) { events.push(event); }, addEventListener() {} }, document: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  const result = await context.window.TravelMateCloud.resolveTripConflict(local.id, local.ownerId, 'cloud');
+  const stored = JSON.parse(storage.get('travelmate-trips'))[0];
+  assert.equal(result.strategy, 'cloud');
+  assert.equal(stored.city, 'Cloud');
+  assert.equal(stored.cloudRevision, 11);
+  assert.equal(stored.syncStatus, 'synced');
+  assert.equal(stored.syncConflict, undefined);
+  assert.equal(events.filter((event) => event.type === 'travelmate:trip-conflict-resolved').length, 1);
+});
+
+test('explicit local conflict resolution rebases only after reading the current cloud revision', async () => {
+  const local = { id: 'resolve-local', ownerId: 'user-1', country: 'Test', city: 'Keep local', start: '2026-01-01', end: '2026-01-02', days: 1, cloudRevision: 10, syncStatus: 'conflict', syncConflict: { serverRevision: 11 } };
+  const storage = new Map([['travelmate-active-user', 'user-1'], ['travelmate-trips', JSON.stringify([local])]]);
+  const cloudRow = { user_id: 'user-1', id: local.id, country: 'Test', city: 'Cloud', start_date: '2026-01-01', end_date: '2026-01-02', budget: 0, trip_type: 'solo', days: 1, revision: 11, payload: { city: 'Cloud' }, updated_at: '2026-09-13T12:00:00.000Z' };
+  let expectedRevision;
+  let sentPayload;
+  const client = {
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }) },
+    from() { const query = { select() { return query; }, eq() { return query; }, maybeSingle: async () => ({ error: null, data: cloudRow }) }; return query; },
+    rpc: async (name, params) => {
+      assert.equal(name, 'save_travel_trip');
+      expectedRevision = params.p_expected_revision;
+      sentPayload = params.p_trip;
+      return { error: null, data: [{ result_status: 'saved', result_revision: 12, result_updated_at: '2026-09-13T12:01:00.000Z' }] };
+    }
+  };
+  const context = { console, setTimeout, clearTimeout, CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; }, localStorage: { getItem: (key) => storage.has(key) ? storage.get(key) : null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) }, window: { crypto: { randomUUID: () => '55555555-5555-4555-8555-555555555555' }, __travelMateSupabaseClient: client, dispatchEvent() {}, addEventListener() {} }, document: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  const result = await context.window.TravelMateCloud.resolveTripConflict(local.id, local.ownerId, 'local');
+  const stored = JSON.parse(storage.get('travelmate-trips'))[0];
+  assert.equal(expectedRevision, 11);
+  assert.equal(sentPayload.syncConflict, undefined);
+  assert.equal(stored.city, 'Keep local');
+  assert.equal(stored.cloudRevision, 12);
+  assert.equal(stored.syncStatus, 'synced');
+  assert.equal(stored.syncConflict, undefined);
+  assert.equal(result.strategy, 'local');
+});

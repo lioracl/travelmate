@@ -799,6 +799,62 @@
     return result.data === true;
   }
 
+  async function fetchCloudTripVersion(tripId, ownerId, expectedUserId) {
+    if (expectedUserId) assertActiveUser(expectedUserId);
+    await assertMfaReadyForPersonalData();
+    var client = await getClient();
+    var result = await client.from('travel_trips').select('*')
+      .eq('id', String(tripId))
+      .eq('user_id', String(ownerId))
+      .maybeSingle();
+    if (expectedUserId) assertActiveUser(expectedUserId);
+    if (result.error) throw result.error;
+    return result.data ? fromRow(result.data) : null;
+  }
+
+  async function resolveTripConflict(tripId, ownerId, strategy) {
+    strategy = String(strategy || '').toLowerCase();
+    if (strategy !== 'local' && strategy !== 'cloud') throw cloudError('INVALID_CONFLICT_STRATEGY');
+
+    var session = await getSession();
+    if (!session || !session.user) throw cloudError('SIGNED_OUT');
+    var requestUserId = String(session.user.id);
+    assertActiveUser(requestUserId);
+
+    var local = findLocalTrip(tripId, ownerId);
+    if (!local || String(local.syncStatus || '') !== 'conflict') throw cloudError('TRIP_CONFLICT_NOT_FOUND');
+    var resolvedOwnerId = String(ownerId || local.ownerId || requestUserId);
+    var cloud = await fetchCloudTripVersion(tripId, resolvedOwnerId, requestUserId);
+    if (!cloud) throw cloudError('TRIP_CONFLICT_REMOTE_UNAVAILABLE');
+
+    if (strategy === 'cloud') {
+      upsertLocalTrip(cloud);
+      window.dispatchEvent(new CustomEvent('travelmate:trip-conflict-resolved', {
+        detail: { id: cloud.id, ownerId: cloud.ownerId, strategy: 'cloud', revision: cloud.cloudRevision }
+      }));
+      return { resolved: true, strategy: 'cloud', trip: cloud };
+    }
+
+    if (resolvedOwnerId !== requestUserId) {
+      var editable = await canEditSharedTrip(resolvedOwnerId, tripId);
+      assertActiveUser(requestUserId);
+      if (!editable) throw cloudError('TRIP_EDIT_FORBIDDEN');
+    }
+
+    var candidate = cloneTrip(local);
+    candidate.ownerId = cloud.ownerId;
+    candidate.cloudRevision = cloud.cloudRevision;
+    candidate.cloudUpdatedAt = cloud.cloudUpdatedAt;
+    delete candidate.syncConflict;
+    delete candidate.syncMutationId;
+    await saveTrip(candidate, requestUserId, false);
+    var resolved = localTripFor(candidate) || candidate;
+    window.dispatchEvent(new CustomEvent('travelmate:trip-conflict-resolved', {
+      detail: { id: resolved.id, ownerId: resolved.ownerId, strategy: 'local', revision: resolved.cloudRevision }
+    }));
+    return { resolved: true, strategy: 'local', trip: resolved };
+  }
+
   async function performLocalTripSync(session, syncUserId) {
     assertActiveUser(syncUserId);
     await assertMfaReadyForPersonalData();
@@ -1070,6 +1126,7 @@
     deleteTrip: deleteTrip,
     queueTripSave: queueTripSave,
     syncLocalTrips: syncLocalTrips,
+    resolveTripConflict: resolveTripConflict,
     signIn: signIn,
     signUp: signUp,
     resendSignup: resendSignup,
