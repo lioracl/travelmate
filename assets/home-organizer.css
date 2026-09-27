@@ -322,7 +322,15 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
     -webkit-text-fill-color:currentColor;
     opacity:1
   }
-  .home-page.is-authenticated .home-sidebar nav .home-more-toggle{display:flex}
+  .home-page.is-authenticated .home-sidebar nav :is(.home-current-view,.home-new-trip-action){
+    background:var(--tm-brand-primary,#147D92);
+    border-color:rgba(255,255,255,.22)
+  }
+  .home-page.is-authenticated .home-sidebar nav .home-more-toggle{
+    display:flex;
+    background:rgba(255,255,255,.14);
+    border-color:rgba(255,255,255,.22)
+  }
   .home-page.is-authenticated .home-sidebar-utilities{
     position:absolute;
     right:auto;

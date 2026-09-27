@@ -29,12 +29,12 @@ test('glass uses blur instead of opacity escalation',()=>{
   assert.doesNotMatch(css,/--tm-weather-card-blur:blur\(4px\)/);
 });
 
-test('weather uses a dedicated crisp photo material without optical blur',()=>{
+test('weather uses a dedicated crisp opaque material without optical blur',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(50,88,101,\.92\),rgba\(42,76,90,\.88\)\)/);
+  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,#365E6C,#2F5360\)/);
   assert.match(css,/--tm-weather-card-text:var\(--tm-surface-photo-text\)/);
   assert.match(css,/--tm-weather-card-blur:none/);
-  assert.match(css,/\.weather-top-widget[\s\S]*background:var\(--tm-weather-card-bg\)[\s\S]*backdrop-filter:var\(--tm-weather-card-blur\)/);
+  assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
 });
 
 test('overview and places no longer own card material tokens',()=>{
@@ -67,10 +67,11 @@ test('custom trip mobile drawer keeps a crisp readable material and desktop chro
   assert.match(css,/@media\(min-width:1001px\)\{[\s\S]*?data-trip-kind="custom"[\s\S]*?\.workspace>\.sidebar\{/);
 });
 
-test('Overview removes optical blur while keeping opaque-enough semantic surfaces',()=>{
+test('Overview removes optical blur and uses crisp semantic surfaces',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-surface-blur-photo:none/);
-  assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-surface-photo\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
+  assert.match(css,/--tm-overview-card:#F6FAF8/);
+  assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
 });
 
 test('reduced transparency has an opaque fallback',()=>{

@@ -86,7 +86,8 @@
       hero.appendChild(button);
     }
     button.setAttribute('aria-haspopup', 'dialog'); button.setAttribute('aria-expanded', 'false');
-    button.innerHTML = '<span class="weather-top-icon">' + weatherSvg('fa-cloud-sun') + '</span><span class="weather-top-copy"><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><i class="fa-solid fa-chevron-down weather-top-chevron"></i>';
+    button.setAttribute('aria-label', 'פתיחת תחזית מזג האוויר המלאה עבור ' + destination.city);
+    button.innerHTML = '<span class="weather-top-icon">' + weatherSvg('fa-cloud-sun') + '</span><span class="weather-top-copy"><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><span class="weather-top-action">פתח תחזית <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>';
 
     var backdrop = document.createElement('section');
     backdrop.id = 'modal-weather-live'; backdrop.className = 'modal-backdrop'; backdrop.setAttribute('role', 'dialog'); backdrop.setAttribute('aria-modal', 'true'); backdrop.setAttribute('aria-labelledby', 'weather-live-title');
