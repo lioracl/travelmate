@@ -50,7 +50,7 @@ test('design-system CSS debt does not grow while ownership is being consolidated
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
   assert.equal(counts.base, 0, `styles.css must remain free of !important debt; found ${counts.base}`);
   assert.ok(counts.theme <= 32, `theme.css !important debt grew to ${counts.theme}`);
-  assert.ok(counts.readableGlass <= 133, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
+  assert.ok(counts.readableGlass <= 105, `readable-glass.css !important debt grew to ${counts.readableGlass}`);
   assert.ok(counts.tripRedesign <= 64, `trip-redesign.css !important debt grew to ${counts.tripRedesign}`);
   assert.ok(counts.cloudSync <= 1, `cloud-sync.css !important debt grew to ${counts.cloudSync}`);
   assert.ok(counts.homeOrganizer <= 2, `home-organizer.css !important debt grew to ${counts.homeOrganizer}`);
@@ -62,7 +62,7 @@ test('design-system CSS debt does not grow while ownership is being consolidated
   assert.equal(counts.modalSystem, 0, `modal-system.css must remain free of !important debt; found ${counts.modalSystem}`);
   assert.equal(counts.networkUsage, 2, `network-usage.css must keep only its two hidden-state !important contracts; found ${counts.networkUsage}`);
   assert.ok(
-    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget + counts.modalSystem + counts.networkUsage <= 250,
+    counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget + counts.modalSystem + counts.networkUsage <= 210,
     `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget + counts.modalSystem + counts.networkUsage}`
   );
 });

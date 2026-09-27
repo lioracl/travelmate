@@ -22,11 +22,11 @@ test('trip photo is owned by the app background while content uses readable glas
 test('light section and Plan day headings no longer force white text', () => {
   const theme = read('assets/theme.css');
   const glass = read('assets/readable-glass.css');
-  assert.match(glass, /main\.content :is\(\.section-head\)\{[\s\S]*color:var\(--tm-card-text\)!important/);
+  assert.match(glass, /main\.content :is\(\.section-head\):not\(body\[data-trip-kind="custom"\]\[data-trip-view="overview"\] \*\)\{[\s\S]*color:var\(--tm-card-text\)!important/);
   assert.match(glass, /main\.content \.section-head :where\([\s\S]*text-shadow:none/);
   assert.doesNotMatch(theme, /section-head\.section-head[\s\S]*color:var\(--tm-card-heading\)!important/);
   assert.match(glass, /:not\(body\[data-trip-kind="custom"\]\[data-trip-view="plan"\] #plan \*\)/);
-  assert.match(glass, /data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*:where\(h2,h3,h4,p,span,strong,b,small,time\)[\s\S]*color:inherit!important/);
+  assert.match(glass, /data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*:where\(h2,h3,h4,p,span,strong,b,small,time\)[\s\S]*color:inherit;/);
   assert.doesNotMatch(glass, /data-trip-kind="custom"[^\n]*data-trip-view="plan"[^\n]*#plan \.day-heading\{[^}]*color:#fff/);
   assert.doesNotMatch(theme, /day-heading\.day-heading,.day-tab\.day-tab[\s\S]*!important/);
 });

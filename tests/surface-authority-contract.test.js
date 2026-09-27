@@ -81,6 +81,22 @@ test('custom trip mobile drawer keeps a crisp readable material and desktop chro
   assert.match(css,/@media\(min-width:1001px\)\{[\s\S]*?data-trip-kind="custom"[\s\S]*?\.workspace>\.sidebar\{/);
 });
 
+test('custom Overview and Plan bypass the generic theme material boundary',()=>{
+  const css=read('assets/readable-glass.css');
+  assert.match(css,/:not\(body\[data-trip-kind="custom"\]\[data-trip-view="plan"\] #plan \*\):not\(body\[data-trip-kind="custom"\]\[data-trip-view="overview"\] \*\)/);
+  assert.match(css,/main\.content>\.trip-home-actions:not\(body\[data-trip-kind="custom"\]\[data-trip-view="overview"\] \*\)/);
+  assert.match(css,/\.section-head:not\(body\[data-trip-kind="custom"\]\[data-trip-view="overview"\] \*\)/);
+});
+
+test('Overview and Plan local authority does not need important escalation',()=>{
+  const css=read('assets/readable-glass.css');
+  const overview=css.match(/\/\* Legacy Overview layout bridge\.[\s\S]*?\/\* Canonical application-wide semantic material contract\./);
+  assert.ok(overview,'Overview ownership bridge exists');
+  assert.doesNotMatch(overview[0],/!important/);
+  assert.match(css,/data-trip-view="plan"[^\n]*#plan#plan \.generated-day>div\{[\s\S]*?padding:14px;[\s\S]*?border-radius:18px/);
+  assert.match(css,/data-trip-view="plan"[^\n]*#plan#plan \.generated-day>\.badge\{[\s\S]*?min-width:84px;[\s\S]*?justify-content:center/);
+});
+
 test('Overview removes optical blur while retaining controlled transparency',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-surface-blur-photo:none/);

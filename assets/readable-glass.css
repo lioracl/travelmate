@@ -132,19 +132,19 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
 html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan :is(
   .day-heading,.planned-activity,.saved-place,.lodging-day-card,.airport-day-card,.trip-anchor
 ) :where(h2,h3,h4,p,span,strong,b,small,time){
-  color:inherit!important;
-  -webkit-text-fill-color:currentColor!important;
-  opacity:1!important
+  color:inherit;
+  -webkit-text-fill-color:currentColor;
+  opacity:1
 }
 
 html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day>div{
-  padding:14px!important;
-  border-radius:18px!important
+  padding:14px;
+  border-radius:18px
 }
 
 html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day>.badge{
-  min-width:84px!important;
-  justify-content:center!important
+  min-width:84px;
+  justify-content:center
 }
 
 @media(max-width:650px){
@@ -158,7 +158,7 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generate
     border-width:2px!important
   }
   html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day>.badge{
-    justify-self:center!important
+    justify-self:center
   }
 }
 
@@ -313,7 +313,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .dashboard>.right-stack>.panel,
   .modules>.module
 ){
-  border:1px solid var(--tm-overview-border)!important;
+  border:1px solid var(--tm-overview-border);
   background:var(--tm-overview-card);
   background-image:var(--tm-overview-card);
   color:var(--tm-overview-text);
@@ -329,7 +329,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .dashboard>.panel,
   .dashboard>.right-stack>.panel
 ){
-  border-radius:20px!important;
+  border-radius:20px;
   box-shadow:var(--tm-overview-shadow)
 }
 
@@ -355,7 +355,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actio
   min-height:64px;
   padding:14px 15px;
   gap:10px;
-  border-radius:16px!important;
+  border-radius:16px;
   background:var(--tm-overview-card-soft);
   box-shadow:none;
   transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background-color .16s ease
@@ -364,7 +364,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actio
 html body.tm-new-design[data-trip-view="overview"] main.content .trip-home-actions a:first-child{
   --tm-overview-muted:var(--tm-text-on-action);
   --tm-overview-green:var(--tm-text-on-action);
-  border-color:var(--tm-action-primary-active)!important;
+  border-color:var(--tm-action-primary-active);
   background:var(--tm-action-primary);
   box-shadow:inset 3px 0 0 var(--tm-action-primary-active)
 }
@@ -380,7 +380,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content .quick-grid{
 html body.tm-new-design[data-trip-view="overview"] main.content .quick-grid>.card{
   min-height:104px;
   padding:18px;
-  border-radius:18px!important;
+  border-radius:18px;
   box-shadow:0 2px 4px rgba(20,45,36,.025),0 8px 22px rgba(20,45,36,.055)
 }
 
@@ -391,7 +391,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content .modules{
 html body.tm-new-design[data-trip-view="overview"] main.content .modules>.module{
   min-height:78px;
   padding:16px 18px;
-  border-radius:16px!important;
+  border-radius:16px;
   background:var(--tm-overview-card-soft);
   box-shadow:none;
   transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background-color .16s ease
@@ -445,8 +445,8 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   min-width:0;
   height:auto;
   padding:0;
-  border:0!important;
-  border-radius:0!important;
+  border:0;
+  border-radius:0;
   background:transparent;
   box-shadow:none
 }
@@ -457,7 +457,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
   .quick-grid>button.card
 ):is(:hover,:focus-visible){
   transform:translateY(-1px);
-  border-color:var(--tm-overview-border-hover)!important;
+  border-color:var(--tm-overview-border-hover);
   background:var(--tm-card-bg-hover);
   box-shadow:var(--tm-overview-shadow-hover)
 }
@@ -481,7 +481,7 @@ html body.tm-new-design[data-trip-view="overview"] main.content :is(
 }
 
 html body.tm-new-design[data-trip-view="overview"] main.content :is(.timeline-item,.alert-row){
-  border-color:#e7edea!important;
+  border-color:#e7edea;
   background:var(--tm-overview-card-soft);
   color:var(--tm-overview-text);
   -webkit-text-fill-color:var(--tm-overview-text);
@@ -550,7 +550,7 @@ html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"] main.conte
     .dashboard>.right-stack>.panel
   ){
     padding:16px;
-    border-radius:20px!important
+    border-radius:20px
   }
   html body.tm-new-design[data-trip-view="overview"] main.content .quick-grid>.card{
     min-height:0;
@@ -1317,15 +1317,15 @@ html[data-theme][data-theme] body.tm-new-design main.content :is(
   .message-place-card,.chat-card,.ai-notes-panel,.ai-login-card,.ai-error-card,
   .document-vault-panel,.vault-auth,.gps-consent-card,.gps-place-heading,
   .weather-forecast-panel
-):not(body[data-trip-kind="custom"][data-trip-view="plan"] #plan *){
+):not(body[data-trip-kind="custom"][data-trip-view="plan"] #plan *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border-color:var(--tm-card-border);
   background:var(--tm-card-surface,var(--tm-card-bg))!important;
   color:var(--tm-card-text)!important;
   -webkit-text-fill-color:var(--tm-card-text)!important;
   box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important
 }
-html[data-theme][data-theme] body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#plan):not(#documents),
-html[data-theme][data-theme] body.tm-new-design main.content>.trip-home-actions{
+html[data-theme][data-theme] body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#plan):not(#documents):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
+html[data-theme][data-theme] body.tm-new-design main.content>.trip-home-actions:not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1px solid var(--tm-card-border)!important;
   background:var(--tm-card-bg)!important;
   color:var(--tm-card-text)!important;
@@ -1333,7 +1333,7 @@ html[data-theme][data-theme] body.tm-new-design main.content>.trip-home-actions{
   box-shadow:var(--tm-card-shadow)!important;
   text-shadow:none!important
 }
-html[data-theme][data-theme] body.tm-new-design main.content :is(.section-head){
+html[data-theme][data-theme] body.tm-new-design main.content :is(.section-head):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1px solid var(--tm-card-border)!important;
   border-radius:var(--tm-card-radius-featured)!important;
   background:var(--tm-card-bg)!important;
@@ -1348,7 +1348,7 @@ html[data-theme][data-theme] body.tm-new-design main.content .section-head :wher
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ){--tm-section-head-padding-bottom:13px}
-html[data-theme][data-theme] body.tm-new-design main.content .section-head{
+html[data-theme][data-theme] body.tm-new-design main.content .section-head:not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   width:100%;
   padding:var(--tm-card-padding) var(--tm-card-padding) var(--tm-section-head-padding-bottom,var(--tm-card-padding))!important
 }
