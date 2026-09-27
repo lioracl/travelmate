@@ -193,6 +193,12 @@
   function googleMapsUrl(query) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query); }
   function placeFromOsm(item, origin) { var tags=item.tags||{},lat=Number(item.lat||item.center&&item.center.lat),lon=Number(item.lon||item.center&&item.center.lon),name=tags['name:he']||tags.name||tags['name:en']||tags['brand:en']||tags.brand; if(!name||!Number.isFinite(lat)||!Number.isFinite(lon))return null; return { id:osmId(item),name:name,localName:tags.name||'',englishName:tags['name:en']||'',officialName:tags.official_name||'',lat:lat,lon:lon,type:categoryFor(tags),category:poiCategory(tags),distance:origin?distance(origin.lat,origin.lon,lat,lon):0,description:detailsFromTags(tags),address:addressFromTags(tags),website:safeExternalUrl(tags.website||tags['contact:website']),phone:tags.phone||tags['contact:phone']||'',image:safeImageUrl(tags.image),commons:tags.wikimedia_commons||'',wikidata:tags.wikidata||'',wikipedia:wikipediaUrl(tags),source:'OpenStreetMap',isKosher:/yes|only/i.test(tags['diet:kosher']||'')||/kosher/i.test(tags.cuisine||'')}; }
   function placeAliases(place) { return (place.aliases || []).concat([place.name,place.localName,place.englishName,place.officialName]).filter(Boolean).map(normalizePlaceName); }
+  function canonicalPlaceId(place) {
+    if (/^osm:(node|way|relation):\d+$/.test(place.id || '')) return place.id;
+    if (/^Q\d+$/.test(place.wikidata || '')) return 'wikidata:'+place.wikidata;
+    if (place.id) return place.id;
+    return 'geo:'+Number(place.lat).toFixed(5)+','+Number(place.lon).toFixed(5)+':'+normalizePlaceName(place.category||place.type)+':'+normalizePlaceName(place.name);
+  }
   function samePhysicalPlace(first, second) {
     if (first.id && first.id === second.id) return true;
     if (first.wikidata && first.wikidata === second.wikidata) return true;
@@ -211,12 +217,15 @@
     var merged = Object.assign({},preferred);
     ['localName','englishName','officialName','wikidata','wikipedia','website','phone','image','imageSource','imageAttribution','commons','address'].forEach(function (key) { if (!merged[key] && other[key]) merged[key] = other[key]; });
     merged.aliases = Array.from(new Set((first.aliases || []).concat(second.aliases || [],placeAliases(first),placeAliases(second))));
+    merged.nameAliases = Array.from(new Set((first.nameAliases || []).concat(second.nameAliases || [],[first.name,second.name]).filter(Boolean)));
+    merged.providerIds = Array.from(new Set((first.providerIds || []).concat(second.providerIds || []).filter(Boolean)));
     merged.distance = Math.min(Number(first.distance) || 0,Number(second.distance) || 0);
     return merged;
   }
   function canonicalPlaces(candidates) {
     var places=[];
-    candidates.forEach(function (candidate) {
+    candidates.forEach(function (source) {
+      var candidate=Object.assign({},source,{id:canonicalPlaceId(source),providerIds:[source.id].filter(Boolean),nameAliases:[source.name,source.localName,source.englishName,source.officialName].filter(Boolean)});
       var index=places.findIndex(function (existing) { return samePhysicalPlace(existing,candidate); });
       if (index < 0) places.push(candidate);
       else places[index]=mergePhysicalPlaces(places[index],candidate);

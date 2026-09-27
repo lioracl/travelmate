@@ -24,6 +24,16 @@ test('Hebrew, English and OSM records for the same Wikidata entity have one cano
   assert.equal(result[0].wikidata, 'Q1202365');
   assert.ok(result[0].aliases.includes('כיכר הרפובליקה'));
   assert.ok(result[0].aliases.includes('piazza della repubblica'));
+  assert.ok(result[0].nameAliases.includes('Piazza della Repubblica'));
+});
+
+test('Wikipedia-only identity is stable across language availability and result order', () => {
+  const he={id:'wikipedia:he:1',name:'כיכר הרפובליקה',source:'Wikipedia',wikidata:'Q1202365',lat:41.9025,lon:12.496389};
+  const en={...he,id:'wikipedia:en:2',name:'Piazza della Repubblica'};
+  assert.equal(canonicalPlaces([he])[0].id,'wikidata:Q1202365');
+  assert.equal(canonicalPlaces([en])[0].id,'wikidata:Q1202365');
+  assert.equal(canonicalPlaces([en,he]).length,1);
+  assert.equal(canonicalPlaces([en,he])[0].providerIds.length,2);
 });
 
 test('nearby businesses with distinct OSM identities remain distinct', () => {
