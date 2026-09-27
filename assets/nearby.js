@@ -160,8 +160,8 @@
   function keepHebrewOrEnglishLabels(map) { var localizedName = ['coalesce', ['get', 'name:he'], ['get', 'name'], ['get', 'name:nonlatin'], ['get', 'name:en'], ['get', 'name_en'], ['get', 'name:latin'], '']; map.getStyle().layers.forEach(function (layer) { if (layer.type === 'symbol' && layer.layout && layer.layout['text-field'] && !/^highway-shield|road_shield/.test(layer.id)) { try { map.setLayoutProperty(layer.id, 'text-field', localizedName); } catch (error) {} } }); }
 
   async function wikipediaPlaces(language, lat, lon, radius, searchSignal) {
-    var params = new URLSearchParams({ action: 'query', format: 'json', origin: '*', generator: 'geosearch', ggsprimary: 'all', ggsnamespace: '0', ggsradius: String(Math.min(Number(radius), 10000)), ggslimit: '15', ggscoord: lat + '|' + lon, prop: 'coordinates|pageimages|description|info', inprop: 'url', piprop: 'thumbnail', pithumbsize: '360', redirects: '1' });
-    try { var response = await fetchWithTimeout('https://' + language + '.wikipedia.org/w/api.php?' + params, {}, 10000, searchSignal); if (!response.ok) return []; var data = await response.json(); return Object.values((data.query && data.query.pages) || {}).map(function (page) { var point = page.coordinates && page.coordinates[0]; if (!point) return null; return { id:'wikipedia:'+language+':'+page.pageid,name: page.title, lat: point.lat, lon: point.lon, type: 'attractions',category:'attraction', distance: distance(lat, lon, point.lat, point.lon), description: page.description || 'מידע נוסף מוויקיפדיה', image: page.thumbnail && page.thumbnail.source, imageSource: page.thumbnail && page.thumbnail.source ? 'Wikipedia' : '', imageAttribution: page.thumbnail && page.thumbnail.source ? 'Wikipedia / Wikimedia Commons' : '', wikipedia:page.fullurl,source: 'Wikipedia', address: '' }; }).filter(Boolean); } catch (error) { if(isAbortError(error))throw error;return []; }
+    var params = new URLSearchParams({ action: 'query', format: 'json', origin: '*', generator: 'geosearch', ggsprimary: 'all', ggsnamespace: '0', ggsradius: String(Math.min(Number(radius), 10000)), ggslimit: '15', ggscoord: lat + '|' + lon, prop: 'coordinates|pageimages|description|info|pageprops', ppprop: 'wikibase_item', inprop: 'url', piprop: 'thumbnail', pithumbsize: '360', redirects: '1' });
+    try { var response = await fetchWithTimeout('https://' + language + '.wikipedia.org/w/api.php?' + params, {}, 10000, searchSignal); if (!response.ok) return []; var data = await response.json(); return Object.values((data.query && data.query.pages) || {}).map(function (page) { var point = page.coordinates && page.coordinates[0]; if (!point) return null; return { id:'wikipedia:'+language+':'+page.pageid,name: page.title, lat: point.lat, lon: point.lon, type: 'attractions',category:'attraction', distance: distance(lat, lon, point.lat, point.lon), description: page.description || 'מידע נוסף מוויקיפדיה', image: page.thumbnail && page.thumbnail.source, imageSource: page.thumbnail && page.thumbnail.source ? 'Wikipedia' : '', imageAttribution: page.thumbnail && page.thumbnail.source ? 'Wikipedia / Wikimedia Commons' : '', wikidata:page.pageprops && page.pageprops.wikibase_item || '', wikipedia:page.fullurl,source: 'Wikipedia', address: '' }; }).filter(Boolean); } catch (error) { if(isAbortError(error))throw error;return []; }
   }
 
   async function wikipediaGroupsWithinBudget(lat, lon, radius, searchSignal, budgetMs) {
@@ -191,7 +191,38 @@
   function addressFromTags(tags) { var street = tags['addr:street:he'] || tags['addr:street'] || tags['addr:street:en'] || ''; return [street, tags['addr:housenumber'], tags['addr:city:he'] || tags['addr:city'] || tags['addr:city:en']].filter(Boolean).join(' '); }
   function detailsFromTags(tags) { var details = [], address = addressFromTags(tags); if (address) details.push(address); if (tags.opening_hours) details.push('שעות: ' + tags.opening_hours); if (tags.cuisine) details.push('סגנון: ' + tags.cuisine.replace(/;/g, ', ')); if (tags.phone || tags['contact:phone']) details.push('טלפון: ' + (tags.phone || tags['contact:phone'])); if (/yes|only/i.test(tags['diet:kosher'] || '') || /kosher/i.test(tags.cuisine || '')) details.push('מסומן ככשר ב־OpenStreetMap — מומלץ לבדוק תעודה עדכנית'); return details.join(' · ') || 'פרטי המקום, מיקום מדויק וקישורים למידע נוסף'; }
   function googleMapsUrl(query) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query); }
-  function placeFromOsm(item, origin) { var tags=item.tags||{},lat=Number(item.lat||item.center&&item.center.lat),lon=Number(item.lon||item.center&&item.center.lon),name=tags['name:he']||tags.name||tags['name:en']||tags['brand:en']||tags.brand; if(!name||!Number.isFinite(lat)||!Number.isFinite(lon))return null; return { id:osmId(item),name:name,localName:tags.name||'',lat:lat,lon:lon,type:categoryFor(tags),category:poiCategory(tags),distance:origin?distance(origin.lat,origin.lon,lat,lon):0,description:detailsFromTags(tags),address:addressFromTags(tags),website:safeExternalUrl(tags.website||tags['contact:website']),phone:tags.phone||tags['contact:phone']||'',image:safeImageUrl(tags.image),commons:tags.wikimedia_commons||'',wikidata:tags.wikidata||'',wikipedia:wikipediaUrl(tags),source:'OpenStreetMap',isKosher:/yes|only/i.test(tags['diet:kosher']||'')||/kosher/i.test(tags.cuisine||'')}; }
+  function placeFromOsm(item, origin) { var tags=item.tags||{},lat=Number(item.lat||item.center&&item.center.lat),lon=Number(item.lon||item.center&&item.center.lon),name=tags['name:he']||tags.name||tags['name:en']||tags['brand:en']||tags.brand; if(!name||!Number.isFinite(lat)||!Number.isFinite(lon))return null; return { id:osmId(item),name:name,localName:tags.name||'',englishName:tags['name:en']||'',officialName:tags.official_name||'',lat:lat,lon:lon,type:categoryFor(tags),category:poiCategory(tags),distance:origin?distance(origin.lat,origin.lon,lat,lon):0,description:detailsFromTags(tags),address:addressFromTags(tags),website:safeExternalUrl(tags.website||tags['contact:website']),phone:tags.phone||tags['contact:phone']||'',image:safeImageUrl(tags.image),commons:tags.wikimedia_commons||'',wikidata:tags.wikidata||'',wikipedia:wikipediaUrl(tags),source:'OpenStreetMap',isKosher:/yes|only/i.test(tags['diet:kosher']||'')||/kosher/i.test(tags.cuisine||'')}; }
+  function placeAliases(place) { return (place.aliases || []).concat([place.name,place.localName,place.englishName,place.officialName]).filter(Boolean).map(normalizePlaceName); }
+  function samePhysicalPlace(first, second) {
+    if (first.id && first.id === second.id) return true;
+    if (first.wikidata && first.wikidata === second.wikidata) return true;
+    // Two distinct OSM objects may be adjacent businesses; names and proximity cannot merge them.
+    if (/^osm:/.test(first.id || '') && /^osm:/.test(second.id || '')) return false;
+    if (first.id && second.id && first.source === second.source) return false;
+    if (!Number.isFinite(Number(first.lat)) || !Number.isFinite(Number(first.lon)) || !Number.isFinite(Number(second.lat)) || !Number.isFinite(Number(second.lon))) return false;
+    if (distance(first.lat,first.lon,second.lat,second.lon) > 30) return false;
+    if (first.type !== second.type && first.category !== second.category) return false;
+    var aliases = new Set(placeAliases(first));
+    return placeAliases(second).some(function (alias) { return aliases.has(alias); });
+  }
+  function mergePhysicalPlaces(first, second) {
+    var preferred = /^osm:/.test(second.id || '') && !/^osm:/.test(first.id || '') ? second : first;
+    var other = preferred === first ? second : first;
+    var merged = Object.assign({},preferred);
+    ['localName','englishName','officialName','wikidata','wikipedia','website','phone','image','imageSource','imageAttribution','commons','address'].forEach(function (key) { if (!merged[key] && other[key]) merged[key] = other[key]; });
+    merged.aliases = Array.from(new Set((first.aliases || []).concat(second.aliases || [],placeAliases(first),placeAliases(second))));
+    merged.distance = Math.min(Number(first.distance) || 0,Number(second.distance) || 0);
+    return merged;
+  }
+  function canonicalPlaces(candidates) {
+    var places=[];
+    candidates.forEach(function (candidate) {
+      var index=places.findIndex(function (existing) { return samePhysicalPlace(existing,candidate); });
+      if (index < 0) places.push(candidate);
+      else places[index]=mergePhysicalPlaces(places[index],candidate);
+    });
+    return places;
+  }
   function placeDataAttributes(place) { return ' data-place-id="'+escapeHtml(place.id)+'" data-place-name="'+escapeHtml(place.name)+'" data-place-category="'+escapeHtml(place.category)+'" data-place-address="'+escapeHtml(place.address)+'" data-place-lat="'+Number(place.lat)+'" data-place-lon="'+Number(place.lon)+'" data-place-source="'+escapeHtml(place.source)+'" data-place-phone="'+escapeHtml(place.phone)+'" data-place-wikidata="'+escapeHtml(place.wikidata)+'" data-place-wikipedia="'+escapeHtml(place.wikipedia)+'" data-place-commons="'+escapeHtml(place.commons||'')+'" data-place-image="'+escapeHtml(place.image)+'" data-place-image-source="'+escapeHtml(place.imageSource||'')+'" data-place-image-attribution="'+escapeHtml(place.imageAttribution||'')+'"'; }
   function resultToolsHtml(count) { return '<div class="nearby-result-tools"><label><span>סינון תוצאות</span><select data-nearby-result-filter><option value="all">הכול</option><option value="near">עד קילומטר</option><option value="website">עם אתר רשמי</option><option value="kosher">מסומן ככשר</option><option value="image">עם תמונה</option></select></label><label><span>סידור לפי</span><select data-nearby-result-sort><option value="distance">הקרובים ביותר</option><option value="info">הכי הרבה מידע</option><option value="name">שם המקום</option></select></label><strong data-nearby-visible-count>' + count + ' תוצאות</strong></div><div class="nearby-filter-empty" data-nearby-filter-empty hidden>אין תוצאות שמתאימות לסינון שבחרת. אפשר לבחור סינון אחר.</div>'; }
   function wireResultTools(results) {
@@ -247,9 +278,8 @@
   }
 
   function renderPlaces(data, wikiPlaces, lat, lon, status, results, accuracy, warnings, searchTerm, category, destinationName) {
-    var seen = {};
     var osmPlaces = (data.elements || []).map(function (item) { return placeFromOsm(item,{lat:lat,lon:lon}); }).filter(Boolean);
-    var places = wikiPlaces.concat(osmPlaces).filter(function (place) { var key = place.id || place.name.toLowerCase(); if (seen[key]) return false; seen[key] = true; return true; }).sort(function (placeA, placeB) { return placeA.distance - placeB.distance; }).slice(0, 100);
+    var places = canonicalPlaces(wikiPlaces.concat(osmPlaces)).sort(function (placeA, placeB) { return placeA.distance - placeB.distance; }).slice(0, 100);
     var displayTerm = searchTerm || (categoryByKey[category]&&categoryByKey[category].he) || 'מקומות מומלצים';
     var broadGoogleQuery = displayTerm + ' ' + (destinationName || '') + ' ' + lat + ',' + lon;
     var googleSummary = '<div class="nearby-google-summary"><div><i class="fa-brands fa-google"></i><span><strong>ציונים וביקורות עדכניים</strong><small>פתח את כל תוצאות “' + escapeHtml(displayTerm) + '” ב־Google Maps</small></span></div><a href="' + googleMapsUrl(broadGoogleQuery) + '" target="_blank" rel="noopener">פתיחה ב־Google Maps</a></div>';
@@ -374,5 +404,5 @@
     invalidateMedia: function (place) { var key = place && (place.id || place.wikidata || place.wikipedia || place.wikipediaUrl || place.name); if (key) placeMediaCache.delete(key); }
   };
   window.dispatchEvent(new CustomEvent('travelmate:nearby-ready'));
-  window.TravelMateNearbyTest = { gpsSearchRadius: gpsSearchRadius, normalizePlaceName: normalizePlaceName, poiScore: poiScore, categoryCount: categoryRegistry.length };
+  window.TravelMateNearbyTest = { gpsSearchRadius: gpsSearchRadius, normalizePlaceName: normalizePlaceName, poiScore: poiScore, canonicalPlaces: canonicalPlaces, categoryCount: categoryRegistry.length };
 })();
