@@ -30,3 +30,8 @@ test('travel assistant edge function sanitizes the new context and identifies as
   assert.match(edge, /You are Mate, the friendly personal AI assistant/);
   assert.doesNotMatch(edge, /You are Nevo/);
 });
+
+test('Mate edge function allows the active local TravelMate development port', () => {
+  assert.match(edge, /http:\/\/127\.0\.0\.1:8001/);
+  assert.match(edge, /http:\/\/localhost:8001/);
+});
