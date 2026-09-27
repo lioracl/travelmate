@@ -89,7 +89,11 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     var expand=event.target.closest('[data-calendar-expand]');if(expand){var row=expand.closest('[data-calendar-event]');row.classList.toggle('expanded');expand.querySelector('i').className=row.classList.contains('expanded')?'fa-solid fa-chevron-up':'fa-solid fa-chevron-down';return}
     var proxy=event.target.closest('[data-calendar-edit-proxy]');if(proxy){var row=proxy.closest('[data-calendar-event]'),edit=row&&row.querySelector('[data-calendar-edit]');edit&&edit.click()}
   });
-  var observer=new MutationObserver(function(){requestAnimationFrame(function(){enhanceCalendar();enhancePastDays()})});
-  function start(){observer.observe(document.body,{childList:true,subtree:true});enhanceCalendar();enhancePastDays();document.addEventListener('travelmate:planner-rendered',enhancePastDays)}
+  var enhancementFrame=0,observedEnhancementRoots=[];
+  function observeEnhancementRoot(root){if(!root||observedEnhancementRoots.indexOf(root)>=0)return;observer.observe(root,{childList:true,subtree:true});observedEnhancementRoots.push(root)}
+  function observePlannerRoots(){observeEnhancementRoot(document.querySelector('#plan')||document.querySelector('[data-generated-days]'));observeEnhancementRoot(document.querySelector('.trip-calendar-backdrop'))}
+  function scheduleEnhancements(){if(enhancementFrame)return;enhancementFrame=requestAnimationFrame(function(){enhancementFrame=0;observePlannerRoots();enhanceCalendar();enhancePastDays()})}
+  var observer=new MutationObserver(scheduleEnhancements);
+  function start(){observePlannerRoots();enhanceCalendar();enhancePastDays();document.addEventListener('travelmate:planner-rendered',scheduleEnhancements);document.addEventListener('click',function(event){if(event.target.closest('[data-open-trip-calendar],.trip-calendar-backdrop'))scheduleEnhancements()})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start()
 })();

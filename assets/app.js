@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260927-23'}catch(error){return'20260927-23'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260927-24'}catch(error){return'20260927-24'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={};
@@ -42,8 +42,9 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   }
   function loadSequence(files){return files.reduce(function(chain,file){return chain.then(function(ok){return ok===false?false:loadScript(file)})},Promise.resolve(true))}
   function waitForSection(view){
-    if(!dynamicSectionViews[view]||document.getElementById(view))return Promise.resolve();
-    return new Promise(function(resolve){var deadline=Date.now()+2500;(function check(){if(document.getElementById(view)||Date.now()>=deadline){resolve();return}requestAnimationFrame(check)})()})
+    if(!dynamicSectionViews[view])return Promise.resolve(true);
+    if(document.getElementById(view))return Promise.resolve(true);
+    return new Promise(function(resolve){var deadline=Date.now()+2500;(function check(){if(document.getElementById(view)){resolve(true);return}if(Date.now()>=deadline){resolve(false);return}requestAnimationFrame(check)})()})
   }
   function loadFeature(view){
     var feature=features[view];if(!feature)return Promise.resolve(true);
@@ -53,7 +54,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
       return loadSequence(feature.scripts||[])
     }).then(function(ready){
       if(ready===false)return false;
-      return waitForSection(view).then(function(){return true})
+      return waitForSection(view)
     }).then(function(ready){
       if(ready===false)return false;
       window.dispatchEvent(new CustomEvent('travelmate:feature-ready',{detail:{view:view}}));
@@ -73,7 +74,8 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
       if(/^(transport|getaways|group|memories)$/.test(link.dataset.view||''))link.remove()
     })
   }
-  function scheduleIdleFeature(view,delay){var run=function(){loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
+  function canWarmNonCritical(){var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||null;return !document.hidden&&!(connection&&connection.saveData)&&!(connection&&/^(slow-2g|2g)$/i.test(String(connection.effectiveType||'')))}
+  function scheduleIdleFeature(view,delay){var run=function(){if(canWarmNonCritical())loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
   function warmNonCritical(){scheduleIdleFeature('account',4200)}
   function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
   if(isHomePage){
@@ -103,9 +105,6 @@ window.addEventListener('beforeinstallprompt',function(event){
   if(!('serviceWorker' in navigator)||location.protocol==='file:'||window.__travelMateServiceWorkerScheduled)return;
   window.__travelMateServiceWorkerScheduled=true;
   var rootUrl=new URL('../',appScript.src);
-  navigator.serviceWorker.addEventListener('controllerchange',function(){
-    window.dispatchEvent(new CustomEvent('travelmate:app-update-ready'));
-  });
   function register(){
     navigator.serviceWorker.register(new URL('sw.js?v='+encodeURIComponent(appAssetVersion),rootUrl).href,{updateViaCache:'none'}).then(function(registration){
       window.TravelMateServiceWorkerRegistration=registration;
@@ -122,7 +121,9 @@ window.addEventListener('beforeinstallprompt',function(event){
 })();
 var lastModalTrigger=null;
 function closeModal(){document.querySelectorAll('.modal-backdrop.open').forEach(function(modal){modal.classList.remove('open')});if(lastModalTrigger&&document.contains(lastModalTrigger)){lastModalTrigger.focus()}lastModalTrigger=null}
-function focusModal(modal){var target=modal.querySelector('[data-close],button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');if(target)requestAnimationFrame(function(){target.focus()})}
+function modalFocusable(modal){return [].slice.call(modal.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function(node){return node.offsetParent!==null})}
+function focusModal(modal){var targets=modalFocusable(modal),target=targets[0];if(target)requestAnimationFrame(function(){target.focus()})}
+function trapGenericModalFocus(event){if(event.key!=='Tab')return;var modal=document.querySelector('.modal-backdrop.open:not(#modal-weather-live)');if(!modal)return;var targets=modalFocusable(modal);if(!targets.length){event.preventDefault();return}var first=targets[0],last=targets[targets.length-1],active=document.activeElement;if(event.shiftKey&&(active===first||!modal.contains(active))){event.preventDefault();last.focus()}else if(!event.shiftKey&&(active===last||!modal.contains(active))){event.preventDefault();first.focus()}}
 function showDayToast(message){var toast=document.getElementById('day-toast');if(!toast)return;toast.textContent=message;toast.classList.add('show');clearTimeout(window.__dayToastTimer);window.__dayToastTimer=setTimeout(function(){toast.classList.remove('show')},2600)}
 function minutesFromTime(value){var parts=(value||'00:00').split(':').map(Number);return (parts[0]||0)*60+(parts[1]||0)}
 function checkDayConflicts(panel){if(!panel)return false;var items=[].slice.call(panel.querySelectorAll('.day-item'));var hasConflict=false;var previousStart=-1;var previousEnd=-1;items.forEach(function(item){var start=minutesFromTime(item.dataset.time);var duration=Number(item.dataset.duration||60);if(start<previousStart||start<previousEnd)hasConflict=true;previousStart=start;previousEnd=start+duration});if(hasConflict)showDayToast('יש חפיפה או סדר שעות לא רציף, אבל השינוי נשמר.');return hasConflict}
@@ -148,11 +149,11 @@ document.addEventListener('click',function(event){
 });
 
 document.addEventListener('change',function(event){if(event.target.classList.contains('duration-select')){var item=event.target.closest('.day-item');item.dataset.duration=event.target.value;var label=item.querySelector('.duration-label');if(label)label.textContent='משך: '+event.target.value+' דק׳';checkDayConflicts(item.closest('.day-panel'))}});
-document.addEventListener('submit',function(event){var form=event.target.closest('[data-add-activity]');if(!form)return;event.preventDefault();var panel=form.closest('.day-panel');var list=panel.querySelector('[data-sortable-day]');var time=form.elements.time.value||'11:00';var title=form.elements.title.value||'פעילות חדשה';var category=form.elements.category.value||'פעילות';var duration=form.elements.duration.value||'60';var item=document.createElement('article');item.className='day-item upcoming';item.draggable=true;item.dataset.activityId='new-'+Date.now();item.dataset.time=time;item.dataset.duration=duration;item.innerHTML='<button class="drag-handle" type="button" aria-label="גרירת פעילות"><i class="fa-solid fa-grip-vertical"></i></button><time>'+time+'</time><div class="day-dot"><i class="fa-solid fa-location-dot"></i></div><div><span>חדש · '+category+'</span><strong>'+title+'</strong><p>מיקום יתווסף בהמשך · אפשר לערוך לפי הצורך</p><div class="day-meta"><span class="duration-label">משך: '+duration+' דק׳</span><span class="state-label">מתוכנן</span></div></div><div class="activity-controls"><select class="duration-select" aria-label="משך פעילות"><option value="30">30 דק׳</option><option value="60">שעה</option><option value="90">שעה וחצי</option><option value="120">שעתיים</option><option value="180">3 שעות</option></select><button class="mini-btn hold-btn" type="button">השהיה</button><button class="mini-btn tentative-btn" type="button">?</button><button class="mini-btn danger delete-btn" type="button">מחיקה</button></div>';item.querySelector('.duration-select').value=duration;var empty=list.querySelector('.empty-day');if(empty)empty.remove();list.appendChild(item);form.elements.title.value='';checkDayConflicts(panel);showDayToast('הפעילות נוספה ליום הזה.')});
+document.addEventListener('submit',function(event){var form=event.target.closest('[data-add-activity]');if(!form)return;event.preventDefault();var panel=form.closest('.day-panel');var list=panel.querySelector('[data-sortable-day]');var time=form.elements.time.value||'11:00';var title=form.elements.title.value||'פעילות חדשה';var category=form.elements.category.value||'פעילות';var duration=form.elements.duration.value||'60';var item=document.createElement('article');item.className='day-item upcoming';item.draggable=true;item.dataset.activityId='new-'+Date.now();item.dataset.time=time;item.dataset.duration=duration;item.innerHTML='<button class="drag-handle" type="button" aria-label="גרירת פעילות"><i class="fa-solid fa-grip-vertical"></i></button><time>'+escapePlannerText(time)+'</time><div class="day-dot"><i class="fa-solid fa-location-dot"></i></div><div><span>חדש · '+escapePlannerText(category)+'</span><strong>'+escapePlannerText(title)+'</strong><p>מיקום יתווסף בהמשך · אפשר לערוך לפי הצורך</p><div class="day-meta"><span class="duration-label">משך: '+escapePlannerText(duration)+' דק׳</span><span class="state-label">מתוכנן</span></div></div><div class="activity-controls"><select class="duration-select" aria-label="משך פעילות"><option value="30">30 דק׳</option><option value="60">שעה</option><option value="90">שעה וחצי</option><option value="120">שעתיים</option><option value="180">3 שעות</option></select><button class="mini-btn hold-btn" type="button">השהיה</button><button class="mini-btn tentative-btn" type="button">?</button><button class="mini-btn danger delete-btn" type="button">מחיקה</button></div>';item.querySelector('.duration-select').value=duration;var empty=list.querySelector('.empty-day');if(empty)empty.remove();list.appendChild(item);form.elements.title.value='';checkDayConflicts(panel);showDayToast('הפעילות נוספה ליום הזה.')});
 document.addEventListener('dragstart',function(event){var item=event.target.closest('.day-item');if(!item)return;item.classList.add('dragging');event.dataTransfer.effectAllowed='move'});
 document.addEventListener('dragend',function(event){var item=event.target.closest('.day-item');if(!item)return;item.classList.remove('dragging');checkDayConflicts(item.closest('.day-panel'))});
 document.addEventListener('dragover',function(event){var list=event.target.closest('[data-sortable-day]');if(!list)return;event.preventDefault();var dragging=list.querySelector('.dragging');if(!dragging)return;var siblings=[].slice.call(list.querySelectorAll('.day-item:not(.dragging)'));var next=siblings.find(function(item){return event.clientY<item.getBoundingClientRect().top+item.getBoundingClientRect().height/2});list.insertBefore(dragging,next||null)});
-document.addEventListener('keydown',function(event){if(event.key==='Escape'){var weatherModal=document.getElementById('modal-weather-live');if(!(weatherModal&&weatherModal.classList.contains('open')))closeModal();closeMobileMenu()}});
+document.addEventListener('keydown',function(event){trapGenericModalFocus(event);if(event.key==='Escape'){var weatherModal=document.getElementById('modal-weather-live');if(!(weatherModal&&weatherModal.classList.contains('open')))closeModal();closeMobileMenu()}});
 
 function closeMobileMenu(){document.body.classList.remove('mobile-menu-open');var button=document.querySelector('[data-mobile-menu]');if(button){button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','פתיחת תפריט');var icon=button.querySelector('i');if(icon)icon.className='fa-solid fa-bars'}}
 document.addEventListener('click',function(event){var menuButton=event.target.closest('[data-mobile-menu]');if(menuButton){var opening=!document.body.classList.contains('mobile-menu-open');document.body.classList.toggle('mobile-menu-open',opening);menuButton.setAttribute('aria-expanded',String(opening));menuButton.setAttribute('aria-label',opening?'סגירת תפריט':'פתיחת תפריט');var icon=menuButton.querySelector('i');if(icon)icon.className=opening?'fa-solid fa-xmark':'fa-solid fa-bars';return}if(event.target.closest('.sidebar nav a,.trip-sidebar-more-menu a,.trip-sidebar-more-menu button')||event.target.matches('.mobile-menu-shade'))closeMobileMenu()});

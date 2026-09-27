@@ -11,6 +11,7 @@
   var assetScript = document.currentScript;
   var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
   var countedEntries = new Set();
+  var countedEntryLimit = 800;
   var state = readUsage();
   var manualMode = localStorage.getItem(MODE_KEY) || 'auto';
   var meter;
@@ -100,6 +101,7 @@
     var key = [entry.entryType, entry.name, Math.round(entry.startTime), bytes].join('|');
     if (countedEntries.has(key)) return;
     countedEntries.add(key);
+    while (countedEntries.size > countedEntryLimit) countedEntries.delete(countedEntries.values().next().value);
     ensureToday();
     addBytes(bytes);
   }

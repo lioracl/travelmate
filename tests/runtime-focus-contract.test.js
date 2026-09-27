@@ -50,3 +50,13 @@ test('Weather dialog traps focus and restores the Weather launcher', () => {
   assert.match(source, /event\.key === 'Escape'[\s\S]*close\(ui\)/);
   assert.match(app, /weatherModal=document\.getElementById\('modal-weather-live'\);if\(!\(weatherModal&&weatherModal\.classList\.contains\('open'\)\)\)closeModal\(\)/);
 });
+
+test('generic modal dialogs trap Tab focus without competing with Weather', () => {
+  const source = read('assets/app.js');
+  assert.match(source, /function modalFocusable\(modal\)/);
+  assert.match(source, /function trapGenericModalFocus\(event\)/);
+  assert.match(source, /\.modal-backdrop\.open:not\(#modal-weather-live\)/);
+  assert.match(source, /event\.shiftKey[\s\S]*last\.focus\(\)/);
+  assert.match(source, /active===last[\s\S]*first\.focus\(\)/);
+  assert.match(source, /trapGenericModalFocus\(event\);if\(event\.key==='Escape'\)/);
+});

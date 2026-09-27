@@ -35,3 +35,12 @@ test('admin personal-data reads and writes require aal2', () => {
   }
   assert.match(adminCenter, /sensitive\.has\(action\) && jwtPayload\(token\)\.aal !== 'aal2'/);
 });
+
+test('legacy day activity renderer escapes user-controlled values before innerHTML', () => {
+  const app = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.match(app, /<time>'\+escapePlannerText\(time\)\+'<\/time>/);
+  assert.match(app, /חדש · '\+escapePlannerText\(category\)/);
+  assert.match(app, /<strong>'\+escapePlannerText\(title\)\+'<\/strong>/);
+  assert.match(app, /משך: '\+escapePlannerText\(duration\)\+' דק׳/);
+  assert.doesNotMatch(app, /<strong>'\+title\+'<\/strong>/);
+});

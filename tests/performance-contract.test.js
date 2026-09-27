@@ -159,17 +159,17 @@ test('service worker precaches startup essentials and runtime-caches feature-onl
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/nearby\.js'/);
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/collaboration\.js'/);
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/transport-planner\.js'/);
-  assert.match(serviceWorker, /freshAsset[\s\S]*networkFirst\(event\.request\)/);
+  assert.match(serviceWorker, /freshAsset[\s\S]*networkFirst\(event\.request,event,false\)/);
 });
 
 test('service worker treats HTTP 5xx navigation responses as recoverable offline failures', () => {
-  assert.match(serviceWorker, /if\(response\.status>=500\)\{[\s\S]*?caches\.match\(request\)[\s\S]*?throw new Error\('http-'\+response\.status\)/);
+  assert.match(serviceWorker, /if\(response\.status>=500\)\{[\s\S]*?caches\.match\(request,matchOptions\)[\s\S]*?throw new Error\('http-'\+response\.status\)/);
 });
 
 test('versioned local assets use cache-first because the version is part of the URL', () => {
   assert.match(serviceWorker, /async function cacheFirstVersioned/);
   assert.match(serviceWorker, /versionedAsset=freshAsset&&url\.searchParams\.has\('v'\)/);
-  assert.match(serviceWorker, /versionedAsset[\s\S]*cacheFirstVersioned\(event\.request\)/);
+  assert.match(serviceWorker, /versionedAsset[\s\S]*cacheFirstVersioned\(event\.request,event\)/);
 });
 
 test('Overpass mirrors are hedged instead of both starting immediately', () => {
@@ -258,4 +258,59 @@ test('service worker registration is a delayed app bootstrap instead of a Smart 
   assert.doesNotMatch(hub, /manifest\.webmanifest/);
   assert.match(hub, /window\.TravelMateServiceWorkerRegistration/);
   assert.match(hub, /window\.TravelMateInstallPrompt/);
+});
+
+test('network usage keeps its counted resource identity set bounded', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/network-usage.js'), 'utf8');
+  assert.match(source, /var countedEntryLimit = 800/);
+  assert.match(source, /while \(countedEntries\.size > countedEntryLimit\) countedEntries\.delete\(countedEntries\.values\(\)\.next\(\)\.value\)/);
+});
+
+test('auto planner coalesces mutation enhancement work into one animation frame', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/auto-planner.js'), 'utf8');
+  assert.match(source, /var enhancementFrame=0/);
+  assert.match(source, /function scheduleEnhancements\(\)\{if\(enhancementFrame\)return;enhancementFrame=requestAnimationFrame/);
+  assert.match(source, /var observer=new MutationObserver\(scheduleEnhancements\)/);
+  assert.match(source, /planner-rendered',scheduleEnhancements/);
+  assert.doesNotMatch(source, /new MutationObserver\(function\(\)\{requestAnimationFrame/);
+});
+
+test('service worker keeps cache writes alive without delaying the response', () => {
+  assert.match(serviceWorker, /function persistResponse\(event,request,response\)/);
+  assert.match(serviceWorker, /event\.waitUntil\(task\)/);
+  assert.match(serviceWorker, /persistResponse\(event,request,response\)/);
+});
+
+test('offline navigation ignores query strings while versioned assets remain exact', () => {
+  assert.match(serviceWorker, /networkFirst\(event\.request,event,true\)/);
+  assert.match(serviceWorker, /caches\.match\(event\.request,\{ignoreSearch:true\}\)/);
+  assert.match(serviceWorker, /cacheFirstVersioned\(event\.request,event\)/);
+  const start = serviceWorker.indexOf('async function cacheFirstVersioned');
+  const end = serviceWorker.indexOf("self.addEventListener('fetch'", start);
+  const versionedBlock = serviceWorker.slice(start, end);
+  assert.match(versionedBlock, /caches\.match\(request\)/);
+  assert.doesNotMatch(versionedBlock, /ignoreSearch:true/);
+});
+
+test('Auto Planner observes only planner/calendar roots instead of the entire document body', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/auto-planner.js'), 'utf8');
+  assert.match(source, /function observePlannerRoots\(\)/);
+  assert.match(source, /document\.querySelector\('#plan'\)/);
+  assert.match(source, /document\.querySelector\('\.trip-calendar-backdrop'\)/);
+  assert.doesNotMatch(source, /observer\.observe\(document\.body/);
+});
+
+test('idle Account warming skips hidden, Save-Data and very slow connections', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.match(source, /function canWarmNonCritical\(\)/);
+  assert.match(source, /!document\.hidden/);
+  assert.match(source, /connection&&connection\.saveData/);
+  assert.match(source, /slow-2g\|2g/);
+  assert.match(source, /if\(canWarmNonCritical\(\)\)loadFeature\(view\)/);
+});
+
+test('PWA bootstrap does not dispatch the unused app-update-ready event', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.doesNotMatch(source, /travelmate:app-update-ready/);
+  assert.match(source, /travelmate:service-worker-ready/);
 });

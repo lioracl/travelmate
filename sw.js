@@ -1,5 +1,5 @@
-﻿const CACHE_NAME='travelmate-smart-v252';
-const ASSET_VERSION='20260927-23';
+﻿const CACHE_NAME='travelmate-smart-v253';
+const ASSET_VERSION='20260927-24';
 const CORE_PATHS=[
   './',
   './index.html',
@@ -37,29 +37,34 @@ const CORE=CORE_PATHS.map(path=>/\.(?:js|css|json)$/i.test(path)?path+'?v='+ASSE
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>/^travelmate-smart-v\d+$/.test(key)&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting()});
-async function networkFirst(request){
+function persistResponse(event,request,response){
+  if(!event||!response||!response.ok)return;
+  const task=caches.open(CACHE_NAME).then(cache=>cache.put(request,response.clone()));
+  event.waitUntil(task);
+}
+async function networkFirst(request,event,ignoreSearch){
+  const matchOptions=ignoreSearch?{ignoreSearch:true}:undefined;
   try{
     const response=await fetch(request,{cache:'no-store'});
     if(response.ok){
-      const copy=response.clone();
-      caches.open(CACHE_NAME).then(cache=>cache.put(request,copy));
+      persistResponse(event,request,response);
       return response;
     }
     if(response.status>=500){
-      const hit=await caches.match(request);
+      const hit=await caches.match(request,matchOptions);
       if(hit)return hit;
       throw new Error('http-'+response.status);
     }
     return response;
   }catch(error){
-    return caches.match(request).then(hit=>hit||Promise.reject(error));
+    return caches.match(request,matchOptions).then(hit=>hit||Promise.reject(error));
   }
 }
-async function cacheFirstVersioned(request){
+async function cacheFirstVersioned(request,event){
   const hit=await caches.match(request);
   if(hit)return hit;
   const response=await fetch(request,{cache:'no-store'});
-  if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(request,copy))}
+  persistResponse(event,request,response);
   return response;
 }
 self.addEventListener('fetch',event=>{
@@ -68,16 +73,13 @@ self.addEventListener('fetch',event=>{
   const freshAsset=/\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
   const versionedAsset=freshAsset&&url.searchParams.has('v');
   event.respondWith(event.request.mode==='navigate'
-    ?networkFirst(event.request).catch(()=>caches.match(event.request).then(hit=>hit||(url.pathname.includes('/trip/custom/')?caches.match('./trip/custom/index.html'):caches.match('./index.html'))))
+    ?networkFirst(event.request,event,true).catch(()=>caches.match(event.request,{ignoreSearch:true}).then(hit=>hit||(url.pathname.includes('/trip/custom/')?caches.match('./trip/custom/index.html'):caches.match('./index.html'))))
     :versionedAsset
-      ?cacheFirstVersioned(event.request)
+      ?cacheFirstVersioned(event.request,event)
     :freshAsset
-      ?networkFirst(event.request)
+      ?networkFirst(event.request,event,false)
     :caches.match(event.request).then(hit=>hit||fetch(event.request).then(response=>{
-      if(response.ok){
-        const copy=response.clone();
-        caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));
-      }
+      persistResponse(event,event.request,response);
       return response;
     }).catch(()=>caches.match(event.request)))
   );

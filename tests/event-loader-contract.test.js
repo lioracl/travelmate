@@ -105,3 +105,11 @@ test('parallel requests for one feature share a single in-flight load and ready 
   assert.match(app, /featureLoads\[view\]=Promise\.all/);
   assert.match(app, /delete featureLoads\[view\]/);
 });
+
+test('dynamic feature readiness requires its section to exist before the deadline', () => {
+  const app = read('assets/app.js');
+  assert.match(app, /if\(!dynamicSectionViews\[view\]\)return Promise\.resolve\(true\)/);
+  assert.match(app, /if\(document\.getElementById\(view\)\)return Promise\.resolve\(true\)/);
+  assert.match(app, /if\(Date\.now\(\)>=deadline\)\{resolve\(false\);return\}/);
+  assert.match(app, /return waitForSection\(view\)[\s\S]*if\(ready===false\)return false;[\s\S]*travelmate:feature-ready/);
+});
