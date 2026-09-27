@@ -137,7 +137,7 @@
       return;
     }
     var available = Array.isArray(trips) ? trips.slice() : [];
-    var now = new Date().toISOString().slice(0, 10);
+    var now = localDateString();
     var trip = available.find(function (item) { return item.start <= now && item.end >= now; }) ||
       available.find(function (item) { return item.end >= now; }) || available[0];
     if (!trip) return setMessage('כדי להשתמש בקיצור יש ליצור או לסנכרן טיול תחילה.', true);
@@ -245,6 +245,7 @@
     return code ? String.fromCodePoint.apply(String, code.split('').map(function (letter) { return 127397 + letter.charCodeAt(0); })) : '🌍';
   }
   function todayValue() { var now = new Date(); return new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+  function localDateString(value) { var date = value || new Date(); return String(date.getFullYear()) + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
   function dateState(trip) {
     var today = todayValue();
     var start = trip.start ? new Date(trip.start + 'T00:00:00') : null;
@@ -817,8 +818,8 @@
   if (form) {
     var today = new Date();
     var next = new Date(today.getTime() + 7 * 86400000);
-    form.elements.start.value = today.toISOString().slice(0, 10);
-    form.elements.end.value = next.toISOString().slice(0, 10);
+    form.elements.start.value = localDateString(today);
+    form.elements.end.value = localDateString(next);
     form.addEventListener('submit', async function (event) {
       event.preventDefault();
       var error = form.querySelector('[data-form-error]');
