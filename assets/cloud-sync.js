@@ -151,10 +151,46 @@
     );
   }
 
+  function tripRevision(trip) {
+    var revision = Number(trip && trip.cloudRevision || 0);
+    return Number.isFinite(revision) && revision > 0 ? revision : 0;
+  }
+
+  function hasUnsyncedChanges(trip) {
+    if (!trip) return false;
+    var status = String(trip.syncStatus || '');
+    return Boolean(trip.syncMutationId)
+      || status === 'pending'
+      || status === 'failed'
+      || status === 'unknown'
+      || status === 'conflict';
+  }
+
   function newestTrip(left, right) {
+    var leftUnsynced = hasUnsyncedChanges(left);
+    var rightUnsynced = hasUnsyncedChanges(right);
+    if (leftUnsynced !== rightUnsynced) return rightUnsynced ? right : left;
+
+    var leftRevision = tripRevision(left);
+    var rightRevision = tripRevision(right);
+    if (leftRevision !== rightRevision) return rightRevision > leftRevision ? right : left;
+
     var leftTime = tripTimestamp(left);
     var rightTime = tripTimestamp(right);
     return rightTime > leftTime ? right : left;
+  }
+
+  function shouldUseCloudTrip(local, cloud) {
+    if (!local) return true;
+    if (hasUnsyncedChanges(local)) return false;
+
+    var localRevision = tripRevision(local);
+    var cloudRevision = tripRevision(cloud);
+    if (localRevision !== cloudRevision && (localRevision || cloudRevision)) {
+      return cloudRevision > localRevision;
+    }
+
+    return tripTimestamp(cloud) >= tripTimestamp(local);
   }
 
   function mergeTripLists(lists, fallbackOwnerId) {
@@ -389,7 +425,7 @@
   function acceptCloudTrip(incoming) {
     if (isTripDeleted(incoming)) return false;
     var current = localTripFor(incoming);
-    if (current && tripTimestamp(current) > tripTimestamp(incoming)) return false;
+    if (current && !shouldUseCloudTrip(current, incoming)) return false;
     upsertLocalTrip(incoming);
     return true;
   }
@@ -595,14 +631,34 @@
       local.ownerId = cloud.ownerId;
       upsertLocalTrip(local);
     }
-    if (!local || tripTimestamp(cloud) >= tripTimestamp(local)) {
+    if (!local || shouldUseCloudTrip(local, cloud)) {
       upsertLocalTrip(cloud);
       return cloud;
     }
-    try { await saveTrip(local, requestUserId, true); }
-    catch (error) { if (acceptRemoteDeletion(local, error, requestUserId)) return null; throw error; }
-    if (isTripDeleted(id, expectedOwnerId || local && local.ownerId || requestUserId)) return null;
-    return localTripFor(local) || local;
+    var localConflict = String(local.syncStatus || '') === 'conflict';
+    var legacyLocalAhead = !tripRevision(local) && !tripRevision(cloud)
+      && tripTimestamp(local) > tripTimestamp(cloud);
+    var localNeedsSave = (hasUnsyncedChanges(local) && !localConflict) || legacyLocalAhead;
+    if (local.ownerId && String(local.ownerId) !== requestUserId && (localConflict || localNeedsSave)) {
+      var editable = await canEditSharedTrip(local.ownerId, local.id);
+      assertActiveUser(requestUserId);
+      if (!editable) {
+        upsertLocalTrip(cloud);
+        return cloud;
+      }
+    }
+    if (localConflict) return local;
+    if (localNeedsSave) {
+      try { await saveTrip(local, requestUserId, true); }
+      catch (error) {
+        if (acceptRemoteDeletion(local, error, requestUserId)) return null;
+        if (error && error.code === 'TRIP_CONFLICT') return localTripFor(local) || local;
+        throw error;
+      }
+      if (isTripDeleted(id, expectedOwnerId || local && local.ownerId || requestUserId)) return null;
+      return localTripFor(local) || local;
+    }
+    return local;
   }
 
   async function acceptTripInvite(token) {
@@ -760,24 +816,35 @@
         assertActiveUser(syncUserId);
         if (isTripDeleted(local)) return null;
         return localTripFor(local) || local;
-      } else if (tripTimestamp(local) > tripTimestamp(cloud)) {
-        if (local.ownerId && String(local.ownerId) !== syncUserId) {
-          var editable = await canEditSharedTrip(local.ownerId, local.id);
-          assertActiveUser(syncUserId);
-          if (!editable) {
-            readOnlySharedIds.add(identity);
-            removeLocalTrip(local.id, local.ownerId);
-            upsertLocalTrip(cloud);
-            return cloud;
-          }
+      }
+      if (shouldUseCloudTrip(local, cloud)) return cloud;
+      var localConflict = String(local.syncStatus || '') === 'conflict';
+      var legacyLocalAhead = !tripRevision(local) && !tripRevision(cloud)
+        && tripTimestamp(local) > tripTimestamp(cloud);
+      var localNeedsSave = (hasUnsyncedChanges(local) && !localConflict) || legacyLocalAhead;
+      if (local.ownerId && String(local.ownerId) !== syncUserId && (localConflict || localNeedsSave)) {
+        var editable = await canEditSharedTrip(local.ownerId, local.id);
+        assertActiveUser(syncUserId);
+        if (!editable) {
+          readOnlySharedIds.add(identity);
+          removeLocalTrip(local.id, local.ownerId);
+          upsertLocalTrip(cloud);
+          return cloud;
         }
+      }
+      if (localConflict) return local;
+      if (localNeedsSave) {
         try { await saveTrip(local, syncUserId, true); }
-        catch (error) { if (acceptRemoteDeletion(local, error, syncUserId)) return null; throw error; }
+        catch (error) {
+          if (acceptRemoteDeletion(local, error, syncUserId)) return null;
+          if (error && error.code === 'TRIP_CONFLICT') return localTripFor(local) || local;
+          throw error;
+        }
         assertActiveUser(syncUserId);
         if (isTripDeleted(local)) return null;
         return localTripFor(local) || local;
       }
-      return cloud;
+      return local;
     }));
     merged = merged.filter(Boolean);
     cloudById.forEach(function (trip) { if (!isTripDeleted(trip)) merged.push(trip); });
