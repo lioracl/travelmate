@@ -45,7 +45,7 @@ test('glass uses blur instead of opacity escalation',()=>{
 
 test('weather uses a dedicated crisp translucent material without optical blur',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(42,78,90,\.52\),rgba\(35,68,80,\.44\)\)/);
+  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(30,69,81,\.38\),rgba\(24,59,71,\.30\)\)/);
   assert.match(css,/--tm-weather-card-text:var\(--tm-surface-photo-text\)/);
   assert.match(css,/--tm-weather-card-blur:none/);
   assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
@@ -183,4 +183,15 @@ test('Transport nested and repeated surfaces do not stack backdrop blur',()=>{
   const transport=read('assets/transport-planner.css');
   assert.match(transport,/\.transport-empty\{[^}]*-webkit-backdrop-filter:none;backdrop-filter:none/);
   assert.match(glass,/data-trip-view="transport"[^\n]*#transport#transport \.service-card\.service-info-link\{\s*--tm-card-blur:none/);
+});
+
+test('light custom Overview uses the softer translucent material',()=>{
+  const css=read('assets/readable-glass.css');
+  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[\s\S]*?--tm-overview-card:linear-gradient\(135deg,rgba\(248,251,250,\.60\),rgba\(232,242,238,\.50\)\);[\s\S]*?--tm-overview-card-soft:rgba\(248,251,250,\.46\)/);
+});
+
+test('New Trip action is a branded translucent action instead of a white banner',()=>{
+  const css=read('assets/readable-glass.css');
+  assert.match(css,/active-trips>\.add-destination\{[\s\S]*?background:linear-gradient\(135deg,rgba\(13,72,81,\.86\),rgba\(20,125,146,\.68\)\)/);
+  assert.match(css,/\.add-destination strong\{[\s\S]*?color:#F7FAFA/);
 });

@@ -250,7 +250,7 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
 
 /* Documents final feature ownership — one shell, row hierarchy, no nested glass cards. */
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents{
-  --tm-documents-page:linear-gradient(135deg,rgba(248,252,250,.72),rgba(231,242,237,.62));
+  --tm-documents-page:linear-gradient(135deg,rgba(248,252,250,.62),rgba(231,242,237,.52));
   --tm-documents-shell:rgba(248,252,250,.46);
   --tm-documents-row-hover:color-mix(in srgb,var(--tm-brand-primary) 7%,transparent);
   --tm-documents-file-row:color-mix(in srgb,var(--tm-card-bg-nested) 48%,transparent)
@@ -436,7 +436,7 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-t
   padding:14px;
   border:1px solid rgba(255,255,255,.58);
   border-radius:22px;
-  background:linear-gradient(135deg,rgba(248,252,250,.72),rgba(231,242,237,.62));
+  background:linear-gradient(135deg,rgba(248,252,250,.62),rgba(231,242,237,.52));
   color:var(--tm-surface-text);
   box-shadow:0 8px 22px rgba(8,39,29,.10);
   -webkit-backdrop-filter:none;

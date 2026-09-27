@@ -139,5 +139,12 @@ test('Documents no longer uses the legacy white-on-dark header override', () => 
 });
 
 test('Documents light theme uses a light translucent page surface without backdrop blur', () => {
-  assert.match(css, /html:not\(\[data-theme="dark"\]\)[\s\S]*data-trip-view="documents"[\s\S]*#documents\{[\s\S]*background:linear-gradient\(135deg,rgba\(248,252,250,\.72\),rgba\(231,242,237,\.62\)\)[\s\S]*backdrop-filter:none/);
+  assert.match(css, /html:not\(\[data-theme="dark"\]\)[\s\S]*data-trip-view="documents"[\s\S]*#documents\{[\s\S]*background:linear-gradient\(135deg,rgba\(248,252,250,\.62\),rgba\(231,242,237,\.52\)\)[\s\S]*backdrop-filter:none/);
+});
+
+test('final canvas transparency rule does not erase the Documents surface', () => {
+  const glass = read('assets/readable-glass.css');
+  const canvasRule = glass.match(/\/\* Canvas never becomes a card\. \*\/[\s\S]*?\{\s*background:transparent;\s*\}/);
+  assert.ok(canvasRule, 'canvas transparency rule exists');
+  assert.doesNotMatch(canvasRule[0], /#documents/);
 });

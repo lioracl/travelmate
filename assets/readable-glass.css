@@ -920,21 +920,29 @@ html body.home-page :is(.trip-archive,.home-about){
   opacity:1
 }
 
-/* The approved New Trip action card keeps its existing material while its owner moves here. */
+/* New Trip is a branded action surface, not a white content banner. */
 .home-page.is-authenticated #active-trips>.add-destination{
-  border:1px solid rgba(255,255,255,.3)!important;
+  border:1px solid rgba(255,255,255,.28)!important;
   border-radius:14px!important;
-  background:linear-gradient(135deg,rgba(248,251,250,.96),rgba(230,242,237,.94))!important;
-  color:#23463b!important;
-  box-shadow:0 6px 18px rgba(8,39,29,.10)!important;
+  background:linear-gradient(135deg,rgba(13,72,81,.86),rgba(20,125,146,.68))!important;
+  color:#F7FAFA!important;
+  box-shadow:0 6px 18px rgba(8,39,29,.14)!important;
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important
 }
-.home-page.is-authenticated .add-destination small{color:#69716e!important}
+.home-page.is-authenticated .add-destination strong{
+  color:#F7FAFA;
+  -webkit-text-fill-color:#F7FAFA
+}
+.home-page.is-authenticated .add-destination small{
+  color:rgba(247,250,250,.82)!important;
+  -webkit-text-fill-color:rgba(247,250,250,.82)
+}
 .home-page.is-authenticated .add-destination .icon{
-  border-color:rgba(14,97,75,.16)!important;
-  background:rgba(255,255,255,.2)!important;
-  color:#0e614b!important
+  border-color:rgba(255,255,255,.26)!important;
+  background:rgba(255,255,255,.12)!important;
+  color:#F7FAFA!important;
+  -webkit-text-fill-color:#F7FAFA
 }
 
 html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#documents):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
@@ -2129,8 +2137,8 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-overview-text:var(--tm-surface-text);
   --tm-overview-muted:var(--tm-surface-text-muted);
 
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(42,78,90,.52),rgba(35,68,80,.44));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(48,86,98,.58),rgba(40,75,87,.50));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(30,69,81,.38),rgba(24,59,71,.30));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(35,78,90,.44),rgba(29,67,79,.36));
   --tm-weather-card-text:var(--tm-surface-photo-text);
   --tm-weather-card-blur:none;
 
@@ -2184,17 +2192,17 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
   --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 42%,rgba(255,255,255,.18));
 }
 
-/* Overview clarity pass: keep the glass language, reduce optical blur and raise surface opacity. */
+/* Overview clarity pass: no optical blur; use controlled translucency for a lighter photo-glass feel. */
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-surface-blur:none;
   --tm-surface-blur-nested:none;
   --tm-surface-blur-photo:none
 }
 html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-surface-glass:linear-gradient(135deg,rgba(248,252,250,.58),rgba(232,243,238,.50));
-  --tm-surface-nested:rgba(248,251,250,.44);
-  --tm-overview-card:linear-gradient(135deg,rgba(248,251,250,.68),rgba(232,242,238,.58));
-  --tm-overview-card-soft:rgba(248,251,250,.54);
+  --tm-surface-glass:linear-gradient(135deg,rgba(248,252,250,.52),rgba(232,243,238,.44));
+  --tm-surface-nested:rgba(248,251,250,.38);
+  --tm-overview-card:linear-gradient(135deg,rgba(248,251,250,.60),rgba(232,242,238,.50));
+  --tm-overview-card-soft:rgba(248,251,250,.46);
   --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.62),rgba(11,45,50,.56))
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
@@ -2227,7 +2235,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .tri
 /* Canvas never becomes a card. */
 html body[data-trip-kind="custom"].tm-new-design main.content,
 html body[data-trip-kind="custom"].tm-new-design main.content :is(
-  #plan,#places,#budget,#documents,#transport,#getaways,#group,#memories,#destination-info
+  #plan,#places,#budget,#transport,#getaways,#group,#memories,#destination-info
 ){
   background:transparent;
 }
