@@ -129,6 +129,15 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
 });
 
+test('admin dialog DOM is created only after admin status is confirmed', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/admin-center.js'), 'utf8');
+  assert.match(source, /if \(!result\.admin\) return;[\s\S]*createDialog\(\);[\s\S]*addLauncher\(\)/);
+  assert.match(source, /function openAdmin\(\)[\s\S]*createDialog\(\);[\s\S]*var modal = document\.querySelector/);
+  const init = source.match(/function init\(\)\s*\{([\s\S]*?)\n  \}/);
+  assert.ok(init);
+  assert.doesNotMatch(init[1], /createDialog\(\)/);
+});
+
 test('failed dynamic assets are evicted and do not announce a ready feature', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.match(source, /style\.onerror=function\(\)\{[^}]*style\.remove\(\);delete loadedStyles\[file\];resolve\(false\)/);
