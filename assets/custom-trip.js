@@ -291,10 +291,49 @@
     }
   }
 
+  function renderSyncConflictBanner(trip) {
+    var banner = document.querySelector('[data-sync-conflict]');
+    if (!banner) return;
+    banner.dataset.syncConflictVisible = String(Boolean(trip && String(trip.syncStatus || '') === 'conflict'));
+  }
+
   function refreshOverviewFromStore() {
     var trip = localTrip();
     if (trip) renderOverviewControlCenter(trip);
+    renderSyncConflictBanner(trip);
   }
+
+  async function resolveVisibleConflict(strategy) {
+    var trip = localTrip();
+    var banner = document.querySelector('[data-sync-conflict]');
+    if (!trip || !banner || !store || typeof store.resolveConflict !== 'function') return;
+    var buttons = Array.prototype.slice.call(banner.querySelectorAll('button'));
+    var message = banner.querySelector('.trip-sync-conflict-copy p');
+    buttons.forEach(function (button) { button.disabled = true; });
+    if (message) message.textContent = 'מסנכרן את הגרסה שבחרת…';
+    try {
+      var result = await store.resolveConflict(trip.id, strategy, trip.ownerId);
+      if (result && result.trip) {
+        renderTrip(result.trip);
+        renderSyncConflictBanner(result.trip);
+      } else {
+        refreshOverviewFromStore();
+      }
+    } catch (error) {
+      console.error('TravelMate conflict resolution failed', error);
+      if (message) message.textContent = 'לא הצלחנו לפתור את ההתנגשות כרגע. השינויים המקומיים נשמרו ולא נדרסו.';
+      renderSyncConflictBanner(localTrip());
+    } finally {
+      buttons.forEach(function (button) { button.disabled = false; });
+    }
+  }
+
+  var useCloudButton = document.querySelector('[data-sync-use-cloud]');
+  var keepLocalButton = document.querySelector('[data-sync-keep-local]');
+  if (useCloudButton) useCloudButton.addEventListener('click', function () { resolveVisibleConflict('cloud'); });
+  if (keepLocalButton) keepLocalButton.addEventListener('click', function () { resolveVisibleConflict('local'); });
+
+  renderSyncConflictBanner(immediateTrip);
 
   ['travelmate:planner-rendered', 'travelmate:places-updated', 'travelmate:activities-updated'].forEach(function (eventName) {
     document.addEventListener(eventName, refreshOverviewFromStore);
