@@ -906,6 +906,8 @@ test('full sync preserves a slow-clock offline edit when the server revision adv
   assert.equal(saveAttempts, 1);
   assert.equal(stored.city, 'Local offline edit');
   assert.equal(stored.syncStatus, 'conflict');
-  assert.equal(stored.cloudRevision, 6);
+  assert.equal(stored.cloudRevision, 5);
+  assert.equal(stored.syncConflict.serverRevision, 6);
+  assert.equal(stored.syncConflict.serverUpdatedAt, cloudRow.updated_at);
   assert.equal(synced[0].city, 'Local offline edit');
 });

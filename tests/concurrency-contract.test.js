@@ -183,7 +183,9 @@ test('client records a server revision conflict without marking the stale payloa
   await assert.rejects(context.window.TravelMateCloud.saveTrip(trip), (error) => error && error.code === 'TRIP_CONFLICT');
   const stored = JSON.parse(storage.get('travelmate-trips'))[0];
   assert.equal(stored.syncStatus, 'conflict');
-  assert.equal(stored.cloudRevision, 11);
+  assert.equal(stored.cloudRevision, 10, 'the local payload must keep the revision it was actually based on');
+  assert.equal(stored.syncConflict.serverRevision, 11);
+  assert.equal(stored.syncConflict.serverUpdatedAt, '2026-09-13T12:00:00.000Z');
   assert.notEqual(stored.syncStatus, 'synced');
 });
 
@@ -363,4 +365,30 @@ test('historical direct-write client retains its local edit when migration revok
   await assert.rejects(context.window.TravelMateCloud.saveTrip(trip), (error) => error && error.code === '42501');
   assert.equal(writeCalls, 1);
   assert.equal(JSON.parse(storage.get('travelmate-trips'))[0].city, 'Local edit');
+});
+
+test('a conflict cannot be silently rebased into a later overwrite', async () => {
+  const trip = { id: 'conflict-retry', ownerId: 'user-1', country: 'Test', city: 'Local v1', start: '2026-01-01', end: '2026-01-02', days: 1, cloudRevision: 10 };
+  const storage = new Map([['travelmate-active-user', 'user-1'], ['travelmate-trips', JSON.stringify([trip])]]);
+  const revisions = [];
+  const payloads = [];
+  const events = [];
+  const client = {
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }) },
+    rpc: async (name, params) => {
+      assert.equal(name, 'save_travel_trip');
+      revisions.push(params.p_expected_revision);
+      payloads.push(params.p_trip);
+      return { error: null, data: [{ result_status: 'conflict', result_revision: 11, result_updated_at: '2026-09-13T12:00:00.000Z' }] };
+    }
+  };
+  const context = { console, setTimeout, clearTimeout, CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; }, localStorage: { getItem: (key) => storage.has(key) ? storage.get(key) : null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) }, window: { crypto: { randomUUID: () => '44444444-4444-4444-8444-444444444444' }, __travelMateSupabaseClient: client, dispatchEvent(event) { events.push(event); }, addEventListener() {} }, document: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  await assert.rejects(context.window.TravelMateCloud.saveTrip(trip), (error) => error && error.code === 'TRIP_CONFLICT');
+  const edited = JSON.parse(storage.get('travelmate-trips'))[0];
+  edited.city = 'Local v2';
+  await assert.rejects(context.window.TravelMateCloud.saveTrip(edited), (error) => error && error.code === 'TRIP_CONFLICT');
+  assert.deepEqual(revisions, [10, 10]);
+  assert.equal(payloads[1].syncConflict, undefined);
+  assert.equal(events.filter((event) => event.type === 'travelmate:sync-conflict').length, 2);
 });

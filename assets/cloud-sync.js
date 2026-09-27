@@ -268,6 +268,7 @@
 
   function toRow(trip, userId, timestamp) {
     var payload = Object.assign({}, trip, { cloudUpdatedAt: timestamp, syncStatus: 'synced' });
+    delete payload.syncConflict;
     return {
       user_id: String(trip.ownerId || userId),
       id: String(trip.id),
@@ -357,6 +358,12 @@
     return JSON.parse(JSON.stringify(trip));
   }
 
+  function tripForCloud(trip) {
+    var payload = cloneTrip(trip);
+    delete payload.syncConflict;
+    return payload;
+  }
+
   async function listCloudTripTombstones() {
     var client = await getClient();
     if (typeof client.rpc !== 'function') return [];
@@ -415,11 +422,29 @@
     if (!current || tripTimestamp(current) > tripTimestamp(snapshot)) return;
     if (snapshot.ownerId) current.ownerId = snapshot.ownerId;
     current.syncStatus = status;
-    if (cloudTimestamp) current.cloudUpdatedAt = cloudTimestamp;
-    if (Number.isFinite(Number(cloudRevision)) && Number(cloudRevision) > 0) current.cloudRevision = Number(cloudRevision);
-    if (status === 'synced') delete current.syncMutationId;
+    var serverRevision = Number(cloudRevision || 0);
+    if (status === 'conflict') {
+      current.syncConflict = {
+        serverRevision: Number.isFinite(serverRevision) && serverRevision > 0 ? serverRevision : null,
+        serverUpdatedAt: cloudTimestamp || null,
+        detectedAt: new Date().toISOString()
+      };
+    } else {
+      if (cloudTimestamp) current.cloudUpdatedAt = cloudTimestamp;
+      if (Number.isFinite(serverRevision) && serverRevision > 0) current.cloudRevision = serverRevision;
+      if (status === 'synced') {
+        delete current.syncMutationId;
+        delete current.syncConflict;
+      }
+    }
     upsertLocalTrip(current);
-    window.dispatchEvent(new CustomEvent('travelmate:trip-sync-state', { detail: { id: snapshot.id, status: status, timestamp: cloudTimestamp || snapshot.updatedAt } }));
+    var detail = { id: snapshot.id, ownerId: current.ownerId || snapshot.ownerId || null, status: status, timestamp: cloudTimestamp || snapshot.updatedAt };
+    if (status === 'conflict') {
+      detail.serverRevision = current.syncConflict.serverRevision;
+      detail.serverUpdatedAt = current.syncConflict.serverUpdatedAt;
+      window.dispatchEvent(new CustomEvent('travelmate:sync-conflict', { detail: detail }));
+    }
+    window.dispatchEvent(new CustomEvent('travelmate:trip-sync-state', { detail: detail }));
   }
 
   function acceptCloudTrip(incoming) {
@@ -451,7 +476,7 @@
         p_expected_revision: Number(trip.cloudRevision || 0) || null,
         p_expected_updated_at: trip.cloudRevision ? null : (trip.cloudUpdatedAt || null),
         p_mutation_id: trip.syncMutationId,
-        p_trip: trip
+        p_trip: tripForCloud(trip)
       }));
       if (result.error) {
         if (isMissingRpc(result.error, 'save_travel_trip')) throw cloudError('TRIP_SYNC_RPC_UNAVAILABLE', result.error);
@@ -493,7 +518,7 @@
       if (acceptRemoteDeletion(snapshot, error, expectedUserId)) throw error;
       var status = error && (error.code === 'TRIP_CONFLICT' || error.code === 'TRIP_DELETED') ? 'conflict'
         : error && error.code === 'TRIP_WRITE_TIMEOUT' ? 'unknown' : 'failed';
-      updateLocalSyncState(snapshot, status, null, expectedUserId, error && error.cloud && error.cloud.result_revision);
+      updateLocalSyncState(snapshot, status, error && error.cloud && error.cloud.result_updated_at, expectedUserId, error && error.cloud && error.cloud.result_revision);
       throw error;
     });
   }
@@ -567,7 +592,7 @@
     current.then(function () { if (saveChains.get(id) === current) saveChains.delete(id); }, function (error) {
       deletedTripIds.delete(deletionKey);
       updateLocalSyncState(trip, error && error.code === 'TRIP_CONFLICT' ? 'conflict'
-        : error && error.code === 'TRIP_WRITE_TIMEOUT' ? 'unknown' : 'failed', null, expectedUserId, error && error.cloud && error.cloud.result_revision);
+        : error && error.code === 'TRIP_WRITE_TIMEOUT' ? 'unknown' : 'failed', error && error.cloud && error.cloud.result_updated_at, expectedUserId, error && error.cloud && error.cloud.result_revision);
       if (saveChains.get(id) === current) saveChains.delete(id);
     });
     return current;
