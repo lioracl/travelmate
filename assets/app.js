@@ -9,7 +9,8 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   var finalStyle='readable-glass.css';
   var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
   var features={
-    overview:{styles:['weather-widget.css','trip-intelligence.css'],scripts:['weather-widget.js','trip-intelligence.js']},
+    overview:{styles:['weather-widget.css','trip-intelligence.css'],scripts:['weather-widget.js']},
+    intelligence:{styles:[],scripts:['trip-intelligence.js']},
     assistant:{styles:['ai-assistant.css','smart-hub.css'],scripts:['ai-assistant.js','smart-hub.js']},
     account:{styles:['security-center.css','admin-center.css'],scripts:['security-center.js','admin-center.js']},
     places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js']},
@@ -86,12 +87,13 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     ensureLazyNavigation();
     var baseReady=Promise.all(baseStyles.map(loadStyle));
     var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
-    var featureReady=baseReady.then(function(){return loadFeature(activeView())});
-    Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady]).then(function(){warmNonCritical()});
+    var initialView=activeView();
+    var featureReady=baseReady.then(function(){return loadFeature(initialView)});
+    Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250);warmNonCritical()});
   }
-  window.addEventListener('travelmate:viewchange',function(event){loadFeature(event.detail&&event.detail.view)});
-  document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
-  document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
+  window.addEventListener('travelmate:viewchange',function(event){var view=event.detail&&event.detail.view;loadFeature(view).then(function(){if(view==='overview')scheduleIdleFeature('intelligence',250)})});
+  document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview')loadFeature('intelligence')}},{capture:true,passive:true});
+  document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview')loadFeature('intelligence')}},{capture:true,passive:true});
   document.addEventListener('click',function(event){var button=event.target.closest&&event.target.closest('[data-lazy-about]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();loadFeature('about').then(function(ready){if(ready===false)return;button.removeAttribute('data-lazy-about');button.click()})},true);
   window.TravelMateFeatures=Object.freeze({load:loadFeature,has:function(view){return Boolean(features[view])},ensureAssistant:function(){return loadFeature('assistant')},ensureAccount:function(){return loadFeature('account')}});
 })();
