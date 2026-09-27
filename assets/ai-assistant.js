@@ -19,6 +19,23 @@
   function escapeText(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
   function trimText(value, limit) { return String(value || '').trim().slice(0, limit); }
 
+  function summarizeExpenses(expenses) {
+    var totals = {};
+    var categories = {};
+    (Array.isArray(expenses) ? expenses : []).slice(0, 200).forEach(function (expense) {
+      var amount = Math.max(0, Number(expense && expense.amount || 0));
+      var currency = trimText(expense && expense.currency || 'EUR', 8).toUpperCase();
+      var category = trimText(expense && expense.category || 'אחר', 60) || 'אחר';
+      if (amount && /^[A-Z]{3}$/.test(currency)) totals[currency] = Number(((totals[currency] || 0) + amount).toFixed(2));
+      categories[category] = (categories[category] || 0) + 1;
+    });
+    return {
+      count: Array.isArray(expenses) ? expenses.length : 0,
+      totals: Object.keys(totals).slice(0, 8).map(function (currency) { return { currency: currency, amount: totals[currency] }; }),
+      categories: Object.keys(categories).sort(function (a, b) { return categories[b] - categories[a]; }).slice(0, 8).map(function (category) { return { category: category, count: categories[category] }; })
+    };
+  }
+
   function collectTripContext() {
     var id = new URLSearchParams(location.search).get('id');
     var trips = readTrips();
@@ -26,7 +43,8 @@
     if (trip) {
       return {
         id: String(trip.id), country: trimText(trip.country, 80), city: trimText(trip.city, 80),
-        start: trip.start, end: trip.end, days: Number(trip.days || 1), budget: Number(trip.budget || 0), type: trimText(trip.type, 40),
+        start: trip.start, end: trip.end, days: Number(trip.days || 1), budget: Number(trip.budget || 0), budgetUnlimited: Boolean(trip.budgetUnlimited), type: trimText(trip.type, 40),
+        expenseSummary: summarizeExpenses(trip.expenses),
         activities: (trip.activities || []).slice(0, 40).map(function (item) { return { date: item.date, time: item.time, title: trimText(item.title, 160), category: trimText(item.category, 60), duration: Number(item.duration || 0), done: Boolean(item.done) }; }),
         savedPlaces: (trip.savedPlaces || []).slice(0, 30).map(function (item) { return { name: trimText(item.name, 160), category: trimText(item.category, 60), date: item.date }; })
       };
@@ -491,7 +509,7 @@
   ui.orb.addEventListener('click', function () { setOpen(!state.open); });
   ui.panel.querySelector('[data-ai-close]').addEventListener('click', function () { setOpen(false); });
   ui.panel.querySelector('[data-ai-clear]').addEventListener('click', function () { state.messages = []; persistMessages(); renderHistory(); setStatus('שיחה חדשה'); });
-  ui.panel.querySelector('[data-ai-privacy]').addEventListener('click', function () { addMessage('assistant', 'אני שולח ל־Google Gemini רק את השאלה, היסטוריית השיחה הקצרה ותקציר הטיול: יעד, תאריכים, פעילויות ומקומות ששמרת. מסמכים, סיסמאות, GPS ופרטי הכספת אינם נשלחים. במסלול החינמי Google עשויה להשתמש בתוכן לשיפור מוצריה.'); });
+  ui.panel.querySelector('[data-ai-privacy]').addEventListener('click', function () { addMessage('assistant', 'אני שולח ל־Google Gemini רק את השאלה, היסטוריית השיחה הקצרה ותקציר הטיול: יעד, תאריכים, פעילויות, מקומות ששמרת, מסגרת התקציב וסיכום הוצאות מצומצם לפי מטבע וקטגוריה. הערות להוצאות, קבלות, מסמכים, סיסמאות, GPS ופרטי הכספת אינם נשלחים. במסלול החינמי Google עשויה להשתמש בתוכן לשיפור מוצריה.'); });
   ui.form.addEventListener('submit', function (event) { event.preventDefault(); sendMessage(); });
   ui.input.addEventListener('input', autoGrow);
   ui.input.addEventListener('focus', function () { setTimeout(syncVisualViewport, 80); setTimeout(syncVisualViewport, 320); });
