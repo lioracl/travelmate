@@ -1024,6 +1024,12 @@
     return client.auth.updateUser({ password: password });
   }
 
+  async function updateProfile(displayName) {
+    var client = await getClient();
+    var normalizedName = String(displayName || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    return client.auth.updateUser({ data: { display_name: normalizedName } });
+  }
+
   function authRedirectUrl(hash) {
     var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
     var base = local ? new URL(location.pathname.replace(/^\//, ''), 'https://lioracl.github.io/travelmate/') : new URL(location.pathname, location.origin);
@@ -1132,6 +1138,7 @@
     resendSignup: resendSignup,
     resetPassword: resetPassword,
     updatePassword: updatePassword,
+    updateProfile: updateProfile,
     authRedirectUrl: authRedirectUrl,
     signOut: signOut,
     listMfaFactors: listMfaFactors,
