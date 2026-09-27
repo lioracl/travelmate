@@ -22,7 +22,7 @@ test('trip photo is owned by the app background while content uses readable glas
 test('light section and Plan day headings no longer force white text', () => {
   const theme = read('assets/theme.css');
   const glass = read('assets/readable-glass.css');
-  assert.match(glass, /main\.content :is\(\.section-head\):not\(body\[data-trip-kind="custom"\]\[data-trip-view="overview"\] \*\)\{[\s\S]*color:var\(--tm-card-text\)!important/);
+  assert.match(glass, /main\.content :is\(\.section-head\):not\(body\[data-trip-kind="custom"\]\[data-trip-view="overview"\] \*\):not\(body\[data-trip-kind="custom"\]\[data-trip-view="documents"\] #documents \*\)\{[\s\S]*color:var\(--tm-card-text\)!important/);
   assert.match(glass, /main\.content \.section-head :where\([\s\S]*text-shadow:none/);
   assert.doesNotMatch(theme, /section-head\.section-head[\s\S]*color:var\(--tm-card-heading\)!important/);
   assert.match(glass, /:not\(body\[data-trip-kind="custom"\]\[data-trip-view="plan"\] #plan \*\)/);

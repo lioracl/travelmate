@@ -959,7 +959,7 @@ html body.tm-new-design main.content :is(
   .day-item,.planned-activity,.saved-place,.nearby-result,.resource-link,.fare-row,
   .transport-result,.budget-category-row,.budget-chart-row,.budget-column-row,
   .budget-subcategory-row,.memory-item,.settings-row,.admin-user-card
-){
+):not(body[data-trip-kind="custom"][data-trip-view="documents"] #documents *){
   --tm-card-surface:var(--tm-card-bg-compact);
   --tm-card-elevation:var(--tm-card-shadow-compact);
   --tm-card-corner:var(--tm-card-radius-compact);
@@ -1317,7 +1317,7 @@ html[data-theme][data-theme] body.tm-new-design main.content :is(
   .message-place-card,.chat-card,.ai-notes-panel,.ai-login-card,.ai-error-card,
   .document-vault-panel,.vault-auth,.gps-consent-card,.gps-place-heading,
   .weather-forecast-panel
-):not(body[data-trip-kind="custom"][data-trip-view="plan"] #plan *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
+):not(body[data-trip-kind="custom"][data-trip-view="plan"] #plan *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="documents"] #documents *){
   border-color:var(--tm-card-border);
   background:var(--tm-card-surface,var(--tm-card-bg))!important;
   color:var(--tm-card-text)!important;
@@ -1333,7 +1333,7 @@ html[data-theme][data-theme] body.tm-new-design main.content>.trip-home-actions:
   box-shadow:var(--tm-card-shadow)!important;
   text-shadow:none!important
 }
-html[data-theme][data-theme] body.tm-new-design main.content :is(.section-head):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
+html[data-theme][data-theme] body.tm-new-design main.content :is(.section-head):not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="documents"] #documents *){
   border:1px solid var(--tm-card-border)!important;
   border-radius:var(--tm-card-radius-featured)!important;
   background:var(--tm-card-bg)!important;
@@ -1348,7 +1348,7 @@ html[data-theme][data-theme] body.tm-new-design main.content .section-head :wher
 html body.tm-new-design main.content>section:is(
   #documents,#budget,#transport,#car-rental,#getaways,#group,#memories
 ){--tm-section-head-padding-bottom:13px}
-html[data-theme][data-theme] body.tm-new-design main.content .section-head:not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
+html[data-theme][data-theme] body.tm-new-design main.content .section-head:not(body[data-trip-kind="custom"][data-trip-view="overview"] *):not(body[data-trip-kind="custom"][data-trip-view="documents"] #documents *){
   width:100%;
   padding:var(--tm-card-padding) var(--tm-card-padding) var(--tm-section-head-padding-bottom,var(--tm-card-padding))!important
 }

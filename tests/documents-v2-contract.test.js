@@ -95,3 +95,39 @@ test('Document Vault clears remote metadata immediately when signed out', () => 
   assert.match(vault, /target\.row\.classList\.remove\('has-documents'\)/);
   assert.match(vault, /\[data-vault-count\][\s\S]*0 מסמכים/);
 });
+
+test('Custom Documents owns a single row shell instead of nested card material', () => {
+  assert.match(css, /Documents final feature ownership/);
+  assert.match(css, /data-trip-view="documents"[^\n]*#documents \[data-document-category-list\]\{[\s\S]*?background:var\(--tm-documents-shell\)[\s\S]*?backdrop-filter:none/);
+  assert.match(css, /data-trip-view="documents"[^\n]*#documents \.doc-row,[\s\S]*?border-radius:0;[\s\S]*?background:transparent;[\s\S]*?box-shadow:none/);
+  assert.match(css, /data-trip-view="documents"[^\n]*#documents \.doc-category-file\{[\s\S]*?border-radius:0;[\s\S]*?background:var\(--tm-documents-file-row\)/);
+});
+
+test('stored document actions use explicit visible labels', () => {
+  assert.match(vault, /data-open-document><i[^>]*><\/i><span>פתיחה<\/span>/);
+  assert.match(vault, /data-download-document><i[^>]*><\/i><span>הורדה<\/span>/);
+  assert.match(vault, /data-delete-document><i[^>]*><\/i><span>מחיקה<\/span>/);
+});
+
+test('Custom Documents bypasses the generic theme material boundary', () => {
+  const glass = read('assets/readable-glass.css');
+  assert.match(glass, /:not\(body\[data-trip-kind="custom"\]\[data-trip-view="documents"\] #documents \*\)/);
+});
+
+test('Document actions keep secure preview download and destructive-delete safeguards', () => {
+  assert.match(vault, /async function openDocument\(record, download\)/);
+  assert.match(vault, /requirePrivateStorageAccess\(\)/);
+  assert.match(vault, /downloadBlob\(decrypted, record\.file_name\)/);
+  assert.match(vault, /URL\.revokeObjectURL\(url\)/);
+  assert.match(vault, /URL\.revokeObjectURL\(objectUrl\)/);
+  assert.match(vault, /confirm\('למחוק לצמיתות את המסמך מהענן\? לא ניתן לבטל פעולה זו\.'\)/);
+});
+
+test('Document actions keep secure preview download and destructive-delete safeguards', () => {
+  assert.match(vault, /async function openDocument\(record, download\)/);
+  assert.match(vault, /requirePrivateStorageAccess\(\)/);
+  assert.match(vault, /downloadBlob\(decrypted, record\.file_name\)/);
+  assert.match(vault, /URL\.revokeObjectURL\(url\)/);
+  assert.match(vault, /URL\.revokeObjectURL\(objectUrl\)/);
+  assert.match(vault, /confirm\('למחוק לצמיתות את המסמך מהענן\? לא ניתן לבטל פעולה זו\.'\)/);
+});

@@ -19,7 +19,8 @@ const cssFiles = {
   placeAutoFill: path.join(root, 'assets/place-auto-fill.css'),
   weatherWidget: path.join(root, 'assets/weather-widget.css'),
   modalSystem: path.join(root, 'assets/modal-system.css'),
-  networkUsage: path.join(root, 'assets/network-usage.css')
+  networkUsage: path.join(root, 'assets/network-usage.css'),
+  documentVault: path.join(root, 'assets/document-vault.css')
 };
 
 function read(file) {
@@ -44,7 +45,8 @@ test('design-system CSS debt does not grow while ownership is being consolidated
     placeAutoFill: importantCount(read(cssFiles.placeAutoFill)),
     weatherWidget: importantCount(read(cssFiles.weatherWidget)),
     modalSystem: importantCount(read(cssFiles.modalSystem)),
-    networkUsage: importantCount(read(cssFiles.networkUsage))
+    networkUsage: importantCount(read(cssFiles.networkUsage)),
+    documentVault: importantCount(read(cssFiles.documentVault))
   };
 
   // These are debt ceilings, not targets. Lower them whenever cleanup removes overrides.
@@ -61,6 +63,7 @@ test('design-system CSS debt does not grow while ownership is being consolidated
   assert.equal(counts.weatherWidget, 0, `weather-widget.css must remain free of !important debt; found ${counts.weatherWidget}`);
   assert.equal(counts.modalSystem, 0, `modal-system.css must remain free of !important debt; found ${counts.modalSystem}`);
   assert.equal(counts.networkUsage, 2, `network-usage.css must keep only its two hidden-state !important contracts; found ${counts.networkUsage}`);
+  assert.ok(counts.documentVault <= 5, `document-vault.css !important debt grew to ${counts.documentVault}`);
   assert.ok(
     counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget + counts.modalSystem + counts.networkUsage <= 210,
     `combined core CSS !important debt grew to ${counts.base + counts.theme + counts.readableGlass + counts.tripRedesign + counts.cloudSync + counts.homeOrganizer + counts.autoPlanner + counts.tripExperience + counts.collaboration + counts.placeAutoFill + counts.weatherWidget + counts.modalSystem + counts.networkUsage}`
@@ -71,8 +74,9 @@ test('document controls keep semantic design tokens instead of new white-on-whit
   const source = read(path.join(root, 'assets/document-vault.css'));
 
   assert.match(source, /\.vault-file-actions button\{[^}]*background:var\(--tm-card-control\)[^}]*color:var\(--tm-card-link\)/);
-  assert.match(source, /\.doc-category-file-actions button\{[^}]*background:var\(--tm-card-control\)!important[^}]*color:var\(--tm-card-link\)!important/);
-  assert.match(source, /\.doc-category-file-actions button\.danger\{color:var\(--tm-error,#b42318\)!important\}/);
+  assert.match(source, /\.doc-category-file-actions button\{[^}]*background:var\(--tm-card-control\)[^}]*color:var\(--tm-card-link\)/);
+  assert.match(source, /data-trip-view="documents"[^\n]*#documents \.doc-category-file-actions button\.danger\{[\s\S]*?color:var\(--tm-error\)/);
+  assert.doesNotMatch(source, /\.doc-category-file-actions button\{[^}]*!important/);
 });
 
 test('readable glass remains the final CSS authority for dynamically loaded trip styles', () => {
