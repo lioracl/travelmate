@@ -11,8 +11,9 @@ test('Prague keeps an optimized card image and a sharper hero image under one ow
   const images=read('assets/destination-images.js');
   const redesign=read('assets/trip-redesign.js');
   assert.match(images,/PRAGUE_IMAGE = '[^']*1280px-Prague_castle_panorama\.jpg'/);
-  assert.match(images,/PRAGUE_HERO_IMAGE = '[^']*Prague%20castle%20panorama\.jpg\?width=2200'/);
-  assert.match(images,/element\.classList\.contains\('custom-hero'\)[\s\S]*PRAGUE_HERO_IMAGE/);
+  assert.match(images,/PRAGUE_HERO_IMAGE = '[^']*Prague%20castle%20panorama\.jpg'/);
+  assert.match(images,/function pragueHeroImage\(\)[\s\S]*max-width: 760px[\s\S]*\? 1200 : 2200/);
+  assert.match(images,/element\.classList\.contains\('custom-hero'\)[\s\S]*pragueHeroImage\(\)/);
   assert.doesNotMatch(redesign,/Prague%20castle%20panorama\.jpg|1280px-Prague_castle_panorama/);
   assert.match(images,/travelmate-destination-images-v7/);
 });
