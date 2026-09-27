@@ -120,10 +120,13 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
 });
 
-test('failed dynamic assets are evicted so a later navigation can retry them', () => {
+test('failed dynamic assets are evicted and do not announce a ready feature', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.match(source, /style\.onerror=function\(\)\{[^}]*style\.remove\(\);delete loadedStyles\[file\];resolve\(false\)/);
   assert.match(source, /script\.onerror=function\(\)\{[^}]*script\.remove\(\);delete loadedScripts\[file\];resolve\(false\)/);
+  assert.match(source, /if\(results\.some\(function\(result\)\{return result===false\}\)\)return false/);
+  assert.match(source, /if\(ready===false\)return false;[\s\S]*travelmate:feature-ready/);
+  assert.match(source, /loadFeature\('about'\)\.then\(function\(ready\)\{if\(ready===false\)return;button\.removeAttribute\('data-lazy-about'\)/);
 });
 
 test('Turnstile is armed on auth interaction instead of loading at startup', () => {
@@ -157,6 +160,10 @@ test('service worker precaches startup essentials and runtime-caches feature-onl
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/collaboration\.js'/);
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/transport-planner\.js'/);
   assert.match(serviceWorker, /freshAsset[\s\S]*networkFirst\(event\.request\)/);
+});
+
+test('service worker treats HTTP 5xx navigation responses as recoverable offline failures', () => {
+  assert.match(serviceWorker, /if\(response\.status>=500\)\{[\s\S]*?caches\.match\(request\)[\s\S]*?throw new Error\('http-'\+response\.status\)/);
 });
 
 test('versioned local assets use cache-first because the version is part of the URL', () => {
@@ -243,7 +250,9 @@ test('service worker registration is a delayed app bootstrap instead of a Smart 
   const hub = fs.readFileSync(path.join(root, 'assets/smart-hub.js'), 'utf8');
   assert.match(app, /window\.addEventListener\('load',schedule,\{once:true\}\)/);
   assert.match(app, /requestIdleCallback\(register,\{timeout:3000\}\)/);
-  assert.match(app, /navigator\.serviceWorker\.register\(new URL\('sw\.js\?v='\+encodeURIComponent\(version\),rootUrl\)\.href,\{updateViaCache:'none'\}\)/);
+  assert.match(app, /var appAssetVersion=\(function\(\)\{try\{return new URL\(appScript\.src,location\.href\)\.searchParams\.get\('v'\)/);
+  assert.match(app, /navigator\.serviceWorker\.register\(new URL\('sw\.js\?v='\+encodeURIComponent\(appAssetVersion\),rootUrl\)\.href,\{updateViaCache:'none'\}\)/);
+  assert.doesNotMatch(app, /serviceWorker\.register\([^\n]*encodeURIComponent\(version\)/);
   assert.match(app, /window\.TravelMateInstallPrompt=event/);
   assert.doesNotMatch(hub, /navigator\.serviceWorker\.register/);
   assert.doesNotMatch(hub, /manifest\.webmanifest/);

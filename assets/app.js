@@ -1,6 +1,7 @@
 var appScript=document.currentScript;
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260927-19'}catch(error){return'20260927-19'}})();
 (function(){
-  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260927-18'}catch(error){return'20260927-18'}})();
+  var version=appAssetVersion;
   var loadedStyles={},loadedScripts={};
   var isHomePage=Boolean(document.body&&document.body.classList.contains('home-page'));
   var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css'];
@@ -39,15 +40,23 @@ var appScript=document.currentScript;
     loadedScripts[file]=new Promise(function(resolve){var script=document.createElement('script');script.src=assetUrl(file);script.async=false;script.onload=function(){resolve(true)};script.onerror=function(){console.error('TravelMate feature failed to load:',file);script.remove();delete loadedScripts[file];resolve(false)};document.head.appendChild(script)});
     return loadedScripts[file]
   }
-  function loadSequence(files){return files.reduce(function(chain,file){return chain.then(function(){return loadScript(file)})},Promise.resolve())}
+  function loadSequence(files){return files.reduce(function(chain,file){return chain.then(function(ok){return ok===false?false:loadScript(file)})},Promise.resolve(true))}
   function waitForSection(view){
     if(!dynamicSectionViews[view]||document.getElementById(view))return Promise.resolve();
     return new Promise(function(resolve){var deadline=Date.now()+2500;(function check(){if(document.getElementById(view)||Date.now()>=deadline){resolve();return}requestAnimationFrame(check)})()})
   }
   function loadFeature(view){
-    var feature=features[view];if(!feature)return Promise.resolve();
-    return Promise.all((feature.styles||[]).map(loadStyle)).then(function(){return loadSequence(feature.scripts||[])}).then(function(){return waitForSection(view)}).then(function(){
+    var feature=features[view];if(!feature)return Promise.resolve(true);
+    return Promise.all((feature.styles||[]).map(loadStyle)).then(function(results){
+      if(results.some(function(result){return result===false}))return false;
+      return loadSequence(feature.scripts||[])
+    }).then(function(ready){
+      if(ready===false)return false;
+      return waitForSection(view).then(function(){return true})
+    }).then(function(ready){
+      if(ready===false)return false;
       window.dispatchEvent(new CustomEvent('travelmate:feature-ready',{detail:{view:view}}));
+      return true
     })
   }
   function ensureLazyNavigation(){
@@ -73,7 +82,7 @@ var appScript=document.currentScript;
   window.addEventListener('travelmate:viewchange',function(event){loadFeature(event.detail&&event.detail.view)});
   document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
   document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link)loadFeature(link.dataset.view)},{capture:true,passive:true});
-  document.addEventListener('click',function(event){var button=event.target.closest&&event.target.closest('[data-lazy-about]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();loadFeature('about').then(function(){button.removeAttribute('data-lazy-about');button.click()})},true);
+  document.addEventListener('click',function(event){var button=event.target.closest&&event.target.closest('[data-lazy-about]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();loadFeature('about').then(function(ready){if(ready===false)return;button.removeAttribute('data-lazy-about');button.click()})},true);
   window.TravelMateFeatures=Object.freeze({load:loadFeature,has:function(view){return Boolean(features[view])},ensureAssistant:function(){return loadFeature('assistant')},ensureAccount:function(){return loadFeature('account')}});
 })();
 
@@ -90,7 +99,7 @@ window.addEventListener('beforeinstallprompt',function(event){
     window.dispatchEvent(new CustomEvent('travelmate:app-update-ready'));
   });
   function register(){
-    navigator.serviceWorker.register(new URL('sw.js?v='+encodeURIComponent(version),rootUrl).href,{updateViaCache:'none'}).then(function(registration){
+    navigator.serviceWorker.register(new URL('sw.js?v='+encodeURIComponent(appAssetVersion),rootUrl).href,{updateViaCache:'none'}).then(function(registration){
       window.TravelMateServiceWorkerRegistration=registration;
       window.dispatchEvent(new CustomEvent('travelmate:service-worker-ready',{detail:{registration:registration}}));
       registration.update().catch(function(){});
@@ -135,7 +144,7 @@ document.addEventListener('submit',function(event){var form=event.target.closest
 document.addEventListener('dragstart',function(event){var item=event.target.closest('.day-item');if(!item)return;item.classList.add('dragging');event.dataTransfer.effectAllowed='move'});
 document.addEventListener('dragend',function(event){var item=event.target.closest('.day-item');if(!item)return;item.classList.remove('dragging');checkDayConflicts(item.closest('.day-panel'))});
 document.addEventListener('dragover',function(event){var list=event.target.closest('[data-sortable-day]');if(!list)return;event.preventDefault();var dragging=list.querySelector('.dragging');if(!dragging)return;var siblings=[].slice.call(list.querySelectorAll('.day-item:not(.dragging)'));var next=siblings.find(function(item){return event.clientY<item.getBoundingClientRect().top+item.getBoundingClientRect().height/2});list.insertBefore(dragging,next||null)});
-document.addEventListener('keydown',function(event){if(event.key==='Escape'){closeModal();closeMobileMenu()}});
+document.addEventListener('keydown',function(event){if(event.key==='Escape'){var weatherModal=document.getElementById('modal-weather-live');if(!(weatherModal&&weatherModal.classList.contains('open')))closeModal();closeMobileMenu()}});
 
 function closeMobileMenu(){document.body.classList.remove('mobile-menu-open');var button=document.querySelector('[data-mobile-menu]');if(button){button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','פתיחת תפריט');var icon=button.querySelector('i');if(icon)icon.className='fa-solid fa-bars'}}
 document.addEventListener('click',function(event){var menuButton=event.target.closest('[data-mobile-menu]');if(menuButton){var opening=!document.body.classList.contains('mobile-menu-open');document.body.classList.toggle('mobile-menu-open',opening);menuButton.setAttribute('aria-expanded',String(opening));menuButton.setAttribute('aria-label',opening?'סגירת תפריט':'פתיחת תפריט');var icon=menuButton.querySelector('i');if(icon)icon.className=opening?'fa-solid fa-xmark':'fa-solid fa-bars';return}if(event.target.closest('.sidebar nav a,.trip-sidebar-more-menu a,.trip-sidebar-more-menu button')||event.target.matches('.mobile-menu-shade'))closeMobileMenu()});

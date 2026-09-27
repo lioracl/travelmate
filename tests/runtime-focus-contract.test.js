@@ -41,10 +41,12 @@ test('settings dialog traps focus and restores the launcher', () => {
 
 test('Weather dialog traps focus and restores the Weather launcher', () => {
   const source = read('assets/weather-widget.js');
+  const app = read('assets/app.js');
   assert.match(source, /function weatherFocusable\(ui\)/);
   assert.match(source, /if \(event\.key !== 'Tab'\) return/);
   assert.match(source, /event\.shiftKey[\s\S]*last\.focus\(\)/);
   assert.match(source, /active === last[\s\S]*first\.focus\(\)/);
   assert.match(source, /function close\(ui, restoreFocus\)[\s\S]*ui\.button\.focus\(\)/);
   assert.match(source, /event\.key === 'Escape'[\s\S]*close\(ui\)/);
+  assert.match(app, /weatherModal=document\.getElementById\('modal-weather-live'\);if\(!\(weatherModal&&weatherModal\.classList\.contains\('open'\)\)\)closeModal\(\)/);
 });

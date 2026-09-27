@@ -1,5 +1,5 @@
-﻿const CACHE_NAME='travelmate-smart-v247';
-const ASSET_VERSION='20260927-18';
+﻿const CACHE_NAME='travelmate-smart-v248';
+const ASSET_VERSION='20260927-19';
 const CORE_PATHS=[
   './',
   './index.html',
@@ -40,7 +40,16 @@ self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_W
 async function networkFirst(request){
   try{
     const response=await fetch(request,{cache:'no-store'});
-    if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(request,copy))}
+    if(response.ok){
+      const copy=response.clone();
+      caches.open(CACHE_NAME).then(cache=>cache.put(request,copy));
+      return response;
+    }
+    if(response.status>=500){
+      const hit=await caches.match(request);
+      if(hit)return hit;
+      throw new Error('http-'+response.status);
+    }
     return response;
   }catch(error){
     return caches.match(request).then(hit=>hit||Promise.reject(error));

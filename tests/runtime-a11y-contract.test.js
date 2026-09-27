@@ -15,3 +15,10 @@ test('hotel address autocomplete uses a valid single autofill field token', () =
   assert.doesNotMatch(source, /autocomplete="organization street-address"/);
   assert.match(source, /name="hotel"[^>]*autocomplete="street-address"/);
 });
+
+test('Document Vault authentication fields have accessible names', () => {
+  const source = read('assets/document-vault.js');
+  assert.match(source, /name="email"[^>]*aria-label="כתובת דוא״ל"/);
+  assert.match(source, /name="password"[^>]*aria-label="סיסמת חשבון"/);
+  assert.match(source, /name="note"[^>]*aria-label="הערה למסמך"/);
+});

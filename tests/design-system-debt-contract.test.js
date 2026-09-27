@@ -434,7 +434,9 @@ test('Phase 8 keeps Group, Memories and Currency semantic ownership out of Theme
   assert.match(experience, /Phase 8 — Currency theme semantics without Theme escalation/);
   assert.match(glass, /:not\(\.message-sender\):not\(\.collaboration-live\)/);
   assert.doesNotMatch(theme, /group-message|collaboration-live|group-privacy|memory-file-picker|album-actions|trip-summary-text|currency-insight|data-fee-edit/);
-  assert.match(app, /Promise\.all\(\(feature\.styles\|\|\[\]\)\.map\(loadStyle\)\)\.then\(function\(\)\{return loadSequence\(feature\.scripts\|\|\[\]\)\}\)/);
+  assert.match(app, /Promise\.all\(\(feature\.styles\|\|\[\]\)\.map\(loadStyle\)\)\.then\(function\(results\)\{/);
+  assert.match(app, /if\(results\.some\(function\(result\)\{return result===false\}\)\)return false/);
+  assert.match(app, /return loadSequence\(feature\.scripts\|\|\[\]\)/);
 });
 
 
