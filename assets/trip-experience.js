@@ -4,7 +4,7 @@
   window.__travelMateTripExperienceLoaded = true;
 
   var cloud = window.TravelMateCloud;
-  var state = { trip: null, rate: null, rates: {}, ilsRates: { ILS: 1 }, rateDate: '', rateSource: '', rateSourceUrl: '', fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR', secondaryCurrency: 'ILS', budgetUnlimited: false };
+  var state = { trip: null, rate: null, rates: {}, ilsRates: { ILS: 1 }, rateDate: '', rateSource: '', rateSourceUrl: '', rateStale: false, fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR', secondaryCurrency: 'ILS', budgetUnlimited: false };
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
   function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch (error) { return fallback; } }
   function writeJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) {} }
@@ -160,10 +160,19 @@
       return await response.json();
     } finally { if (timer) clearTimeout(timer); }
   }
+  function applyCachedRates(cached, stale) {
+    state.rates = cached.rates || { ILS: Number(cached.rate) };
+    state.ilsRates = cached.ilsRates || state.ilsRates;
+    state.rate = Number(cached.rate || state.rates.ILS);
+    state.rateDate = cached.date || '';
+    state.rateSource = cached.source || 'ECB דרך Frankfurter';
+    state.rateSourceUrl = cached.sourceUrl || 'https://frankfurter.dev/';
+    state.rateStale = Boolean(stale);
+  }
   async function loadRate() {
     var cacheKey = 'travelmate-eur-rates:' + state.localCurrency;
     var cached = readJson(cacheKey, null);
-    if (cached && Number(cached.rate) > 0 && Date.now() - Number(cached.savedAt || 0) < 43200000) { state.rates = cached.rates || { ILS: Number(cached.rate) }; state.ilsRates = cached.ilsRates || state.ilsRates; state.rate = Number(cached.rate || state.rates.ILS); state.rateDate = cached.date || ''; state.rateSource = cached.source || 'ECB דרך Frankfurter'; state.rateSourceUrl = cached.sourceUrl || 'https://frankfurter.dev/'; renderCurrency(); renderCurrencyConverter(); return; }
+    if (cached && Number(cached.rate) > 0 && Date.now() - Number(cached.savedAt || 0) < 43200000) { applyCachedRates(cached, false); renderCurrency(); renderCurrencyConverter(); return; }
     try {
       var symbols = ['ILS','USD','GBP','JPY','CHF','CZK','PLN','HUF','RON','CAD','AUD','NZD','DKK','SEK','NOK','TRY','CNY','KRW','INR','THB','MXN','BRL','ZAR',state.localCurrency].filter(function (item, index, list) { return item !== 'EUR' && list.indexOf(item) === index; }).join(',');
       var data;
@@ -184,10 +193,18 @@
           state.rateSource = 'ECB דרך Frankfurter'; state.rateSourceUrl = 'https://frankfurter.dev/';
         }
       }
-      state.rates = data.rates; state.rate = Number(data.rates.ILS); state.rateDate = data.date || '';
+      state.rates = data.rates; state.rate = Number(data.rates.ILS); state.rateDate = data.date || ''; state.rateStale = false;
       Object.keys(data.rates).forEach(function (code) { if (Number(data.rates[code])) state.ilsRates[code] = state.rate / Number(data.rates[code]); });
       writeJson(cacheKey, { rate: state.rate, rates: state.rates, ilsRates: state.ilsRates, source: state.rateSource, sourceUrl: state.rateSourceUrl, date: state.rateDate, savedAt: Date.now() }); renderCurrency(); renderCurrencyConverter();
-    } catch (error) { if (!state.rate) renderCurrency(true); }
+    } catch (error) {
+      if (cached && Number(cached.rate) > 0) {
+        applyCachedRates(cached, true);
+        renderCurrency();
+        renderCurrencyConverter();
+      } else if (!state.rate) {
+        renderCurrency(true);
+      }
+    }
   }
   function currencyRateInIls(code) { if (code === 'ILS') return 1; if (state.ilsRates[code]) return Number(state.ilsRates[code]); if (code === 'EUR') return Number(state.rate || 0); return state.rate && state.rates[code] ? Number(state.rate) / Number(state.rates[code]) : 0; }
   function convertCurrency(amount, from, to) { var fromRate = currencyRateInIls(from); var toRate = currencyRateInIls(to); return fromRate && toRate ? Number(amount || 0) * fromRate / toRate : 0; }
@@ -246,7 +263,7 @@
       if (unlimitedBudget) amount = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
       var localAmount = state.localCurrency === 'EUR' ? amount : localFromEuros(amount);
       var localRate = localRateInIls();
-      host.innerHTML = state.rate && (state.localCurrency === 'EUR' || localAmount) ? '<div><span><b>' + money(localAmount, state.localCurrency) + '</b> · כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>המטבע המקומי: ' + state.localCurrency + ' · ' + (localRate ? money(1, state.localCurrency) + ' = ₪' + localRate.toFixed(4) + ' · ' : '') + escapeHtml(state.rateDate || 'עדכון אחרון') + ' · <a href="' + escapeHtml(state.rateSourceUrl || 'https://frankfurter.dev/') + '" target="_blank" rel="noopener">' + escapeHtml(state.rateSource || 'מקור שערי המטבע') + '</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן את שער המטבע המקומי…') + '</span><small>התקציב המקורי נשמר בבטחה עד לעדכון השער</small></div>';
+      host.innerHTML = state.rate && (state.localCurrency === 'EUR' || localAmount) ? '<div><span><b>' + money(localAmount, state.localCurrency) + '</b> · כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>המטבע המקומי: ' + state.localCurrency + ' · ' + (localRate ? money(1, state.localCurrency) + ' = ₪' + localRate.toFixed(4) + ' · ' : '') + (state.rateStale ? 'שער שמור מהמכשיר · ' : '') + escapeHtml(state.rateDate || 'עדכון אחרון') + ' · <a href="' + escapeHtml(state.rateSourceUrl || 'https://frankfurter.dev/') + '" target="_blank" rel="noopener">' + escapeHtml(state.rateSource || 'מקור שערי המטבע') + '</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן את שער המטבע המקומי…') + '</span><small>התקציב המקורי נשמר בבטחה עד לעדכון השער</small></div>';
       if (unlimitedBudget && host.querySelector('div>span')) host.querySelector('div>span').insertAdjacentHTML('afterbegin', '<b>ללא הגבלה</b> · הוצאות מצטברות: ');
       var button = host.querySelector('[data-fee-edit]'); if (button) button.onclick = editFee;
     }); renderLocalBudgetTotals(); updateTotalBudgetEditor(); renderBudgetCategoryIls(); renderExpenseList();
