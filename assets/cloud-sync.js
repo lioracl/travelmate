@@ -108,6 +108,14 @@
     return true;
   }
 
+  function isTripEditForbidden(error) {
+    var code = String(error && error.code || '');
+    var message = String(error && error.message || '');
+    return code === 'TRIP_EDIT_FORBIDDEN'
+      || message === 'TRIP_EDIT_FORBIDDEN'
+      || (code === '42501' && /trip edit forbidden/i.test(message));
+  }
+
   function mutationId() {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (character) {
@@ -514,8 +522,26 @@
     var current = previous.catch(function () {}).then(function () { return performTripSave(snapshot, expectedUserId); });
     saveChains.set(id, current);
     current.then(function () { if (saveChains.get(id) === current) saveChains.delete(id); }, function () { if (saveChains.get(id) === current) saveChains.delete(id); });
-    return current.catch(function (error) {
+    return current.catch(async function (error) {
       if (acceptRemoteDeletion(snapshot, error, expectedUserId)) throw error;
+      if (isTripEditForbidden(error)) {
+        var restored = false;
+        try {
+          var remote = await fetchCloudTripVersion(snapshot.id, snapshot.ownerId, expectedUserId);
+          if (remote) {
+            if (expectedUserId) assertActiveUser(expectedUserId);
+            upsertLocalTrip(remote);
+            restored = true;
+            window.dispatchEvent(new CustomEvent('travelmate:trip-write-forbidden', {
+              detail: { id: snapshot.id, ownerId: remote.ownerId || snapshot.ownerId || null }
+            }));
+          }
+        } catch (refreshError) {
+          if (refreshError && refreshError.code === 'AUTH_CONTEXT_CHANGED') throw refreshError;
+        }
+        if (!restored) updateLocalSyncState(snapshot, 'failed', null, expectedUserId);
+        throw error;
+      }
       var status = error && (error.code === 'TRIP_CONFLICT' || error.code === 'TRIP_DELETED') ? 'conflict'
         : error && error.code === 'TRIP_WRITE_TIMEOUT' ? 'unknown' : 'failed';
       updateLocalSyncState(snapshot, status, error && error.cloud && error.cloud.result_updated_at, expectedUserId, error && error.cloud && error.cloud.result_revision);
