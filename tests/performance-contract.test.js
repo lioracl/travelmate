@@ -314,3 +314,18 @@ test('PWA bootstrap does not dispatch the unused app-update-ready event', () => 
   assert.doesNotMatch(source, /travelmate:app-update-ready/);
   assert.match(source, /travelmate:service-worker-ready/);
 });
+
+test('Plan day notes debounce persistence and flush before focus/page exit', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/auto-planner.js'), 'utf8');
+  assert.match(source, /function scheduleNoteSave\(\)[\s\S]*setTimeout\(function\(\)\{noteSaveTimer=0;save\(\)\},450\)/);
+  assert.match(source, /data-note-date[^\n]*scheduleNoteSave\(\)/);
+  assert.match(source, /focusout[^\n]*flushNoteSave\(\)/);
+  assert.match(source, /addEventListener\('pagehide',flushNoteSave\)/);
+  assert.doesNotMatch(source, /data-note-date[^\n]*value;save\(\)/);
+});
+
+test('past-day enhancement avoids rewriting identical DOM and observer self-loops', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/auto-planner.js'), 'utf8');
+  assert.match(source, /var nextStripHtml=past\.length/);
+  assert.match(source, /if\(strip\.innerHTML!==nextStripHtml\)strip\.innerHTML=nextStripHtml/);
+});
