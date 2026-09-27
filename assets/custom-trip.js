@@ -368,4 +368,16 @@
   });
   window.addEventListener('travelmate:local-trips-updated', refreshOverviewFromStore);
   window.addEventListener('travelmate:trip-synced', refreshOverviewFromStore);
+
+  var writeForbiddenNoticeTimer = null;
+  window.addEventListener('travelmate:trip-write-forbidden', function (event) {
+    var trip = localTrip();
+    if (!trip || !event.detail || String(event.detail.id) !== String(trip.id)) return;
+    refreshOverviewFromStore();
+    var notice = document.querySelector('[data-sync-write-notice]');
+    if (!notice) return;
+    notice.hidden = false;
+    clearTimeout(writeForbiddenNoticeTimer);
+    writeForbiddenNoticeTimer = setTimeout(function () { notice.hidden = true; }, 6500);
+  });
 })();

@@ -26,3 +26,18 @@
   .trip-sync-conflict-actions{grid-column:1/-1;justify-content:stretch}
   .trip-sync-conflict-actions button{flex:1 1 140px}
 }
+
+.trip-sync-write-notice{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:10px 0 14px;
+  padding:11px 13px;
+  border:1px solid var(--line,rgba(14,97,75,.14));
+  border-radius:12px;
+  background:var(--surface,#fff);
+  color:var(--text,#29332f);
+  box-shadow:0 8px 22px rgba(0,0,0,.06);
+}
+.trip-sync-write-notice[hidden]{display:none}
+.trip-sync-write-notice i{color:var(--primary,#0e614b)}

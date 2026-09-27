@@ -33,3 +33,16 @@ test('sync conflict styling is isolated and does not add important escalation', 
   assert.match(css, /data-sync-conflict-visible="true"/);
   assert.doesNotMatch(css, /!important/);
 });
+
+test('viewer write rejection exposes a transient accessible read-only notice', () => {
+  const html = read('trip/custom/index.html');
+  const source = read('assets/custom-trip.js');
+  const css = read('assets/sync-status.css');
+  assert.match(html, /data-sync-write-notice[^>]*role="status"[^>]*aria-live="polite"[^>]*hidden/);
+  assert.match(source, /travelmate:trip-write-forbidden/);
+  assert.match(source, /String\(event\.detail\.id\) !== String\(trip\.id\)/);
+  assert.match(source, /notice\.hidden = false/);
+  assert.match(source, /setTimeout\(function \(\) \{ notice\.hidden = true; \}, 6500\)/);
+  assert.match(css, /\.trip-sync-write-notice/);
+  assert.doesNotMatch(css, /\.trip-sync-write-notice[^}]*!important/);
+});
