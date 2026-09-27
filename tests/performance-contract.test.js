@@ -120,6 +120,12 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
 });
 
+test('failed dynamic assets are evicted so a later navigation can retry them', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.match(source, /style\.onerror=function\(\)\{[^}]*style\.remove\(\);delete loadedStyles\[file\];resolve\(false\)/);
+  assert.match(source, /script\.onerror=function\(\)\{[^}]*script\.remove\(\);delete loadedScripts\[file\];resolve\(false\)/);
+});
+
 test('Turnstile is armed on auth interaction instead of loading at startup', () => {
   const source = fs.readFileSync(path.join(root, 'assets/security-center.js'), 'utf8');
   assert.match(source, /function armCaptcha\(\)/);

@@ -181,14 +181,27 @@
 
   function scheduleInitialLoad(ui) { var run = function () { load(ui, false); }; if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 1000 }); else window.setTimeout(run, 250); }
 
+  function weatherFocusable(ui) {
+    return [].slice.call(ui.backdrop.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function (node) {
+      return !node.hidden && node.getAttribute('aria-hidden') !== 'true' && node.getClientRects().length > 0;
+    });
+  }
   function open(ui) { ui.backdrop.classList.add('open'); ui.button.setAttribute('aria-expanded', 'true'); var closeButton = ui.backdrop.querySelector('[data-weather-close]'); if (closeButton) closeButton.focus(); }
-  function close(ui) { ui.backdrop.classList.remove('open'); ui.button.setAttribute('aria-expanded', 'false'); }
+  function close(ui, restoreFocus) { ui.backdrop.classList.remove('open'); ui.button.setAttribute('aria-expanded', 'false'); if (restoreFocus !== false) ui.button.focus(); }
 
   var destination = pageDestination(); if (!destination) return; state.location = destination;
   var ui = createUi(destination); if (!ui) return;
   ui.button.addEventListener('click', function () { open(ui); });
-  ui.backdrop.querySelector('[data-weather-close]').addEventListener('click', function () { close(ui); ui.button.focus(); });
+  ui.backdrop.querySelector('[data-weather-close]').addEventListener('click', function () { close(ui); });
   ui.backdrop.addEventListener('click', function (event) { if (event.target === ui.backdrop) close(ui); });
-  document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && ui.backdrop.classList.contains('open')) close(ui); });
+  document.addEventListener('keydown', function (event) {
+    if (!ui.backdrop.classList.contains('open')) return;
+    if (event.key === 'Escape') { event.preventDefault(); close(ui); return; }
+    if (event.key !== 'Tab') return;
+    var focusable = weatherFocusable(ui); if (!focusable.length) { event.preventDefault(); return; }
+    var first = focusable[0], last = focusable[focusable.length - 1], active = document.activeElement;
+    if (event.shiftKey && (active === first || !ui.backdrop.contains(active))) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
+  });
   scheduleInitialLoad(ui);
 })();

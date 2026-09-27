@@ -915,7 +915,6 @@ html body.home-page :is(.trip-archive,.home-about){
   border:1px solid var(--tm-card-border);
   border-radius:var(--tm-card-corner,var(--tm-card-radius));
   background:var(--tm-card-surface,var(--tm-card-bg));
-  background-color:transparent;
   color:var(--tm-card-text);
   box-shadow:var(--tm-card-elevation,var(--tm-card-shadow));
   -webkit-backdrop-filter:var(--tm-card-blur);
@@ -928,11 +927,11 @@ html body.home-page :is(.trip-archive,.home-about){
 .home-page.is-authenticated #active-trips>.add-destination{
   border:1px solid rgba(255,255,255,.3)!important;
   border-radius:14px!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.42),rgba(255,255,255,.2))!important;
-  color:#414846!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.52)!important;
-  -webkit-backdrop-filter:blur(22px) saturate(145%)!important;
-  backdrop-filter:blur(22px) saturate(145%)!important
+  background:linear-gradient(135deg,rgba(248,251,250,.96),rgba(230,242,237,.94))!important;
+  color:#23463b!important;
+  box-shadow:0 6px 18px rgba(8,39,29,.10)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important
 }
 .home-page.is-authenticated .add-destination small{color:#69716e!important}
 .home-page.is-authenticated .add-destination .icon{
@@ -1324,7 +1323,6 @@ html[data-theme][data-theme] body.tm-new-design main.content :is(
 ){
   border-color:var(--tm-card-border);
   background:var(--tm-card-surface,var(--tm-card-bg))!important;
-  background-color:transparent!important;
   color:var(--tm-card-text)!important;
   -webkit-text-fill-color:var(--tm-card-text)!important;
   box-shadow:var(--tm-card-elevation,var(--tm-card-shadow))!important
@@ -1333,7 +1331,6 @@ html[data-theme][data-theme] body.tm-new-design main.content>section.section:not
 html[data-theme][data-theme] body.tm-new-design main.content>.trip-home-actions{
   border:1px solid var(--tm-card-border)!important;
   background:var(--tm-card-bg)!important;
-  background-color:transparent!important;
   color:var(--tm-card-text)!important;
   -webkit-text-fill-color:var(--tm-card-text)!important;
   box-shadow:var(--tm-card-shadow)!important;
@@ -1343,7 +1340,6 @@ html[data-theme][data-theme] body.tm-new-design main.content :is(.section-head){
   border:1px solid var(--tm-card-border)!important;
   border-radius:var(--tm-card-radius-featured)!important;
   background:var(--tm-card-bg)!important;
-  background-color:transparent!important;
   color:var(--tm-card-text)!important;
   -webkit-text-fill-color:var(--tm-card-text)!important;
   box-shadow:var(--tm-card-shadow)!important;

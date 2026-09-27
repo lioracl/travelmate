@@ -38,3 +38,13 @@ test('settings dialog traps focus and restores the launcher', () => {
   assert.match(source, /querySelector\('\[data-mobile-menu\]'\)/);
   assert.match(source, /matchMedia\('\(max-width: 900px\)'\)\.matches/);
 });
+
+test('Weather dialog traps focus and restores the Weather launcher', () => {
+  const source = read('assets/weather-widget.js');
+  assert.match(source, /function weatherFocusable\(ui\)/);
+  assert.match(source, /if \(event\.key !== 'Tab'\) return/);
+  assert.match(source, /event\.shiftKey[\s\S]*last\.focus\(\)/);
+  assert.match(source, /active === last[\s\S]*first\.focus\(\)/);
+  assert.match(source, /function close\(ui, restoreFocus\)[\s\S]*ui\.button\.focus\(\)/);
+  assert.match(source, /event\.key === 'Escape'[\s\S]*close\(ui\)/);
+});

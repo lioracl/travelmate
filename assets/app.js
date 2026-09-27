@@ -1,6 +1,6 @@
 var appScript=document.currentScript;
 (function(){
-  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260927-14'}catch(error){return'20260927-14'}})();
+  var version=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260927-15'}catch(error){return'20260927-15'}})();
   var loadedStyles={},loadedScripts={};
   var isHomePage=Boolean(document.body&&document.body.classList.contains('home-page'));
   var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css'];
@@ -27,16 +27,16 @@ var appScript=document.currentScript;
     if(loadedStyles[file])return loadedStyles[file];
     loadedStyles[file]=new Promise(function(resolve){
       var existing=document.querySelector('link[data-travelmate-style="'+file+'"],link[href*="/assets/'+file+'"]');
-      if(existing){resolve();return}
-      var style=document.createElement('link');style.rel='stylesheet';style.href=assetUrl(file);style.dataset.travelmateStyle=file;style.onload=resolve;style.onerror=function(){console.error('TravelMate style failed to load:',file);resolve()};var finalLink=document.querySelector('link[data-travelmate-style="'+finalStyle+'"]');if(file!==finalStyle&&finalLink)document.head.insertBefore(style,finalLink);else document.head.appendChild(style)
+      if(existing){resolve(true);return}
+      var style=document.createElement('link');style.rel='stylesheet';style.href=assetUrl(file);style.dataset.travelmateStyle=file;style.onload=function(){resolve(true)};style.onerror=function(){console.error('TravelMate style failed to load:',file);style.remove();delete loadedStyles[file];resolve(false)};var finalLink=document.querySelector('link[data-travelmate-style="'+finalStyle+'"]');if(file!==finalStyle&&finalLink)document.head.insertBefore(style,finalLink);else document.head.appendChild(style)
     });
     return loadedStyles[file]
   }
   function loadScript(file){
     if(loadedScripts[file])return loadedScripts[file];
     var existing=[].slice.call(document.scripts).find(function(script){return script.src&&script.src.indexOf('/assets/'+file)!==-1});
-    if(existing){loadedScripts[file]=Promise.resolve();return loadedScripts[file]}
-    loadedScripts[file]=new Promise(function(resolve){var script=document.createElement('script');script.src=assetUrl(file);script.async=false;script.onload=resolve;script.onerror=function(){console.error('TravelMate feature failed to load:',file);resolve()};document.head.appendChild(script)});
+    if(existing){loadedScripts[file]=Promise.resolve(true);return loadedScripts[file]}
+    loadedScripts[file]=new Promise(function(resolve){var script=document.createElement('script');script.src=assetUrl(file);script.async=false;script.onload=function(){resolve(true)};script.onerror=function(){console.error('TravelMate feature failed to load:',file);script.remove();delete loadedScripts[file];resolve(false)};document.head.appendChild(script)});
     return loadedScripts[file]
   }
   function loadSequence(files){return files.reduce(function(chain,file){return chain.then(function(){return loadScript(file)})},Promise.resolve())}

@@ -21,6 +21,20 @@ test('custom trip has one semantic surface authority',()=>{
   assert.doesNotMatch(css,/Phone glass must remain legible over detailed destination photography/);
 });
 
+test('shared card surfaces do not erase color tokens after assigning background',()=>{
+  const css=read('assets/readable-glass.css');
+  assert.doesNotMatch(css,/background:var\(--tm-card-surface,var\(--tm-card-bg\)\)(?:!important)?;\s*background-color:transparent/);
+  assert.doesNotMatch(css,/background:var\(--tm-card-bg\)!important;\s*background-color:transparent/);
+});
+
+test('New Trip action does not reintroduce the legacy heavy blur',()=>{
+  const css=read('assets/readable-glass.css');
+  const match=css.match(/\.home-page\.is-authenticated #active-trips>\.add-destination\{([\s\S]*?)\n\}/);
+  assert.ok(match,'New Trip material exists');
+  assert.doesNotMatch(match[1],/blur\(22px\)/);
+  assert.match(match[1],/backdrop-filter:none!important/);
+});
+
 test('glass uses blur instead of opacity escalation',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/--tm-surface-blur:blur\(14px\) saturate\(112%\)/);
