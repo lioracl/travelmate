@@ -514,7 +514,7 @@
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-labelledby', 'cloud-account-title');
-    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message role="status" aria-live="polite" data-message-state="info">התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><div class="cloud-auth-secondary" aria-label="אפשרויות התחברות נוספות"><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></div></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><fieldset class="account-accent-picker"><legend>ערכת צבע</legend><div role="group" aria-label="בחירת ערכת צבע"><button type="button" data-accent-choice="ocean" aria-label="אוקיינוס"><i></i><span>אוקיינוס</span></button><button type="button" data-accent-choice="emerald" aria-label="אמרלד"><i></i><span>אמרלד</span></button><button type="button" data-accent-choice="teal" aria-label="טורקיז"><i></i><span>טורקיז</span></button><button type="button" data-accent-choice="sunset" aria-label="שקיעה"><i></i><span>שקיעה</span></button><button type="button" data-accent-choice="plum" aria-label="שזיף"><i></i><span>שזיף</span></button><button type="button" data-accent-choice="pink" aria-label="ורוד"><i></i><span>ורוד</span></button></div></fieldset><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
+    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message role="status" aria-live="polite" data-message-state="info">התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><div class="cloud-auth-secondary" aria-label="אפשרויות התחברות נוספות"><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></div></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><form class="cloud-profile-form" data-cloud-profile-form><label class="cloud-auth-field"><span>שם תצוגה</span><span class="cloud-auth-input"><i class="fa-regular fa-user" aria-hidden="true"></i><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></span></label><button type="submit" class="secondary" data-cloud-profile-save><i class="fa-solid fa-user-check"></i> שמירת שם</button></form><fieldset class="account-accent-picker"><legend>ערכת צבע</legend><div role="group" aria-label="בחירת ערכת צבע"><button type="button" data-accent-choice="ocean" aria-label="אוקיינוס"><i></i><span>אוקיינוס</span></button><button type="button" data-accent-choice="emerald" aria-label="אמרלד"><i></i><span>אמרלד</span></button><button type="button" data-accent-choice="teal" aria-label="טורקיז"><i></i><span>טורקיז</span></button><button type="button" data-accent-choice="sunset" aria-label="שקיעה"><i></i><span>שקיעה</span></button><button type="button" data-accent-choice="plum" aria-label="שזיף"><i></i><span>שזיף</span></button><button type="button" data-accent-choice="pink" aria-label="ורוד"><i></i><span>ורוד</span></button></div></fieldset><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
     panel.classList.add('cloud-account-split');
     panel.insertAdjacentHTML('afterbegin', '<button class="cloud-account-close" type="button" data-cloud-account-close aria-label="סגירת חלון ההתחברות"><i class="fa-solid fa-xmark"></i></button>');
     backdrop.appendChild(panel);
@@ -526,6 +526,7 @@
   if (window.TravelMateTheme && window.TravelMateTheme.refreshAccentChoices) window.TravelMateTheme.refreshAccentChoices();
   var authForm = accountPanel.querySelector('[data-cloud-auth-form]');
   var passwordForm = accountPanel.querySelector('[data-cloud-password-form]');
+  var profileForm = accountPanel.querySelector('[data-cloud-profile-form]');
   var sessionPanel = accountPanel.querySelector('[data-cloud-session]');
   var message = accountPanel.querySelector('[data-cloud-message]');
   var accountBackdrop = accountPanel.closest('[data-cloud-account-backdrop]');
@@ -612,6 +613,8 @@
 
   function setSession(session) {
     currentSession = session;
+    var user = session && session.user;
+    var profile = personalizedUser(user);
     document.body.classList.toggle('is-authenticated', Boolean(session));
     renderPersonalization(session);
     window.dispatchEvent(new CustomEvent('travelmate:home-auth', { detail: { authenticated: Boolean(session) } }));
@@ -620,6 +623,7 @@
     passwordForm.hidden = true;
     sessionPanel.hidden = !session;
     accountPanel.querySelector('[data-cloud-email]').textContent = session && session.user ? session.user.email : '';
+    if (profileForm) profileForm.elements.displayName.value = user ? profile.name : '';
     accountOpenButtons.forEach(function (button) {
       var label = session ? 'החשבון שלי' : 'התחברות';
       button.setAttribute('aria-label', label);
@@ -701,6 +705,34 @@
     } finally {
       submitButton.disabled = false;
       submitButton.removeAttribute('aria-busy');
+    }
+  });
+
+  if (profileForm) profileForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    if (!currentSession || !currentSession.user || !cloud || typeof cloud.updateProfile !== 'function') return;
+    var button = profileForm.querySelector('[data-cloud-profile-save]');
+    var displayName = String(profileForm.elements.displayName.value || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    setMessage('שומר/ת את הפרופיל…');
+    try {
+      var result = await cloud.updateProfile(displayName);
+      if (result.error) {
+        setMessage(authMessage(result.error), true);
+        return;
+      }
+      if (result.data && result.data.user) currentSession.user = result.data.user;
+      var updatedProfile = personalizedUser(currentSession.user);
+      profileForm.elements.displayName.value = updatedProfile.name;
+      renderPersonalization(currentSession);
+      setMessage(displayName ? 'השם נשמר. TravelMate יפנה אליך מעכשיו בשם ' + updatedProfile.firstName + '.' : 'שם התצוגה אופס. TravelMate ישתמש בשם שמופיע בכתובת הדוא״ל.');
+    } catch (error) {
+      console.error('TravelMate profile update failed', error);
+      setMessage(authMessage(error), true);
+    } finally {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
     }
   });
 
