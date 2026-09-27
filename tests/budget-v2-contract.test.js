@@ -124,3 +124,44 @@ test('pre-trip expenses count as spent without becoming a fake daily pace projec
   assert.equal(context.result.averageEuros, 0);
   assert.equal(context.result.projectedEuros, 250);
 });
+
+test('completed trips stop projecting future daily spend', () => {
+  function extractFunction(name) {
+    const match = js.match(new RegExp('  function ' + name + '\\(\\) \\{[\\s\\S]*?\\n  \\}'));
+    assert.ok(match, 'expected to extract ' + name);
+    return match[0];
+  }
+
+  const context = {
+    state: {
+      trip: {
+        start: '2000-01-01',
+        end: '2000-01-05',
+        days: 5,
+        budget: 1000
+      },
+      expenses: [
+        { amount: 600, currency: 'EUR', category: 'אוכל', date: '2000-01-03' }
+      ],
+      budgetUnlimited: false
+    },
+    localDateValue: () => '2026-09-27',
+    expenseInEuros: (expense) => Number(expense.amount || 0),
+    budgetExpenseTotals: () => ({})
+  };
+
+  vm.runInNewContext(
+    extractFunction('budgetTiming') + '\n' +
+    extractFunction('budgetSmartMetrics') + '\n' +
+    'result = budgetSmartMetrics();',
+    context
+  );
+
+  assert.equal(context.result.timing.tripEnded, true);
+  assert.equal(context.result.timing.remainingDays, 0);
+  assert.equal(context.result.spentEuros, 600);
+  assert.equal(context.result.projectedEuros, 600);
+  assert.equal(context.result.safeTodayEuros, 0);
+  assert.match(js, /יתרה סופית לאחר סיום הטיול/);
+  assert.match(js, /הטיול הסתיים/);
+});

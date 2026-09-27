@@ -453,7 +453,7 @@
     var plannedEuros = Number(state.trip && state.trip.budget || 0);
     var remainingEuros = Math.max(0, plannedEuros - spentEuros);
     var overrunEuros = plannedEuros > 0 ? Math.max(0, spentEuros - plannedEuros) : 0;
-    var safeTodayEuros = !state.budgetUnlimited && plannedEuros && !overrunEuros ? remainingEuros / Math.max(1, timing.remainingDays) : 0;
+    var safeTodayEuros = !state.budgetUnlimited && plannedEuros && !overrunEuros && !timing.tripEnded ? remainingEuros / Math.max(1, timing.remainingDays) : 0;
     var top = Object.keys(totals).map(function (name) { return { name: name, euros: totals[name].total }; }).sort(function (a, b) { return b.euros - a.euros; })[0] || null;
     return {
       timing: timing,
@@ -495,6 +495,15 @@
       narrative = unlimited ? 'המעקב פתוח ללא תקרת תקציב. לאחר שתוסיף הוצאה ראשונה יוצגו כאן ממוצע יומי, הקטגוריה המובילה ותחזית לסוף הטיול.' : 'עדיין לא נרשמו הוצאות. לאחר ההוצאה הראשונה נחשב כמה נשאר, מה הקצב היומי ומה צפוי עד סוף הטיול.';
     } else if (!metrics.timing.tripStarted) {
       narrative = 'נרשמו ' + count + ' הוצאות עוד לפני תחילת הטיול בסך ' + money(budgetLocal(metrics.spentEuros), state.localCurrency) + '. הן נספרות בהוצאה הכוללת, אבל תחזית הקצב היומי תתחיל רק ביום הראשון של הטיול.';
+    } else if (metrics.timing.tripEnded) {
+      if (unlimited) {
+        narrative = 'הטיול הסתיים עם ' + count + ' הוצאות בסך ' + money(budgetLocal(metrics.spentEuros), state.localCurrency) + '. הממוצע לאורך הטיול היה ' + money(budgetLocal(metrics.averageEuros), state.localCurrency) + ' ליום.';
+      } else if (metrics.plannedEuros) {
+        var finalDelta = metrics.plannedEuros - metrics.spentEuros;
+        narrative = 'הטיול הסתיים. הוצאת ' + money(budgetLocal(metrics.spentEuros), state.localCurrency) + ' מתוך ' + money(budgetLocal(metrics.plannedEuros), state.localCurrency) + '. ' + (finalDelta >= 0 ? 'נשארו מהמסגרת ' : 'החריגה מהמסגרת הייתה ') + money(Math.abs(budgetLocal(finalDelta)), state.localCurrency) + '.';
+      } else {
+        narrative = 'הטיול הסתיים עם ' + count + ' הוצאות בסך ' + money(budgetLocal(metrics.spentEuros), state.localCurrency) + '.';
+      }
     } else if (unlimited) {
       narrative = 'נרשמו ' + count + ' הוצאות. הממוצע עד עכשיו הוא ' + money(budgetLocal(metrics.averageEuros), state.localCurrency) + ' ליום' + (metrics.projectedEuros ? ', ובקצב הזה ההוצאה המשוערת לכל הטיול היא ' + money(budgetLocal(metrics.projectedEuros), state.localCurrency) + '.' : '.');
     } else if (metrics.plannedEuros) {
@@ -511,6 +520,8 @@
     if (!unlimited && metrics.plannedEuros) {
       if (metrics.overrunEuros > 0) {
         cards.push('<article class="budget-overrun-card"><span>חריגה מהתקציב</span>' + budgetDualAmount(metrics.overrunEuros) + '<em>' + metrics.usedPercent + '% מהמסגרת נוצלו</em></article>');
+      } else if (metrics.timing.tripEnded) {
+        cards.push('<article><span>נותר מהתקציב</span>' + budgetDualAmount(metrics.remainingEuros) + '<em>יתרה סופית לאחר סיום הטיול</em></article>');
       } else {
         cards.push('<article><span>אפשר להוציא ליום</span>' + budgetDualAmount(metrics.safeTodayEuros) + '<em>לפי היתרה ו־' + metrics.timing.remainingDays + ' ימים שנותרו</em></article>');
       }
