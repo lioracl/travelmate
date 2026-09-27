@@ -131,3 +131,13 @@ test('Document actions keep secure preview download and destructive-delete safeg
   assert.match(vault, /URL\.revokeObjectURL\(objectUrl\)/);
   assert.match(vault, /confirm\('למחוק לצמיתות את המסמך מהענן\? לא ניתן לבטל פעולה זו\.'\)/);
 });
+
+test('Documents no longer uses the legacy white-on-dark header override', () => {
+  const redesign = read('assets/trip-redesign.css');
+  assert.doesNotMatch(redesign, /data-trip-view="documents"[\s\S]{0,900}section-head > div > h1\{[\s\S]*color:#fff!important/);
+  assert.doesNotMatch(redesign, /data-trip-view="documents"[\s\S]{0,1200}pill-btn::before/);
+});
+
+test('Documents light theme uses a light translucent page surface without backdrop blur', () => {
+  assert.match(css, /html:not\(\[data-theme="dark"\]\)[\s\S]*data-trip-view="documents"[\s\S]*#documents\{[\s\S]*background:linear-gradient\(135deg,rgba\(248,252,250,\.72\),rgba\(231,242,237,\.62\)\)[\s\S]*backdrop-filter:none/);
+});

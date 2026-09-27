@@ -1751,11 +1751,11 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-date-s
   color:var(--tm-text-primary)
 }
 html body.home-page.is-authenticated #active-trips>.trip-card-shell{
-  border:1px solid rgba(244,247,247,.2);
+  border:0;
   border-radius:var(--tm-card-radius);
   background:transparent;
   color:var(--tm-card-text);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22);
+  box-shadow:none;
   -webkit-backdrop-filter:none;
   backdrop-filter:none
 }
@@ -2129,8 +2129,8 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-overview-text:var(--tm-surface-text);
   --tm-overview-muted:var(--tm-surface-text-muted);
 
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(54,94,108,.74),rgba(47,83,96,.68));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(61,105,120,.78),rgba(53,93,107,.74));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(42,78,90,.52),rgba(35,68,80,.44));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(48,86,98,.58),rgba(40,75,87,.50));
   --tm-weather-card-text:var(--tm-surface-photo-text);
   --tm-weather-card-blur:none;
 
@@ -2243,10 +2243,11 @@ html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-h
 
 /* Weather keeps the photo-glass hierarchy without the milky blur. */
 html body[data-trip-kind="custom"].tm-new-design .weather-top-widget{
-  border-color:rgba(255,255,255,.26);
+  border-color:rgba(255,255,255,.34);
   background:var(--tm-weather-card-bg);
   color:var(--tm-weather-card-text);
-  box-shadow:0 8px 20px rgba(0,0,0,.14);
+  box-shadow:0 6px 16px rgba(0,0,0,.10);
+  text-shadow:0 1px 3px rgba(0,0,0,.34);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
 }

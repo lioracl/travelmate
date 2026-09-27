@@ -45,7 +45,7 @@ test('glass uses blur instead of opacity escalation',()=>{
 
 test('weather uses a dedicated crisp translucent material without optical blur',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(54,94,108,\.74\),rgba\(47,83,96,\.68\)\)/);
+  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(42,78,90,\.52\),rgba\(35,68,80,\.44\)\)/);
   assert.match(css,/--tm-weather-card-text:var\(--tm-surface-photo-text\)/);
   assert.match(css,/--tm-weather-card-blur:none/);
   assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);

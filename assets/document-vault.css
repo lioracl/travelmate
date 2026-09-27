@@ -250,7 +250,8 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
 
 /* Documents final feature ownership — one shell, row hierarchy, no nested glass cards. */
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents{
-  --tm-documents-shell:color-mix(in srgb,var(--tm-card-bg) 72%,transparent);
+  --tm-documents-page:linear-gradient(135deg,rgba(248,252,250,.72),rgba(231,242,237,.62));
+  --tm-documents-shell:rgba(248,252,250,.46);
   --tm-documents-row-hover:color-mix(in srgb,var(--tm-brand-primary) 7%,transparent);
   --tm-documents-file-row:color-mix(in srgb,var(--tm-card-bg-nested) 48%,transparent)
 }
@@ -425,4 +426,37 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
     min-height:40px;
     flex:1 1 92px
   }
+}
+
+
+/* Documents visual stabilization: light translucent page surface, no black glass. */
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents{
+  --tm-documents-shell:rgba(250,253,251,.56);
+  --tm-documents-file-row:rgba(250,253,251,.34);
+  padding:14px;
+  border:1px solid rgba(255,255,255,.58);
+  border-radius:22px;
+  background:linear-gradient(135deg,rgba(248,252,250,.72),rgba(231,242,237,.62));
+  color:var(--tm-surface-text);
+  box-shadow:0 8px 22px rgba(8,39,29,.10);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents{
+  --tm-documents-shell:rgba(24,52,44,.52);
+  --tm-documents-file-row:rgba(28,61,51,.34);
+  padding:14px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:22px;
+  background:linear-gradient(135deg,rgba(18,44,37,.68),rgba(13,34,29,.60));
+  color:var(--tm-surface-text);
+  box-shadow:0 8px 22px rgba(0,0,0,.16);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents>.section-head{
+  min-height:auto;
+  padding:2px 0 12px;
+  align-items:center;
+  color:var(--tm-surface-text)
 }

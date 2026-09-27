@@ -495,3 +495,11 @@ test('Custom Overview cards use the crisp overview surface after the transparent
   assert.match(glass, /--tm-custom-overview-surface:var\(--tm-overview-card\)/);
   assert.match(glass, /trip-overview-summary>\.overview-status-card\{[\s\S]*--tm-card-bg:var\(--tm-overview-card\);[\s\S]*--tm-card-surface:var\(--tm-overview-card\);[\s\S]*backdrop-filter:none/);
 });
+
+test('All Trips card actions use one responsive rail instead of competing absolute offsets', () => {
+  const homeJs = read(path.join(root, 'assets/home.js'));
+  const organizer = read(cssFiles.homeOrganizer);
+  assert.match(homeJs, /class="trip-card-action-rail"/);
+  assert.match(organizer, /trip-card-action-rail\{[\s\S]*display:flex[\s\S]*flex-wrap:wrap/);
+  assert.match(organizer, /trip-card-action-rail>button\{[\s\S]*position:static/);
+});
