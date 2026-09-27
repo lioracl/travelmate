@@ -121,12 +121,12 @@ html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#p
 
 html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day>div,
 html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan .generated-day>.badge{
-  border:1.5px solid var(--tm-readable-border)!important;
-  background:var(--tm-readable-surface-soft)!important;
-  color:var(--tm-readable-text)!important;
-  -webkit-text-fill-color:var(--tm-readable-text)!important;
-  box-shadow:var(--tm-readable-shadow)!important;
-  opacity:1!important
+  border:1.5px solid var(--tm-readable-border);
+  background:var(--tm-readable-surface-soft);
+  color:var(--tm-readable-text);
+  -webkit-text-fill-color:var(--tm-readable-text);
+  box-shadow:var(--tm-readable-shadow);
+  opacity:1
 }
 
 html body.tm-new-design[data-trip-view="plan"] main.content #plan#plan :is(
@@ -2123,20 +2123,20 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-card-control-placeholder:#5A666A;
   --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 16%,rgba(255,255,255,.82));
 
-  --tm-overview-card:linear-gradient(135deg,rgba(248,251,250,.82),rgba(232,242,238,.74));
-  --tm-overview-card-soft:rgba(248,251,250,.68);
+  --tm-overview-card:linear-gradient(135deg,rgba(248,251,250,.68),rgba(232,242,238,.58));
+  --tm-overview-card-soft:rgba(248,251,250,.54);
   --tm-overview-border:var(--tm-surface-border);
   --tm-overview-text:var(--tm-surface-text);
   --tm-overview-muted:var(--tm-surface-text-muted);
 
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(54,94,108,.84),rgba(47,83,96,.78));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(61,105,120,.88),rgba(53,93,107,.84));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(54,94,108,.74),rgba(47,83,96,.68));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(61,105,120,.78),rgba(53,93,107,.74));
   --tm-weather-card-text:var(--tm-surface-photo-text);
   --tm-weather-card-blur:none;
 
-  --tm-plan-shell-surface:rgba(248,251,250,.40);
-  --tm-plan-row-surface:rgba(248,251,250,.18);
-  --tm-plan-past-button-surface:rgba(248,251,250,.36);
+  --tm-plan-shell-surface:rgba(248,251,250,.28);
+  --tm-plan-row-surface:rgba(248,251,250,.10);
+  --tm-plan-past-button-surface:rgba(248,251,250,.22);
 
   --tm-glass-shell-bg:var(--tm-surface-glass);
   --tm-glass-shell-border:var(--tm-surface-border);
@@ -2174,9 +2174,9 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
   --tm-card-muted:rgba(247,250,250,.68);
   --tm-card-link:color-mix(in srgb,var(--tm-brand-primary) 48%,#fff);
   --tm-card-icon:color-mix(in srgb,var(--tm-brand-primary) 58%,#fff);
-  --tm-plan-shell-surface:rgba(16,42,35,.48);
-  --tm-plan-row-surface:rgba(22,54,45,.26);
-  --tm-plan-past-button-surface:rgba(22,54,45,.32);
+  --tm-plan-shell-surface:rgba(16,42,35,.34);
+  --tm-plan-row-surface:rgba(22,54,45,.16);
+  --tm-plan-past-button-surface:rgba(22,54,45,.22);
   --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(18,42,34,.82));
   --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(18,42,34,.86));
   --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 44%,rgba(18,42,34,.9));
@@ -2191,10 +2191,10 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-surface-blur-photo:none
 }
 html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-surface-glass:linear-gradient(135deg,rgba(248,252,250,.72),rgba(232,243,238,.64));
-  --tm-surface-nested:rgba(248,251,250,.54);
-  --tm-overview-card:linear-gradient(135deg,rgba(248,251,250,.82),rgba(232,242,238,.74));
-  --tm-overview-card-soft:rgba(248,251,250,.66);
+  --tm-surface-glass:linear-gradient(135deg,rgba(248,252,250,.58),rgba(232,243,238,.50));
+  --tm-surface-nested:rgba(248,251,250,.44);
+  --tm-overview-card:linear-gradient(135deg,rgba(248,251,250,.68),rgba(232,242,238,.58));
+  --tm-overview-card-soft:rgba(248,251,250,.54);
   --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.62),rgba(11,45,50,.56))
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
@@ -2279,10 +2279,17 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan .p
   background:var(--tm-plan-past-button-surface);
   box-shadow:none
 }
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan .generated-day{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan .generated-day>div{
-  background:var(--tm-surface-glass);
-  border-color:var(--tm-surface-border);
-  box-shadow:0 6px 18px rgba(8,39,29,.08);
+  background:var(--tm-plan-shell-surface);
+  border:1px solid var(--tm-surface-border);
+  box-shadow:none;
   -webkit-backdrop-filter:none;
   backdrop-filter:none
 }
@@ -2306,10 +2313,20 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan :i
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan :is(.planned-activity,.saved-place){
   background:var(--tm-plan-row-surface);
-  border-color:color-mix(in srgb,var(--tm-surface-border) 70%,transparent);
+  border:0;
+  border-bottom:1px solid color-mix(in srgb,var(--tm-surface-border) 72%,transparent);
+  border-radius:0;
   box-shadow:none;
   -webkit-backdrop-filter:none;
   backdrop-filter:none
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan :is(.planned-activity,.saved-place):last-child{
+  border-bottom:0
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan .day-note{
+  background:var(--tm-plan-row-surface);
+  border:1px solid color-mix(in srgb,var(--tm-surface-border) 72%,transparent);
+  box-shadow:none
 }
 /* Collapsed Plan days keep only their useful day header. */
 html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div>:not(.day-heading){

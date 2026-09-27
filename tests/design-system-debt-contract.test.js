@@ -478,6 +478,12 @@ test('All Trips responsive layout is owned by CSS instead of inline grid columns
   assert.match(organizer, /@media\(max-width:600px\)[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
 
+test('All Trips mobile secondary actions keep short visible labels instead of ambiguous icon-only buttons', () => {
+  const organizer = read(cssFiles.homeOrganizer);
+  assert.match(organizer, /@media\(max-width:800px\)[\s\S]*\.trip-edit-dates,[\s\S]*\.trip-delete\{[\s\S]*padding:0 12px/);
+  assert.match(organizer, /\.trip-edit-dates span,[\s\S]*\.trip-delete span\{display:inline\}/);
+});
+
 test('Custom Overview cards use the crisp overview surface after the transparent container bridge', () => {
   const glass = read(cssFiles.readableGlass);
   assert.match(glass, /--tm-custom-overview-surface:var\(--tm-overview-card\)/);
