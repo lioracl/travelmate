@@ -426,16 +426,30 @@
       var effective = today < start ? start : end && today > end ? end : today;
       elapsedDays = Math.max(1, Math.min(totalDays, Math.round((effective - start) / 86400000) + 1));
     }
-    var remainingDays = start && today < start ? totalDays : Math.max(1, totalDays - elapsedDays + 1);
-    return { totalDays: totalDays, elapsedDays: elapsedDays, remainingDays: remainingDays, today: localDateValue() };
+    var tripStarted = !start || today >= start;
+    var tripEnded = Boolean(end && today > end);
+    var remainingDays = start && today < start ? totalDays : tripEnded ? 0 : Math.max(1, totalDays - elapsedDays + 1);
+    return { totalDays: totalDays, elapsedDays: elapsedDays, remainingDays: remainingDays, today: localDateValue(), tripStarted: tripStarted, tripEnded: tripEnded };
   }
   function budgetSmartMetrics() {
     var totals = budgetExpenseTotals();
     var timing = budgetTiming();
     var spentEuros = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
     var todayEuros = state.expenses.filter(function (expense) { return expense.date === timing.today; }).reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
-    var averageEuros = spentEuros / Math.max(1, timing.elapsedDays);
-    var projectedEuros = state.expenses.length ? averageEuros * timing.totalDays : 0;
+    var tripStart = String(state.trip && state.trip.start || '');
+    var tripEnd = String(state.trip && state.trip.end || '');
+    var paceSpentEuros = state.expenses.reduce(function (sum, expense) {
+      if (!timing.tripStarted) return sum;
+      var expenseDate = String(expense && expense.date || '');
+      var inTripPace = !tripStart || !expenseDate || (expenseDate >= tripStart && expenseDate <= timing.today && (!tripEnd || expenseDate <= tripEnd));
+      return sum + (inTripPace ? expenseInEuros(expense) : 0);
+    }, 0);
+    var committedEuros = Math.max(0, spentEuros - paceSpentEuros);
+    var averageEuros = timing.tripStarted ? paceSpentEuros / Math.max(1, timing.elapsedDays) : 0;
+    var futurePaceDays = timing.tripEnded || !timing.tripStarted ? 0 : Math.max(0, timing.totalDays - timing.elapsedDays);
+    var projectedEuros = state.expenses.length
+      ? timing.tripEnded ? spentEuros : committedEuros + paceSpentEuros + averageEuros * futurePaceDays
+      : 0;
     var plannedEuros = Number(state.trip && state.trip.budget || 0);
     var remainingEuros = Math.max(0, plannedEuros - spentEuros);
     var overrunEuros = plannedEuros > 0 ? Math.max(0, spentEuros - plannedEuros) : 0;
@@ -479,6 +493,8 @@
     var narrative = '';
     if (!count) {
       narrative = unlimited ? 'המעקב פתוח ללא תקרת תקציב. לאחר שתוסיף הוצאה ראשונה יוצגו כאן ממוצע יומי, הקטגוריה המובילה ותחזית לסוף הטיול.' : 'עדיין לא נרשמו הוצאות. לאחר ההוצאה הראשונה נחשב כמה נשאר, מה הקצב היומי ומה צפוי עד סוף הטיול.';
+    } else if (!metrics.timing.tripStarted) {
+      narrative = 'נרשמו ' + count + ' הוצאות עוד לפני תחילת הטיול בסך ' + money(budgetLocal(metrics.spentEuros), state.localCurrency) + '. הן נספרות בהוצאה הכוללת, אבל תחזית הקצב היומי תתחיל רק ביום הראשון של הטיול.';
     } else if (unlimited) {
       narrative = 'נרשמו ' + count + ' הוצאות. הממוצע עד עכשיו הוא ' + money(budgetLocal(metrics.averageEuros), state.localCurrency) + ' ליום' + (metrics.projectedEuros ? ', ובקצב הזה ההוצאה המשוערת לכל הטיול היא ' + money(budgetLocal(metrics.projectedEuros), state.localCurrency) + '.' : '.');
     } else if (metrics.plannedEuros) {
@@ -490,7 +506,7 @@
     var cards = [
       '<article><span>הוצא עד עכשיו</span>' + budgetDualAmount(metrics.spentEuros) + '<em>' + count + ' הוצאות</em></article>',
       '<article><span>היום</span>' + budgetDualAmount(metrics.todayEuros) + '<em>' + (metrics.todayEuros ? 'נרשם היום' : 'עדיין לא נרשמה הוצאה היום') + '</em></article>',
-      '<article><span>ממוצע ליום</span>' + budgetDualAmount(metrics.averageEuros) + '<em>' + metrics.timing.elapsedDays + ' ימים במעקב</em></article>'
+      '<article><span>ממוצע ליום</span>' + budgetDualAmount(metrics.averageEuros) + '<em>' + (metrics.timing.tripStarted ? metrics.timing.elapsedDays + ' ימים במעקב' : 'יחושב מתחילת הטיול') + '</em></article>'
     ];
     if (!unlimited && metrics.plannedEuros) {
       if (metrics.overrunEuros > 0) {
@@ -520,11 +536,12 @@
     var overrun = !unlimited && totalPlanned > 0 && totalSpent > totalPlanned;
     var budgetDifference = overrun ? totalSpent - totalPlanned : Math.max(0, totalPlanned - totalSpent);
     var budgetDifferenceLocal = state.localCurrency === 'EUR' ? budgetDifference : localFromEuros(budgetDifference);
-    var elapsedDays = budgetTiming().elapsedDays;
+    var smartMetrics = budgetSmartMetrics();
+    var averageSpentLocal = budgetLocal(smartMetrics.averageEuros);
     summary.innerHTML = unlimited
-      ? '<div><span>מצב</span><strong>ללא הגבלה</strong></div><div><span>הצטבר עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>ממוצע ליום</span><strong>' + money(totalSpentLocal / elapsedDays, state.localCurrency) + '</strong></div>'
+      ? '<div><span>מצב</span><strong>ללא הגבלה</strong></div><div><span>הצטבר עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>ממוצע ליום</span><strong>' + money(averageSpentLocal, state.localCurrency) + '</strong></div>'
       : '<div><span>מתוכנן</span><strong>' + money(totalPlannedLocal, state.localCurrency) + '</strong></div><div><span>בוצע</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div class="' + (overrun ? 'budget-overrun-value' : '') + '"><span>' + (overrun ? 'חריגה' : 'נותר') + '</span><strong>' + money(budgetDifferenceLocal, state.localCurrency) + '</strong></div>';
-    (unlimited ? [0, totalSpent, totalSpent / elapsedDays] : [totalPlanned, totalSpent, budgetDifference]).forEach(function (euros, index) {
+    (unlimited ? [0, totalSpent, smartMetrics.averageEuros] : [totalPlanned, totalSpent, budgetDifference]).forEach(function (euros, index) {
       var card = summary.children[index];
       if (card) card.insertAdjacentHTML('beforeend', secondaryMoneyFromEuros(euros));
     });

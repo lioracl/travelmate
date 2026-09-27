@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf8'); }
@@ -84,4 +85,42 @@ test('zero spending is rendered as a valid converted amount once rates are ready
   assert.match(js, /result\.innerHTML = currencyConversionReady\(from, to\)/);
   assert.doesNotMatch(js, /summaryConversion\.textContent = secondaryTotal \?/);
   assert.doesNotMatch(js, /result\.innerHTML = converted \?/);
+});
+
+test('pre-trip expenses count as spent without becoming a fake daily pace projection', () => {
+  function extractFunction(name) {
+    const match = js.match(new RegExp('  function ' + name + '\\(\\) \\{[\\s\\S]*?\\n  \\}'));
+    assert.ok(match, 'expected to extract ' + name);
+    return match[0];
+  }
+
+  const context = {
+    state: {
+      trip: {
+        start: '2099-01-01',
+        end: '2099-01-05',
+        days: 5,
+        budget: 1000
+      },
+      expenses: [
+        { amount: 250, currency: 'EUR', category: 'לינה', date: '2098-12-20' }
+      ],
+      budgetUnlimited: false
+    },
+    localDateValue: () => '2098-12-20',
+    expenseInEuros: (expense) => Number(expense.amount || 0),
+    budgetExpenseTotals: () => ({})
+  };
+
+  vm.runInNewContext(
+    extractFunction('budgetTiming') + '\n' +
+    extractFunction('budgetSmartMetrics') + '\n' +
+    'result = budgetSmartMetrics();',
+    context
+  );
+
+  assert.equal(context.result.timing.tripStarted, false);
+  assert.equal(context.result.spentEuros, 250);
+  assert.equal(context.result.averageEuros, 0);
+  assert.equal(context.result.projectedEuros, 250);
 });
