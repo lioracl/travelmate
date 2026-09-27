@@ -736,3 +736,18 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-activi
     gap:5px
   }
 }
+
+/* Mobile performance: keep the same landing photo with a viewport-appropriate source. */
+@media(max-width:760px){
+  .home-page.is-authenticated{
+    background:
+      linear-gradient(rgba(5,20,16,.58),rgba(5,20,16,.76)),
+      url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=86") center/cover;
+  }
+  .home-page:not(.is-authenticated) .home-landing{
+    background:
+      linear-gradient(90deg,rgba(4,18,14,.2),rgba(4,18,14,.7)),
+      linear-gradient(rgba(6,22,18,.46),rgba(3,17,13,.82)),
+      url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=86") center/cover;
+  }
+}
