@@ -99,6 +99,9 @@
 #places .nearby-status{margin-top:0}
 #places .nearby-results{gap:14px}
 #places .nearby-result{padding:14px}
+.nearby-result .nearby-open-details{display:inline-flex;align-items:center;gap:7px;min-height:44px;margin-block:5px;padding:8px 12px;border:1px solid var(--tm-card-control-border,var(--line));border-radius:10px;background:var(--tm-card-control);color:var(--tm-card-control-text,var(--tm-card-text));font:inherit;font-size:13px;font-weight:750;cursor:pointer}
+.nearby-result .nearby-open-details:hover{border-color:var(--tm-card-link)}
+.nearby-result .nearby-open-details:focus-visible{outline:3px solid var(--tm-focus-ring,#147d92);outline-offset:2px}
 #places .tm-place-card__content{gap:7px}
 #places .tm-place-card__primary-actions{margin-top:2px}
 @media(max-width:760px){#places>.nearby-panel.place-planner{gap:10px}#places .nearby-category-chips{grid-template-columns:repeat(2,minmax(0,1fr))}#places .nearby-result{padding:12px}}
