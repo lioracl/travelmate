@@ -123,14 +123,6 @@ test('Document actions keep secure preview download and destructive-delete safeg
   assert.match(vault, /confirm\('למחוק לצמיתות את המסמך מהענן\? לא ניתן לבטל פעולה זו\.'\)/);
 });
 
-test('Document actions keep secure preview download and destructive-delete safeguards', () => {
-  assert.match(vault, /async function openDocument\(record, download\)/);
-  assert.match(vault, /requirePrivateStorageAccess\(\)/);
-  assert.match(vault, /downloadBlob\(decrypted, record\.file_name\)/);
-  assert.match(vault, /URL\.revokeObjectURL\(url\)/);
-  assert.match(vault, /URL\.revokeObjectURL\(objectUrl\)/);
-  assert.match(vault, /confirm\('למחוק לצמיתות את המסמך מהענן\? לא ניתן לבטל פעולה זו\.'\)/);
-});
 
 test('Documents no longer uses the legacy white-on-dark header override', () => {
   const redesign = read('assets/trip-redesign.css');
@@ -147,4 +139,17 @@ test('final canvas transparency rule does not erase the Documents surface', () =
   const canvasRule = glass.match(/\/\* Canvas never becomes a card\. \*\/[\s\S]*?\{\s*background:transparent;\s*\}/);
   assert.ok(canvasRule, 'canvas transparency rule exists');
   assert.doesNotMatch(canvasRule[0], /#documents/);
+});
+
+test('partial multi-file upload exposes saved files and prevents accidental duplicate retry', () => {
+  assert.match(vault, /if \(uploadedCount > 0\)/);
+  assert.match(vault, /input\.value = ''/);
+  assert.match(vault, /await renderDocuments\(\)/);
+  assert.match(vault, /בחר מחדש רק את הקבצים שלא נשמרו כדי למנוע כפילויות/);
+});
+
+test('Document Vault accurately distinguishes encrypted file contents from protected metadata', () => {
+  assert.match(vault, /תוכן הקבצים מוצפן במכשיר לפני ההעלאה/);
+  assert.match(vault, /שם הקובץ, הקטגוריה וההערה נשמרים כפרטי רשימה בחשבון המוגן/);
+  assert.match(vault, /אין להזין בהם מידע רגיש/);
 });
