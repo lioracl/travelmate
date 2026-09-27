@@ -29,12 +29,12 @@ test('glass uses blur instead of opacity escalation',()=>{
   assert.doesNotMatch(css,/--tm-weather-card-blur:blur\(4px\)/);
 });
 
-test('weather is the dedicated photo glass material',()=>{
+test('weather uses a dedicated crisp photo material without optical blur',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-weather-card-bg:var\(--tm-surface-photo\)/);
+  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(50,88,101,\.92\),rgba\(42,76,90,\.88\)\)/);
   assert.match(css,/--tm-weather-card-text:var\(--tm-surface-photo-text\)/);
-  assert.match(css,/--tm-weather-card-blur:var\(--tm-surface-blur-photo\)/);
-  assert.match(css,/\.weather-top-widget[\s\S]*background:var\(--tm-surface-photo\)/);
+  assert.match(css,/--tm-weather-card-blur:none/);
+  assert.match(css,/\.weather-top-widget[\s\S]*background:var\(--tm-weather-card-bg\)[\s\S]*backdrop-filter:var\(--tm-weather-card-blur\)/);
 });
 
 test('overview and places no longer own card material tokens',()=>{

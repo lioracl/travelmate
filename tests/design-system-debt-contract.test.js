@@ -478,8 +478,8 @@ test('All Trips responsive layout is owned by CSS instead of inline grid columns
   assert.match(organizer, /@media\(max-width:600px\)[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
 });
 
-test('Custom Overview cards restore their own surface after transparent container bridge', () => {
+test('Custom Overview cards use the crisp overview surface after the transparent container bridge', () => {
   const glass = read(cssFiles.readableGlass);
-  assert.match(glass, /--tm-custom-overview-surface:var\(--tm-surface-glass\)/);
-  assert.match(glass, /trip-overview-summary>\.overview-status-card\{[\s\S]*--tm-card-bg:var\(--tm-surface-glass\);[\s\S]*--tm-card-surface:var\(--tm-surface-glass\)/);
+  assert.match(glass, /--tm-custom-overview-surface:var\(--tm-overview-card\)/);
+  assert.match(glass, /trip-overview-summary>\.overview-status-card\{[\s\S]*--tm-card-bg:var\(--tm-overview-card\);[\s\S]*--tm-card-surface:var\(--tm-overview-card\);[\s\S]*backdrop-filter:none/);
 });
