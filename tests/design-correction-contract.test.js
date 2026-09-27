@@ -25,8 +25,9 @@ test('light section and Plan day headings no longer force white text', () => {
   assert.match(glass, /main\.content :is\(\.section-head\)\{[\s\S]*color:var\(--tm-card-text\)!important/);
   assert.match(glass, /main\.content \.section-head :where\([\s\S]*text-shadow:none/);
   assert.doesNotMatch(theme, /section-head\.section-head[\s\S]*color:var\(--tm-card-heading\)!important/);
-  assert.match(glass, /data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*color:var\(--tm-readable-text\)!important/);
+  assert.match(glass, /:not\(body\[data-trip-kind="custom"\]\[data-trip-view="plan"\] #plan \*\)/);
   assert.match(glass, /data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*:where\(h2,h3,h4,p,span,strong,b,small,time\)[\s\S]*color:inherit!important/);
+  assert.doesNotMatch(glass, /data-trip-kind="custom"[^\n]*data-trip-view="plan"[^\n]*#plan \.day-heading\{[^}]*color:#fff/);
   assert.doesNotMatch(theme, /day-heading\.day-heading,.day-tab\.day-tab[\s\S]*!important/);
 });
 
