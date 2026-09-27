@@ -246,15 +246,21 @@
     if (!filter || !sort) return;
     function apply() {
       var cards = [].slice.call(results.querySelectorAll('.nearby-result'));
+      var originalOrder = cards.slice();
       cards.sort(function (first, second) {
         if (sort.value === 'name') return first.dataset.resultName.localeCompare(second.dataset.resultName, 'he');
         if (sort.value === 'info') return Number(second.dataset.info) - Number(first.dataset.info) || Number(first.dataset.distance) - Number(second.dataset.distance);
         return Number(first.dataset.distance) - Number(second.dataset.distance);
-      }).forEach(function (card) { results.appendChild(card); });
+      });
+      if (cards.some(function (card, index) { return card !== originalOrder[index]; })) {
+        var ordered = document.createDocumentFragment();
+        cards.forEach(function (card) { ordered.appendChild(card); });
+        results.appendChild(ordered);
+      }
       var visible = 0;
       cards.forEach(function (card) {
         var show = filter.value === 'all' || filter.value === 'near' && Number(card.dataset.distance) <= 1000 || filter.value === 'website' && card.dataset.hasSite === '1' || filter.value === 'kosher' && card.dataset.kosher === '1' || filter.value === 'image' && card.dataset.hasImage === '1';
-        card.hidden = !show;
+        if (card.hidden === show) card.hidden = !show;
         if (show) visible += 1;
       });
       count.textContent = visible + (visible === 1 ? ' תוצאה' : ' תוצאות');
@@ -421,5 +427,5 @@
     invalidateMedia: function (place) { var key = place && (place.id || place.wikidata || place.wikipedia || place.wikipediaUrl || place.name); if (key) placeMediaCache.delete(key); }
   };
   window.dispatchEvent(new CustomEvent('travelmate:nearby-ready'));
-  window.TravelMateNearbyTest = { gpsSearchRadius: gpsSearchRadius, normalizePlaceName: normalizePlaceName, poiScore: poiScore, canonicalPlaces: canonicalPlaces, enableRtlText: enableRtlText, keepHebrewOrEnglishLabels: keepHebrewOrEnglishLabels, categoryCount: categoryRegistry.length };
+  window.TravelMateNearbyTest = { gpsSearchRadius: gpsSearchRadius, normalizePlaceName: normalizePlaceName, poiScore: poiScore, canonicalPlaces: canonicalPlaces, wireResultTools: wireResultTools, enableRtlText: enableRtlText, keepHebrewOrEnglishLabels: keepHebrewOrEnglishLabels, categoryCount: categoryRegistry.length };
 })();
