@@ -43,9 +43,9 @@ test('glass uses blur instead of opacity escalation',()=>{
   assert.doesNotMatch(css,/--tm-weather-card-blur:blur\(4px\)/);
 });
 
-test('weather uses a dedicated crisp opaque material without optical blur',()=>{
+test('weather uses a dedicated crisp translucent material without optical blur',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,#365E6C,#2F5360\)/);
+  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(54,94,108,\.84\),rgba\(47,83,96,\.78\)\)/);
   assert.match(css,/--tm-weather-card-text:var\(--tm-surface-photo-text\)/);
   assert.match(css,/--tm-weather-card-blur:none/);
   assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
@@ -81,10 +81,11 @@ test('custom trip mobile drawer keeps a crisp readable material and desktop chro
   assert.match(css,/@media\(min-width:1001px\)\{[\s\S]*?data-trip-kind="custom"[\s\S]*?\.workspace>\.sidebar\{/);
 });
 
-test('Overview removes optical blur and uses crisp semantic surfaces',()=>{
+test('Overview removes optical blur while retaining controlled transparency',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-surface-blur-photo:none/);
-  assert.match(css,/--tm-overview-card:#F6FAF8/);
+  assert.match(css,/--tm-overview-card:linear-gradient\(135deg,rgba\(248,251,250,\.82\),rgba\(232,242,238,\.74\)\)/);
+  assert.match(css,/--tm-overview-card-soft:rgba\(248,251,250,\.68\)/);
   assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
 });
 
@@ -112,8 +113,10 @@ test('feature surfaces consume semantic tokens instead of hardcoded light colors
   const glass=read('assets/readable-glass.css');
   const planner=read('assets/auto-planner.css');
   const intelligence=read('assets/trip-intelligence.css');
-  assert.match(glass,/data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*background:var\(--tm-readable-surface-soft\)!important/);
-  assert.match(glass,/data-trip-view="plan"[\s\S]*\.day-heading,.planned-activity,.saved-place[\s\S]*color:var\(--tm-readable-text\)!important/);
+  assert.match(glass,/--tm-plan-shell-surface:rgba\(248,251,250,\.40\)/);
+  assert.match(glass,/--tm-plan-row-surface:rgba\(248,251,250,\.18\)/);
+  assert.match(glass,/data-trip-view="plan"[^\n]*#plan :is\(\.planned-activity,\.saved-place\)\{[\s\S]*?background:var\(--tm-plan-row-surface\)/);
+  assert.match(glass,/:not\(body\[data-trip-kind="custom"\]\[data-trip-view="plan"\] #plan \*\)/);
   assert.match(planner,/\.planner-action\{[\s\S]*background:var\(--tm-action-secondary\)/);
   assert.doesNotMatch(theme,/section#plan#plan[\s\S]*\.day-heading\.day-heading[\s\S]*!important/);
   assert.match(intelligence,/\.navo-trip-banner\{[\s\S]*background:var\(--tm-card-bg-nested\)/);
@@ -125,6 +128,16 @@ test('feature surfaces consume semantic tokens instead of hardcoded light colors
 test('Plan nested activity and saved-place cards do not stack backdrop blur',()=>{
   const glass=read('assets/readable-glass.css');
   assert.match(glass,/data-trip-view="plan"[^\n]*#plan#plan :is\(\.planned-activity,\.saved-place\)\{\s*--tm-card-blur:none/);
+});
+
+test('Custom Plan flattens nested lodging and airport rows instead of stacking white cards',()=>{
+  const glass=read('assets/readable-glass.css');
+  assert.match(glass,/data-trip-kind="custom"[^\n]*data-trip-view="plan"[^\n]*#plan :is\(\.lodging-day-card,\.airport-day-card,\.trip-anchor\)\{[\s\S]*?background:transparent;[\s\S]*?box-shadow:none/);
+  assert.match(glass,/data-trip-kind="custom"[^\n]*data-trip-view="plan"[^\n]*#plan :is\(\.planned-activity,\.saved-place\)\{[\s\S]*?background:var\(--tm-plan-row-surface\)/);
+  assert.match(glass,/data-trip-kind="custom"[^\n]*data-trip-view="plan"[^\n]*#plan :is\(\.planner-toolbar,\.past-days-strip\)\{[\s\S]*?background:var\(--tm-plan-shell-surface\)/);
+  const planPass=glass.match(/\/\* Plan depth pass:[\s\S]*?\/\* Collapsed Plan days/);
+  assert.ok(planPass,'Plan depth pass exists');
+  assert.doesNotMatch(planPass[0],/!important/);
 });
 
 
