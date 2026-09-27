@@ -763,7 +763,8 @@
         var memoryId = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
         var attachments = [];
         for (var index = 0; index < files.length; index += 1) attachments.push(await storeMemoryAttachment(files[index], memoryId));
-        state.memories.push({ id: memoryId, note: note || 'קובץ מצורף', date: new Date().toISOString(), attachments: attachments });
+        var memoryNow = new Date();
+        state.memories.push({ id: memoryId, note: note || 'קובץ מצורף', date: memoryNow.toISOString(), localDate: localDateValue(memoryNow), attachments: attachments });
         writeJson(storageKey('memories'), state.memories); saveTripData(); memoryForm.reset(); renderSelectedMemoryFiles(memoryForm); status.textContent = ''; renderMemories(); renderSummary(); toast('הרגע והקבצים נשמרו.');
       } catch (error) { status.textContent = 'לא הצלחנו לשמור את הקובץ. בדוק את החיבור ונסה שוב.'; }
       finally { submit.disabled = false; }
@@ -810,11 +811,16 @@
     await Promise.all(attachments.filter(function (item) { return item.localKey; }).map(function (item) { return deleteLocalMemoryFile(item.localKey); }));
     state.memories = state.memories.filter(function (item) { return String(item.id) !== String(memoryId); }); writeJson(storageKey('memories'), state.memories); saveTripData(); renderMemories(); renderSummary();
   }
+  function memoryDateLabel(memory) {
+    var local = String(memory && memory.localDate || '');
+    var value = /^\d{4}-\d{2}-\d{2}$/.test(local) ? new Date(local + 'T12:00:00') : new Date(memory && memory.date || Date.now());
+    return new Intl.DateTimeFormat('he-IL', { dateStyle: 'medium' }).format(value);
+  }
   function renderMemories() {
     var host = document.querySelector('[data-memory-list]'); if (!host) return;
     host.innerHTML = state.memories.length ? state.memories.slice().reverse().map(function (memory) {
       var attachments = Array.isArray(memory.attachments) ? memory.attachments : [];
-      return '<article><header><span>' + new Intl.DateTimeFormat('he-IL', { dateStyle: 'medium' }).format(new Date(memory.date)) + '</span><button type="button" data-memory-delete="' + escapeHtml(memory.id) + '" aria-label="מחיקת הרגע"><i class="fa-solid fa-trash"></i></button></header><p>' + escapeHtml(memory.note) + '</p>' + (attachments.length ? '<div class="memory-attachments">' + attachments.map(function (attachment, index) { return '<button type="button" data-memory-id="' + escapeHtml(memory.id) + '" data-memory-attachment="' + index + '"><i class="fa-solid ' + (String(attachment.type).indexOf('image/') === 0 ? 'fa-image' : 'fa-file-lines') + '"></i><span>' + escapeHtml(attachment.name) + '<small>' + (attachment.local ? 'נשמר במכשיר' : 'נשמר בענן הפרטי') + '</small></span></button>'; }).join('') + '</div>' : '') + '</article>';
+      return '<article><header><span>' + memoryDateLabel(memory) + '</span><button type="button" data-memory-delete="' + escapeHtml(memory.id) + '" aria-label="מחיקת הרגע"><i class="fa-solid fa-trash"></i></button></header><p>' + escapeHtml(memory.note) + '</p>' + (attachments.length ? '<div class="memory-attachments">' + attachments.map(function (attachment, index) { return '<button type="button" data-memory-id="' + escapeHtml(memory.id) + '" data-memory-attachment="' + index + '"><i class="fa-solid ' + (String(attachment.type).indexOf('image/') === 0 ? 'fa-image' : 'fa-file-lines') + '"></i><span>' + escapeHtml(attachment.name) + '<small>' + (attachment.local ? 'נשמר במכשיר' : 'נשמר בענן הפרטי') + '</small></span></button>'; }).join('') + '</div>' : '') + '</article>';
     }).join('') : '<div class="trip-experience-empty">עדיין לא נשמרו רגעים.</div>';
     host.querySelectorAll('[data-memory-attachment]').forEach(function (button) { button.onclick = function () { var memory = state.memories.find(function (item) { return String(item.id) === String(button.dataset.memoryId); }); if (memory && memory.attachments[Number(button.dataset.memoryAttachment)]) openMemoryAttachment(memory.attachments[Number(button.dataset.memoryAttachment)]); }; });
     host.querySelectorAll('[data-memory-delete]').forEach(function (button) { button.onclick = function () { if (confirm('למחוק את הרגע ואת הקבצים שצורפו אליו?')) removeMemory(button.dataset.memoryDelete); }; });
