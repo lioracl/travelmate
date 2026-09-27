@@ -153,3 +153,16 @@ test('Document Vault accurately distinguishes encrypted file contents from prote
   assert.match(vault, /שם הקובץ, הקטגוריה וההערה נשמרים כפרטי רשימה בחשבון המוגן/);
   assert.match(vault, /אין להזין בהם מידע רגיש/);
 });
+
+test('Document Vault deletes metadata first and queues encrypted blob cleanup safely', () => {
+  assert.match(vault, /var metadataResult = await client\.from\('travel_documents'\)\.delete\(\)\.eq\('id', record\.id\)/);
+  assert.match(vault, /var storageResult = await client\.storage\.from\(bucket\)\.remove\(\[record\.storage_path\]\)/);
+  assert.ok(
+    vault.indexOf("var metadataResult = await client.from('travel_documents').delete().eq('id', record.id);")
+      < vault.indexOf("var storageResult = await client.storage.from(bucket).remove([record.storage_path]);"),
+    'metadata must be removed before the encrypted blob'
+  );
+  assert.match(vault, /queuePendingCleanup\(currentUser\.id, record\.storage_path\)/);
+  assert.match(vault, /await flushPendingCleanup\(\)/);
+  assert.match(vault, /window\.addEventListener\('online', function \(\) \{ if \(currentUser\) flushPendingCleanup\(\); \}\)/);
+});

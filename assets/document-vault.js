@@ -170,6 +170,45 @@
     }
     var bucket = config.documentBucket || 'travel-documents';
 
+    function pendingCleanupKey(userId) {
+      return 'travelmate-document-cleanup:' + String(userId || '');
+    }
+
+    function readPendingCleanup(userId) {
+      try {
+        var parsed = JSON.parse(localStorage.getItem(pendingCleanupKey(userId)) || '[]');
+        return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function writePendingCleanup(userId, paths) {
+      var unique = Array.from(new Set((paths || []).filter(Boolean)));
+      if (unique.length) localStorage.setItem(pendingCleanupKey(userId), JSON.stringify(unique));
+      else localStorage.removeItem(pendingCleanupKey(userId));
+    }
+
+    function queuePendingCleanup(userId, storagePath) {
+      var pending = readPendingCleanup(userId);
+      if (pending.indexOf(storagePath) < 0) pending.push(storagePath);
+      writePendingCleanup(userId, pending);
+    }
+
+    async function flushPendingCleanup() {
+      if (!currentUser) return;
+      var pending = readPendingCleanup(currentUser.id);
+      if (!pending.length) return;
+      try { await requirePrivateStorageAccess(); } catch (error) { return; }
+      var remaining = [];
+      for (var index = 0; index < pending.length; index += 1) {
+        var path = pending[index];
+        var result = await client.storage.from(bucket).remove([path]);
+        if (result.error) remaining.push(path);
+      }
+      writePendingCleanup(currentUser.id, remaining);
+    }
+
     function clearRemoteDocumentMetadata() {
       Object.keys(categoryTargets).forEach(function (group) {
         var target = categoryTargets[group];
@@ -203,6 +242,7 @@
         return;
       }
       setStatus('הכספת מחוברת. הזן את סיסמת ההצפנה כדי להעלות או לפתוח מסמך.');
+      await flushPendingCleanup();
       await renderDocuments(sessionEpoch, currentUser.id);
     }
 
@@ -529,10 +569,15 @@
       if (!confirm('למחוק לצמיתות את המסמך מהענן? לא ניתן לבטל פעולה זו.')) return;
       setStatus('מוחק/ת את המסמך…');
       try { await requirePrivateStorageAccess(); } catch (accessError) { return setStatus(storageErrorMessage(accessError), true); }
-      var storageResult = await client.storage.from(bucket).remove([record.storage_path]);
-      if (storageResult.error) return setStatus(storageErrorMessage(storageResult.error), true);
       var metadataResult = await client.from('travel_documents').delete().eq('id', record.id);
       if (metadataResult.error) return setStatus(databaseErrorMessage(metadataResult.error), true);
+      var storageResult = await client.storage.from(bucket).remove([record.storage_path]);
+      if (storageResult.error) {
+        if (currentUser && record.storage_path) queuePendingCleanup(currentUser.id, record.storage_path);
+        setStatus('המסמך הוסר מהרשימה. ניקוי הקובץ המוצפן יושלם אוטומטית כשהחיבור יאפשר זאת.');
+        await renderDocuments();
+        return;
+      }
       setStatus('המסמך נמחק לצמיתות.');
       await renderDocuments();
     }
@@ -585,6 +630,7 @@
     });
 
     client.auth.onAuthStateChange(function (_event, session) { setTimeout(function () { applySession(session); }, 0); });
+    window.addEventListener('online', function () { if (currentUser) flushPendingCleanup(); });
     var sessionResult = await client.auth.getSession();
     await applySession(sessionResult.data.session);
   }
