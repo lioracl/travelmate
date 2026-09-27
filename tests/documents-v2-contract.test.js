@@ -80,3 +80,18 @@ test('Documents V2 filtering is responsive and feature-scoped', () => {
   assert.match(css, /overflow-x:auto/);
   assert.match(css, /#documents \.doc-row\[hidden\]\{display:none\}/);
 });
+
+test('Document Vault ignores stale metadata responses after session changes', () => {
+  assert.match(vault, /var documentSessionEpoch = 0/);
+  assert.match(vault, /var sessionEpoch = \+\+documentSessionEpoch/);
+  assert.match(vault, /renderDocuments\(sessionEpoch, currentUser\.id\)/);
+  assert.match(vault, /requestEpoch !== documentSessionEpoch \|\| !currentUser \|\| currentUser\.id !== requestUserId/);
+  assert.match(vault, /documentSessionEpoch \+= 1;[\s\S]*clearRemoteDocumentMetadata\(\);[\s\S]*client\.auth\.signOut\(\)/);
+});
+
+test('Document Vault clears remote metadata immediately when signed out', () => {
+  assert.match(vault, /function clearRemoteDocumentMetadata\(\)/);
+  assert.match(vault, /target\.files\.innerHTML = ''/);
+  assert.match(vault, /target\.row\.classList\.remove\('has-documents'\)/);
+  assert.match(vault, /\[data-vault-count\][\s\S]*0 מסמכים/);
+});

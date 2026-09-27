@@ -80,6 +80,7 @@
     var vaultPickButtons = [].slice.call(section.querySelectorAll('[data-vault-pick]'));
     var categoryList = section.querySelector('[data-document-category-list]');
     var currentUser = null;
+    var documentSessionEpoch = 0;
     var categoryTargets = {};
     var activeDocumentFilter = 'all';
 
@@ -169,7 +170,21 @@
     }
     var bucket = config.documentBucket || 'travel-documents';
 
+    function clearRemoteDocumentMetadata() {
+      Object.keys(categoryTargets).forEach(function (group) {
+        var target = categoryTargets[group];
+        target.files.innerHTML = '';
+        target.row.classList.remove('has-documents');
+        target.button.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> העלאה';
+      });
+      vault.querySelector('[data-vault-count]').textContent = '0 מסמכים';
+      vault.querySelector('[data-vault-size]').textContent = '0 MB';
+      vault.querySelector('[data-vault-storage]').style.width = '0%';
+      applyDocumentFilter();
+    }
+
     async function applySession(session) {
+      var sessionEpoch = ++documentSessionEpoch;
       currentUser = session && session.user ? session.user : null;
       authPanel.hidden = Boolean(currentUser);
       sessionPanel.hidden = !currentUser;
@@ -183,11 +198,12 @@
       vault.querySelector('[data-vault-email]').textContent = currentUser ? currentUser.email : '';
       if (!currentUser) {
         passphraseInput.value = '';
+        clearRemoteDocumentMetadata();
         setStatus('יש להתחבר כדי לראות או להעלות מסמכים.');
         return;
       }
       setStatus('הכספת מחוברת. הזן את סיסמת ההצפנה כדי להעלות או לפתוח מסמך.');
-      await renderDocuments();
+      await renderDocuments(sessionEpoch, currentUser.id);
     }
 
     authForm.addEventListener('submit', async function (event) {
@@ -232,7 +248,13 @@
     });
 
     vault.querySelector('[data-vault-signout]').addEventListener('click', async function () {
-      await client.auth.signOut();
+      documentSessionEpoch += 1;
+      clearRemoteDocumentMetadata();
+      var result = await client.auth.signOut();
+      if (result && result.error) {
+        setStatus(authErrorMessage(result.error), true);
+        if (currentUser) await renderDocuments();
+      }
     });
 
     vault.querySelector('[data-vault-toggle-passphrase]').addEventListener('click', function (event) {
@@ -246,9 +268,12 @@
       authForm.querySelectorAll('button').forEach(function (button) { button.disabled = disabled; });
     }
 
-    async function renderDocuments() {
+    async function renderDocuments(expectedEpoch, expectedUserId) {
       if (!currentUser) return;
+      var requestEpoch = typeof expectedEpoch === 'number' ? expectedEpoch : documentSessionEpoch;
+      var requestUserId = expectedUserId || currentUser.id;
       var result = await client.from('travel_documents').select('*').eq('trip_id', tripId).order('created_at', { ascending: false });
+      if (requestEpoch !== documentSessionEpoch || !currentUser || currentUser.id !== requestUserId) return;
       if (result.error) {
         setStatus(databaseErrorMessage(result.error), true);
         return;

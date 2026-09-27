@@ -77,3 +77,11 @@ test('Overview exposes direct lazy access to the quick currency converter', () =
   assert.match(redesign, /TravelMateFeatures\.load\('budget'\)/);
   assert.match(redesign, /\[data-currency-converter\] \[data-converter-amount\]/);
 });
+
+test('zero spending is rendered as a valid converted amount once rates are ready', () => {
+  assert.match(js, /function currencyConversionReady\(from, to\)/);
+  assert.match(js, /summaryConversion\.textContent = currencyConversionReady\('EUR', state\.secondaryCurrency\)/);
+  assert.match(js, /result\.innerHTML = currencyConversionReady\(from, to\)/);
+  assert.doesNotMatch(js, /summaryConversion\.textContent = secondaryTotal \?/);
+  assert.doesNotMatch(js, /result\.innerHTML = converted \?/);
+});

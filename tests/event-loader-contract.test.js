@@ -97,3 +97,11 @@ test('Nearby and Document Vault are feature-scoped on custom trips', () => {
   const beforeDestination = app.slice(0, app.indexOf('function ensureDestination'));
   assert.doesNotMatch(beforeDestination, /\n\s*ensureNearby\(\);\n/);
 });
+
+test('parallel requests for one feature share a single in-flight load and ready event', () => {
+  const app = read('assets/app.js');
+  assert.match(app, /var loadedStyles=\{\},loadedScripts=\{\},featureLoads=\{\}/);
+  assert.match(app, /if\(featureLoads\[view\]\)return featureLoads\[view\]/);
+  assert.match(app, /featureLoads\[view\]=Promise\.all/);
+  assert.match(app, /delete featureLoads\[view\]/);
+});

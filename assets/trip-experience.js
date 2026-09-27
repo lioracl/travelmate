@@ -191,6 +191,7 @@
   }
   function currencyRateInIls(code) { if (code === 'ILS') return 1; if (state.ilsRates[code]) return Number(state.ilsRates[code]); if (code === 'EUR') return Number(state.rate || 0); return state.rate && state.rates[code] ? Number(state.rate) / Number(state.rates[code]) : 0; }
   function convertCurrency(amount, from, to) { var fromRate = currencyRateInIls(from); var toRate = currencyRateInIls(to); return fromRate && toRate ? Number(amount || 0) * fromRate / toRate : 0; }
+  function currencyConversionReady(from, to) { return from === to || Boolean(currencyRateInIls(from) && currencyRateInIls(to)); }
   function secondaryMoneyFromEuros(euros) {
     var converted = convertCurrency(Number(euros || 0), 'EUR', state.secondaryCurrency);
     return converted && state.secondaryCurrency !== state.localCurrency ? '<small class="budget-secondary-amount">≈ ' + money(converted, state.secondaryCurrency) + '</small>' : '';
@@ -294,7 +295,7 @@
   function renderCurrencyConverter() {
     var card = document.querySelector('[data-currency-converter]'); if (!card) return;
     var amount = Number(card.querySelector('[data-converter-amount]').value || 0); var from = card.querySelector('[data-converter-from]').value; var to = card.querySelector('[data-converter-to]').value; var converted = convertCurrency(amount, from, to); var result = card.querySelector('[data-converter-result]');
-    result.innerHTML = converted ? '<small>' + money(amount, from) + ' שווה בקירוב</small><strong>' + money(converted, to) + '</strong><span>לפי שער יציג, לפני עמלת חברת האשראי</span>' : '<span>מעדכן את שערי המטבע…</span>';
+    result.innerHTML = currencyConversionReady(from, to) ? '<small>' + money(amount, from) + ' שווה בקירוב</small><strong>' + money(converted, to) + '</strong><span>לפי שער יציג, לפני עמלת חברת האשראי</span>' : '<span>מעדכן את שערי המטבע…</span>';
     var source = card.querySelector('[data-converter-source]'); if (source) source.textContent = 'מקור: ' + (state.rateSource || 'ECB דרך Frankfurter') + (state.rateDate ? ' · ' + String(state.rateDate).slice(0,10) : '');
     var sourceLink = card.querySelector('footer a'); if (sourceLink) { sourceLink.href = state.rateSourceUrl || 'https://frankfurter.dev/'; sourceLink.textContent = 'מידע על מקור השערים'; }
   }
@@ -628,7 +629,7 @@
     summary.innerHTML = '<div><small>נרשם עד עכשיו</small><strong>' + money(localTotal, state.localCurrency) + '</strong><span>' + (state.rate ? 'כ־' + money(shekels(total), 'ILS') + ' כולל עמלה' : 'ההמרה לשקלים מתעדכנת') + '</span></div><b>' + state.expenses.length + ' הוצאות</b>';
     var summaryConversion = summary.querySelector('span');
     var secondaryTotal = convertCurrency(total, 'EUR', state.secondaryCurrency);
-    if (summaryConversion) summaryConversion.textContent = secondaryTotal ? 'כ־' + money(secondaryTotal, state.secondaryCurrency) + ' לפי שער עדכני' : 'שערי המטבע מתעדכנים…';
+    if (summaryConversion) summaryConversion.textContent = currencyConversionReady('EUR', state.secondaryCurrency) ? 'כ־' + money(secondaryTotal, state.secondaryCurrency) + ' לפי שער עדכני' : 'שערי המטבע מתעדכנים…';
     var records = document.querySelector('[data-expense-records]');
     if (records) {
       var codes = [state.secondaryCurrency, 'ILS', 'EUR', 'USD', 'GBP', state.localCurrency].filter(function (code, index, list) { return code && list.indexOf(code) === index; });

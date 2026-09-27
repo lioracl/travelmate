@@ -1,8 +1,8 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260927-19'}catch(error){return'20260927-19'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260927-20'}catch(error){return'20260927-20'}})();
 (function(){
   var version=appAssetVersion;
-  var loadedStyles={},loadedScripts={};
+  var loadedStyles={},loadedScripts={},featureLoads={};
   var isHomePage=Boolean(document.body&&document.body.classList.contains('home-page'));
   var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css'];
   var homeBaseStyles=['language.css','network-usage.css','theme.css'];
@@ -47,7 +47,8 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   }
   function loadFeature(view){
     var feature=features[view];if(!feature)return Promise.resolve(true);
-    return Promise.all((feature.styles||[]).map(loadStyle)).then(function(results){
+    if(featureLoads[view])return featureLoads[view];
+    featureLoads[view]=Promise.all((feature.styles||[]).map(loadStyle)).then(function(results){
       if(results.some(function(result){return result===false}))return false;
       return loadSequence(feature.scripts||[])
     }).then(function(ready){
@@ -57,7 +58,14 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
       if(ready===false)return false;
       window.dispatchEvent(new CustomEvent('travelmate:feature-ready',{detail:{view:view}}));
       return true
-    })
+    }).then(function(ready){
+      delete featureLoads[view];
+      return ready
+    },function(error){
+      delete featureLoads[view];
+      throw error
+    });
+    return featureLoads[view]
   }
   function ensureLazyNavigation(){
     var nav=document.querySelector('.sidebar nav');if(!nav)return;
