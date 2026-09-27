@@ -36,6 +36,11 @@ test('admin personal-data reads and writes require aal2', () => {
   assert.match(adminCenter, /sensitive\.has\(action\) && jwtPayload\(token\)\.aal !== 'aal2'/);
 });
 
+test('admin center allows the active local TravelMate development port', () => {
+  assert.match(adminCenter, /http:\/\/127\.0\.0\.1:8001/);
+  assert.match(adminCenter, /http:\/\/localhost:8001/);
+});
+
 test('legacy day activity renderer escapes user-controlled values before innerHTML', () => {
   const app = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.match(app, /<time>'\+escapePlannerText\(time\)\+'<\/time>/);
