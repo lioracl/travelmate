@@ -290,10 +290,12 @@ test('Account dialog traps keyboard focus and restores its opener', () => {
   assert.match(home, /lastAccountOpenButton\.focus\(\)/);
 });
 
-test('Interactive Nearby result cards expose an accessible name and keyboard activation', () => {
+test('Nearby result cards use a native details button outside independent actions', () => {
   const nearby = read(path.join(root, 'assets/nearby.js'));
-  assert.match(nearby, /role="button" aria-label="/);
-  assert.match(nearby, /event\.key==='Enter'\|\|event\.key===' '/);
+  assert.match(nearby, /card\.removeAttribute\('role'\)/);
+  assert.match(nearby, /card\.removeAttribute\('tabindex'\)/);
+  assert.match(nearby, /button\.dataset\.nearbyDetails=''/);
+  assert.match(nearby, /button\.setAttribute\('aria-label','פתיחת פרטי '/);
   assert.match(nearby, /syncResultSelection\(event\)/);
 });
 
