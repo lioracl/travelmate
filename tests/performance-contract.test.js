@@ -12,11 +12,20 @@ const smartPlanTools = fs.readFileSync(path.join(root, 'assets/smart-plan-tools.
 const aboutScript = fs.readFileSync(path.join(root, 'assets/about.js'), 'utf8');
 const appScript = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
 const homeScript = fs.readFileSync(path.join(root, 'assets/home.js'), 'utf8');
+const homeHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const homeOrganizer = fs.readFileSync(path.join(root, 'assets/home-organizer.css'), 'utf8');
 
 test('home carousel does not eagerly assign all generated Unsplash backgrounds', () => {
   assert.match(home, /slide\.dataset\.slideImage = "url\('https:\/\/images\.unsplash\.com\//);
-  assert.match(home, /if \(distance <= 2\) ensureSlideImage\(slide\)/);
+  assert.match(home, /if \(distance <= 1\) ensureSlideImage\(slide\)/);
   assert.doesNotMatch(home, /slide\.style\.setProperty\('--slide-image',[\s\S]{0,160}imageId/);
+  assert.equal((homeHtml.match(/data-carousel-slide style="--slide-image/g) || []).length, 1);
+  assert.match(homeHtml, /data-carousel-slide data-slide-image=/);
+});
+
+test('home mobile background keeps desktop quality while using a smaller mobile source', () => {
+  assert.match(homeOrganizer, /w=2200&q=92/);
+  assert.match(homeOrganizer, /@media\(max-width:760px\)[\s\S]*w=1200&q=86/);
 });
 
 test('home carousel timer sleeps while hidden or authenticated', () => {

@@ -136,10 +136,10 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
   margin-top:0;
 }
 .home-page.is-authenticated .trip-card-shell,
-.home-page.is-authenticated #active-trips>.trip-card{
+.home-page.is-authenticated #active-trips>.trip-card,
+.home-page.is-authenticated #active-trips>.add-destination{
   min-height:360px;
 }
-.home-page.is-authenticated #active-trips>.add-destination{align-self:start;height:220px;min-height:220px}
 .home-page.is-authenticated .trip-card{
   min-height:360px
 }
@@ -159,30 +159,30 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
   backdrop-filter:blur(12px);
 }
 .home-page.is-authenticated .add-destination{
-  border:1px solid rgba(220,247,248,.42);
+  border:1px solid rgba(169,220,231,.72);
   border-radius:18px;
-  background:linear-gradient(135deg,rgba(18,56,63,.78),rgba(20,125,146,.50));
-  color:#F7FAFA;
-  box-shadow:0 6px 18px rgba(8,39,29,.14);
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none
+  background:rgba(247,250,250,.9);
+  color:#12383f;
+  box-shadow:0 10px 26px rgba(0,0,0,.14);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px)
 }
 .home-page.is-authenticated .add-destination strong{
-  color:#F7FAFA;
-  -webkit-text-fill-color:#F7FAFA;
+  color:#12383f;
+  -webkit-text-fill-color:#12383f;
   font-weight:800
 }
 .home-page.is-authenticated .add-destination small{
   max-width:260px;
-  color:rgba(247,250,250,.9);
-  -webkit-text-fill-color:rgba(247,250,250,.9)
+  color:#52676b;
+  -webkit-text-fill-color:#52676b
 }
 .home-page.is-authenticated .add-destination .icon{
-  border:1px solid rgba(255,255,255,.34);
+  border:1px solid rgba(20,125,146,.28);
   border-radius:14px;
-  background:rgba(255,255,255,.14);
-  color:#F7FAFA;
-  -webkit-text-fill-color:#F7FAFA
+  background:rgba(20,125,146,.1);
+  color:#147d92;
+  -webkit-text-fill-color:#147d92
 }
 
 @media(max-width:800px){
@@ -226,17 +226,9 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
   }
   .home-page.is-authenticated #active-trips>.add-destination{
     width:100%;
-    height:96px;
-    min-height:96px;
-    padding:14px 16px;
-    flex-direction:row;
-    justify-content:flex-start;
-    gap:12px;
-    text-align:right
+    min-height:150px;
+    padding:22px 18px
   }
-  .home-page.is-authenticated .add-destination .icon{flex:0 0 48px}
-  .home-page.is-authenticated .add-destination strong{font-size:17px}
-  .home-page.is-authenticated .add-destination small{display:none}
   .home-page.is-authenticated .trip-area-head{
     margin-bottom:14px;
     padding:16px 18px
@@ -742,5 +734,20 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-activi
   .home-page.is-authenticated #active-trips>.trip-card-shell .trip-card-action-rail>button{
     padding:0 8px;
     gap:5px
+  }
+}
+
+/* Mobile performance: keep the same landing photo with a viewport-appropriate source. */
+@media(max-width:760px){
+  .home-page.is-authenticated{
+    background:
+      linear-gradient(rgba(5,20,16,.58),rgba(5,20,16,.76)),
+      url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=86") center/cover;
+  }
+  .home-page:not(.is-authenticated) .home-landing{
+    background:
+      linear-gradient(90deg,rgba(4,18,14,.2),rgba(4,18,14,.7)),
+      linear-gradient(rgba(6,22,18,.46),rgba(3,17,13,.82)),
+      url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=86") center/cover;
   }
 }

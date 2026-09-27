@@ -187,7 +187,7 @@
         if (offset > slides.length / 2) offset -= slides.length;
         if (offset < -slides.length / 2) offset += slides.length;
         var distance = Math.abs(offset);
-        if (distance <= 2) ensureSlideImage(slide);
+        if (distance <= 1) ensureSlideImage(slide);
         slide.style.setProperty('--slide-offset', offset);
         slide.style.setProperty('--slide-x', (offset * 118) + 'px');
         slide.style.setProperty('--slide-scale', slideIndex === activeIndex ? '1.12' : String(Math.max(.72, 1 - distance * .08)));
