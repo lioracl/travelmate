@@ -132,6 +132,13 @@
     }
   }
 
+  function overviewBudgetMoney(euros, trip) {
+    var currency = String(trip && trip.budgetCurrency || 'ILS').toUpperCase();
+    if (currency === 'EUR') return compactMoney(euros, 'EUR');
+    var rate = Number(cachedCurrencyRates()[currency] || 0);
+    return rate ? compactMoney(Number(euros || 0) * rate, currency) : '';
+  }
+
   function formatOverviewDate(date, time) {
     if (!date) return '';
     var value = new Date(date + 'T12:00:00');
@@ -163,22 +170,28 @@
 
     var expenses = Array.isArray(trip.expenses) ? trip.expenses : [];
     var spent = spentInEuros(trip);
+    var spentDisplay = overviewBudgetMoney(spent, trip);
     var budgetTitle = root.querySelector('[data-overview-budget-title]');
     var budgetMeta = root.querySelector('[data-overview-budget-meta]');
     if (trip.budgetUnlimited === true) {
       budgetTitle.textContent = 'ללא הגבלה';
-      budgetMeta.textContent = expenses.length ? expenses.length + ' הוצאות נרשמו' + (spent ? ' · כ־' + compactMoney(spent, 'EUR') : '') : 'מעקב הוצאות פעיל';
+      budgetMeta.textContent = expenses.length
+        ? expenses.length + ' הוצאות נרשמו' + (spentDisplay ? ' · כ־' + spentDisplay : '')
+        : 'מעקב הוצאות פעיל';
     } else {
       var budget = Number(trip.budget || 0);
       var budgetDelta = budget - spent;
       var budgetOverrun = budget > 0 && budgetDelta < 0;
+      var budgetDeltaDisplay = overviewBudgetMoney(Math.abs(budgetDelta), trip);
       budgetTitle.textContent = budget
-        ? budgetOverrun
-          ? 'חריגה של ' + compactMoney(Math.abs(budgetDelta), 'EUR')
-          : compactMoney(budgetDelta, 'EUR') + ' נותרו'
+        ? budgetDeltaDisplay
+          ? budgetOverrun ? 'חריגה של ' + budgetDeltaDisplay : budgetDeltaDisplay + ' נותרו'
+          : budgetOverrun ? 'חריגה בתקציב' : 'תקציב מוגדר'
         : 'טרם הוגדר תקציב';
       budgetMeta.textContent = expenses.length
-        ? 'הוצאו עד עכשיו כ־' + compactMoney(spent, 'EUR') + ' · ' + expenses.length + ' הוצאות'
+        ? spentDisplay
+          ? 'הוצאו עד עכשיו כ־' + spentDisplay + ' · ' + expenses.length + ' הוצאות'
+          : expenses.length + ' הוצאות נרשמו · סכום בשקלים יתעדכן לאחר טעינת שער'
         : budget ? 'עדיין לא נרשמו הוצאות' : 'אפשר להגדיר מסגרת או לבחור ללא הגבלה';
       var overviewBudgetCard = budgetTitle.closest('.budget-card');
       if (overviewBudgetCard) overviewBudgetCard.classList.toggle('is-over-budget', budgetOverrun);
