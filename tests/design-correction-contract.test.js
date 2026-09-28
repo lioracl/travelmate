@@ -16,7 +16,7 @@ test('trip photo is owned by the app background while content uses readable glas
   assert.match(glass, /--tm-page-section-surface:transparent/);
   assert.match(glass, /--tm-readable-surface:transparent/);
   assert.match(glass, /--tm-readable-surface-soft:var\(--tm-surface-glass\)/);
-  assert.match(glass, /--tm-surface-text:#173f32/);
+  assert.match(glass, /--tm-surface-text:var\(--tm-family-text\)/);
 });
 
 test('light section and Plan day headings no longer force white text', () => {

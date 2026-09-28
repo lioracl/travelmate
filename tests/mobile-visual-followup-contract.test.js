@@ -31,7 +31,7 @@ test('mobile plan day actions and budget swap button are centered without compet
 
 test('light Overview and Places use the approved non-milky neutral green material', () => {
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-surface-glass:linear-gradient\(135deg,rgba\(166,188,181,\.86\),rgba\(147,177,168,\.82\)\)/);
+  assert.match(css,/--tm-surface-glass:var\(--tm-family-primary\)/);
   assert.match(css,/--tm-overview-card:var\(--tm-surface-glass\)/);
   assert.match(css,/--tm-plan-shell-surface:var\(--tm-surface-glass\)/);
   assert.doesNotMatch(css,/--tm-surface-control:rgba\(255,255,255,\.84\)/);

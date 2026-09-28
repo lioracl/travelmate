@@ -3,6 +3,13 @@
 
   var STORAGE_KEY = 'travelmate-theme';
   var ACCENT_KEY = 'travelmate-accent';
+  var SURFACE_KEY = 'travelmate-surface-theme';
+  var SURFACE_THEMES = Object.freeze({
+    classic: Object.freeze({ label: 'Classic' }),
+    'ice-aqua': Object.freeze({ label: 'Ice Aqua' }),
+    'pearl-blue': Object.freeze({ label: 'Pearl Blue' }),
+    'warm-sand': Object.freeze({ label: 'Warm Sand' })
+  });
   var LEGACY_ACCENTS = Object.freeze({ forest: 'emerald', violet: 'plum', coral: 'sunset' });
   var ACCENTS = Object.freeze({
     ocean: Object.freeze({ label: 'אוקיינוס', primary: '#147D92', strong: '#0F6F82', dark: '#0B5869', soft: '#D7EDF2' }),
@@ -13,6 +20,31 @@
     pink: Object.freeze({ label: 'ורוד', primary: '#A23D6F', strong: '#8F345F', dark: '#74294D', soft: '#F4DCE8' })
   });
   var root = document.documentElement;
+
+  function normalizeSurfaceTheme(value) {
+    return Object.prototype.hasOwnProperty.call(SURFACE_THEMES, value) ? value : 'classic';
+  }
+  function readSurfaceTheme() {
+    try { var saved = localStorage.getItem(SURFACE_KEY); return saved === null ? 'ice-aqua' : normalizeSurfaceTheme(saved); } catch (error) { return 'classic'; }
+  }
+  function decorateSurfaceChoices(surface) {
+    document.querySelectorAll('[data-surface-choice]').forEach(function (button) {
+      var selected = button.dataset.surfaceChoice === surface;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+  }
+  function applySurfaceTheme(value) {
+    var surface = normalizeSurfaceTheme(value);
+    root.dataset.surfaceTheme = surface;
+    decorateSurfaceChoices(surface);
+    window.dispatchEvent(new CustomEvent('travelmate:surface-theme-change', { detail: { surfaceTheme: surface } }));
+  }
+  function saveSurfaceTheme(value) {
+    var surface = normalizeSurfaceTheme(value);
+    try { localStorage.setItem(SURFACE_KEY, surface); } catch (error) {}
+    applySurfaceTheme(surface);
+  }
 
   function normalizeAccent(accent) {
     if (ACCENTS[accent]) return accent;
@@ -105,8 +137,10 @@
   function createToggle() {
     document.querySelectorAll('[data-theme-toggle]').forEach(function (button) { button.remove(); });
     decorateAccentChoices(readAccent());
+    decorateSurfaceChoices(readSurfaceTheme());
   }
 
+  applySurfaceTheme(readSurfaceTheme());
   applyTheme(readTheme());
   applyAccent(readAccent());
   if (document.readyState === 'loading') {
@@ -116,11 +150,18 @@
   }
 
   document.addEventListener('click', function (event) {
+    var surface = event.target.closest('[data-surface-choice]');
+    if (surface) saveSurfaceTheme(surface.dataset.surfaceChoice);
     var choice = event.target.closest('[data-accent-choice]');
     if (choice) saveAccent(choice.dataset.accentChoice);
   });
 
   window.TravelMateTheme = {
+    getSurfaceTheme: readSurfaceTheme,
+    setSurfaceTheme: saveSurfaceTheme,
+    surfaceThemes: SURFACE_THEMES,
+    normalizeSurfaceTheme: normalizeSurfaceTheme,
+    refreshSurfaceChoices: function () { decorateSurfaceChoices(readSurfaceTheme()); },
     get: readTheme,
     set: saveTheme,
     getAccent: readAccent,
