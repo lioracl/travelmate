@@ -1,5 +1,5 @@
-const CACHE_NAME='travelmate-smart-v260';
-const ASSET_VERSION='20260929-31';
+const CACHE_NAME='travelmate-smart-v261';
+const ASSET_VERSION='20260929-32';
 const CORE_PATHS=[
   './',
   './index.html',
@@ -30,6 +30,8 @@ const CORE_PATHS=[
   './assets/modal-system.css',
   './assets/theme.css',
   './assets/theme.js',
+  './assets/vendor/pdfjs/pdf.min.js',
+  './assets/vendor/pdfjs/pdf.worker.min.js',
   './assets/weather-widget.css',
   './assets/weather-widget.js',
   './assets/app-icon.svg',

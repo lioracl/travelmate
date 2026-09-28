@@ -7,20 +7,36 @@
   var pdfJsPromise;
   var initialized = false;
 
+  function vaultAssetUrl(relativePath) {
+    var script = Array.from(document.scripts).find(function (item) { return /\/document-vault\.js(?:\?|$)/.test(item.src || ''); });
+    var scriptUrl = new URL(script ? script.src : 'assets/document-vault.js', document.baseURI);
+    var assetUrl = new URL(relativePath, scriptUrl);
+    var version = scriptUrl.searchParams.get('v');
+    if (version) assetUrl.searchParams.set('v', version);
+    return assetUrl.href;
+  }
+
   function loadPdfJs() {
     if (pdfJsPromise) return pdfJsPromise;
-    var libraryUrl = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDF_JS_VERSION + '/build/pdf.min.mjs';
-    var workerUrl = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDF_JS_VERSION + '/build/pdf.worker.min.mjs';
-    pdfJsPromise = import(libraryUrl).then(function (library) {
-      library.GlobalWorkerOptions.workerSrc = workerUrl;
+    var localLibraryUrl = vaultAssetUrl('vendor/pdfjs/pdf.min.js');
+    var localWorkerUrl = vaultAssetUrl('vendor/pdfjs/pdf.worker.min.js');
+    var cdnLibraryUrl = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDF_JS_VERSION + '/build/pdf.min.mjs';
+    var cdnWorkerUrl = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDF_JS_VERSION + '/build/pdf.worker.min.mjs';
+    pdfJsPromise = import(localLibraryUrl).then(function (library) {
+      library.GlobalWorkerOptions.workerSrc = localWorkerUrl;
       return library;
+    }).catch(function (localError) {
+      console.warn('TravelMate local PDF.js load failed; retrying CDN.', localError);
+      return import(cdnLibraryUrl).then(function (library) {
+        library.GlobalWorkerOptions.workerSrc = cdnWorkerUrl;
+        return library;
+      });
     }).catch(function (error) {
       pdfJsPromise = null;
       throw error;
     });
     return pdfJsPromise;
   }
-
   var DOCUMENT_GROUPS = ['flights', 'lodging', 'tickets', 'insurance', 'personal', 'mate'];
 
   function groupForCategory(value) {
