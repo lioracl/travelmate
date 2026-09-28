@@ -38,12 +38,11 @@
   }
 
   function createVaultMarkup() {
-    return '<div class="vault-head"><div><span class="vault-badge"><i class="fa-solid fa-shield-halved"></i> ענן פרטי ומוצפן</span><h2>כספת המסמכים של הטיול</h2><p>תוכן הקבצים מוצפן במכשיר לפני ההעלאה ונפתח רק לאחר הזנת סיסמת הכספת. שם הקובץ, הקטגוריה וההערה נשמרים כפרטי רשימה בחשבון המוגן — לכן אין להזין בהם מידע רגיש.</p></div></div>' +
-      '<div class="vault-auth" data-vault-auth><div class="vault-auth-copy"><i class="fa-solid fa-user-lock"></i><div><strong>התחברות לכספת</strong><span>החשבון מגן על המסמכים ומאפשר גישה גם מהטלפון.</span></div></div><form data-vault-auth-form><input name="email" type="email" autocomplete="email" aria-label="כתובת דוא״ל" placeholder="כתובת דוא״ל" required><input name="password" type="password" autocomplete="current-password" minlength="8" aria-label="סיסמת חשבון" placeholder="סיסמת חשבון · לפחות 8 תווים" required><button type="submit" data-auth-signin>כניסה</button><button type="button" class="secondary" data-auth-signup>יצירת חשבון</button><button type="button" class="secondary" data-auth-resend>לא קיבלתי מייל · שלח שוב</button></form></div>' +
+    return '<section class="vault-intro" aria-labelledby="vault-title"><div class="vault-head"><div><span class="vault-badge"><i class="fa-solid fa-shield-halved"></i> ענן פרטי ומוצפן</span><h2 id="vault-title">כספת המסמכים של הטיול</h2><p>תוכן הקבצים מוצפן במכשיר לפני ההעלאה ונפתח רק לאחר הזנת סיסמת הכספת. שם הקובץ, הקטגוריה וההערה נשמרים כפרטי רשימה בחשבון המוגן — לכן אין להזין בהם מידע רגיש.</p></div></div></section>' +
+      '<section class="vault-access" aria-labelledby="vault-access-title"><h3 id="vault-access-title">גישה מאובטחת</h3><div class="vault-auth" data-vault-auth><div class="vault-auth-copy"><i class="fa-solid fa-user-lock"></i><div><strong>התחברות לכספת</strong><span>החשבון מגן על המסמכים ומאפשר גישה גם מהטלפון.</span></div></div><form data-vault-auth-form><input name="email" type="email" autocomplete="email" aria-label="כתובת דוא״ל" placeholder="כתובת דוא״ל" required><input name="password" type="password" autocomplete="current-password" minlength="8" aria-label="סיסמת חשבון" placeholder="סיסמת חשבון · לפחות 8 תווים" required><button type="submit" data-auth-signin>כניסה</button><button type="button" class="secondary" data-auth-signup>יצירת חשבון</button><button type="button" class="secondary" data-auth-resend>לא קיבלתי מייל · שלח שוב</button></form></div>' +
       '<div class="vault-session" data-vault-session hidden><div><i class="fa-solid fa-circle-check"></i><span>מחובר/ת בתור <strong data-vault-email></strong></span></div><button type="button" data-vault-signout>יציאה</button></div>' +
-      '<div class="vault-unlock" data-vault-unlock hidden><label><span>סיסמת הצפנת הכספת</span><span class="vault-passphrase-control"><input data-vault-passphrase type="password" autocomplete="off" minlength="10" placeholder="אותה סיסמה שבה הצפנת את הקבצים"><button type="button" data-vault-toggle-passphrase aria-label="הצגת סיסמת הכספת"><i class="fa-solid fa-eye"></i></button></span></label><small><i class="fa-solid fa-triangle-exclamation"></i> לפתיחת מסמך יש להזין את אותה סיסמת כספת ששימשה בהעלאה. היא נפרדת מסיסמת החשבון ואינה נשמרת.</small></div>' +
-      '<form class="vault-upload" data-vault-form hidden><select name="category" aria-label="קטגוריה"><option>טיסות</option><option>לינה</option><option>כרטיסים ותחבורה</option><option>ביטוח</option><option>אישי</option></select><input name="note" type="text" maxlength="180" aria-label="הערה למסמך" placeholder="הערה אופציונלית — ללא מספרי דרכון"><button class="vault-upload-button" type="submit"><i class="fa-solid fa-lock"></i> הצפנה ושמירה</button><label class="vault-drop" data-vault-drop><input name="files" type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt"><span><i class="fa-solid fa-file-shield"></i><strong>גרור קבצים לכאן או לחץ לבחירה</strong><small>PDF, תמונות וקובצי Office · עד 25MB לקובץ</small></span></label></form>' +
-      '<p class="vault-status" data-vault-status aria-live="polite"></p><div class="vault-summary" data-vault-summary hidden><strong data-vault-count>0 מסמכים</strong><div><small data-vault-size>0 MB</small><div class="vault-storage"><i data-vault-storage style="width:0%"></i></div></div></div>';
+      '<div class="vault-unlock" data-vault-unlock hidden><label><span>סיסמת הצפנת הכספת</span><span class="vault-passphrase-control"><input data-vault-passphrase type="password" autocomplete="off" minlength="10" placeholder="אותה סיסמה שבה הצפנת את הקבצים"><button type="button" data-vault-toggle-passphrase aria-label="הצגת סיסמת הכספת"><i class="fa-solid fa-eye"></i></button></span></label><small><i class="fa-solid fa-triangle-exclamation"></i> לפתיחת מסמך יש להזין את אותה סיסמת כספת ששימשה בהעלאה. היא נפרדת מסיסמת החשבון ואינה נשמרת.</small></div><p class="vault-status" data-vault-status aria-live="polite"></p></section>' +
+      '<section class="vault-upload-section" data-vault-upload-section aria-labelledby="vault-upload-title" hidden><header><div><small>העלאה מוצפנת</small><h3 id="vault-upload-title">הוספת מסמך</h3></div><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i></header><form class="vault-upload" data-vault-form hidden><select name="category" aria-label="קטגוריה"><option>טיסות</option><option>לינה</option><option>כרטיסים ותחבורה</option><option>ביטוח</option><option>אישי</option></select><input name="note" type="text" maxlength="180" aria-label="הערה למסמך" placeholder="הערה אופציונלית — ללא מספרי דרכון"><button class="vault-upload-button" type="submit"><i class="fa-solid fa-lock"></i> הצפנה ושמירה</button><label class="vault-drop" data-vault-drop><input name="files" type="file" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,.heif,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt"><span><i class="fa-solid fa-file-shield"></i><strong>גרור קבצים לכאן או לחץ לבחירה</strong><small>PDF, תמונות וקובצי Office · עד 25MB לקובץ</small></span></label></form></section>';
   }
 
   async function init() {
@@ -59,7 +58,19 @@
     vault.dataset.documentVault = '';
     vault.innerHTML = createVaultMarkup();
     var categoryNavigation = section.querySelector('[data-documents-category-nav]');
-    (categoryNavigation || section.querySelector('.section-head')).insertAdjacentElement('afterend', vault);
+    var library = section.querySelector('[data-documents-library]');
+    (library || categoryNavigation || section.querySelector('.section-head')).insertAdjacentElement('beforebegin', vault);
+
+    var vaultLibrary = document.createElement('section');
+    vaultLibrary.className = 'vault-library';
+    vaultLibrary.setAttribute('aria-labelledby', 'vault-library-title');
+    vaultLibrary.innerHTML = '<h3 id="vault-library-title">המסמכים שלי</h3><div class="vault-summary" data-vault-summary hidden><strong data-vault-count>0 מסמכים</strong><div><small data-vault-size>0 MB</small><div class="vault-storage"><i data-vault-storage style="width:0%"></i></div></div></div>';
+    vault.insertAdjacentElement('afterend', vaultLibrary);
+    if (categoryNavigation) vaultLibrary.appendChild(categoryNavigation);
+    var existingCategoryList = section.querySelector('[data-document-category-list]');
+    if (existingCategoryList) vaultLibrary.appendChild(existingCategoryList);
+    var existingArchive = section.querySelector('[data-ai-notes-archive]');
+    if (existingArchive) vaultLibrary.insertAdjacentElement('afterend', existingArchive);
 
     var status = vault.querySelector('[data-vault-status]');
     function setStatus(message, error) {
@@ -71,12 +82,13 @@
     var authForm = vault.querySelector('[data-vault-auth-form]');
     var sessionPanel = vault.querySelector('[data-vault-session]');
     var unlockPanel = vault.querySelector('[data-vault-unlock]');
+    var uploadSection = vault.querySelector('[data-vault-upload-section]');
     var passphraseInput = vault.querySelector('[data-vault-passphrase]');
     var form = vault.querySelector('[data-vault-form]');
     var input = form.elements.files;
     var drop = vault.querySelector('[data-vault-drop]');
     var uploadButton = form.querySelector('.vault-upload-button');
-    var summary = vault.querySelector('[data-vault-summary]');
+    var summary = section.querySelector('[data-vault-summary]');
     var vaultPickButtons = [].slice.call(section.querySelectorAll('[data-vault-pick]'));
     var categoryList = section.querySelector('[data-document-category-list]');
     var currentUser = null;
@@ -216,9 +228,9 @@
         target.row.classList.remove('has-documents');
         target.button.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> העלאה';
       });
-      vault.querySelector('[data-vault-count]').textContent = '0 מסמכים';
-      vault.querySelector('[data-vault-size]').textContent = '0 MB';
-      vault.querySelector('[data-vault-storage]').style.width = '0%';
+      section.querySelector('[data-vault-count]').textContent = '0 מסמכים';
+      section.querySelector('[data-vault-size]').textContent = '0 MB';
+      section.querySelector('[data-vault-storage]').style.width = '0%';
       applyDocumentFilter();
     }
 
@@ -228,6 +240,7 @@
       authPanel.hidden = Boolean(currentUser);
       sessionPanel.hidden = !currentUser;
       unlockPanel.hidden = !currentUser;
+      uploadSection.hidden = !currentUser;
       form.hidden = !currentUser;
       summary.hidden = !currentUser;
       vaultPickButtons.forEach(function (button) {
@@ -320,9 +333,9 @@
       }
       var documents = result.data || [];
       var total = documents.reduce(function (sum, item) { return sum + Number(item.file_size || 0); }, 0);
-      vault.querySelector('[data-vault-count]').textContent = documents.length + ' מסמכים';
-      vault.querySelector('[data-vault-size]').textContent = formatSize(total) + ' בענן';
-      vault.querySelector('[data-vault-storage]').style.width = Math.min(100, Math.max(documents.length ? 2 : 0, total / (1024 * 1024 * 1024) * 100)) + '%';
+      section.querySelector('[data-vault-count]').textContent = documents.length + ' מסמכים';
+      section.querySelector('[data-vault-size]').textContent = formatSize(total) + ' בענן';
+      section.querySelector('[data-vault-storage]').style.width = Math.min(100, Math.max(documents.length ? 2 : 0, total / (1024 * 1024 * 1024) * 100)) + '%';
       Object.keys(categoryTargets).forEach(function (group) {
         var target = categoryTargets[group];
         target.files.innerHTML = '';

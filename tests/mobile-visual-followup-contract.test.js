@@ -7,10 +7,11 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 
-test('documents light gives vault intro its own readable neutral surface', () => {
+test('Documents zones own theme surfaces without a second intro surface', () => {
   const css = read('assets/document-vault.css');
   assert.match(css, /data-trip-view="documents"[^\{]*#documents \.vault-head\{/);
-  assert.match(css, /background:color-mix\(in srgb,var\(--tm-brand-primary\) 5%,rgba\(226,238,233,\.72\)\)/);
+  assert.match(css, /#documents :is\(\.vault-intro,\.vault-access,\.vault-upload-section,\.vault-library\)\{[\s\S]*?background:var\(--tm-surface-glass\)/);
+  assert.match(css, /#documents \.vault-head\{[\s\S]*?background:transparent/);
   assert.match(css, /#documents \.vault-head p\{color:var\(--tm-surface-text-muted\)\}/);
 });
 

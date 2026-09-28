@@ -96,9 +96,9 @@ test('Document Vault clears remote metadata immediately when signed out', () => 
   assert.match(vault, /\[data-vault-count\][\s\S]*0 מסמכים/);
 });
 
-test('Custom Documents owns a single row shell instead of nested card material', () => {
+test('Custom Documents library owns flat rows instead of nested card material', () => {
   assert.match(css, /Documents final feature ownership/);
-  assert.match(css, /data-trip-view="documents"[^\n]*#documents \[data-document-category-list\]\{[\s\S]*?background:var\(--tm-documents-shell\)[\s\S]*?backdrop-filter:none/);
+  assert.match(css, /data-trip-view="documents"[^\n]*#documents \[data-document-category-list\]\{[\s\S]*?background:transparent[\s\S]*?backdrop-filter:none/);
   assert.match(css, /data-trip-view="documents"[^\n]*#documents \.doc-row,[\s\S]*?border-radius:0;[\s\S]*?background:transparent;[\s\S]*?box-shadow:none/);
   assert.match(css, /data-trip-view="documents"[^\n]*#documents \.doc-category-file\{[\s\S]*?border-radius:0;[\s\S]*?background:var\(--tm-documents-file-row\)/);
 });
@@ -130,8 +130,8 @@ test('Documents no longer uses the legacy white-on-dark header override', () => 
   assert.doesNotMatch(redesign, /data-trip-view="documents"[\s\S]{0,1200}pill-btn::before/);
 });
 
-test('Documents light theme uses a light translucent page surface without backdrop blur', () => {
-  assert.match(css, /html:not\(\[data-theme="dark"\]\)[\s\S]*data-trip-view="documents"[\s\S]*#documents\{[\s\S]*background:var\(--tm-surface-glass\)[\s\S]*backdrop-filter:none/);
+test('Documents light canvas stays transparent while separate zones own surfaces', () => {
+  assert.match(css, /html:not\(\[data-theme="dark"\]\)[\s\S]*data-trip-view="documents"[\s\S]*#documents\{[\s\S]*background:transparent[\s\S]*backdrop-filter:none/);
 });
 
 test('final canvas transparency rule does not erase the Documents surface', () => {
