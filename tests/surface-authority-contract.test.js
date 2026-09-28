@@ -187,9 +187,10 @@ test('Transport nested and repeated surfaces do not stack backdrop blur',()=>{
   assert.match(glass,/data-trip-view="transport"[^\n]*#transport#transport \.service-card\.service-info-link\{\s*--tm-card-blur:none/);
 });
 
-test('light custom Overview uses the softer translucent material',()=>{
+test('light custom Overview and Places use the neutral non-milky material',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[\s\S]*?--tm-overview-card:linear-gradient\(135deg,rgba\(248,251,250,\.58\),rgba\(232,242,238,\.50\)\);[\s\S]*?--tm-card-secondary:#26473e/);
+  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[\s\S]*?--tm-overview-card:linear-gradient\(135deg,rgba\(112,158,146,\.66\),rgba\(88,137,125,\.58\)\);[\s\S]*?--tm-overview-border:rgba\(45,100,86,\.54\);[\s\S]*?--tm-card-secondary:#26473e/);
+  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="places"\]\{[\s\S]*?--tm-surface-glass:linear-gradient\(135deg,rgba\(112,158,146,\.66\),rgba\(88,137,125,\.58\)\);[\s\S]*?--tm-surface-border:rgba\(45,100,86,\.54\)/);
 });
 
 test('New Trip action is a branded translucent action instead of a white banner',()=>{

@@ -2183,11 +2183,17 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
 html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-surface-glass:linear-gradient(135deg,rgba(248,252,250,.52),rgba(232,243,238,.44));
   --tm-surface-nested:rgba(248,251,250,.12);
-  --tm-overview-card:linear-gradient(135deg,rgba(248,251,250,.58),rgba(232,242,238,.50));
-  --tm-overview-card-soft:rgba(248,251,250,.14);
+  --tm-overview-card:linear-gradient(135deg,rgba(112,158,146,.66),rgba(88,137,125,.58));
+  --tm-overview-card-soft:rgba(112,158,146,.36);
+  --tm-overview-border:rgba(45,100,86,.54);
   --tm-card-secondary:#26473e;
   --tm-overview-muted:#26473e;
   --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.62),rgba(11,45,50,.56))
+}
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
+  --tm-surface-glass:linear-gradient(135deg,rgba(112,158,146,.66),rgba(88,137,125,.58));
+  --tm-surface-nested:rgba(112,158,146,.32);
+  --tm-surface-border:rgba(45,100,86,.54)
 }
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-surface-glass:rgba(16,42,35,.82);

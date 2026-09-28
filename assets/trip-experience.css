@@ -492,3 +492,38 @@ html[data-theme="dark"] body.tm-new-design .currency-insight{
 [data-currency-insight] button[data-fee-edit]{
   box-shadow:0 7px 18px rgba(3,42,30,.24)
 }
+
+
+/* Budget light material authority: remove the legacy charcoal hero without changing budget behavior. */
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="budget"] #budget .budget-hero{
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--tm-brand-primary) 6%,rgba(214,230,224,.64)),
+    color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(194,216,208,.56)));
+  border:1px solid var(--tm-surface-border);
+  color:var(--tm-surface-text);
+  box-shadow:0 8px 22px rgba(8,39,29,.09)
+}
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="budget"] #budget .budget-hero>div:first-child,
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="budget"] #budget .budget-hero-meter{
+  border-color:var(--tm-surface-border);
+  background:rgba(232,241,237,.58);
+  color:var(--tm-surface-text);
+  box-shadow:none
+}
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="budget"] #budget .budget-hero>div:first-child :is(span,strong,p,small),
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="budget"] #budget .budget-hero-meter :is(span,strong,small){
+  color:var(--tm-surface-text);
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none
+}
+@media(max-width:700px){
+  #budget .currency-converter-grid>button{
+    grid-column:2;
+    grid-row:2;
+    justify-self:center;
+    display:grid;
+    place-items:center;
+    padding:0;
+    transform:none
+  }
+}

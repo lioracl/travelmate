@@ -462,3 +462,22 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
   align-items:center;
   color:var(--tm-surface-text)
 }
+
+
+/* Documents light readability: keep the vault structural, but give its intro copy one calm readable surface. */
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-head{
+  padding:14px 16px;
+  border:1px solid var(--tm-surface-border);
+  border-radius:16px;
+  background:color-mix(in srgb,var(--tm-brand-primary) 5%,rgba(226,238,233,.72));
+  color:var(--tm-surface-text);
+  box-shadow:0 4px 12px rgba(8,39,29,.06);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-head :is(h2,p){
+  color:var(--tm-surface-text);
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none
+}
+html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-head p{color:var(--tm-surface-text-muted)}

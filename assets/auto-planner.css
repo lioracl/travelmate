@@ -344,3 +344,18 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div
 @media(max-width:430px){
   body.tm-new-design[data-trip-view="plan"] #plan .generated-day{padding:9px}
 }
+
+
+/* Mobile Plan micro-geometry: icon-only day actions share one centered 44px box. */
+@media(max-width:680px){
+  body.tm-new-design[data-trip-view="plan"] #plan .day-heading-actions :is(.day-add,.day-replace){
+    width:44px;
+    min-width:44px;
+    height:44px;
+    min-height:44px;
+    padding:0;
+    display:grid;
+    place-items:center;
+    gap:0
+  }
+}
