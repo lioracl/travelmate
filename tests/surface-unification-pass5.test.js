@@ -10,7 +10,7 @@ test('surface roles have one shared owner rather than per-page pale panels',()=>
   const css=read('assets/readable-glass.css');
   for(const role of ['overview-card','plan-shell-surface']) assert.match(css,new RegExp('--tm-'+role+':var\\(--tm-surface-glass\\)'));
   assert.match(css,/--tm-card-control-selected:var\(--tm-action-secondary-active\)/);
-  assert.match(css,/--tm-surface-glass:linear-gradient\(135deg,rgba\(177,203,195,.86\)/);
+  assert.match(css,/--tm-surface-glass:linear-gradient\(135deg,rgba\(166,188,181,.86\)/);
   assert.match(css,/--tm-surface-glass:linear-gradient\(135deg,rgba\(24,55,46,.86\)/);
   assert.match(css,/background:var\(--tm-surface-glass/);
   assert.doesNotMatch(css,/--tm-card-control-selected:rgba\(255,255,255/);

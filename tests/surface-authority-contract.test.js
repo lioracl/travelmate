@@ -46,7 +46,7 @@ test('glass uses blur instead of opacity escalation',()=>{
 
 test('weather uses a dedicated crisp translucent material without optical blur',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(244,243,239,\.72\),rgba\(232,235,232,\.64\)\)/);
+  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(244,243,239,\.52\),rgba\(232,235,232,\.42\)\)/);
   assert.match(css,/--tm-weather-card-text:#12383F/);
   assert.match(css,/>\.hero-copy :is\(h1,p,span,strong,a,button,i\)/);
   assert.match(css,/--tm-weather-card-blur:none/);
@@ -66,7 +66,7 @@ test('overview and places no longer own card material tokens',()=>{
 test('surface text and control text are paired by theme',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/--tm-surface-text:#173f32/);
-  assert.match(css,/--tm-surface-control:rgba\(210,226,219,\.96\)/);
+  assert.match(css,/--tm-surface-control:rgba\(177,200,193,\.92\)/);
   assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-surface-text:#F7FAFA/);
   assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-card-control-text:#F7FAFA/);
 });
@@ -117,9 +117,9 @@ test('reduced transparency has an opaque fallback',()=>{
 
 test('surface polish keeps glass transparent and dark controls paired',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/rgba\(177,203,195,\.86\)/);
-  assert.match(css,/rgba\(153,188,177,\.82\)/);
-  assert.match(css,/rgba\(177,203,195,\.22\)/);
+  assert.match(css,/rgba\(166,188,181,\.86\)/);
+  assert.match(css,/rgba\(147,177,168,\.82\)/);
+  assert.match(css,/rgba\(169,191,184,\.60\)/);
   assert.match(css,/rgba\(24,55,46,\.86\)/);
   assert.match(css,/rgba\(16,42,35,\.82\)/);
   assert.match(css,/rgba\(43,78,66,\.24\)/);
@@ -190,7 +190,7 @@ test('Transport nested and repeated surfaces do not stack backdrop blur',()=>{
 
 test('light custom Overview and Places use the neutral non-milky material',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-surface-glass:linear-gradient\(135deg,rgba\(177,203,195,\.86\),rgba\(153,188,177,\.82\)\)/);
+  assert.match(css,/--tm-surface-glass:linear-gradient\(135deg,rgba\(166,188,181,\.86\),rgba\(147,177,168,\.82\)\)/);
   assert.match(css,/--tm-overview-card:var\(--tm-surface-glass\)/);
   assert.match(css,/--tm-plan-shell-surface:var\(--tm-surface-glass\)/);
   assert.doesNotMatch(css,/--tm-surface-control:rgba\(255,255,255,\.84\)/);

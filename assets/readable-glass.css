@@ -88,7 +88,9 @@ html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#p
 }
 
 html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
-  button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary):not(.day-heading)
+  button:not(.primary):not(.danger):not(.planner-danger):not([type="submit"]):not([data-delete]):not([data-remove]):not([data-delete-expense]):not([data-delete-saved-place]):not([data-delete-document]):not([data-delete-memory]):not([data-delete-ai-note]),
+  a[href]:not(.primary),
+  [role="button"]:not(.primary):not(.danger):not(.day-heading)
 ):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1px solid var(--tm-border-control)!important;
   background:var(--tm-readable-control)!important;
@@ -99,7 +101,9 @@ html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#p
 }
 
 html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
-  button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary):not(.day-heading)
+  button:not(.primary):not(.danger):not(.planner-danger):not([type="submit"]):not([data-delete]):not([data-remove]):not([data-delete-expense]):not([data-delete-saved-place]):not([data-delete-document]):not([data-delete-memory]):not([data-delete-ai-note]),
+  a[href]:not(.primary),
+  [role="button"]:not(.primary):not(.danger):not(.day-heading)
 ):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) *{
   color:inherit!important;
   -webkit-text-fill-color:inherit!important
@@ -762,9 +766,15 @@ html body.tm-new-design main.content :is(button,a[href],[role="button"],summary)
 }
 
 html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  button:not(.primary):not([type="submit"]):not([data-delete-ai-note]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary):not(.day-heading)
+  button:not(.primary):not(.danger):not(.planner-danger):not([type="submit"]):not([data-delete]):not([data-remove]):not([data-delete-expense]):not([data-delete-ai-note]),
+  a[href]:not(.primary):not(.official-fares),
+  [role="button"]:not(.primary):not(.danger):not(.day-heading)
 ):not(.maplibregl-map *):not(.trip-home-actions a):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary):not(.day-heading)){
+html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(
+  button:not(.primary):not(.danger):not(.planner-danger):not([type="submit"]):not([data-delete]):not([data-remove]):not([data-delete-expense]),
+  a[href]:not(.primary),
+  [role="button"]:not(.primary):not(.danger):not(.day-heading)
+){
   border-color:var(--tm-control-current-border);
   background:var(--tm-control-current-bg);
   color:var(--tm-control-current-text);
@@ -801,7 +811,7 @@ html body.tm-new-design :is(
   .place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,
   .trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal
 ) :is(
-  button.danger,.danger button,[data-delete],[data-remove],[data-delete-expense],
+  button.danger,.danger button,.planner-danger,[data-delete],[data-remove],[data-delete-expense],
   [data-delete-saved-place],[data-delete-memory],[data-delete-document],[data-delete-ai-note]
 ){
   --tm-control-current-bg:var(--tm-action-danger);
@@ -1180,15 +1190,15 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header 
     padding:0;
     border:1px solid rgba(20,125,146,.28);
     border-radius:12px;
-    background:rgba(247,250,250,.94);
-    color:#173f32;
-    -webkit-text-fill-color:#173f32;
+    background:var(--tm-action-secondary);
+    color:var(--tm-card-control-text);
+    -webkit-text-fill-color:currentColor;
     box-shadow:0 4px 12px rgba(8,39,29,.1)
   }
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view].mobile-menu-open .mobile-header .mobile-menu-button{
-    background:#fff;
-    color:#173f32;
-    -webkit-text-fill-color:#173f32;
+    background:var(--tm-action-secondary-active);
+    color:var(--tm-card-control-text);
+    -webkit-text-fill-color:currentColor;
     box-shadow:0 6px 16px rgba(8,39,29,.14)
   }
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :is(.mobile-menu-button,.mobile-back,.mobile-destination-map,.mobile-trip-whatsapp) i{
@@ -2066,9 +2076,9 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-page-section-border:transparent;
   --tm-page-section-shadow:none;
 
-  --tm-surface-glass:linear-gradient(135deg,rgba(177,203,195,.86),rgba(153,188,177,.82));
-  --tm-surface-nested:rgba(177,203,195,.22);
-  --tm-surface-control:rgba(210,226,219,.96);
+  --tm-surface-glass:linear-gradient(135deg,rgba(166,188,181,.86),rgba(147,177,168,.82));
+  --tm-surface-nested:rgba(169,191,184,.60);
+  --tm-surface-control:rgba(177,200,193,.92);
   --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.28),rgba(11,45,50,.22));
   --tm-surface-border:color-mix(in srgb,var(--tm-brand-primary,#147D92) 18%,rgba(255,255,255,.62));
   --tm-surface-border-strong:color-mix(in srgb,var(--tm-brand-primary,#147D92) 34%,rgba(255,255,255,.56));
@@ -2118,8 +2128,8 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-overview-text:var(--tm-surface-text);
   --tm-overview-muted:var(--tm-surface-text-muted);
 
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(244,243,239,.72),rgba(232,235,232,.64));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(244,243,239,.78),rgba(232,235,232,.70));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(244,243,239,.52),rgba(232,235,232,.42));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(244,243,239,.60),rgba(232,235,232,.50));
   --tm-weather-card-text:#12383F;
   --tm-weather-card-muted:#31575A;
   --tm-weather-card-blur:none;
@@ -2135,7 +2145,7 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-action-secondary:var(--tm-surface-control);
   --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 26%,rgba(190,215,204,.96));
   --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(171,205,190,.98));
-  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 30%,rgba(5,20,16,.78));
+  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 30%,rgba(5,20,16,.92));
   --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(255,255,255,.24));
   background-color:transparent;
 }
@@ -2168,7 +2178,7 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
   --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(18,42,34,.82));
   --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(18,42,34,.86));
   --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 44%,rgba(18,42,34,.9));
-  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 24%,rgba(4,15,12,.88));
+  --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 24%,rgba(4,15,12,.94));
   --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 42%,rgba(255,255,255,.18));
 }
 

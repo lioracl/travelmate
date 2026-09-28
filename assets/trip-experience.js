@@ -256,6 +256,13 @@
       if (parent && parent.firstChild && parent.firstChild.nodeType === 3) parent.firstChild.nodeValue = currencySymbol(state.localCurrency);
     });
   }
+  function formatRateDate(value) {
+    if (!value) return 'עדכון אחרון';
+    var parsed = Date.parse(value);
+    if (!Number.isFinite(parsed)) return String(value).slice(0, 10);
+    try { return new Intl.DateTimeFormat('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(parsed)); }
+    catch (error) { return new Date(parsed).toISOString().slice(0, 10); }
+  }
   function renderCurrency(failed) {
     document.querySelectorAll('[data-currency-insight]').forEach(function (host) {
       var amount = Number(host.dataset.euros || 0);
@@ -263,8 +270,8 @@
       if (unlimitedBudget) amount = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
       var localAmount = state.localCurrency === 'EUR' ? amount : localFromEuros(amount);
       var localRate = localRateInIls();
-      host.innerHTML = state.rate && (state.localCurrency === 'EUR' || localAmount) ? '<div><span><b>' + money(localAmount, state.localCurrency) + '</b> · כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>המטבע המקומי: ' + state.localCurrency + ' · ' + (localRate ? money(1, state.localCurrency) + ' = ₪' + localRate.toFixed(4) + ' · ' : '') + (state.rateStale ? 'שער שמור מהמכשיר · ' : '') + escapeHtml(state.rateDate || 'עדכון אחרון') + ' · <a href="' + escapeHtml(state.rateSourceUrl || 'https://frankfurter.dev/') + '" target="_blank" rel="noopener">' + escapeHtml(state.rateSource || 'מקור שערי המטבע') + '</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן את שער המטבע המקומי…') + '</span><small>התקציב המקורי נשמר בבטחה עד לעדכון השער</small></div>';
-      if (unlimitedBudget && host.querySelector('div>span')) host.querySelector('div>span').insertAdjacentHTML('afterbegin', '<b>ללא הגבלה</b> · הוצאות מצטברות: ');
+      host.innerHTML = state.rate && (state.localCurrency === 'EUR' || localAmount) ? '<div><span><b>' + money(localAmount, state.localCurrency) + '</b> · כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>המטבע המקומי: ' + state.localCurrency + ' · ' + (localRate ? money(1, state.localCurrency) + ' = ₪' + localRate.toFixed(4) + ' · ' : '') + (state.rateStale ? 'שער שמור מהמכשיר · ' : '') + escapeHtml(formatRateDate(state.rateDate)) + ' · <a href="' + escapeHtml(state.rateSourceUrl || 'https://frankfurter.dev/') + '" target="_blank" rel="noopener">' + escapeHtml(state.rateSource || 'מקור שערי המטבע') + '</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן את שער המטבע המקומי…') + '</span><small>התקציב המקורי נשמר בבטחה עד לעדכון השער</small></div>';
+      if (unlimitedBudget && host.querySelector('div>span')) host.querySelector('div>span').innerHTML = '<b>ללא הגבלה</b> · מעקב הוצאות פעיל';
       var button = host.querySelector('[data-fee-edit]'); if (button) button.onclick = editFee;
     }); renderLocalBudgetTotals(); updateTotalBudgetEditor(); renderBudgetCategoryIls(); renderExpenseList();
   }
@@ -313,7 +320,7 @@
     var card = document.querySelector('[data-currency-converter]'); if (!card) return;
     var amount = Number(card.querySelector('[data-converter-amount]').value || 0); var from = card.querySelector('[data-converter-from]').value; var to = card.querySelector('[data-converter-to]').value; var converted = convertCurrency(amount, from, to); var result = card.querySelector('[data-converter-result]');
     result.innerHTML = currencyConversionReady(from, to) ? '<small>' + money(amount, from) + ' שווה בקירוב</small><strong>' + money(converted, to) + '</strong><span>לפי שער יציג, לפני עמלת חברת האשראי</span>' : '<span>מעדכן את שערי המטבע…</span>';
-    var source = card.querySelector('[data-converter-source]'); if (source) source.textContent = 'מקור: ' + (state.rateSource || 'ECB דרך Frankfurter') + (state.rateDate ? ' · ' + String(state.rateDate).slice(0,10) : '');
+    var source = card.querySelector('[data-converter-source]'); if (source) source.textContent = 'מקור: ' + (state.rateSource || 'ECB דרך Frankfurter') + (state.rateDate ? ' · ' + formatRateDate(state.rateDate) : '');
     var sourceLink = card.querySelector('footer a'); if (sourceLink) { sourceLink.href = state.rateSourceUrl || 'https://frankfurter.dev/'; sourceLink.textContent = 'מידע על מקור השערים'; }
   }
 
