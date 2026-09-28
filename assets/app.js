@@ -76,8 +76,8 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     })
   }
   function canWarmNonCritical(){var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||null;return !document.hidden&&!(connection&&connection.saveData)&&!(connection&&/^(slow-2g|2g)$/i.test(String(connection.effectiveType||'')))}
-  function scheduleIdleFeature(view,delay){var run=function(){if(canWarmNonCritical())loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
-  function warmNonCritical(){scheduleIdleFeature('account',4200)}
+  function scheduleIdleFeature(view,delay){var run=function(){if(view==='assistant'||canWarmNonCritical())loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
+  function warmNonCritical(){scheduleIdleFeature('assistant',500);scheduleIdleFeature('account',4200)}
   function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
   if(isHomePage){
     var homeBaseReady=Promise.all(homeBaseStyles.map(loadStyle));

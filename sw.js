@@ -4,6 +4,8 @@ const CORE_PATHS=[
   './',
   './index.html',
   './trip/custom/index.html',
+  './trip/italy-2028/index.html',
+  './trip/japan-2027/index.html',
   './assets/styles.css',
   './assets/app.js',
   './assets/readable-glass.css',
@@ -67,13 +69,25 @@ async function cacheFirstVersioned(request,event){
   persistResponse(event,request,response);
   return response;
 }
+// Canonical entry shells are independent of query strings and directory URLs.
+// Online navigation caches new trip routes automatically; no future route list is needed.
+async function navigationFallback(url){
+  const base=new URL('./',self.location.href);
+  const relative=url.pathname.startsWith(base.pathname)?url.pathname.slice(base.pathname.length):'';
+  const trip=relative.match(/^trip\/([^/]+)(?:\/(?:index\.html)?)?$/);
+  const entry=trip?new URL('trip/'+trip[1]+'/index.html',base):new URL('index.html',base);
+  const hit=await caches.match(entry.href,{ignoreSearch:true});
+  if(hit)return hit;
+  // Never disguise an uncached trip as Home.
+  return new Response('הטיול אינו זמין במצב לא מקוון. יש להתחבר כדי לטעון אותו.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
+}
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;
   const url=new URL(event.request.url);
   const freshAsset=/\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
   const versionedAsset=freshAsset&&url.searchParams.has('v');
   event.respondWith(event.request.mode==='navigate'
-    ?networkFirst(event.request,event,true).catch(()=>caches.match(event.request,{ignoreSearch:true}).then(hit=>hit||(url.pathname.includes('/trip/custom/')?caches.match('./trip/custom/index.html'):caches.match('./index.html'))))
+    ?networkFirst(event.request,event,true).catch(()=>navigationFallback(url))
     :versionedAsset
       ?cacheFirstVersioned(event.request,event)
     :freshAsset

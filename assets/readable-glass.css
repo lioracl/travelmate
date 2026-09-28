@@ -58,7 +58,7 @@ html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#p
   .budget-charts,.currency-converter,.transport-card,.travel-service-card,.service-card,
   .fare-guide,.getaway-result,.group-card,.album-card,.memory-card,.trip-summary-card,
   .resource-link
-):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) :where(h1,h2,h3,h4,h5,h6,p,span,strong,b,small,label,legend,time,li):not(.message-sender):not(.collaboration-live){
+):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) :where(h1,h2,h3,h4,h5,h6,p,span,strong,b,small,label,legend,time,li):not(.message-sender):not(.collaboration-live):not(:where(.schedule-conflict-note)){
   color:inherit!important;
   -webkit-text-fill-color:currentColor!important;
   opacity:1!important
@@ -137,7 +137,7 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan .generated-day
 
 html body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
   .day-heading,.planned-activity,.saved-place,.lodging-day-card,.airport-day-card,.trip-anchor
-) :where(h2,h3,h4,p,span,strong,b,small,time){
+) :where(h2,h3,h4,p,span,strong,b,small,time):not(:where(.schedule-conflict-note)){
   color:inherit;
   -webkit-text-fill-color:currentColor;
   opacity:1
@@ -172,10 +172,10 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan .generated-day
    Geometry lives in trip-redesign.css; open/closed state lives in mobile-menu.css. */
 @media(max-width:1000px){
   html body.tm-new-design:not(.home-page) .workspace>.sidebar{
-    --tm-drawer-text:#123f32;
-    --tm-drawer-muted:#49675d;
+    --tm-drawer-text:var(--tm-surface-text,var(--tm-text-primary));
+    --tm-drawer-muted:var(--tm-surface-text-muted,var(--tm-text-secondary));
     border:1px solid color-mix(in srgb,var(--tm-brand-primary) 26%,rgba(255,255,255,.7));
-    background:linear-gradient(155deg,rgba(250,253,252,.995),rgba(235,245,241,.99));
+    background:var(--tm-surface-glass,var(--tm-card-bg));
     color:var(--tm-drawer-text);
     -webkit-text-fill-color:var(--tm-drawer-text);
     box-shadow:-18px 0 54px rgba(3,43,31,.24);
@@ -207,7 +207,7 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan .generated-day
   }
   html body.tm-new-design:not(.home-page) .workspace>.sidebar .destination-mini{
     border:1px solid rgba(39,116,87,.26);
-    background:rgba(255,255,255,.94);
+    background:var(--tm-surface-nested,var(--tm-card-bg-nested));
     color:var(--tm-drawer-text);
     box-shadow:0 5px 14px rgba(9,67,49,.08)
   }
@@ -593,7 +593,7 @@ html[data-theme="dark"] body.tm-new-design[data-trip-view="overview"] main.conte
   --tm-card-radius:14px;
   --tm-card-radius-featured:14px;
   --tm-card-radius-compact:12px;
-  --tm-card-radius-control:10px;
+  --tm-card-radius-control:12px;
   --tm-card-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 26px rgba(0,0,0,.14);
   --tm-card-shadow-compact:inset 0 1px 0 rgba(255,255,255,.12),0 4px 12px rgba(0,0,0,.1);
   --tm-card-shadow-hover:inset 0 1px 0 rgba(255,255,255,.24),0 13px 30px rgba(0,0,0,.18);
@@ -855,7 +855,7 @@ html body.tm-new-design :is(
   .modal button,.about-dialog button,.trip-calendar-dialog button,.invite-card button,
   .chat-place-picker button,.place-directions-dialog button,.place-share-dialog button,
   .ai-panel button,.smart-hub-modal button,.auto-place-dialog button
-) :where(i,svg){
+) :where(i,svg):not(:where(.smart-tool i)){
   color:currentColor;
   -webkit-text-fill-color:currentColor;
   -webkit-text-stroke:0;
@@ -1374,20 +1374,20 @@ html[data-theme][data-theme] body.tm-new-design main.content .section-head:not(b
 html body.tm-new-design .ai-panel .ai-context-bar,
 html body.tm-new-design .ai-panel .ai-composer{
   border-color:var(--tm-card-control-border);
-  background:rgba(244,243,239,.76);
+  background:var(--tm-surface-nested);
   color:var(--tm-card-text);
   box-shadow:var(--tm-card-shadow-compact);
 }
 html body.tm-new-design .ai-panel .ai-message.assistant .ai-bubble{
   border-color:rgba(20,125,146,.24);
-  background:rgba(229,241,239,.86);
+  background:var(--tm-surface-control);
   color:var(--tm-control-text,#182326);
   box-shadow:0 5px 16px rgba(18,56,63,.1);
 }
 html body.tm-new-design .ai-panel .ai-composer-row,
 html body.tm-new-design .ai-panel .ai-quick-prompts button{
   border-color:rgba(20,125,146,.24);
-  background:rgba(235,243,240,.82);
+  background:var(--tm-surface-control);
   color:var(--tm-control-text,#182326);
   box-shadow:none;
 }
@@ -1397,9 +1397,9 @@ html body.tm-new-design .ai-panel .ai-composer button[data-ai-send]{
   background:var(--tm-brand-primary,#147d92);
   color:#fff;
 }
-html body.tm-new-design .ai-panel .ai-composer button.ai-voice{color:var(--tm-brand-dark,#0b5869)}
+html body.tm-new-design .ai-panel .ai-composer button.ai-voice{color:var(--tm-card-control-text)}
 html body.tm-new-design .ai-panel .ai-composer textarea{
-  background:transparent;
+  background:var(--tm-surface-control);
   color:var(--tm-card-control-text);
 }
 
@@ -2054,6 +2054,9 @@ body[data-trip-view]:not([data-trip-view="overview"]) [data-navo-trip-banner]{
    Canvas = destination photo. Primary = crisp translucency. Nested = flatter depth.
    Controls = readable input/action surface. Photo glass = dark translucent material. */
 html body[data-trip-kind="custom"].tm-new-design{
+  --tm-overlay-surface:var(--tm-surface-glass);
+  --tm-overlay-text:var(--tm-surface-text);
+  --tm-overlay-muted:var(--tm-surface-text-muted);
   --tm-surface-blur:none;
   --tm-surface-blur-nested:none;
   --tm-surface-blur-photo:none;
@@ -2063,11 +2066,9 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-page-section-border:transparent;
   --tm-page-section-shadow:none;
 
-  --tm-surface-glass:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(250,253,251,.46)),
-    color-mix(in srgb,var(--tm-brand-primary,#147D92) 3%,rgba(228,241,234,.36)));
-  --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(247,251,249,.10));
-  --tm-surface-control:rgba(255,255,255,.84);
+  --tm-surface-glass:linear-gradient(135deg,rgba(177,203,195,.86),rgba(153,188,177,.82));
+  --tm-surface-nested:rgba(177,203,195,.22);
+  --tm-surface-control:rgba(210,226,219,.96);
   --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.28),rgba(11,45,50,.22));
   --tm-surface-border:color-mix(in srgb,var(--tm-brand-primary,#147D92) 18%,rgba(255,255,255,.62));
   --tm-surface-border-strong:color-mix(in srgb,var(--tm-brand-primary,#147D92) 34%,rgba(255,255,255,.56));
@@ -2109,10 +2110,10 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-card-control-border:rgba(55,95,80,.24);
   --tm-card-control-text:#173f32;
   --tm-card-control-placeholder:#5A666A;
-  --tm-card-control-selected:color-mix(in srgb,var(--tm-brand-primary) 16%,rgba(255,255,255,.82));
+  --tm-card-control-selected:var(--tm-action-secondary-active);
 
-  --tm-overview-card:linear-gradient(135deg,rgba(248,251,250,.68),rgba(232,242,238,.58));
-  --tm-overview-card-soft:rgba(248,251,250,.54);
+  --tm-overview-card:var(--tm-surface-glass);
+  --tm-overview-card-soft:var(--tm-surface-nested);
   --tm-overview-border:var(--tm-surface-border);
   --tm-overview-text:var(--tm-surface-text);
   --tm-overview-muted:var(--tm-surface-text-muted);
@@ -2123,27 +2124,25 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-weather-card-muted:#31575A;
   --tm-weather-card-blur:none;
 
-  --tm-plan-shell-surface:rgba(248,251,250,.56);
+  --tm-plan-shell-surface:var(--tm-surface-glass);
   --tm-plan-row-surface:transparent;
-  --tm-plan-past-button-surface:rgba(248,251,250,.22);
+  --tm-plan-past-button-surface:var(--tm-surface-control);
 
   --tm-glass-shell-bg:var(--tm-surface-glass);
   --tm-glass-shell-border:var(--tm-surface-border);
   --tm-accent-soft:#D7EDF2;
   --tm-accent-soft-text:var(--tm-brand-primary-dark);
-  --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 18%,rgba(244,243,239,.9));
-  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 26%,rgba(244,243,239,.92));
-  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(244,243,239,.94));
+  --tm-action-secondary:var(--tm-surface-control);
+  --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 26%,rgba(190,215,204,.96));
+  --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(171,205,190,.98));
   --tm-chrome-surface:color-mix(in srgb,var(--tm-brand-primary-dark) 30%,rgba(5,20,16,.78));
   --tm-chrome-border:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(255,255,255,.24));
   background-color:transparent;
 }
 
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
-  --tm-surface-glass:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-brand-primary,#147D92) 8%,rgba(12,31,25,.60)),
-    color-mix(in srgb,var(--tm-brand-primary,#147D92) 6%,rgba(8,24,20,.54)));
-  --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary,#147D92) 7%,rgba(15,34,28,.18));
+  --tm-surface-glass:linear-gradient(135deg,rgba(24,55,46,.86),rgba(16,42,35,.82));
+  --tm-surface-nested:rgba(43,78,66,.24);
   --tm-surface-control:color-mix(in srgb,var(--tm-brand-primary,#147D92) 8%,rgba(17,38,31,.86));
   --tm-surface-photo:linear-gradient(135deg,rgba(5,18,15,.34),rgba(8,32,35,.28));
   --tm-surface-border:color-mix(in srgb,var(--tm-brand-primary) 28%,rgba(255,255,255,.22));
@@ -2163,9 +2162,9 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
   --tm-card-muted:rgba(247,250,250,.68);
   --tm-card-link:color-mix(in srgb,var(--tm-brand-primary) 48%,#fff);
   --tm-card-icon:color-mix(in srgb,var(--tm-brand-primary) 58%,#fff);
-  --tm-plan-shell-surface:rgba(16,42,35,.64);
+  --tm-plan-shell-surface:var(--tm-surface-glass);
   --tm-plan-row-surface:transparent;
-  --tm-plan-past-button-surface:rgba(22,54,45,.22);
+  --tm-plan-past-button-surface:var(--tm-surface-control);
   --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(18,42,34,.82));
   --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(18,42,34,.86));
   --tm-action-secondary-active:color-mix(in srgb,var(--tm-brand-primary) 44%,rgba(18,42,34,.9));
@@ -2181,25 +2180,14 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-card-blur:none
 }
 html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-surface-glass:linear-gradient(135deg,rgba(248,252,250,.52),rgba(232,243,238,.44));
-  --tm-surface-nested:rgba(248,251,250,.12);
-  --tm-overview-card:linear-gradient(135deg,rgba(112,158,146,.66),rgba(88,137,125,.58));
-  --tm-overview-card-soft:rgba(112,158,146,.36);
-  --tm-overview-border:rgba(45,100,86,.54);
-  --tm-card-secondary:#26473e;
-  --tm-overview-muted:#26473e;
   --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.62),rgba(11,45,50,.56))
 }
-html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="places"]{
-  --tm-surface-glass:linear-gradient(135deg,rgba(112,158,146,.66),rgba(88,137,125,.58));
-  --tm-surface-nested:rgba(112,158,146,.32);
-  --tm-surface-border:rgba(45,100,86,.54)
-}
+
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-surface-glass:rgba(16,42,35,.82);
-  --tm-surface-nested:rgba(22,54,45,.72);
-  --tm-overview-card:rgba(21,55,48,.72);
-  --tm-overview-card-soft:rgba(30,67,59,.48);
+
+
+  --tm-overview-card:var(--tm-surface-glass);
+  --tm-overview-card-soft:var(--tm-surface-nested);
   --tm-surface-photo:linear-gradient(135deg,rgba(5,18,15,.88),rgba(8,32,35,.84))
 }
 

@@ -17,7 +17,7 @@ test('documents light gives vault intro its own readable neutral surface', () =>
 test('budget light replaces the legacy charcoal hero with semantic light material', () => {
   const css = read('assets/trip-experience.css');
   assert.match(css, /data-trip-view="budget"[^\{]*#budget \.budget-hero\{/);
-  assert.match(css, /color-mix\(in srgb,var\(--tm-brand-primary\) 6%,rgba\(214,230,224,\.64\)\)/);
+  assert.match(css, /background:var\(--tm-surface-glass\)/);
   assert.match(css, /#budget \.budget-hero>div:first-child :is\(span,strong,p,small\)/);
 });
 
@@ -30,8 +30,9 @@ test('mobile plan day actions and budget swap button are centered without compet
 });
 
 test('light Overview and Places use the approved non-milky neutral green material', () => {
-  const glass = read('assets/readable-glass.css');
-  assert.match(glass, /data-trip-view="overview"[\s\S]*--tm-overview-card:linear-gradient\(135deg,rgba\(112,158,146,\.66\),rgba\(88,137,125,\.58\)\)/);
-  assert.match(glass, /data-trip-view="places"[\s\S]*--tm-surface-glass:linear-gradient\(135deg,rgba\(112,158,146,\.66\),rgba\(88,137,125,\.58\)\)/);
-  assert.match(glass, /--tm-overview-border:rgba\(45,100,86,\.54\)/);
+  const css=read('assets/readable-glass.css');
+  assert.match(css,/--tm-surface-glass:linear-gradient\(135deg,rgba\(177,203,195,\.86\),rgba\(153,188,177,\.82\)\)/);
+  assert.match(css,/--tm-overview-card:var\(--tm-surface-glass\)/);
+  assert.match(css,/--tm-plan-shell-surface:var\(--tm-surface-glass\)/);
+  assert.doesNotMatch(css,/--tm-surface-control:rgba\(255,255,255,\.84\)/);
 });

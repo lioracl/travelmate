@@ -129,7 +129,7 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.match(source, /dynamicSectionViews=\{transport:true,getaways:true,group:true,memories:true\}/);
   assert.match(source, /assistant:\{styles:\['ai-assistant\.css','smart-hub\.css'\],scripts:\['ai-assistant\.js','smart-hub\.js'\]\}/);
   assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
-  assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
+  assert.match(source, /scheduleIdleFeature\('assistant',500\)/);
   assert.match(source, /scheduleIdleFeature\('account',4200\)/);
   assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
 });
@@ -306,10 +306,10 @@ test('service worker keeps cache writes alive without delaying the response', ()
 
 test('offline navigation ignores query strings while versioned assets remain exact', () => {
   assert.match(serviceWorker, /networkFirst\(event\.request,event,true\)/);
-  assert.match(serviceWorker, /caches\.match\(event\.request,\{ignoreSearch:true\}\)/);
+  assert.match(serviceWorker, /caches\.match\(entry\.href,\{ignoreSearch:true\}\)/);
   assert.match(serviceWorker, /cacheFirstVersioned\(event\.request,event\)/);
   const start = serviceWorker.indexOf('async function cacheFirstVersioned');
-  const end = serviceWorker.indexOf("self.addEventListener('fetch'", start);
+  const end = serviceWorker.indexOf("async function navigationFallback", start);
   const versionedBlock = serviceWorker.slice(start, end);
   assert.match(versionedBlock, /caches\.match\(request\)/);
   assert.doesNotMatch(versionedBlock, /ignoreSearch:true/);
@@ -329,7 +329,7 @@ test('idle Account warming skips hidden, Save-Data and very slow connections', (
   assert.match(source, /!document\.hidden/);
   assert.match(source, /connection&&connection\.saveData/);
   assert.match(source, /slow-2g\|2g/);
-  assert.match(source, /if\(canWarmNonCritical\(\)\)loadFeature\(view\)/);
+  assert.match(source, /if\(view==='assistant'\|\|canWarmNonCritical\(\)\)loadFeature\(view\)/);
 });
 
 test('PWA bootstrap does not dispatch the unused app-update-ready event', () => {

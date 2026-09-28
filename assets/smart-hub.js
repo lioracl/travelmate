@@ -90,10 +90,14 @@
   ];
 
   function createUi() {
+    if (state.ui || document.querySelector('.smart-hub-launch')) return;
     var launch = document.createElement('button'); launch.type = 'button'; launch.className = 'smart-hub-launch'; launch.innerHTML = '<i class="fa-solid fa-brain"></i><span>מרכז חכם <small>20 כלים</small></span>';
-    launch.setAttribute('aria-label', 'פתיחת המרכז החכם'); document.body.appendChild(launch);
-    var backdrop = document.createElement('section'); backdrop.className = 'modal-backdrop'; backdrop.id = 'modal-smart-hub'; backdrop.setAttribute('role', 'dialog'); backdrop.setAttribute('aria-modal', 'true');
-    backdrop.innerHTML = '<div class="modal smart-hub-modal"><header><div class="smart-hub-heading"><span class="smart-hub-avatar"><i class="fa-solid fa-sparkles"></i></span><div><span>TravelMate Smart</span><h2>המרכז החכם של הטיול</h2><p>' + escapeHtml(state.trip.city) + ' · כל מה שצריך לפני הטיול ובדרך</p></div></div><button class="modal-close" type="button" data-smart-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header><div class="smart-hub-body"><div class="smart-hub-home"><div class="smart-hub-intro"><div><strong>מה תרצה לעשות עכשיו?</strong><span>הכלים מתאימים את עצמם ליעד, לזמן ולמיקום שלך.</span></div><button class="smart-hub-now" type="button" data-tool="now"><i class="fa-solid fa-location-crosshairs"></i> הצעה חכמה עכשיו</button></div><div class="smart-hub-groups"></div></div><div class="smart-tool-view"><button class="smart-tool-back" type="button"><i class="fa-solid fa-arrow-right"></i> חזרה לכל הכלים</button><div data-smart-tool-content></div></div></div></div>';
+    launch.setAttribute('aria-label', 'פתיחת המרכז החכם');
+    var menu = document.querySelector('.trip-sidebar-more-menu') || document.querySelector('.sidebar nav');
+    if (!menu) return;
+    menu.appendChild(launch);
+    var backdrop = document.createElement('section'); backdrop.className = 'modal-backdrop'; backdrop.id = 'modal-smart-hub'; backdrop.setAttribute('role', 'dialog'); backdrop.setAttribute('aria-modal', 'true'); backdrop.setAttribute('aria-label', 'המרכז החכם של הטיול');
+    backdrop.innerHTML = '<div class="modal smart-hub-modal"><header><div class="smart-hub-heading"><span class="smart-hub-avatar"><i class="fa-solid fa-brain"></i></span><div><span>TravelMate Smart</span><h2>המרכז החכם של הטיול</h2><p>' + escapeHtml(state.trip.city) + ' · כל מה שצריך לפני הטיול ובדרך</p></div></div><button class="modal-close" type="button" data-smart-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header><div class="smart-hub-body"><div class="smart-hub-home"><div class="smart-hub-intro"><div><strong>מה תרצה לעשות עכשיו?</strong><span>הכלים מתאימים את עצמם ליעד, לזמן ולמיקום שלך.</span></div><button class="smart-hub-now" type="button" data-tool="now"><i class="fa-solid fa-location-crosshairs"></i> הצעה חכמה עכשיו</button></div><div class="smart-hub-groups"></div></div><div class="smart-tool-view"><button class="smart-tool-back" type="button"><i class="fa-solid fa-arrow-right"></i> חזרה לכל הכלים</button><div data-smart-tool-content></div></div></div></div>';
     document.body.appendChild(backdrop);
     var groupsNode = backdrop.querySelector('.smart-hub-groups');
     groups.forEach(function (group) {
@@ -102,60 +106,25 @@
       groupsNode.appendChild(section);
     });
     state.ui = { launch: launch, backdrop: backdrop, modal: backdrop.querySelector('.smart-hub-modal'), content: backdrop.querySelector('[data-smart-tool-content]') };
-    var launchDrag = { active: false, moved: false, pointerId: null, offsetX: 0, offsetY: 0, startX: 0, startY: 0 };
-    function placeLaunch(left, top) {
-      var maxLeft = Math.max(8, window.innerWidth - launch.offsetWidth - 8);
-      var maxTop = Math.max(8, window.innerHeight - launch.offsetHeight - 8);
-      launch.style.left = Math.min(Math.max(8, left), maxLeft) + 'px';
-      launch.style.top = Math.min(Math.max(8, top), maxTop) + 'px';
-      launch.style.right = 'auto';
-      launch.style.bottom = 'auto';
-    }
-    window.addEventListener('resize', function () {
-      var rect = launch.getBoundingClientRect();
-      placeLaunch(rect.left, rect.top);
-    });
-    try {
-      var savedLaunchPosition = JSON.parse(localStorage.getItem('travelmate-smart-hub-position-v3') || 'null');
-      if (savedLaunchPosition && Number.isFinite(savedLaunchPosition.left) && Number.isFinite(savedLaunchPosition.top)) placeLaunch(savedLaunchPosition.left, savedLaunchPosition.top);
-    } catch (error) {}
-    launch.addEventListener('pointerdown', function (event) {
-      var rect = launch.getBoundingClientRect();
-      launchDrag = { active: true, moved: false, pointerId: event.pointerId, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top, startX: event.clientX, startY: event.clientY };
-      launch.setPointerCapture(event.pointerId);
-    });
-    launch.addEventListener('pointermove', function (event) {
-      if (!launchDrag.active || event.pointerId !== launchDrag.pointerId) return;
-      if (!(event.buttons & 1)) return;
-      if (Math.abs(event.clientX - launchDrag.startX) + Math.abs(event.clientY - launchDrag.startY) > 4) launchDrag.moved = true;
-      if (launchDrag.moved) placeLaunch(event.clientX - launchDrag.offsetX, event.clientY - launchDrag.offsetY);
-    });
-    launch.addEventListener('pointerup', function (event) {
-      if (!launchDrag.active || event.pointerId !== launchDrag.pointerId) return;
-      launchDrag.active = false;
-      if (launchDrag.moved) {
-        var rect = launch.getBoundingClientRect();
-        try { localStorage.setItem('travelmate-smart-hub-position-v3', JSON.stringify({ left: rect.left, top: rect.top })); } catch (error) {}
-      } else {
-        openHub();
-      }
-    });
-    launch.addEventListener('pointercancel', function () { launchDrag.active = false; });
-    launch.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openHub(); }
-    });
-    window.addEventListener('resize', function () {
-      var rect = launch.getBoundingClientRect();
-      placeLaunch(rect.left, rect.top);
-    });
+    launch.addEventListener('click', openHub);
+
     backdrop.querySelector('[data-smart-close]').addEventListener('click', closeHub); backdrop.querySelector('.smart-tool-back').addEventListener('click', showHome);
     backdrop.addEventListener('click', function (event) { var trigger = event.target.closest('[data-tool]'); if (trigger) openTool(trigger.dataset.tool); if (event.target === backdrop) closeHub(); });
-    document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && backdrop.classList.contains('open')) closeHub(); });
+    document.addEventListener('keydown', function (event) {
+      if (!backdrop.classList.contains('open')) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); closeHub(); return; }
+      if (event.key !== 'Tab') return;
+      event.stopImmediatePropagation();
+      var focusable = Array.prototype.slice.call(backdrop.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')).filter(function (node) { return node.getClientRects().length; });
+      var first = focusable[0], last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }, true);
     launch.dataset.smartHubReady = 'true';
   }
 
-  function openHub() { state.ui.backdrop.classList.add('open'); state.ui.launch.setAttribute('aria-expanded', 'true'); }
-  function closeHub() { state.ui.backdrop.classList.remove('open'); state.ui.launch.setAttribute('aria-expanded', 'false'); showHome(); }
+  function openHub() { state.ui.previousFocus = document.activeElement === document.body ? state.ui.launch : document.activeElement; if (typeof window.closeMobileMenu === 'function') window.closeMobileMenu(); state.ui.backdrop.classList.add('open'); state.ui.launch.setAttribute('aria-expanded', 'true'); state.ui.backdrop.querySelector('[data-smart-close]').focus(); }
+  function closeHub() { state.ui.backdrop.classList.remove('open'); state.ui.launch.setAttribute('aria-expanded', 'false'); showHome(); var focus = state.ui.previousFocus || state.ui.launch; if (focus.closest('.sidebar') && !document.body.classList.contains('mobile-menu-open') && window.matchMedia('(max-width: 1000px)').matches) focus = document.querySelector('.mobile-menu-button') || focus; if (focus.isConnected) focus.focus(); }
   function showHome() { state.ui.modal.classList.remove('tool-open'); state.ui.content.innerHTML = ''; }
   function panel(title, description, body) { state.ui.modal.classList.add('tool-open'); state.ui.content.innerHTML = '<section class="smart-tool-panel"><h3>' + title + '</h3><p>' + description + '</p>' + (body || '') + '</section>'; return state.ui.content.querySelector('.smart-tool-panel'); }
   function showStatus(message, tone) { var host = state.ui && state.ui.content; if (!host) return; var old = host.querySelector('.smart-status'); if (old) old.remove(); var node = document.createElement('div'); node.className = 'smart-status' + (tone ? ' ' + tone : ''); node.textContent = message; host.querySelector('.smart-tool-panel').appendChild(node); }

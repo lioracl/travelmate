@@ -57,7 +57,7 @@ test('Mate hydrates its reserved Overview slot and loads assistant runtime on de
   const app=read('assets/app.js');
   assert.match(intelligence,/document\.querySelector\('\[data-navo-trip-banner\]'\) \|\| document\.createElement\('aside'\)/);
   assert.match(intelligence,/ensureAssistant\?window\.TravelMateFeatures\.ensureAssistant\(\):Promise\.resolve\(\)/);
-  assert.doesNotMatch(app,/scheduleIdleFeature\('assistant'/);
+  assert.match(app,/scheduleIdleFeature\('assistant',500\)/);
 });
 
 test('navigation boot uses query-state navigation without legacy hash shield or initial scroll',()=>{

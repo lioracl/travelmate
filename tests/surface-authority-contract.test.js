@@ -66,7 +66,7 @@ test('overview and places no longer own card material tokens',()=>{
 test('surface text and control text are paired by theme',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/--tm-surface-text:#173f32/);
-  assert.match(css,/--tm-surface-control:rgba\(255,255,255,\.84\)/);
+  assert.match(css,/--tm-surface-control:rgba\(210,226,219,\.96\)/);
   assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-surface-text:#F7FAFA/);
   assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-card-control-text:#F7FAFA/);
 });
@@ -79,8 +79,9 @@ test('Overview mobile chrome keeps on-photo contrast in both themes',()=>{
 
 test('custom trip mobile drawer keeps a crisp readable material and desktop chrome stays desktop-only',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/@media\(max-width:1000px\)\{[\s\S]*?\.workspace>\.sidebar\{[\s\S]*?--tm-drawer-text:#123f32;[\s\S]*?background:linear-gradient\(155deg,rgba\(250,253,252,\.995\),rgba\(235,245,241,\.99\)\);[\s\S]*?backdrop-filter:none/);
-  assert.match(css,/@media\(min-width:1001px\)\{[\s\S]*?data-trip-kind="custom"[\s\S]*?\.workspace>\.sidebar\{/);
+  assert.match(css,/\.workspace>\.sidebar\{[^}]*background:var\(--tm-surface-glass,var\(--tm-card-bg\)\)/);
+  assert.match(css,/--tm-drawer-text:var\(--tm-surface-text/);
+  assert.match(css,/@media\(min-width:1001px\)/);
 });
 
 test('custom Overview and Plan bypass the generic theme material boundary',()=>{
@@ -102,8 +103,8 @@ test('Overview and Plan local authority does not need important escalation',()=>
 test('Overview removes optical blur while retaining controlled transparency',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-surface-blur-photo:none;[^}]*--tm-card-blur:none/);
-  assert.match(css,/--tm-overview-card:linear-gradient\(135deg,rgba\(248,251,250,\.68\),rgba\(232,242,238,\.58\)\)/);
-  assert.match(css,/--tm-overview-card-soft:rgba\(248,251,250,\.54\)/);
+  assert.match(css,/--tm-overview-card:var\(--tm-surface-glass\)/);
+  assert.match(css,/--tm-overview-card-soft:var\(--tm-surface-nested\)/);
   assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
 });
 
@@ -116,12 +117,12 @@ test('reduced transparency has an opaque fallback',()=>{
 
 test('surface polish keeps glass transparent and dark controls paired',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/rgba\(250,253,251,\.46\)/);
-  assert.match(css,/rgba\(228,241,234,\.36\)/);
-  assert.match(css,/rgba\(247,251,249,\.10\)/);
-  assert.match(css,/rgba\(12,31,25,\.60\)/);
-  assert.match(css,/rgba\(8,24,20,\.54\)/);
-  assert.match(css,/rgba\(15,34,28,\.18\)/);
+  assert.match(css,/rgba\(177,203,195,\.86\)/);
+  assert.match(css,/rgba\(153,188,177,\.82\)/);
+  assert.match(css,/rgba\(177,203,195,\.22\)/);
+  assert.match(css,/rgba\(24,55,46,\.86\)/);
+  assert.match(css,/rgba\(16,42,35,\.82\)/);
+  assert.match(css,/rgba\(43,78,66,\.24\)/);
   assert.match(css,/--tm-control-text:#F7FAFA/);
   assert.match(css,/--tm-card-control-selected:color-mix\(in srgb,var\(--tm-brand-primary\) 30%,rgba\(18,42,34,\.88\)\)/);
 });
@@ -131,7 +132,7 @@ test('feature surfaces consume semantic tokens instead of hardcoded light colors
   const glass=read('assets/readable-glass.css');
   const planner=read('assets/auto-planner.css');
   const intelligence=read('assets/trip-intelligence.css');
-  assert.match(glass,/--tm-plan-shell-surface:rgba\(248,251,250,\.56\)/);
+  assert.match(glass,/--tm-plan-shell-surface:var\(--tm-surface-glass\)/);
   assert.match(glass,/--tm-plan-row-surface:transparent/);
   assert.match(glass,/data-trip-view="plan"[^\n]*#plan :is\(\.planned-activity,\.saved-place\)\{[\s\S]*?background:var\(--tm-plan-row-surface\)/);
   assert.match(glass,/:not\(body\[data-trip-kind="custom"\]\[data-trip-view="plan"\] #plan \*\)/);
@@ -189,8 +190,10 @@ test('Transport nested and repeated surfaces do not stack backdrop blur',()=>{
 
 test('light custom Overview and Places use the neutral non-milky material',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[\s\S]*?--tm-overview-card:linear-gradient\(135deg,rgba\(112,158,146,\.66\),rgba\(88,137,125,\.58\)\);[\s\S]*?--tm-overview-border:rgba\(45,100,86,\.54\);[\s\S]*?--tm-card-secondary:#26473e/);
-  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="places"\]\{[\s\S]*?--tm-surface-glass:linear-gradient\(135deg,rgba\(112,158,146,\.66\),rgba\(88,137,125,\.58\)\);[\s\S]*?--tm-surface-border:rgba\(45,100,86,\.54\)/);
+  assert.match(css,/--tm-surface-glass:linear-gradient\(135deg,rgba\(177,203,195,\.86\),rgba\(153,188,177,\.82\)\)/);
+  assert.match(css,/--tm-overview-card:var\(--tm-surface-glass\)/);
+  assert.match(css,/--tm-plan-shell-surface:var\(--tm-surface-glass\)/);
+  assert.doesNotMatch(css,/--tm-surface-control:rgba\(255,255,255,\.84\)/);
 });
 
 test('New Trip action is a branded translucent action instead of a white banner',()=>{
