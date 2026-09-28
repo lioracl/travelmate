@@ -189,7 +189,7 @@ test('Transport nested and repeated surfaces do not stack backdrop blur',()=>{
 
 test('light custom Overview uses the softer translucent material',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[\s\S]*?--tm-overview-card:linear-gradient\(135deg,rgba\(188,219,210,\.54\),rgba\(171,207,198,\.48\)\);[\s\S]*?--tm-card-secondary:#26473e/);
+  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[\s\S]*?--tm-overview-card:linear-gradient\(135deg,rgba\(188,219,210,\.68\),rgba\(171,207,198,\.60\)\);[\s\S]*?--tm-card-secondary:#26473e/);
 });
 
 test('New Trip action is a branded translucent action instead of a white banner',()=>{

@@ -459,7 +459,7 @@ test('Phase 9 keeps Weather as a zero-escalation component owner', () => {
 
   assert.equal(importantCount(weather), 0);
   assert.match(weather, /--tm-overlay-surface:linear-gradient/);
-  assert.match(weather, /--tm-control-current-bg:#eef8f3/);
+  assert.match(weather, /--tm-control-current-bg:var\(--tm-action-secondary\)/);
   assert.doesNotMatch(modal, /weather-live-day|weather-insight/);
   assert.doesNotMatch(glass, /\.weather-insight,.weather-live-day/);
   assert.match(glass, /:not\(\.weather-live-day-icon\)/);

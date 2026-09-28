@@ -2,67 +2,78 @@
 
 /* Weather live-modal contrast ownership — consolidated from the retired weather-contrast layer. */
 html body #modal-weather-live .weather-live-modal{
-  --tm-overlay-surface:linear-gradient(155deg,rgba(5,31,24,.98),rgba(9,20,17,.97));
-  --tm-overlay-text:#fff;
-  --tm-overlay-muted:#d5eee4;
-  color:#fff;
-  -webkit-text-fill-color:#fff
+  --tm-overlay-surface:linear-gradient(155deg,
+    color-mix(in srgb,var(--tm-surface-neutral) 94%,transparent),
+    color-mix(in srgb,var(--tm-brand-primary) 7%,color-mix(in srgb,var(--tm-surface-neutral) 92%,transparent)));
+  --tm-overlay-text:var(--tm-text-primary);
+  --tm-overlay-muted:var(--tm-text-secondary);
+  --tm-overlay-border:var(--tm-border-control);
+  --tm-overlay-nested:color-mix(in srgb,var(--tm-brand-primary) 6%,color-mix(in srgb,var(--tm-surface-neutral) 56%,transparent));
+  --tm-overlay-blur:none;
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:currentColor
 }
 html body #modal-weather-live .weather-live-modal>header{
-  background:rgba(5,31,24,.96);
-  border-bottom:1px solid rgba(255,255,255,.2)
+  background:var(--tm-overlay-surface);
+  border-bottom:1px solid var(--tm-overlay-border);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+html body #modal-weather-live .weather-live-header-copy>span{
+  background:var(--tm-overlay-nested);
+  border:1px solid var(--tm-overlay-border)
 }
 html body #modal-weather-live :is(
   .weather-live-header-copy h2,.weather-live-header-copy span,
   .weather-insight strong,.weather-live-day strong
 ){
-  color:#fff;
-  -webkit-text-fill-color:#fff;
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:currentColor;
   opacity:1;
-  text-shadow:0 1px 2px rgba(0,0,0,.35)
+  text-shadow:none
 }
 html body #modal-weather-live :is(
   .weather-live-header-copy small,.weather-insight span,
   .weather-live-day span,.weather-source
 ){
-  color:#d5eee4;
-  -webkit-text-fill-color:#d5eee4;
+  color:var(--tm-overlay-muted);
+  -webkit-text-fill-color:currentColor;
   opacity:1
 }
 html body #modal-weather-live .weather-insight{
-  background:rgba(255,255,255,.1);
-  border:1px solid rgba(255,255,255,.22);
-  color:#fff;
-  -webkit-text-fill-color:#fff;
+  background:var(--tm-overlay-nested);
+  border:1px solid var(--tm-overlay-border);
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:currentColor;
   box-shadow:none
 }
 html body #modal-weather-live .weather-live-grid{
   gap:0;
   margin:16px 18px;
   padding:0 14px;
-  border:1px solid rgba(255,255,255,.2);
+  border:1px solid var(--tm-overlay-border);
   border-radius:20px;
-  background:rgba(255,255,255,.055)
+  background:var(--tm-overlay-nested)
 }
 html body #modal-weather-live .weather-live-day{
   background:transparent;
   border:0;
-  border-bottom:1px solid rgba(255,255,255,.16);
+  border-bottom:1px solid var(--tm-overlay-border);
   border-radius:0;
-  color:#fff;
-  -webkit-text-fill-color:#fff;
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:currentColor;
   box-shadow:none;
   padding:15px 2px
 }
 html body #modal-weather-live .weather-live-day:last-child{border-bottom:0}
 html body #modal-weather-live .weather-live-day.today{
-  background:linear-gradient(90deg,rgba(64,153,115,.18),transparent);
-  border-color:rgba(255,255,255,.16)
+  background:linear-gradient(90deg,var(--tm-surface-selected),transparent);
+  border-color:var(--tm-overlay-border)
 }
 html body #modal-weather-live .weather-insight>i{
-  background:#eef8f3;
-  color:#176b4e;
-  -webkit-text-fill-color:#176b4e
+  background:var(--tm-overlay-nested);
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:currentColor
 }
 html body #modal-weather-live .weather-live-day-icon{
   width:52px;
@@ -71,17 +82,17 @@ html body #modal-weather-live .weather-live-day-icon{
   grid-template-columns:1fr;
   place-content:center;
   gap:1px;
-  border:1px solid rgba(255,255,255,.24);
+  border:1px solid var(--tm-overlay-border);
   border-radius:50%;
-  background:rgba(255,255,255,.1);
-  color:#d9f3e8;
-  -webkit-text-fill-color:#d9f3e8;
+  background:var(--tm-overlay-nested);
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:currentColor;
   text-align:center
 }
 html body #modal-weather-live .weather-live-day-icon i{font-size:16px}
 html body #modal-weather-live .weather-live-day-icon small{
-  color:#fff;
-  -webkit-text-fill-color:#fff;
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:currentColor;
   font-size:11px;
   font-weight:900;
   line-height:1
@@ -93,20 +104,20 @@ html body #modal-weather-live .weather-live-metrics b{
   position:relative;
   padding:0;
   background:transparent;
-  color:#e7f5ef;
-  -webkit-text-fill-color:#e7f5ef;
+  color:var(--tm-overlay-text);
+  -webkit-text-fill-color:currentColor;
   text-shadow:none
 }
 html body #modal-weather-live .weather-live-metrics b+b:before{
   content:"•";
   position:absolute;
   inset-inline-start:-9px;
-  color:rgba(255,255,255,.38)
+  color:var(--tm-overlay-muted)
 }
 html body #modal-weather-live .weather-live-actions button:not(.primary),
 html body #modal-weather-live .modal-close{
-  --tm-control-current-bg:#eef8f3;
-  --tm-control-current-text:#176b4e
+  --tm-control-current-bg:var(--tm-action-secondary);
+  --tm-control-current-text:var(--tm-accent-soft-text)
 }
 @media(max-width:650px){
   html body #modal-weather-live .weather-live-grid{
