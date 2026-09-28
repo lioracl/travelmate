@@ -32,7 +32,7 @@ test('custom Plan is excluded from generic card ownership without a duplicate ID
 });
 test('custom primary and nested surfaces have no blur while modal backdrop stays independent',()=>{
  const css=read('assets/readable-glass.css');assert.match(css,/body\[data-trip-kind="custom"\]\.tm-new-design\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-card-blur:none/);
- assert.match(css,/--tm-surface-nested:rgba\(169,191,184,\.60\)/);
+ assert.match(css,/--tm-surface-nested:var\(--tm-family-nested\)/);
  assert.match(read('assets/modal-system.css'),/backdrop-filter:/);
 });
 test('destination scrim has a single theme owner and canvas resolves on the trip body',()=>{
@@ -66,7 +66,7 @@ test('Plan shortcuts keep real labels and full toolbar geometry',()=>{
 });
 test('custom Weather background is neutral and independent of accent',()=>{
  const css=read('assets/readable-glass.css');
- const tokens=css.match(/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(244,243,239,\.52\),rgba\(232,235,232,\.42\)\);/);
+ const tokens=css.match(/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(217,225,223,\.42\),rgba\(201,213,210,\.34\)\);/);
  assert.ok(tokens,'dedicated neutral Weather material');
  assert.doesNotMatch(tokens[0],/var\(--tm-brand|color-mix/);
  assert.match(css,/--tm-weather-card-blur:none/);

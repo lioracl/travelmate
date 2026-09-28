@@ -334,11 +334,12 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div
     min-width:0;
     overflow-wrap:anywhere
   }
-  body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons{
+  body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions){
     grid-column:1/-1;
     width:100%;
-    justify-content:flex-end;
-    flex-wrap:wrap
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    align-items:stretch
   }
 }
 @media(max-width:430px){

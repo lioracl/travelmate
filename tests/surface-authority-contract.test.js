@@ -46,7 +46,7 @@ test('glass uses blur instead of opacity escalation',()=>{
 
 test('weather uses a dedicated crisp translucent material without optical blur',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(244,243,239,\.52\),rgba\(232,235,232,\.42\)\)/);
+  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(217,225,223,\.42\),rgba\(201,213,210,\.34\)\)/);
   assert.match(css,/--tm-weather-card-text:#12383F/);
   assert.match(css,/>\.hero-copy :is\(h1,p,span,strong,a,button,i\)/);
   assert.match(css,/--tm-weather-card-blur:none/);
@@ -65,10 +65,10 @@ test('overview and places no longer own card material tokens',()=>{
 
 test('surface text and control text are paired by theme',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-surface-text:#173f32/);
-  assert.match(css,/--tm-surface-control:rgba\(177,200,193,\.92\)/);
-  assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-surface-text:#F7FAFA/);
-  assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-card-control-text:#F7FAFA/);
+  assert.match(css,/--tm-surface-text:var\(--tm-family-text\)/);
+  assert.match(css,/--tm-surface-control:var\(--tm-family-control\)/);
+  assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-surface-text:var\(--tm-family-text\)/);
+  assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-card-control-text:var\(--tm-surface-text\)/);
 });
 
 test('Overview mobile chrome keeps on-photo contrast in both themes',()=>{
@@ -79,7 +79,7 @@ test('Overview mobile chrome keeps on-photo contrast in both themes',()=>{
 
 test('custom trip mobile drawer keeps a crisp readable material and desktop chrome stays desktop-only',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/\.workspace>\.sidebar\{[^}]*background:var\(--tm-surface-glass,var\(--tm-card-bg\)\)/);
+  assert.match(css,/\.workspace>\.sidebar\{[^}]*background:var\(--tm-surface-control,var\(--tm-card-bg\)\)/);
   assert.match(css,/--tm-drawer-text:var\(--tm-surface-text/);
   assert.match(css,/@media\(min-width:1001px\)/);
 });
@@ -122,9 +122,9 @@ test('surface polish keeps glass transparent and dark controls paired',()=>{
   assert.match(css,/rgba\(169,191,184,\.60\)/);
   assert.match(css,/rgba\(24,55,46,\.86\)/);
   assert.match(css,/rgba\(16,42,35,\.82\)/);
-  assert.match(css,/rgba\(43,78,66,\.24\)/);
+  assert.match(css,/--tm-surface-nested:var\(--tm-family-nested\)/);
   assert.match(css,/--tm-control-text:#F7FAFA/);
-  assert.match(css,/--tm-card-control-selected:color-mix\(in srgb,var\(--tm-brand-primary\) 30%,rgba\(18,42,34,\.88\)\)/);
+  assert.match(css,/--tm-card-control-selected:var\(--tm-action-secondary-active\)/);
 });
 
 test('feature surfaces consume semantic tokens instead of hardcoded light colors',()=>{
@@ -190,7 +190,7 @@ test('Transport nested and repeated surfaces do not stack backdrop blur',()=>{
 
 test('light custom Overview and Places use the neutral non-milky material',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-surface-glass:linear-gradient\(135deg,rgba\(166,188,181,\.86\),rgba\(147,177,168,\.82\)\)/);
+  assert.match(css,/--tm-surface-glass:var\(--tm-family-primary\)/);
   assert.match(css,/--tm-overview-card:var\(--tm-surface-glass\)/);
   assert.match(css,/--tm-plan-shell-surface:var\(--tm-surface-glass\)/);
   assert.doesNotMatch(css,/--tm-surface-control:rgba\(255,255,255,\.84\)/);

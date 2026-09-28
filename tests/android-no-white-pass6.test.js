@@ -8,14 +8,14 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
 test('Light surface tokens are not legacy pale-white controls', () => {
   const css = read('assets/readable-glass.css');
-  assert.match(css, /--tm-surface-control:rgba\(177,200,193,\.92\)/);
-  assert.match(css, /--tm-surface-nested:rgba\(169,191,184,\.60\)/);
+  assert.match(css, /--tm-surface-control:var\(--tm-family-control\)/);
+  assert.match(css, /--tm-surface-nested:var\(--tm-family-nested\)/);
   assert.doesNotMatch(css, /--tm-surface-control:rgba\(210,226,219,\.96\)/);
 });
 
 test('Weather stays neutral but is less opaque on the destination photo', () => {
   const css = read('assets/readable-glass.css');
-  assert.match(css, /--tm-weather-card-bg:linear-gradient\(135deg,rgba\(244,243,239,\.52\),rgba\(232,235,232,\.42\)\)/);
+  assert.match(css, /--tm-weather-card-bg:linear-gradient\(135deg,rgba\(217,225,223,\.42\),rgba\(201,213,210,\.34\)\)/);
   assert.match(css, /--tm-weather-card-blur:none/);
 });
 
