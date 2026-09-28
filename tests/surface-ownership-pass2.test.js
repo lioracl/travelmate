@@ -32,7 +32,7 @@ test('custom Plan is excluded from generic card ownership without a duplicate ID
 });
 test('custom primary and nested surfaces have no blur while modal backdrop stays independent',()=>{
  const css=read('assets/readable-glass.css');assert.match(css,/body\[data-trip-kind="custom"\]\.tm-new-design\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-card-blur:none/);
- assert.match(css,/--tm-surface-nested:color-mix[^;]*rgba\(247,251,249,\.18\)/);
+ assert.match(css,/--tm-surface-nested:color-mix[^;]*rgba\(247,251,249,\.10\)/);
  assert.match(read('assets/modal-system.css'),/backdrop-filter:/);
 });
 test('destination scrim has a single theme owner and canvas resolves on the trip body',()=>{
@@ -51,3 +51,23 @@ test('surface cleanup does not increase the audited important debt',()=>{
 });
 
 test("standalone currency uses primary material and embedded currency stays flat",()=>{const css=read("assets/trip-experience.css");assert.match(css,/\.currency-insight\{[^}]*background:var\(--tm-card-bg\)/);assert.match(css,/\.currency-insight\.compact\{background:transparent/);assert.match(css,/font-weight:900;color:var\(--tm-card-heading\)/)});
+
+test('mobile header control foreground is not forced to photo white',()=>{
+ const css=read('assets/readable-glass.css');
+ assert.doesNotMatch(css,/\.mobile-header :is\(a,button,h1,h2,h3,strong,span,i\)/);
+ assert.match(css,/\.mobile-header :is\(\.mobile-destination-map,\.mobile-trip-whatsapp\)\{[^}]*background:var\(--tm-action-secondary\);[^}]*color:var\(--tm-control-text\);[^}]*-webkit-text-fill-color:currentColor/);
+});
+test('Plan shortcuts keep real labels and full toolbar geometry',()=>{
+ const planner=read('assets/auto-planner.css'),layout=read('assets/trip-redesign.css');
+ assert.doesNotMatch(planner,/Compact toolbar shortcuts remain icon-first/);
+ assert.doesNotMatch(layout,/data-new-activity\]\{[^}]*color:transparent!important/);
+ assert.match(planner,/\.planner-toolbar \.planner-toolbar-actions button\{[^}]*width:100%;[^}]*align-items:center;[^}]*justify-content:center/);
+ assert.match(read('assets/smart-plan-tools.css'),/\.day-heading-actions\{flex-direction:row\}/);
+});
+test('custom Weather background is neutral and independent of accent',()=>{
+ const css=read('assets/readable-glass.css');
+ const tokens=css.match(/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(244,243,239,\.72\),rgba\(232,235,232,\.64\)\);/);
+ assert.ok(tokens,'dedicated neutral Weather material');
+ assert.doesNotMatch(tokens[0],/var\(--tm-brand|color-mix/);
+ assert.match(css,/--tm-weather-card-blur:none/);
+});

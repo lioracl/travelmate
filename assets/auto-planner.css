@@ -28,7 +28,7 @@
 #plan .planned-activities{gap:8px;margin-top:2px}
 #plan .planned-activity,#plan .saved-place{min-height:64px;padding:10px 12px}
 #plan .planned-activity .activity-copy,#plan .saved-place .saved-place-content{min-width:0}
-#plan .activity-buttons,#plan .saved-place-actions{opacity:.72;transition:opacity .16s ease}
+#plan .activity-buttons,#plan .saved-place-actions{opacity:1;transition:opacity .16s ease}
 #plan :is(.planned-activity,.saved-place):is(:hover,:focus-within) :is(.activity-buttons,.saved-place-actions){opacity:1}
 #plan .day-note{min-height:72px;margin-top:4px}
 @media(max-width:560px){#plan .planner-toolbar{padding:12px}#plan .planner-progress{max-width:none}#plan .planned-activity,#plan .saved-place{padding:10px}#plan .activity-buttons,#plan .saved-place-actions{opacity:1}}
@@ -41,7 +41,7 @@
   #plan .planner-progress-track{height:6px}
   #plan .planner-toolbar-actions{width:100%}
   #plan .planner-more{grid-column:auto}
-  #plan .planner-more>summary{width:100%;min-height:46px;padding-inline:7px;font-size:11px}
+  #plan .planner-more>summary{width:100%;min-height:56px;padding-inline:7px;font-size:11px}
 }
 
 
@@ -75,7 +75,13 @@ body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolba
   align-self:center
 }
 body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolbar-actions button i{
-  flex:0 0 auto;
+  flex:0 0 20px;
+  width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  margin:0;
+  line-height:1;
   font-size:17px;
   -webkit-text-stroke:0
 }
@@ -126,9 +132,14 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed{min
   body.tm-new-design[data-trip-view="plan"] #plan .day-heading{
     width:100%;
     min-height:0;
-    text-align:center
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:10px;
+    text-align:start
   }
   body.tm-new-design[data-trip-view="plan"] #plan .day-heading>div{width:100%;min-width:0}
+  body.tm-new-design[data-trip-view="plan"] #plan .day-heading-actions{display:flex;align-items:center;gap:6px}
 }
 @media(max-width:700px){
   body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{gap:8px}
@@ -137,7 +148,7 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed{min
     gap:7px
   }
   body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolbar-actions button{
-    min-height:46px;
+    min-height:56px;
     padding:7px 6px;
     font-size:11px
   }
@@ -173,7 +184,7 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
 }
 
 body.tm-new-design[data-trip-view="plan"] #plan .planner-action{
-  min-height:42px;
+  min-height:44px;
   border:1px solid var(--tm-card-control-border);
   border-radius:14px;
   background:var(--tm-action-secondary);
@@ -332,23 +343,4 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div
 }
 @media(max-width:430px){
   body.tm-new-design[data-trip-view="plan"] #plan .generated-day{padding:9px}
-}
-
-
-/* Compact toolbar shortcuts remain icon-first. */
-body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar button:is([data-open-trip-calendar],[data-new-activity]){
-  width:38px;
-  min-width:38px;
-  padding:0;
-  border:0;
-  background:transparent;
-  color:transparent;
-  -webkit-text-fill-color:transparent;
-  font-size:0;
-  box-shadow:none
-}
-body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar button:is([data-open-trip-calendar],[data-new-activity]) i{
-  color:var(--tm-text-on-action);
-  -webkit-text-fill-color:currentColor;
-  font-size:18px
 }

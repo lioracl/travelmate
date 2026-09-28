@@ -432,12 +432,12 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
 
 /* Documents visual stabilization: light translucent page surface, no black glass. */
 html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents{
-  --tm-documents-shell:rgba(250,253,251,.56);
-  --tm-documents-file-row:rgba(250,253,251,.34);
+  --tm-documents-shell:rgba(250,253,251,.24);
+  --tm-documents-file-row:rgba(250,253,251,.12);
   padding:14px;
   border:1px solid rgba(255,255,255,.58);
   border-radius:22px;
-  background:linear-gradient(135deg,rgba(248,252,250,.62),rgba(231,242,237,.52));
+  background:var(--tm-surface-glass);
   color:var(--tm-surface-text);
   box-shadow:0 8px 22px rgba(8,39,29,.10);
   -webkit-backdrop-filter:none;

@@ -123,12 +123,6 @@ body[data-trip-view="plan"] #plan>.section-head{display:none}
 body[data-trip-view="plan"] #plan .trip-action-back,
 body[data-trip-view="plan"] #plan .tm-collapse-button{display:none}
 body[data-trip-view="plan"] #plan .planner-toolbar{padding:0;border:0;background:transparent;box-shadow:none}
-body[data-trip-view="plan"] #plan [data-export-calendar]{width:42px;min-width:42px;padding:0;border:0;background:transparent;font-size:0}
-body[data-trip-view="plan"] #plan [data-export-calendar] i{font-size:21px;color:transparent;-webkit-text-stroke:1.2px var(--tm-brand-primary,#0e614b)}
-body[data-trip-view="plan"] #plan [data-open-trip-calendar],
-body[data-trip-view="plan"] #plan [data-new-activity]{width:42px;min-width:42px;padding:0;border:0!important;background:transparent!important;color:transparent!important;font-size:0;box-shadow:none}
-body[data-trip-view="plan"] #plan [data-open-trip-calendar] i,
-body[data-trip-view="plan"] #plan [data-new-activity] i{font-size:21px;color:transparent;-webkit-text-stroke:1.2px var(--tm-brand-primary,#0e614b)}
 @media(max-width:850px){body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero{min-height:150px;flex-wrap:wrap;padding:16px 20px}body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero .hero-copy{order:1;width:calc(100% - 150px);flex-wrap:wrap}body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero .hero-back{order:0}body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero .share{order:2}body[data-trip-view]:not([data-trip-view="overview"]) .custom-hero .weather-top-widget{order:3;width:100%}}
 
 /* Card structure only. Visual material is owned by readable-glass.css, which is loaded last. */
@@ -563,9 +557,13 @@ body:not(.home-page) .workspace>.sidebar nav .sidebar-about{order:999}
     backdrop-filter:blur(8px) saturate(108%)
   }
   body:not(.home-page):not([data-trip-kind="custom"][data-trip-view="overview"]) :where(.mobile-menu-button,.mobile-back){
-    flex:0 0 40px;
-    width:40px;
-    height:40px;
+    flex:0 0 44px;
+    width:44px;
+    height:44px;
+    display:grid;
+    place-items:center;
+    padding:0;
+    line-height:1;
     background:var(--tm-action-secondary);
     border:1px solid color-mix(in srgb,var(--tm-brand-primary) 30%,var(--tm-card-control-border));
     color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
@@ -639,6 +637,8 @@ body:not(.home-page) .workspace>.sidebar nav .sidebar-about{order:999}
     width:100%;
     min-height:50px;
     flex:0 0 auto;
+    display:flex;
+    align-items:center;
     justify-content:flex-start;
     gap:14px;
     padding:0 16px;
@@ -647,7 +647,13 @@ body:not(.home-page) .workspace>.sidebar nav .sidebar-about{order:999}
   body:not(.home-page) .workspace>.sidebar nav :is(a,button) i,
   body:not(.home-page) .workspace>.sidebar .live-button i,
   body:not(.home-page) .workspace>.sidebar .sidebar-service i{
+    flex:0 0 24px;
     width:24px;
+    height:24px;
+    display:grid;
+    place-items:center;
+    margin:0;
+    line-height:1;
     text-align:center
   }
   body:not(.home-page) .workspace>.sidebar .tip{

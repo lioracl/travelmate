@@ -88,7 +88,7 @@ html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#p
 }
 
 html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
-  button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)
+  button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary):not(.day-heading)
 ):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *){
   border:1px solid var(--tm-border-control)!important;
   background:var(--tm-readable-control)!important;
@@ -99,7 +99,7 @@ html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#p
 }
 
 html body.tm-new-design main.content>section:where(.section):not(:where(.hero,#places)) :is(
-  button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)
+  button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary):not(.day-heading)
 ):not(.maplibregl-map *):not(body[data-trip-kind="custom"][data-trip-view="overview"] *) *{
   color:inherit!important;
   -webkit-text-fill-color:inherit!important
@@ -762,9 +762,9 @@ html body.tm-new-design main.content :is(button,a[href],[role="button"],summary)
 }
 
 html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]) main.content>section:not(.hero):not(#places) :is(
-  button:not(.primary):not([type="submit"]):not([data-delete-ai-note]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary)
+  button:not(.primary):not([type="submit"]):not([data-delete-ai-note]),a[href]:not(.primary):not(.official-fares),[role="button"]:not(.primary):not(.day-heading)
 ):not(.maplibregl-map *):not(.trip-home-actions a):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
-html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary)){
+html body.tm-new-design :is(.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button:not(.primary):not([type="submit"]),a[href]:not(.primary),[role="button"]:not(.primary):not(.day-heading)){
   border-color:var(--tm-control-current-border);
   background:var(--tm-control-current-bg);
   color:var(--tm-control-current-text);
@@ -834,7 +834,7 @@ html body.tm-new-design:not([data-trip-kind="custom"][data-trip-view="overview"]
   --tm-control-current-border:var(--tm-brand-primary);
   --tm-control-current-text:var(--tm-control-text)
 }
-html body.tm-new-design :is(main.content,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):focus-visible{
+html body.tm-new-design :is(main.content,.mobile-header,.modal,.about-dialog,.trip-calendar-dialog,.invite-card,.chat-place-picker,.place-directions-dialog,.place-share-dialog,.ai-panel,.smart-hub-modal,.auto-place-dialog,.trip-date-editor,.document-preview-modal,.saved-place-editor,.activity-editor,.weather-live-modal) :is(button,a[href],[role="button"],summary):not(.maplibregl-map *):focus-visible{
   outline:3px solid var(--tm-focus-ring);
   outline-offset:3px
 }
@@ -1156,14 +1156,15 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header{
   -webkit-backdrop-filter:none;
   backdrop-filter:none
 }
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :where(h1,h2,h3,strong){
   color:var(--tm-text-on-photo);
   -webkit-text-fill-color:currentColor;
   opacity:1
 }
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :is(a,button):not(:disabled):is(:hover,:focus-visible){
-  background:var(--tm-action-ghost-hover);
-  color:var(--tm-text-on-photo)
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :is(a,button):not(:disabled):hover{
+  background:var(--tm-action-secondary-hover);
+  color:var(--tm-control-text);
+  -webkit-text-fill-color:currentColor
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header button:disabled{
   border-color:var(--tm-border-on-dark);
@@ -1190,9 +1191,17 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header 
     -webkit-text-fill-color:#173f32;
     box-shadow:0 6px 16px rgba(8,39,29,.14)
   }
-  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header .mobile-menu-button i{
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :is(.mobile-menu-button,.mobile-back,.mobile-destination-map,.mobile-trip-whatsapp) i{
     color:inherit;
     -webkit-text-fill-color:currentColor;
+    display:grid;
+    place-items:center;
+    width:20px;
+    height:20px;
+    margin:0;
+    line-height:1;
+    -webkit-text-stroke:0;
+    filter:none;
     font-size:20px
   }
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header :is(.mobile-destination-map,.mobile-trip-whatsapp){
@@ -1202,8 +1211,14 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header 
     padding:4px 3px;
     display:grid;
     grid-template-rows:20px 12px;
+    place-content:center;
     place-items:center;
-    gap:1px;
+    gap:2px;
+    border:1px solid var(--tm-border-control);
+    background:var(--tm-action-secondary);
+    color:var(--tm-control-text);
+    -webkit-text-fill-color:currentColor;
+    box-shadow:none;
     border-radius:12px
   }
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header .mobile-action-label{
@@ -1232,7 +1247,7 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-vi
     -webkit-backdrop-filter:none;
     backdrop-filter:none
   }
-  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header :is(a,button,h1,h2,h3,strong,span,i){
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .mobile-header :where(h1,h2,h3,strong){
     color:var(--tm-text-on-photo);
     -webkit-text-fill-color:currentColor;
     text-shadow:none
@@ -2036,7 +2051,7 @@ body[data-trip-view]:not([data-trip-view="overview"]) [data-navo-trip-banner]{
 }
 
 /* Surface Authority 2.0 Ã¢â‚¬â€ one material model for all custom-trip screens.
-   Canvas = destination photo. Glass = translucent + blur. Nested = lighter depth.
+   Canvas = destination photo. Primary = crisp translucency. Nested = flatter depth.
    Controls = readable input/action surface. Photo glass = dark translucent material. */
 html body[data-trip-kind="custom"].tm-new-design{
   --tm-surface-blur:none;
@@ -2049,9 +2064,9 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-page-section-shadow:none;
 
   --tm-surface-glass:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(250,253,251,.50)),
-    color-mix(in srgb,var(--tm-brand-primary,#147D92) 3%,rgba(228,241,234,.38)));
-  --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(247,251,249,.18));
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(250,253,251,.46)),
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 3%,rgba(228,241,234,.36)));
+  --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(247,251,249,.10));
   --tm-surface-control:rgba(255,255,255,.84);
   --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.28),rgba(11,45,50,.22));
   --tm-surface-border:color-mix(in srgb,var(--tm-brand-primary,#147D92) 18%,rgba(255,255,255,.62));
@@ -2102,14 +2117,14 @@ html body[data-trip-kind="custom"].tm-new-design{
   --tm-overview-text:var(--tm-surface-text);
   --tm-overview-muted:var(--tm-surface-text-muted);
 
-  --tm-weather-card-bg:linear-gradient(135deg,rgba(191,226,220,.68),rgba(169,213,210,.62));
-  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(191,226,220,.76),rgba(169,213,210,.70));
+  --tm-weather-card-bg:linear-gradient(135deg,rgba(244,243,239,.72),rgba(232,235,232,.64));
+  --tm-weather-card-bg-hover:linear-gradient(135deg,rgba(244,243,239,.78),rgba(232,235,232,.70));
   --tm-weather-card-text:#12383F;
   --tm-weather-card-muted:#31575A;
   --tm-weather-card-blur:none;
 
-  --tm-plan-shell-surface:rgba(248,251,250,.28);
-  --tm-plan-row-surface:rgba(248,251,250,.10);
+  --tm-plan-shell-surface:rgba(248,251,250,.56);
+  --tm-plan-row-surface:transparent;
   --tm-plan-past-button-surface:rgba(248,251,250,.22);
 
   --tm-glass-shell-bg:var(--tm-surface-glass);
@@ -2126,8 +2141,8 @@ html body[data-trip-kind="custom"].tm-new-design{
 
 html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
   --tm-surface-glass:linear-gradient(135deg,
-    color-mix(in srgb,var(--tm-brand-primary,#147D92) 8%,rgba(12,31,25,.46)),
-    color-mix(in srgb,var(--tm-brand-primary,#147D92) 6%,rgba(8,24,20,.40)));
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 8%,rgba(12,31,25,.60)),
+    color-mix(in srgb,var(--tm-brand-primary,#147D92) 6%,rgba(8,24,20,.54)));
   --tm-surface-nested:color-mix(in srgb,var(--tm-brand-primary,#147D92) 7%,rgba(15,34,28,.18));
   --tm-surface-control:color-mix(in srgb,var(--tm-brand-primary,#147D92) 8%,rgba(17,38,31,.86));
   --tm-surface-photo:linear-gradient(135deg,rgba(5,18,15,.34),rgba(8,32,35,.28));
@@ -2148,8 +2163,8 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design{
   --tm-card-muted:rgba(247,250,250,.68);
   --tm-card-link:color-mix(in srgb,var(--tm-brand-primary) 48%,#fff);
   --tm-card-icon:color-mix(in srgb,var(--tm-brand-primary) 58%,#fff);
-  --tm-plan-shell-surface:rgba(16,42,35,.34);
-  --tm-plan-row-surface:rgba(22,54,45,.16);
+  --tm-plan-shell-surface:rgba(16,42,35,.64);
+  --tm-plan-row-surface:transparent;
   --tm-plan-past-button-surface:rgba(22,54,45,.22);
   --tm-action-secondary:color-mix(in srgb,var(--tm-brand-primary) 24%,rgba(18,42,34,.82));
   --tm-action-secondary-hover:color-mix(in srgb,var(--tm-brand-primary) 34%,rgba(18,42,34,.86));
@@ -2167,9 +2182,9 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
 }
 html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-surface-glass:linear-gradient(135deg,rgba(248,252,250,.52),rgba(232,243,238,.44));
-  --tm-surface-nested:rgba(248,251,250,.38);
-  --tm-overview-card:linear-gradient(135deg,rgba(188,219,210,.68),rgba(171,207,198,.60));
-  --tm-overview-card-soft:rgba(205,229,222,.38);
+  --tm-surface-nested:rgba(248,251,250,.12);
+  --tm-overview-card:linear-gradient(135deg,rgba(248,251,250,.58),rgba(232,242,238,.50));
+  --tm-overview-card-soft:rgba(248,251,250,.14);
   --tm-card-secondary:#26473e;
   --tm-overview-muted:#26473e;
   --tm-surface-photo:linear-gradient(135deg,rgba(8,24,20,.62),rgba(11,45,50,.56))
