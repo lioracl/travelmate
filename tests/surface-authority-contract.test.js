@@ -95,8 +95,8 @@ test('Overview and Plan local authority does not need important escalation',()=>
   const overview=css.match(/\/\* Legacy Overview layout bridge\.[\s\S]*?\/\* Canonical application-wide semantic material contract\./);
   assert.ok(overview,'Overview ownership bridge exists');
   assert.doesNotMatch(overview[0],/!important/);
-  assert.match(css,/data-trip-view="plan"[^\n]*#plan#plan \.generated-day>div\{[\s\S]*?padding:14px;[\s\S]*?border-radius:18px/);
-  assert.match(css,/data-trip-view="plan"[^\n]*#plan#plan \.generated-day>\.badge\{[\s\S]*?min-width:84px;[\s\S]*?justify-content:center/);
+  assert.match(css,/data-trip-view="plan"[^\n]*#plan \.generated-day>div\{[\s\S]*?padding:14px;[\s\S]*?border-radius:18px/);
+  assert.match(css,/data-trip-view="plan"[^\n]*#plan \.generated-day>\.badge\{[\s\S]*?min-width:84px;[\s\S]*?justify-content:center/);
 });
 
 test('Overview removes optical blur while retaining controlled transparency',()=>{
@@ -118,10 +118,10 @@ test('surface polish keeps glass transparent and dark controls paired',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/rgba\(250,253,251,\.50\)/);
   assert.match(css,/rgba\(228,241,234,\.38\)/);
-  assert.match(css,/rgba\(247,251,249,\.40\)/);
+  assert.match(css,/rgba\(247,251,249,\.18\)/);
   assert.match(css,/rgba\(12,31,25,\.46\)/);
   assert.match(css,/rgba\(8,24,20,\.40\)/);
-  assert.match(css,/rgba\(15,34,28,\.36\)/);
+  assert.match(css,/rgba\(15,34,28,\.18\)/);
   assert.match(css,/--tm-control-text:#F7FAFA/);
   assert.match(css,/--tm-card-control-selected:color-mix\(in srgb,var\(--tm-brand-primary\) 30%,rgba\(18,42,34,\.88\)\)/);
 });
@@ -136,7 +136,7 @@ test('feature surfaces consume semantic tokens instead of hardcoded light colors
   assert.match(glass,/data-trip-view="plan"[^\n]*#plan :is\(\.planned-activity,\.saved-place\)\{[\s\S]*?background:var\(--tm-plan-row-surface\)/);
   assert.match(glass,/:not\(body\[data-trip-kind="custom"\]\[data-trip-view="plan"\] #plan \*\)/);
   assert.match(planner,/\.planner-action\{[\s\S]*background:var\(--tm-action-secondary\)/);
-  assert.doesNotMatch(theme,/section#plan#plan[\s\S]*\.day-heading\.day-heading[\s\S]*!important/);
+  assert.doesNotMatch(theme,/section#plan[\s\S]*\.day-heading\.day-heading[\s\S]*!important/);
   assert.match(intelligence,/\.navo-trip-banner\{[\s\S]*background:var\(--tm-card-bg-nested\)/);
   assert.match(intelligence,/\.navo-trip-banner\{[\s\S]*color:var\(--tm-card-text\)/);
   assert.match(intelligence,/\.navo-trip-banner p\{[^}]*color:var\(--tm-card-secondary\)/);
@@ -145,7 +145,7 @@ test('feature surfaces consume semantic tokens instead of hardcoded light colors
 
 test('Plan nested activity and saved-place cards do not stack backdrop blur',()=>{
   const glass=read('assets/readable-glass.css');
-  assert.match(glass,/data-trip-view="plan"[^\n]*#plan#plan :is\(\.planned-activity,\.saved-place\)\{\s*--tm-card-blur:none/);
+  assert.match(glass,/data-trip-view="plan"[^\n]*#plan :is\(\.planned-activity,\.saved-place\)\{\s*--tm-card-blur:none/);
 });
 
 test('Custom Plan flattens nested lodging and airport rows instead of stacking white cards',()=>{

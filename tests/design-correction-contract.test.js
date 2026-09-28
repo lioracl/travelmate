@@ -10,8 +10,8 @@ const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 test('trip photo is owned by the app background while content uses readable glass surfaces', () => {
   const trip = read('assets/trip-redesign.css');
   const glass = read('assets/readable-glass.css');
-  assert.match(trip, /body:not\(\.home-page\)\{color:#111;background-color:#10241e;background-image:linear-gradient/);
-  assert.match(trip, /hero\.custom-hero\{[^}]*background:linear-gradient/);
+  assert.match(glass, /body\.tm-new-design:not\(\.home-page\)\{[^}]*background-image:var\(--tm-destination-canvas\)/);
+  assert.match(trip, /hero\.custom-hero\{[^}]*background-size:cover;[^}]*background-position:center/);
   assert.match(glass, /Surface Authority 2\.0/);
   assert.match(glass, /--tm-page-section-surface:transparent/);
   assert.match(glass, /--tm-readable-surface:transparent/);
@@ -22,7 +22,7 @@ test('trip photo is owned by the app background while content uses readable glas
 test('light section and Plan day headings no longer force white text', () => {
   const theme = read('assets/theme.css');
   const glass = read('assets/readable-glass.css');
-  assert.match(glass, /main\.content :is\(\.section-head\):not\(body\[data-trip-kind="custom"\]\[data-trip-view="overview"\] \*\):not\(body\[data-trip-kind="custom"\]\[data-trip-view="documents"\] #documents \*\)\{[\s\S]*color:var\(--tm-card-text\)!important/);
+  assert.match(glass, /main\.content :is\(\.section-head\):not\(body\[data-trip-kind="custom"\]\[data-trip-view="overview"\] \*\):not\(:where\(body\[data-trip-kind="custom"\] #plan \*\)\):not\(body\[data-trip-kind="custom"\]\[data-trip-view="documents"\] #documents \*\)\{[\s\S]*color:var\(--tm-card-text\)!important/);
   assert.match(glass, /main\.content \.section-head :where\([\s\S]*text-shadow:none/);
   assert.doesNotMatch(theme, /section-head\.section-head[\s\S]*color:var\(--tm-card-heading\)!important/);
   assert.match(glass, /:not\(body\[data-trip-kind="custom"\]\[data-trip-view="plan"\] #plan \*\)/);

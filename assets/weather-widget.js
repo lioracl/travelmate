@@ -79,12 +79,14 @@
 
     var content = document.querySelector('.content'); var hero = content && content.querySelector('.hero');
     if (!content || !hero) return null;
-    var button = hero.querySelector('[data-weather-top-widget]');
+    var button = content.querySelector(':scope > [data-weather-top-widget]') || hero.querySelector('[data-weather-top-widget]');
     if (!button) {
       button = document.createElement('button');
       button.type = 'button'; button.className = 'weather-top-widget weather-master-card'; button.dataset.cardStyle = 'weather'; button.dataset.weatherTopWidget = '';
-      hero.appendChild(button);
+      if (document.body.dataset.tripKind === 'custom') hero.insertAdjacentElement('afterend', button);
+      else hero.appendChild(button);
     }
+    if (document.body.dataset.tripKind === 'custom' && button.parentElement !== content) hero.insertAdjacentElement('afterend', button);
     button.setAttribute('aria-haspopup', 'dialog'); button.setAttribute('aria-expanded', 'false');
     button.setAttribute('aria-label', 'פתיחת תחזית מזג האוויר המלאה עבור ' + destination.city);
     button.innerHTML = '<span class="weather-top-icon">' + weatherSvg('fa-cloud-sun') + '</span><span class="weather-top-copy"><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><span class="weather-top-action">פתח תחזית <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>';

@@ -8,10 +8,10 @@ const root = path.resolve(__dirname, '..');
 const read = p => fs.readFileSync(path.join(root,p),'utf8');
 
 test('destination image remains the app background on trip screens', () => {
-  const css = read('assets/trip-redesign.css');
-  assert.match(css, /body:not\(\.home-page\)\{color:#111;background-color:#10241e;background-image:linear-gradient/);
+  const css = read('assets/readable-glass.css');
+  assert.match(css, /body\.tm-new-design:not\(\.home-page\)\{[^}]*background-image:var\(--tm-destination-canvas\)/);
   assert.match(css, /var\(--trip-bg-image/);
-  assert.match(css, /body:not\(\.home-page\)::after\{[\s\S]*background-image:linear-gradient[\s\S]*var\(--trip-bg-image/);
+  assert.match(css, /body\.tm-new-design:not\(\.home-page\)::after\{[^}]*background-image:var\(--tm-destination-canvas\)/);
   assert.doesNotMatch(css, /body:not\(\.home-page\)\{color:#111;background-color:#eef2ef;background-image:none\}/);
 });
 
@@ -27,7 +27,7 @@ test('trip content stays transparent and cards use glass surfaces', () => {
 });
 
 test('dark mobile background keeps the destination image with a darker scrim', () => {
-  const css = read('assets/trip-redesign.css');
-  assert.match(css, /html\[data-theme="dark"\]\[dir="rtl"\] body:not\(\.home-page\)::after/);
-  assert.match(css, /rgba\(3,11,9,\.68\).*var\(--trip-bg-image/);
+  const css = read('assets/readable-glass.css');
+  assert.match(css, /--tm-destination-canvas:linear-gradient\(90deg,var\(--tm-photo-scrim-start\)/);
+  assert.match(read('assets/theme.css'), /html\[data-theme="dark"\] body\.tm-new-design:not\(\.home-page\)\{[^}]*--tm-photo-scrim-end:rgba\(24,35,38,\.16\)/);
 });
