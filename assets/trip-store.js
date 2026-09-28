@@ -97,11 +97,27 @@
     return list;
   }
 
+  function conflicts() {
+    return trips().filter(function (trip) {
+      return trip && String(trip.syncStatus || '') === 'conflict';
+    });
+  }
+
+  function resolveConflict(id, strategy, ownerId) {
+    var service = cloud();
+    if (!service || typeof service.resolveTripConflict !== 'function') {
+      return Promise.reject(new Error('SYNC_CONFLICT_RESOLUTION_UNAVAILABLE'));
+    }
+    return service.resolveTripConflict(id, ownerId, strategy);
+  }
+
   window.TravelMateTripStore = Object.freeze({
     getTrips: trips,
     getTrip: getTrip,
     saveTrip: saveTrip,
     updateTrip: updateTrip,
-    removeTrip: removeTrip
+    removeTrip: removeTrip,
+    getConflicts: conflicts,
+    resolveConflict: resolveConflict
   });
 })();

@@ -12,11 +12,20 @@ const smartPlanTools = fs.readFileSync(path.join(root, 'assets/smart-plan-tools.
 const aboutScript = fs.readFileSync(path.join(root, 'assets/about.js'), 'utf8');
 const appScript = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
 const homeScript = fs.readFileSync(path.join(root, 'assets/home.js'), 'utf8');
+const homeHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const homeOrganizer = fs.readFileSync(path.join(root, 'assets/home-organizer.css'), 'utf8');
 
 test('home carousel does not eagerly assign all generated Unsplash backgrounds', () => {
   assert.match(home, /slide\.dataset\.slideImage = "url\('https:\/\/images\.unsplash\.com\//);
-  assert.match(home, /if \(distance <= 2\) ensureSlideImage\(slide\)/);
+  assert.match(home, /if \(distance <= 1\) ensureSlideImage\(slide\)/);
   assert.doesNotMatch(home, /slide\.style\.setProperty\('--slide-image',[\s\S]{0,160}imageId/);
+  assert.equal((homeHtml.match(/data-carousel-slide style="--slide-image/g) || []).length, 1);
+  assert.match(homeHtml, /data-carousel-slide data-slide-image=/);
+});
+
+test('home mobile background keeps desktop quality while using a smaller mobile source', () => {
+  assert.match(homeOrganizer, /w=2200&q=92/);
+  assert.match(homeOrganizer, /@media\(max-width:760px\)[\s\S]*w=1200&q=86/);
 });
 
 test('home carousel timer sleeps while hidden or authenticated', () => {
@@ -118,6 +127,15 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
   assert.match(source, /scheduleIdleFeature\('account',4200\)/);
   assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
+});
+
+test('admin dialog DOM is created only after admin status is confirmed', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/admin-center.js'), 'utf8');
+  assert.match(source, /if \(!result\.admin\) return;[\s\S]*createDialog\(\);[\s\S]*addLauncher\(\)/);
+  assert.match(source, /function openAdmin\(\)[\s\S]*createDialog\(\);[\s\S]*var modal = document\.querySelector/);
+  const init = source.match(/function init\(\)\s*\{([\s\S]*?)\n  \}/);
+  assert.ok(init);
+  assert.doesNotMatch(init[1], /createDialog\(\)/);
 });
 
 test('failed dynamic assets are evicted and do not announce a ready feature', () => {
@@ -240,7 +258,7 @@ test('home boot loads only home essentials and keeps About lazy', () => {
   const entry = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   assert.match(source, /homeBaseStyles=\['language\.css','network-usage\.css','theme\.css'\]/);
   assert.match(source, /if\(isHomePage\)[\s\S]*homeBaseStyles\.map\(loadStyle\)[\s\S]*loadSequence\(\['language\.js','theme\.js'\]\)/);
-  assert.match(source, /\}else\{[\s\S]*loadFeature\(activeView\(\)\)/);
+  assert.match(source, /\}else\{[\s\S]*var initialView=activeView\(\)[\s\S]*loadFeature\(initialView\)/);
   assert.equal((entry.match(/data-about-open data-lazy-about/g) || []).length, 2);
 });
 
@@ -328,4 +346,11 @@ test('past-day enhancement avoids rewriting identical DOM and observer self-loop
   const source = fs.readFileSync(path.join(root, 'assets/auto-planner.js'), 'utf8');
   assert.match(source, /var nextStripHtml=past\.length/);
   assert.match(source, /if\(strip\.innerHTML!==nextStripHtml\)strip\.innerHTML=nextStripHtml/);
+});
+
+test('Overview defers trip intelligence until idle or explicit Overview intent', () => {
+  assert.match(appScript, /overview:\{styles:\['weather-widget\.css','trip-intelligence\.css'\],scripts:\['weather-widget\.js'\]\}/);
+  assert.match(appScript, /intelligence:\{styles:\[\],scripts:\['trip-intelligence\.js'\]\}/);
+  assert.match(appScript, /if\(initialView==='overview'\)scheduleIdleFeature\('intelligence',250\)/);
+  assert.match(appScript, /if\(link\.dataset\.view==='overview'\)loadFeature\('intelligence'\)/);
 });

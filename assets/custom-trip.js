@@ -38,6 +38,7 @@
         title: activity.title || 'פעילות',
         date: activity.date,
         time: normalizedTime(activity.time),
+        duration: Math.max(0, Number(activity.duration || 0)),
         category: activity.category || '',
         location: activity.locationName || activity.address || ''
       });
@@ -49,6 +50,7 @@
         title: place.name || 'מקום שמור',
         date: place.date,
         time: normalizedTime(place.time),
+        duration: Math.max(0, Number(place.duration || 0)),
         category: place.category || '',
         location: place.address || place.description || ''
       });
@@ -58,11 +60,31 @@
     });
   }
 
+  function overviewTimeMinutes(value) {
+    var match = String(value || '').match(/^(\d{2}):(\d{2})$/);
+    return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+  }
+
+  function overviewClockValue(minutes) {
+    if (!Number.isFinite(minutes)) return '';
+    var value = ((minutes % 1440) + 1440) % 1440;
+    return String(Math.floor(value / 60)).padStart(2, '0') + ':' + String(value % 60).padStart(2, '0');
+  }
+
   function nextOverviewItem(trip) {
     var items = overviewItems(trip);
     if (!items.length) return null;
     var now = new Date();
     var today = localDateValue(now);
+    var currentMinutes = now.getHours() * 60 + now.getMinutes();
+    var current = items.find(function (item) {
+      var startMinutes = item.date === today ? overviewTimeMinutes(item.time) : null;
+      return startMinutes !== null && item.duration > 0 && startMinutes <= currentMinutes && currentMinutes < startMinutes + item.duration;
+    });
+    if (current) {
+      var currentStart = overviewTimeMinutes(current.time);
+      return Object.assign({}, current, { isNow: true, endTime: overviewClockValue(currentStart + current.duration) });
+    }
     var currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
     return items.find(function (item) {
       return item.date > today || (item.date === today && item.time >= currentTime);
@@ -123,12 +145,18 @@
     if (!root || !trip) return;
 
     var next = nextOverviewItem(trip);
+    var nextLabel = root.querySelector('[data-overview-next-label]');
     var nextTitle = root.querySelector('[data-overview-next-title]');
     var nextMeta = root.querySelector('[data-overview-next-meta]');
     if (next) {
+      nextLabel.textContent = next.isNow ? 'עכשיו' : 'הבא בתוכנית';
       nextTitle.textContent = next.title;
-      nextMeta.textContent = [formatOverviewDate(next.date, next.time), next.location || next.category].filter(Boolean).join(' · ');
+      nextMeta.textContent = [
+        next.isNow ? 'עד ' + next.endTime : formatOverviewDate(next.date, next.time),
+        next.location || next.category
+      ].filter(Boolean).join(' · ');
     } else {
+      nextLabel.textContent = 'הבא בתוכנית';
       nextTitle.textContent = 'עדיין אין פעילות מתוכננת';
       nextMeta.textContent = 'אפשר להתחיל מכרטיסיית תוכנית';
     }
@@ -291,14 +319,65 @@
     }
   }
 
+  function renderSyncConflictBanner(trip) {
+    var banner = document.querySelector('[data-sync-conflict]');
+    if (!banner) return;
+    banner.dataset.syncConflictVisible = String(Boolean(trip && String(trip.syncStatus || '') === 'conflict'));
+  }
+
   function refreshOverviewFromStore() {
     var trip = localTrip();
     if (trip) renderOverviewControlCenter(trip);
+    renderSyncConflictBanner(trip);
   }
+
+  async function resolveVisibleConflict(strategy) {
+    var trip = localTrip();
+    var banner = document.querySelector('[data-sync-conflict]');
+    if (!trip || !banner || !store || typeof store.resolveConflict !== 'function') return;
+    var buttons = Array.prototype.slice.call(banner.querySelectorAll('button'));
+    var message = banner.querySelector('.trip-sync-conflict-copy p');
+    buttons.forEach(function (button) { button.disabled = true; });
+    if (message) message.textContent = 'מסנכרן את הגרסה שבחרת…';
+    try {
+      var result = await store.resolveConflict(trip.id, strategy, trip.ownerId);
+      if (result && result.trip) {
+        renderTrip(result.trip);
+        renderSyncConflictBanner(result.trip);
+      } else {
+        refreshOverviewFromStore();
+      }
+    } catch (error) {
+      console.error('TravelMate conflict resolution failed', error);
+      if (message) message.textContent = 'לא הצלחנו לפתור את ההתנגשות כרגע. השינויים המקומיים נשמרו ולא נדרסו.';
+      renderSyncConflictBanner(localTrip());
+    } finally {
+      buttons.forEach(function (button) { button.disabled = false; });
+    }
+  }
+
+  var useCloudButton = document.querySelector('[data-sync-use-cloud]');
+  var keepLocalButton = document.querySelector('[data-sync-keep-local]');
+  if (useCloudButton) useCloudButton.addEventListener('click', function () { resolveVisibleConflict('cloud'); });
+  if (keepLocalButton) keepLocalButton.addEventListener('click', function () { resolveVisibleConflict('local'); });
+
+  renderSyncConflictBanner(immediateTrip);
 
   ['travelmate:planner-rendered', 'travelmate:places-updated', 'travelmate:activities-updated'].forEach(function (eventName) {
     document.addEventListener(eventName, refreshOverviewFromStore);
   });
   window.addEventListener('travelmate:local-trips-updated', refreshOverviewFromStore);
   window.addEventListener('travelmate:trip-synced', refreshOverviewFromStore);
+
+  var writeForbiddenNoticeTimer = null;
+  window.addEventListener('travelmate:trip-write-forbidden', function (event) {
+    var trip = localTrip();
+    if (!trip || !event.detail || String(event.detail.id) !== String(trip.id)) return;
+    refreshOverviewFromStore();
+    var notice = document.querySelector('[data-sync-write-notice]');
+    if (!notice) return;
+    notice.hidden = false;
+    clearTimeout(writeForbiddenNoticeTimer);
+    writeForbiddenNoticeTimer = setTimeout(function () { notice.hidden = true; }, 6500);
+  });
 })();

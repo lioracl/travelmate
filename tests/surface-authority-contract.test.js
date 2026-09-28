@@ -28,11 +28,12 @@ test('shared card surfaces do not erase color tokens after assigning background'
 });
 
 test('New Trip action does not reintroduce the legacy heavy blur',()=>{
-  const css=read('assets/readable-glass.css');
-  const match=css.match(/\.home-page\.is-authenticated #active-trips>\.add-destination\{([\s\S]*?)\n\}/);
+  const css=read('assets/home-organizer.css');
+  const match=css.match(/\.home-page\.is-authenticated \.add-destination\{([\s\S]*?)\n\}/);
   assert.ok(match,'New Trip material exists');
   assert.doesNotMatch(match[1],/blur\(22px\)/);
-  assert.match(match[1],/backdrop-filter:none!important/);
+  assert.match(match[1],/backdrop-filter:none/);
+  assert.doesNotMatch(read('assets/readable-glass.css'),/\.home-page\.is-authenticated #active-trips>\.add-destination\{/);
 });
 
 test('glass uses blur instead of opacity escalation',()=>{
@@ -45,8 +46,9 @@ test('glass uses blur instead of opacity escalation',()=>{
 
 test('weather uses a dedicated crisp translucent material without optical blur',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(30,69,81,\.38\),rgba\(24,59,71,\.30\)\)/);
-  assert.match(css,/--tm-weather-card-text:var\(--tm-surface-photo-text\)/);
+  assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(191,226,220,\.68\),rgba\(169,213,210,\.62\)\)/);
+  assert.match(css,/--tm-weather-card-text:#12383F/);
+  assert.match(css,/>\.hero-copy :is\(h1,p,span,strong,a,button,i\)/);
   assert.match(css,/--tm-weather-card-blur:none/);
   assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
 });
@@ -99,7 +101,7 @@ test('Overview and Plan local authority does not need important escalation',()=>
 
 test('Overview removes optical blur while retaining controlled transparency',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-surface-blur-photo:none/);
+  assert.match(css,/data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-surface-blur-photo:none;[^}]*--tm-card-blur:none/);
   assert.match(css,/--tm-overview-card:linear-gradient\(135deg,rgba\(248,251,250,\.68\),rgba\(232,242,238,\.58\)\)/);
   assert.match(css,/--tm-overview-card-soft:rgba\(248,251,250,\.54\)/);
   assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
@@ -187,11 +189,23 @@ test('Transport nested and repeated surfaces do not stack backdrop blur',()=>{
 
 test('light custom Overview uses the softer translucent material',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[\s\S]*?--tm-overview-card:linear-gradient\(135deg,rgba\(248,251,250,\.60\),rgba\(232,242,238,\.50\)\);[\s\S]*?--tm-overview-card-soft:rgba\(248,251,250,\.46\)/);
+  assert.match(css,/html:not\(\[data-theme="dark"\]\) body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[\s\S]*?--tm-overview-card:linear-gradient\(135deg,rgba\(188,219,210,\.54\),rgba\(171,207,198,\.48\)\);[\s\S]*?--tm-card-secondary:#26473e/);
 });
 
 test('New Trip action is a branded translucent action instead of a white banner',()=>{
-  const css=read('assets/readable-glass.css');
-  assert.match(css,/active-trips>\.add-destination\{[\s\S]*?background:linear-gradient\(135deg,rgba\(13,72,81,\.86\),rgba\(20,125,146,\.68\)\)/);
+  const css=read('assets/home-organizer.css');
+  assert.match(css,/\.home-page\.is-authenticated \.add-destination\{[\s\S]*?background:linear-gradient\(135deg,rgba\(18,56,63,\.78\),rgba\(20,125,146,\.50\)\)/);
   assert.match(css,/\.add-destination strong\{[\s\S]*?color:#F7FAFA/);
+  assert.match(css,/#active-trips>\.add-destination\{[\s\S]*?min-height:96px/);
+  assert.doesNotMatch(read('assets/theme.css'),/\.trip-area-head,\.add-destination,\.trip-archive/);
+});
+
+test('custom Documents feature owns its page surface and flat rows',()=>{
+  const layout=read('assets/trip-redesign.css');
+  const glass=read('assets/readable-glass.css');
+  const documents=read('assets/document-vault.css');
+  assert.match(layout,/\.section:not\(\.hero\):not\(#places\):not\(#plan\):not\(#documents\)/);
+  assert.match(glass,/:not\(body\[data-trip-kind="custom"\]\[data-trip-view="documents"\] #documents \*\)/);
+  assert.match(documents,/data-trip-view="documents"\] #documents\{[\s\S]*?background:linear-gradient\(135deg,rgba\(248,252,250,\.62\),rgba\(231,242,237,\.52\)\)/);
+  assert.match(documents,/data-trip-view="documents"\] #documents \.doc-row,[\s\S]*?background:transparent;[\s\S]*?box-shadow:none/);
 });

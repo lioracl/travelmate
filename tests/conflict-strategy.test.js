@@ -27,3 +27,17 @@ test('documents that client clock skew can choose an older real-world edit', () 
   const olderEditWithFastClock = { id: 'trip', ownerId: 'owner-1', city: 'Actually older', updatedAt: '2026-09-13T11:00:00.000Z' };
   assert.equal(merge(newerRealEdit, olderEditWithFastClock).city, 'Actually older');
 });
+
+test('server revision outranks a faster client clock for synchronized copies', () => {
+  const fastClockOldRevision = { id: 'trip', ownerId: 'owner-1', city: 'Old revision', cloudRevision: 8, syncStatus: 'synced', updatedAt: '2026-09-13T12:00:00.000Z' };
+  const slowerClockNewRevision = { id: 'trip', ownerId: 'owner-1', city: 'New revision', cloudRevision: 9, syncStatus: 'synced', updatedAt: '2026-09-13T10:00:00.000Z' };
+  assert.equal(merge(fastClockOldRevision, slowerClockNewRevision).city, 'New revision');
+});
+
+test('an unsynced local copy is preserved until server revision arbitration', () => {
+  const localEdit = { id: 'trip', ownerId: 'owner-1', city: 'Local edit', cloudRevision: 8, syncStatus: 'failed', syncMutationId: 'mutation-local', updatedAt: '2026-09-13T09:00:00.000Z' };
+  const newerCloudSnapshot = { id: 'trip', ownerId: 'owner-1', city: 'Cloud edit', cloudRevision: 9, syncStatus: 'synced', updatedAt: '2026-09-13T11:00:00.000Z' };
+  const winner = merge(localEdit, newerCloudSnapshot);
+  assert.equal(winner.city, 'Local edit');
+  assert.equal(winner.syncStatus, 'failed');
+});

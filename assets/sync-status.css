@@ -1,0 +1,43 @@
+.trip-sync-conflict-banner{
+  display:none;
+  align-items:center;
+  gap:12px;
+  margin:12px 0 16px;
+  padding:12px 14px;
+  border:1px solid color-mix(in srgb,var(--tertiary,#e40516) 32%,transparent);
+  border-radius:14px;
+  background:color-mix(in srgb,var(--surface,#fff) 88%,var(--tertiary-soft,#fde5e7) 12%);
+  color:var(--text,#29332f);
+  box-shadow:0 10px 28px rgba(0,0,0,.08);
+}
+.trip-sync-conflict-banner[data-sync-conflict-visible="true"]{display:grid;grid-template-columns:auto minmax(0,1fr) auto}
+.trip-sync-conflict-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--tertiary-soft,#fde5e7);color:var(--tertiary,#e40516)}
+.trip-sync-conflict-copy{min-width:0}
+.trip-sync-conflict-copy strong{display:block;margin-bottom:2px}
+.trip-sync-conflict-copy p{margin:0;color:var(--muted,#6e746f);font-size:.9rem;line-height:1.45}
+.trip-sync-conflict-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.trip-sync-conflict-actions button{min-height:40px;padding:8px 12px;border-radius:10px;border:1px solid var(--line,rgba(14,97,75,.14));font:inherit;cursor:pointer}
+.trip-sync-conflict-actions [data-sync-keep-local]{background:var(--primary,#0e614b);border-color:var(--primary,#0e614b);color:#fff}
+.trip-sync-conflict-actions [data-sync-use-cloud]{background:var(--surface,#fff);color:var(--text,#29332f)}
+.trip-sync-conflict-actions button:focus-visible{outline:3px solid color-mix(in srgb,var(--primary,#0e614b) 45%,transparent);outline-offset:2px}
+.trip-sync-conflict-actions button:disabled{cursor:wait;opacity:.62}
+@media(max-width:720px){
+  .trip-sync-conflict-banner[data-sync-conflict-visible="true"]{grid-template-columns:auto minmax(0,1fr)}
+  .trip-sync-conflict-actions{grid-column:1/-1;justify-content:stretch}
+  .trip-sync-conflict-actions button{flex:1 1 140px}
+}
+
+.trip-sync-write-notice{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:10px 0 14px;
+  padding:11px 13px;
+  border:1px solid var(--line,rgba(14,97,75,.14));
+  border-radius:12px;
+  background:var(--surface,#fff);
+  color:var(--text,#29332f);
+  box-shadow:0 8px 22px rgba(0,0,0,.06);
+}
+.trip-sync-write-notice[hidden]{display:none}
+.trip-sync-write-notice i{color:var(--primary,#0e614b)}

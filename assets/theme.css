@@ -34,7 +34,7 @@ html[data-theme="dark"] body.home-page.is-authenticated{
   color:#f3f5f4;background-color:#071611!important;background-blend-mode:multiply!important
 }
 html[data-theme="dark"] body.home-page.is-authenticated :where(
-  .trip-area-head,.add-destination,.trip-archive,.home-about
+  .trip-area-head,.trip-archive,.home-about
 ){
   border-color:rgba(255,255,255,.16)!important;
   background:linear-gradient(135deg,rgba(12,29,25,.48),rgba(5,17,14,.24))!important;

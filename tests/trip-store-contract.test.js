@@ -14,7 +14,7 @@ function read(relative) {
 test('Trip Store exposes one synchronous local persistence facade', () => {
   const store = read('assets/trip-store.js');
   assert.match(store, /window\.TravelMateTripStore = Object\.freeze\(/);
-  for (const method of ['getTrips', 'getTrip', 'saveTrip', 'updateTrip', 'removeTrip']) {
+  for (const method of ['getTrips', 'getTrip', 'saveTrip', 'updateTrip', 'removeTrip', 'getConflicts', 'resolveConflict']) {
     assert.match(store, new RegExp('\\b' + method + '\\b'));
   }
   assert.match(store, /service\.getLocalTrips\(\)/);

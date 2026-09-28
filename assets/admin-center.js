@@ -151,6 +151,7 @@
   }
 
   function openAdmin() {
+    createDialog();
     var modal = document.querySelector('[data-admin-dialog]');
     if (window.TravelMateSettings && window.TravelMateSettings.close) window.TravelMateSettings.close();
     document.body.classList.remove('mobile-menu-open');
@@ -177,6 +178,7 @@
       var result = await invoke('status');
       if (!result.admin) return;
       state.role = result.role || 'admin';
+      createDialog();
       addLauncher();
     } catch (_) {}
   }
@@ -242,7 +244,6 @@
   });
 
   function init() {
-    createDialog();
     detectAdmin();
     if (cloud && cloud.onAuthChange) cloud.onAuthChange(function () { setTimeout(detectAdmin, 0); });
   }

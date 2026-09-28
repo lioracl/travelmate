@@ -71,3 +71,12 @@ test('Overview V2 control center is responsive and feature scoped', () => {
   assert.match(css, /grid-template-columns:repeat\(2/);
   assert.match(css, /@media\(max-width:760px\)/);
 });
+
+test('Overview Trip Mode keeps an in-progress timed item ahead of the next future item', () => {
+  assert.match(custom, /duration: Math\.max\(0, Number\(activity\.duration \|\| 0\)\)/);
+  assert.match(custom, /startMinutes <= currentMinutes && currentMinutes < startMinutes \+ item\.duration/);
+  assert.match(custom, /isNow: true, endTime: overviewClockValue/);
+  assert.match(html, /data-overview-next-label/);
+  assert.match(custom, /nextLabel\.textContent = next\.isNow \? 'עכשיו' : 'הבא בתוכנית'/);
+  assert.match(custom, /next\.isNow \? 'עד ' \+ next\.endTime/);
+});

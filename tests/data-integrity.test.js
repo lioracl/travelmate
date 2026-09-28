@@ -882,3 +882,32 @@ test('getTrip purges a cached shared trip once the server no longer exposes it',
   assert.equal(trip, null);
   assert.equal(JSON.parse(storage.get('travelmate-trips')).length, 0);
 });
+
+test('full sync preserves a slow-clock offline edit when the server revision advanced', async () => {
+  const localTrip = { id: 'slow-clock-conflict', ownerId: 'user-1', country: 'Test', city: 'Local offline edit', start: '2026-01-01', end: '2026-01-02', days: 1, cloudRevision: 5, syncStatus: 'failed', syncMutationId: '88888888-8888-4888-8888-888888888888', updatedAt: '2026-09-13T09:00:00.000Z' };
+  const storage = new Map([['travelmate-active-user', 'user-1'], ['travelmate-trips', JSON.stringify([localTrip])]]);
+  const cloudRow = { user_id: 'user-1', id: localTrip.id, country: 'Test', city: 'Cloud edit', start_date: '2026-01-01', end_date: '2026-01-02', budget: 0, trip_type: 'solo', days: 1, revision: 6, payload: { city: 'Cloud edit', updatedAt: '2026-09-13T11:00:00.000Z' }, updated_at: '2026-09-13T11:00:00.000Z' };
+  let saveAttempts = 0;
+  const client = {
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'user-1' } } } }) },
+    from() { const query = { select() { return query; }, order: async () => ({ error: null, data: [cloudRow] }) }; return query; },
+    rpc(name, params) {
+      if (name === 'list_travel_trip_tombstones') return Promise.resolve({ error: null, data: [] });
+      assert.equal(name, 'save_travel_trip');
+      saveAttempts += 1;
+      assert.equal(params.p_expected_revision, 5);
+      return Promise.resolve({ error: null, data: [{ result_status: 'conflict', result_revision: 6, result_updated_at: cloudRow.updated_at }] });
+    }
+  };
+  const context = { console, setTimeout, clearTimeout, CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; }, localStorage: { getItem: (key) => storage.has(key) ? storage.get(key) : null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) }, window: { crypto: { randomUUID: () => '99999999-9999-4999-8999-999999999999' }, __travelMateSupabaseClient: client, dispatchEvent() {}, addEventListener() {} }, document: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/cloud-sync.js'), 'utf8'), context);
+  const synced = await context.window.TravelMateCloud.syncLocalTrips();
+  const stored = JSON.parse(storage.get('travelmate-trips'))[0];
+  assert.equal(saveAttempts, 1);
+  assert.equal(stored.city, 'Local offline edit');
+  assert.equal(stored.syncStatus, 'conflict');
+  assert.equal(stored.cloudRevision, 5);
+  assert.equal(stored.syncConflict.serverRevision, 6);
+  assert.equal(stored.syncConflict.serverUpdatedAt, cloudRow.updated_at);
+  assert.equal(synced[0].city, 'Local offline edit');
+});

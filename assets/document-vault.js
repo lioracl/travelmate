@@ -38,7 +38,7 @@
   }
 
   function createVaultMarkup() {
-    return '<div class="vault-head"><div><span class="vault-badge"><i class="fa-solid fa-shield-halved"></i> ענן פרטי ומוצפן</span><h2>כספת המסמכים של הטיול</h2><p>הקבצים מוצפנים במכשיר לפני ההעלאה ונפתחים רק לאחר הזנת סיסמת הכספת.</p></div></div>' +
+    return '<div class="vault-head"><div><span class="vault-badge"><i class="fa-solid fa-shield-halved"></i> ענן פרטי ומוצפן</span><h2>כספת המסמכים של הטיול</h2><p>תוכן הקבצים מוצפן במכשיר לפני ההעלאה ונפתח רק לאחר הזנת סיסמת הכספת. שם הקובץ, הקטגוריה וההערה נשמרים כפרטי רשימה בחשבון המוגן — לכן אין להזין בהם מידע רגיש.</p></div></div>' +
       '<div class="vault-auth" data-vault-auth><div class="vault-auth-copy"><i class="fa-solid fa-user-lock"></i><div><strong>התחברות לכספת</strong><span>החשבון מגן על המסמכים ומאפשר גישה גם מהטלפון.</span></div></div><form data-vault-auth-form><input name="email" type="email" autocomplete="email" aria-label="כתובת דוא״ל" placeholder="כתובת דוא״ל" required><input name="password" type="password" autocomplete="current-password" minlength="8" aria-label="סיסמת חשבון" placeholder="סיסמת חשבון · לפחות 8 תווים" required><button type="submit" data-auth-signin>כניסה</button><button type="button" class="secondary" data-auth-signup>יצירת חשבון</button><button type="button" class="secondary" data-auth-resend>לא קיבלתי מייל · שלח שוב</button></form></div>' +
       '<div class="vault-session" data-vault-session hidden><div><i class="fa-solid fa-circle-check"></i><span>מחובר/ת בתור <strong data-vault-email></strong></span></div><button type="button" data-vault-signout>יציאה</button></div>' +
       '<div class="vault-unlock" data-vault-unlock hidden><label><span>סיסמת הצפנת הכספת</span><span class="vault-passphrase-control"><input data-vault-passphrase type="password" autocomplete="off" minlength="10" placeholder="אותה סיסמה שבה הצפנת את הקבצים"><button type="button" data-vault-toggle-passphrase aria-label="הצגת סיסמת הכספת"><i class="fa-solid fa-eye"></i></button></span></label><small><i class="fa-solid fa-triangle-exclamation"></i> לפתיחת מסמך יש להזין את אותה סיסמת כספת ששימשה בהעלאה. היא נפרדת מסיסמת החשבון ואינה נשמרת.</small></div>' +
@@ -170,6 +170,45 @@
     }
     var bucket = config.documentBucket || 'travel-documents';
 
+    function pendingCleanupKey(userId) {
+      return 'travelmate-document-cleanup:' + String(userId || '');
+    }
+
+    function readPendingCleanup(userId) {
+      try {
+        var parsed = JSON.parse(localStorage.getItem(pendingCleanupKey(userId)) || '[]');
+        return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function writePendingCleanup(userId, paths) {
+      var unique = Array.from(new Set((paths || []).filter(Boolean)));
+      if (unique.length) localStorage.setItem(pendingCleanupKey(userId), JSON.stringify(unique));
+      else localStorage.removeItem(pendingCleanupKey(userId));
+    }
+
+    function queuePendingCleanup(userId, storagePath) {
+      var pending = readPendingCleanup(userId);
+      if (pending.indexOf(storagePath) < 0) pending.push(storagePath);
+      writePendingCleanup(userId, pending);
+    }
+
+    async function flushPendingCleanup() {
+      if (!currentUser) return;
+      var pending = readPendingCleanup(currentUser.id);
+      if (!pending.length) return;
+      try { await requirePrivateStorageAccess(); } catch (error) { return; }
+      var remaining = [];
+      for (var index = 0; index < pending.length; index += 1) {
+        var path = pending[index];
+        var result = await client.storage.from(bucket).remove([path]);
+        if (result.error) remaining.push(path);
+      }
+      writePendingCleanup(currentUser.id, remaining);
+    }
+
     function clearRemoteDocumentMetadata() {
       Object.keys(categoryTargets).forEach(function (group) {
         var target = categoryTargets[group];
@@ -203,6 +242,7 @@
         return;
       }
       setStatus('הכספת מחוברת. הזן את סיסמת ההצפנה כדי להעלות או לפתוח מסמך.');
+      await flushPendingCleanup();
       await renderDocuments(sessionEpoch, currentUser.id);
     }
 
@@ -370,7 +410,14 @@
         await renderDocuments();
       } catch (error) {
         console.error('TravelMate vault upload failed', error);
-        setStatus(storageErrorMessage(error), true);
+        if (uploadedCount > 0) {
+          input.value = '';
+          await renderDocuments();
+          var remainingCount = Math.max(1, preparedFiles.length - uploadedCount);
+          setStatus(uploadedCount + ' קבצים נשמרו בהצלחה, אבל ' + remainingCount + ' לא נשמרו. בחר מחדש רק את הקבצים שלא נשמרו כדי למנוע כפילויות.', true);
+        } else {
+          setStatus(storageErrorMessage(error), true);
+        }
       } finally {
         uploadButton.disabled = false;
       }
@@ -522,10 +569,15 @@
       if (!confirm('למחוק לצמיתות את המסמך מהענן? לא ניתן לבטל פעולה זו.')) return;
       setStatus('מוחק/ת את המסמך…');
       try { await requirePrivateStorageAccess(); } catch (accessError) { return setStatus(storageErrorMessage(accessError), true); }
-      var storageResult = await client.storage.from(bucket).remove([record.storage_path]);
-      if (storageResult.error) return setStatus(storageErrorMessage(storageResult.error), true);
       var metadataResult = await client.from('travel_documents').delete().eq('id', record.id);
       if (metadataResult.error) return setStatus(databaseErrorMessage(metadataResult.error), true);
+      var storageResult = await client.storage.from(bucket).remove([record.storage_path]);
+      if (storageResult.error) {
+        if (currentUser && record.storage_path) queuePendingCleanup(currentUser.id, record.storage_path);
+        setStatus('המסמך הוסר מהרשימה. ניקוי הקובץ המוצפן יושלם אוטומטית כשהחיבור יאפשר זאת.');
+        await renderDocuments();
+        return;
+      }
       setStatus('המסמך נמחק לצמיתות.');
       await renderDocuments();
     }
@@ -578,6 +630,7 @@
     });
 
     client.auth.onAuthStateChange(function (_event, session) { setTimeout(function () { applySession(session); }, 0); });
+    window.addEventListener('online', function () { if (currentUser) flushPendingCleanup(); });
     var sessionResult = await client.auth.getSession();
     await applySession(sessionResult.data.session);
   }

@@ -4,7 +4,7 @@
   window.__travelMateTripExperienceLoaded = true;
 
   var cloud = window.TravelMateCloud;
-  var state = { trip: null, rate: null, rates: {}, ilsRates: { ILS: 1 }, rateDate: '', rateSource: '', rateSourceUrl: '', fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR', secondaryCurrency: 'ILS', budgetUnlimited: false };
+  var state = { trip: null, rate: null, rates: {}, ilsRates: { ILS: 1 }, rateDate: '', rateSource: '', rateSourceUrl: '', rateStale: false, fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR', secondaryCurrency: 'ILS', budgetUnlimited: false };
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
   function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch (error) { return fallback; } }
   function writeJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) {} }
@@ -160,10 +160,19 @@
       return await response.json();
     } finally { if (timer) clearTimeout(timer); }
   }
+  function applyCachedRates(cached, stale) {
+    state.rates = cached.rates || { ILS: Number(cached.rate) };
+    state.ilsRates = cached.ilsRates || state.ilsRates;
+    state.rate = Number(cached.rate || state.rates.ILS);
+    state.rateDate = cached.date || '';
+    state.rateSource = cached.source || 'ECB דרך Frankfurter';
+    state.rateSourceUrl = cached.sourceUrl || 'https://frankfurter.dev/';
+    state.rateStale = Boolean(stale);
+  }
   async function loadRate() {
     var cacheKey = 'travelmate-eur-rates:' + state.localCurrency;
     var cached = readJson(cacheKey, null);
-    if (cached && Number(cached.rate) > 0 && Date.now() - Number(cached.savedAt || 0) < 43200000) { state.rates = cached.rates || { ILS: Number(cached.rate) }; state.ilsRates = cached.ilsRates || state.ilsRates; state.rate = Number(cached.rate || state.rates.ILS); state.rateDate = cached.date || ''; state.rateSource = cached.source || 'ECB דרך Frankfurter'; state.rateSourceUrl = cached.sourceUrl || 'https://frankfurter.dev/'; renderCurrency(); renderCurrencyConverter(); return; }
+    if (cached && Number(cached.rate) > 0 && Date.now() - Number(cached.savedAt || 0) < 43200000) { applyCachedRates(cached, false); renderCurrency(); renderCurrencyConverter(); return; }
     try {
       var symbols = ['ILS','USD','GBP','JPY','CHF','CZK','PLN','HUF','RON','CAD','AUD','NZD','DKK','SEK','NOK','TRY','CNY','KRW','INR','THB','MXN','BRL','ZAR',state.localCurrency].filter(function (item, index, list) { return item !== 'EUR' && list.indexOf(item) === index; }).join(',');
       var data;
@@ -184,10 +193,18 @@
           state.rateSource = 'ECB דרך Frankfurter'; state.rateSourceUrl = 'https://frankfurter.dev/';
         }
       }
-      state.rates = data.rates; state.rate = Number(data.rates.ILS); state.rateDate = data.date || '';
+      state.rates = data.rates; state.rate = Number(data.rates.ILS); state.rateDate = data.date || ''; state.rateStale = false;
       Object.keys(data.rates).forEach(function (code) { if (Number(data.rates[code])) state.ilsRates[code] = state.rate / Number(data.rates[code]); });
       writeJson(cacheKey, { rate: state.rate, rates: state.rates, ilsRates: state.ilsRates, source: state.rateSource, sourceUrl: state.rateSourceUrl, date: state.rateDate, savedAt: Date.now() }); renderCurrency(); renderCurrencyConverter();
-    } catch (error) { if (!state.rate) renderCurrency(true); }
+    } catch (error) {
+      if (cached && Number(cached.rate) > 0) {
+        applyCachedRates(cached, true);
+        renderCurrency();
+        renderCurrencyConverter();
+      } else if (!state.rate) {
+        renderCurrency(true);
+      }
+    }
   }
   function currencyRateInIls(code) { if (code === 'ILS') return 1; if (state.ilsRates[code]) return Number(state.ilsRates[code]); if (code === 'EUR') return Number(state.rate || 0); return state.rate && state.rates[code] ? Number(state.rate) / Number(state.rates[code]) : 0; }
   function convertCurrency(amount, from, to) { var fromRate = currencyRateInIls(from); var toRate = currencyRateInIls(to); return fromRate && toRate ? Number(amount || 0) * fromRate / toRate : 0; }
@@ -246,7 +263,7 @@
       if (unlimitedBudget) amount = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
       var localAmount = state.localCurrency === 'EUR' ? amount : localFromEuros(amount);
       var localRate = localRateInIls();
-      host.innerHTML = state.rate && (state.localCurrency === 'EUR' || localAmount) ? '<div><span><b>' + money(localAmount, state.localCurrency) + '</b> · כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>המטבע המקומי: ' + state.localCurrency + ' · ' + (localRate ? money(1, state.localCurrency) + ' = ₪' + localRate.toFixed(4) + ' · ' : '') + escapeHtml(state.rateDate || 'עדכון אחרון') + ' · <a href="' + escapeHtml(state.rateSourceUrl || 'https://frankfurter.dev/') + '" target="_blank" rel="noopener">' + escapeHtml(state.rateSource || 'מקור שערי המטבע') + '</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן את שער המטבע המקומי…') + '</span><small>התקציב המקורי נשמר בבטחה עד לעדכון השער</small></div>';
+      host.innerHTML = state.rate && (state.localCurrency === 'EUR' || localAmount) ? '<div><span><b>' + money(localAmount, state.localCurrency) + '</b> · כ־' + money(shekels(amount), 'ILS') + ' כולל עמלת המרה של ' + state.fee.toLocaleString('he-IL') + '%</span><small>המטבע המקומי: ' + state.localCurrency + ' · ' + (localRate ? money(1, state.localCurrency) + ' = ₪' + localRate.toFixed(4) + ' · ' : '') + (state.rateStale ? 'שער שמור מהמכשיר · ' : '') + escapeHtml(state.rateDate || 'עדכון אחרון') + ' · <a href="' + escapeHtml(state.rateSourceUrl || 'https://frankfurter.dev/') + '" target="_blank" rel="noopener">' + escapeHtml(state.rateSource || 'מקור שערי המטבע') + '</a></small></div><button type="button" data-fee-edit>שינוי עמלה</button>' : '<div><span>' + (failed ? 'לא ניתן לעדכן את שער המטבע כרגע' : 'מעדכן את שער המטבע המקומי…') + '</span><small>התקציב המקורי נשמר בבטחה עד לעדכון השער</small></div>';
       if (unlimitedBudget && host.querySelector('div>span')) host.querySelector('div>span').insertAdjacentHTML('afterbegin', '<b>ללא הגבלה</b> · הוצאות מצטברות: ');
       var button = host.querySelector('[data-fee-edit]'); if (button) button.onclick = editFee;
     }); renderLocalBudgetTotals(); updateTotalBudgetEditor(); renderBudgetCategoryIls(); renderExpenseList();
@@ -426,20 +443,34 @@
       var effective = today < start ? start : end && today > end ? end : today;
       elapsedDays = Math.max(1, Math.min(totalDays, Math.round((effective - start) / 86400000) + 1));
     }
-    var remainingDays = start && today < start ? totalDays : Math.max(1, totalDays - elapsedDays + 1);
-    return { totalDays: totalDays, elapsedDays: elapsedDays, remainingDays: remainingDays, today: localDateValue() };
+    var tripStarted = !start || today >= start;
+    var tripEnded = Boolean(end && today > end);
+    var remainingDays = start && today < start ? totalDays : tripEnded ? 0 : Math.max(1, totalDays - elapsedDays + 1);
+    return { totalDays: totalDays, elapsedDays: elapsedDays, remainingDays: remainingDays, today: localDateValue(), tripStarted: tripStarted, tripEnded: tripEnded };
   }
   function budgetSmartMetrics() {
     var totals = budgetExpenseTotals();
     var timing = budgetTiming();
     var spentEuros = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
     var todayEuros = state.expenses.filter(function (expense) { return expense.date === timing.today; }).reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
-    var averageEuros = spentEuros / Math.max(1, timing.elapsedDays);
-    var projectedEuros = state.expenses.length ? averageEuros * timing.totalDays : 0;
+    var tripStart = String(state.trip && state.trip.start || '');
+    var tripEnd = String(state.trip && state.trip.end || '');
+    var paceSpentEuros = state.expenses.reduce(function (sum, expense) {
+      if (!timing.tripStarted) return sum;
+      var expenseDate = String(expense && expense.date || '');
+      var inTripPace = !tripStart || !expenseDate || (expenseDate >= tripStart && expenseDate <= timing.today && (!tripEnd || expenseDate <= tripEnd));
+      return sum + (inTripPace ? expenseInEuros(expense) : 0);
+    }, 0);
+    var committedEuros = Math.max(0, spentEuros - paceSpentEuros);
+    var averageEuros = timing.tripStarted ? paceSpentEuros / Math.max(1, timing.elapsedDays) : 0;
+    var futurePaceDays = timing.tripEnded || !timing.tripStarted ? 0 : Math.max(0, timing.totalDays - timing.elapsedDays);
+    var projectedEuros = state.expenses.length
+      ? timing.tripEnded ? spentEuros : committedEuros + paceSpentEuros + averageEuros * futurePaceDays
+      : 0;
     var plannedEuros = Number(state.trip && state.trip.budget || 0);
     var remainingEuros = Math.max(0, plannedEuros - spentEuros);
     var overrunEuros = plannedEuros > 0 ? Math.max(0, spentEuros - plannedEuros) : 0;
-    var safeTodayEuros = !state.budgetUnlimited && plannedEuros && !overrunEuros ? remainingEuros / Math.max(1, timing.remainingDays) : 0;
+    var safeTodayEuros = !state.budgetUnlimited && plannedEuros && !overrunEuros && !timing.tripEnded ? remainingEuros / Math.max(1, timing.remainingDays) : 0;
     var top = Object.keys(totals).map(function (name) { return { name: name, euros: totals[name].total }; }).sort(function (a, b) { return b.euros - a.euros; })[0] || null;
     return {
       timing: timing,
@@ -479,6 +510,17 @@
     var narrative = '';
     if (!count) {
       narrative = unlimited ? 'המעקב פתוח ללא תקרת תקציב. לאחר שתוסיף הוצאה ראשונה יוצגו כאן ממוצע יומי, הקטגוריה המובילה ותחזית לסוף הטיול.' : 'עדיין לא נרשמו הוצאות. לאחר ההוצאה הראשונה נחשב כמה נשאר, מה הקצב היומי ומה צפוי עד סוף הטיול.';
+    } else if (!metrics.timing.tripStarted) {
+      narrative = 'נרשמו ' + count + ' הוצאות עוד לפני תחילת הטיול בסך ' + money(budgetLocal(metrics.spentEuros), state.localCurrency) + '. הן נספרות בהוצאה הכוללת, אבל תחזית הקצב היומי תתחיל רק ביום הראשון של הטיול.';
+    } else if (metrics.timing.tripEnded) {
+      if (unlimited) {
+        narrative = 'הטיול הסתיים עם ' + count + ' הוצאות בסך ' + money(budgetLocal(metrics.spentEuros), state.localCurrency) + '. הממוצע לאורך הטיול היה ' + money(budgetLocal(metrics.averageEuros), state.localCurrency) + ' ליום.';
+      } else if (metrics.plannedEuros) {
+        var finalDelta = metrics.plannedEuros - metrics.spentEuros;
+        narrative = 'הטיול הסתיים. הוצאת ' + money(budgetLocal(metrics.spentEuros), state.localCurrency) + ' מתוך ' + money(budgetLocal(metrics.plannedEuros), state.localCurrency) + '. ' + (finalDelta >= 0 ? 'נשארו מהמסגרת ' : 'החריגה מהמסגרת הייתה ') + money(Math.abs(budgetLocal(finalDelta)), state.localCurrency) + '.';
+      } else {
+        narrative = 'הטיול הסתיים עם ' + count + ' הוצאות בסך ' + money(budgetLocal(metrics.spentEuros), state.localCurrency) + '.';
+      }
     } else if (unlimited) {
       narrative = 'נרשמו ' + count + ' הוצאות. הממוצע עד עכשיו הוא ' + money(budgetLocal(metrics.averageEuros), state.localCurrency) + ' ליום' + (metrics.projectedEuros ? ', ובקצב הזה ההוצאה המשוערת לכל הטיול היא ' + money(budgetLocal(metrics.projectedEuros), state.localCurrency) + '.' : '.');
     } else if (metrics.plannedEuros) {
@@ -490,11 +532,13 @@
     var cards = [
       '<article><span>הוצא עד עכשיו</span>' + budgetDualAmount(metrics.spentEuros) + '<em>' + count + ' הוצאות</em></article>',
       '<article><span>היום</span>' + budgetDualAmount(metrics.todayEuros) + '<em>' + (metrics.todayEuros ? 'נרשם היום' : 'עדיין לא נרשמה הוצאה היום') + '</em></article>',
-      '<article><span>ממוצע ליום</span>' + budgetDualAmount(metrics.averageEuros) + '<em>' + metrics.timing.elapsedDays + ' ימים במעקב</em></article>'
+      '<article><span>ממוצע ליום</span>' + budgetDualAmount(metrics.averageEuros) + '<em>' + (metrics.timing.tripStarted ? metrics.timing.elapsedDays + ' ימים במעקב' : 'יחושב מתחילת הטיול') + '</em></article>'
     ];
     if (!unlimited && metrics.plannedEuros) {
       if (metrics.overrunEuros > 0) {
         cards.push('<article class="budget-overrun-card"><span>חריגה מהתקציב</span>' + budgetDualAmount(metrics.overrunEuros) + '<em>' + metrics.usedPercent + '% מהמסגרת נוצלו</em></article>');
+      } else if (metrics.timing.tripEnded) {
+        cards.push('<article><span>נותר מהתקציב</span>' + budgetDualAmount(metrics.remainingEuros) + '<em>יתרה סופית לאחר סיום הטיול</em></article>');
       } else {
         cards.push('<article><span>אפשר להוציא ליום</span>' + budgetDualAmount(metrics.safeTodayEuros) + '<em>לפי היתרה ו־' + metrics.timing.remainingDays + ' ימים שנותרו</em></article>');
       }
@@ -520,11 +564,12 @@
     var overrun = !unlimited && totalPlanned > 0 && totalSpent > totalPlanned;
     var budgetDifference = overrun ? totalSpent - totalPlanned : Math.max(0, totalPlanned - totalSpent);
     var budgetDifferenceLocal = state.localCurrency === 'EUR' ? budgetDifference : localFromEuros(budgetDifference);
-    var elapsedDays = budgetTiming().elapsedDays;
+    var smartMetrics = budgetSmartMetrics();
+    var averageSpentLocal = budgetLocal(smartMetrics.averageEuros);
     summary.innerHTML = unlimited
-      ? '<div><span>מצב</span><strong>ללא הגבלה</strong></div><div><span>הצטבר עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>ממוצע ליום</span><strong>' + money(totalSpentLocal / elapsedDays, state.localCurrency) + '</strong></div>'
+      ? '<div><span>מצב</span><strong>ללא הגבלה</strong></div><div><span>הצטבר עד עכשיו</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div><span>ממוצע ליום</span><strong>' + money(averageSpentLocal, state.localCurrency) + '</strong></div>'
       : '<div><span>מתוכנן</span><strong>' + money(totalPlannedLocal, state.localCurrency) + '</strong></div><div><span>בוצע</span><strong>' + money(totalSpentLocal, state.localCurrency) + '</strong></div><div class="' + (overrun ? 'budget-overrun-value' : '') + '"><span>' + (overrun ? 'חריגה' : 'נותר') + '</span><strong>' + money(budgetDifferenceLocal, state.localCurrency) + '</strong></div>';
-    (unlimited ? [0, totalSpent, totalSpent / elapsedDays] : [totalPlanned, totalSpent, budgetDifference]).forEach(function (euros, index) {
+    (unlimited ? [0, totalSpent, smartMetrics.averageEuros] : [totalPlanned, totalSpent, budgetDifference]).forEach(function (euros, index) {
       var card = summary.children[index];
       if (card) card.insertAdjacentHTML('beforeend', secondaryMoneyFromEuros(euros));
     });
@@ -718,7 +763,8 @@
         var memoryId = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
         var attachments = [];
         for (var index = 0; index < files.length; index += 1) attachments.push(await storeMemoryAttachment(files[index], memoryId));
-        state.memories.push({ id: memoryId, note: note || 'קובץ מצורף', date: new Date().toISOString(), attachments: attachments });
+        var memoryNow = new Date();
+        state.memories.push({ id: memoryId, note: note || 'קובץ מצורף', date: memoryNow.toISOString(), localDate: localDateValue(memoryNow), attachments: attachments });
         writeJson(storageKey('memories'), state.memories); saveTripData(); memoryForm.reset(); renderSelectedMemoryFiles(memoryForm); status.textContent = ''; renderMemories(); renderSummary(); toast('הרגע והקבצים נשמרו.');
       } catch (error) { status.textContent = 'לא הצלחנו לשמור את הקובץ. בדוק את החיבור ונסה שוב.'; }
       finally { submit.disabled = false; }
@@ -765,11 +811,16 @@
     await Promise.all(attachments.filter(function (item) { return item.localKey; }).map(function (item) { return deleteLocalMemoryFile(item.localKey); }));
     state.memories = state.memories.filter(function (item) { return String(item.id) !== String(memoryId); }); writeJson(storageKey('memories'), state.memories); saveTripData(); renderMemories(); renderSummary();
   }
+  function memoryDateLabel(memory) {
+    var local = String(memory && memory.localDate || '');
+    var value = /^\d{4}-\d{2}-\d{2}$/.test(local) ? new Date(local + 'T12:00:00') : new Date(memory && memory.date || Date.now());
+    return new Intl.DateTimeFormat('he-IL', { dateStyle: 'medium' }).format(value);
+  }
   function renderMemories() {
     var host = document.querySelector('[data-memory-list]'); if (!host) return;
     host.innerHTML = state.memories.length ? state.memories.slice().reverse().map(function (memory) {
       var attachments = Array.isArray(memory.attachments) ? memory.attachments : [];
-      return '<article><header><span>' + new Intl.DateTimeFormat('he-IL', { dateStyle: 'medium' }).format(new Date(memory.date)) + '</span><button type="button" data-memory-delete="' + escapeHtml(memory.id) + '" aria-label="מחיקת הרגע"><i class="fa-solid fa-trash"></i></button></header><p>' + escapeHtml(memory.note) + '</p>' + (attachments.length ? '<div class="memory-attachments">' + attachments.map(function (attachment, index) { return '<button type="button" data-memory-id="' + escapeHtml(memory.id) + '" data-memory-attachment="' + index + '"><i class="fa-solid ' + (String(attachment.type).indexOf('image/') === 0 ? 'fa-image' : 'fa-file-lines') + '"></i><span>' + escapeHtml(attachment.name) + '<small>' + (attachment.local ? 'נשמר במכשיר' : 'נשמר בענן הפרטי') + '</small></span></button>'; }).join('') + '</div>' : '') + '</article>';
+      return '<article><header><span>' + memoryDateLabel(memory) + '</span><button type="button" data-memory-delete="' + escapeHtml(memory.id) + '" aria-label="מחיקת הרגע"><i class="fa-solid fa-trash"></i></button></header><p>' + escapeHtml(memory.note) + '</p>' + (attachments.length ? '<div class="memory-attachments">' + attachments.map(function (attachment, index) { return '<button type="button" data-memory-id="' + escapeHtml(memory.id) + '" data-memory-attachment="' + index + '"><i class="fa-solid ' + (String(attachment.type).indexOf('image/') === 0 ? 'fa-image' : 'fa-file-lines') + '"></i><span>' + escapeHtml(attachment.name) + '<small>' + (attachment.local ? 'נשמר במכשיר' : 'נשמר בענן הפרטי') + '</small></span></button>'; }).join('') + '</div>' : '') + '</article>';
     }).join('') : '<div class="trip-experience-empty">עדיין לא נשמרו רגעים.</div>';
     host.querySelectorAll('[data-memory-attachment]').forEach(function (button) { button.onclick = function () { var memory = state.memories.find(function (item) { return String(item.id) === String(button.dataset.memoryId); }); if (memory && memory.attachments[Number(button.dataset.memoryAttachment)]) openMemoryAttachment(memory.attachments[Number(button.dataset.memoryAttachment)]); }; });
     host.querySelectorAll('[data-memory-delete]').forEach(function (button) { button.onclick = function () { if (confirm('למחוק את הרגע ואת הקבצים שצורפו אליו?')) removeMemory(button.dataset.memoryDelete); }; });

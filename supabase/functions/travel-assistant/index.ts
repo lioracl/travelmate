@@ -1,7 +1,9 @@
 const allowedOrigins = new Set([
   'https://lioracl.github.io',
   'http://127.0.0.1:8000',
-  'http://localhost:8000'
+  'http://localhost:8000',
+  'http://127.0.0.1:8001',
+  'http://localhost:8001'
 ]);
 function corsHeaders(origin = 'https://lioracl.github.io') {
   return {
@@ -37,7 +39,18 @@ function safeContext(value) {
     id: cleanText(value.id, 100), country: cleanText(value.country, 80), city: cleanText(value.city, 80),
     destination: cleanText(value.destination, 160), page: cleanText(value.page, 120),
     start: cleanText(value.start, 20), end: cleanText(value.end, 20), days: Number(value.days || 0),
-    budget: Number(value.budget || 0), type: cleanText(value.type, 40),
+    budget: Number(value.budget || 0), budgetUnlimited: Boolean(value.budgetUnlimited), type: cleanText(value.type, 40),
+    expenseSummary: {
+      count: Math.max(0, Number(value.expenseSummary?.count || 0)),
+      totals: Array.isArray(value.expenseSummary?.totals) ? value.expenseSummary.totals.slice(0, 8).map((item) => ({
+        currency: /^[A-Z]{3}$/.test(cleanText(item?.currency, 8).toUpperCase()) ? cleanText(item?.currency, 8).toUpperCase() : '',
+        amount: Math.max(0, Number(item?.amount || 0))
+      })).filter((item) => item.currency && item.amount > 0) : [],
+      categories: Array.isArray(value.expenseSummary?.categories) ? value.expenseSummary.categories.slice(0, 8).map((item) => ({
+        category: cleanText(item?.category, 60),
+        count: Math.max(0, Number(item?.count || 0))
+      })).filter((item) => item.category && item.count > 0) : []
+    },
     activities: Array.isArray(value.activities) ? value.activities.slice(0, 40).map((item) => ({
       date: cleanText(item.date, 20), time: cleanText(item.time, 10), title: cleanText(item.title, 160),
       category: cleanText(item.category, 60), duration: Number(item.duration || 0), done: Boolean(item.done)
@@ -131,7 +144,7 @@ Deno.serve(async (request) => {
     if (!usage.allowed) return respond({ error: 'DAILY_LIMIT_REACHED', remaining: 0 }, 429);
 
     const instructions = [
-      'You are Nevo, the friendly personal AI assistant inside the TravelMate travel application.',
+      'You are Mate, the friendly personal AI assistant inside the TravelMate travel application.',
       'Answer in the same language as the user; default to natural Hebrew and address the user in masculine Hebrew when appropriate.',
       'You can answer general questions as well as travel questions. Be concise, practical, warm, creative, and easy to scan.',
       'When trip context is supplied, use it actively: detect overloaded days, gaps, budget tradeoffs, booking priorities, and useful ideas.',

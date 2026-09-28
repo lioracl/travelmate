@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf8'); }
@@ -84,4 +85,144 @@ test('zero spending is rendered as a valid converted amount once rates are ready
   assert.match(js, /result\.innerHTML = currencyConversionReady\(from, to\)/);
   assert.doesNotMatch(js, /summaryConversion\.textContent = secondaryTotal \?/);
   assert.doesNotMatch(js, /result\.innerHTML = converted \?/);
+});
+
+test('pre-trip expenses count as spent without becoming a fake daily pace projection', () => {
+  function extractFunction(name) {
+    const match = js.match(new RegExp('  function ' + name + '\\(\\) \\{[\\s\\S]*?\\n  \\}'));
+    assert.ok(match, 'expected to extract ' + name);
+    return match[0];
+  }
+
+  const context = {
+    state: {
+      trip: {
+        start: '2099-01-01',
+        end: '2099-01-05',
+        days: 5,
+        budget: 1000
+      },
+      expenses: [
+        { amount: 250, currency: 'EUR', category: 'לינה', date: '2098-12-20' }
+      ],
+      budgetUnlimited: false
+    },
+    localDateValue: () => '2098-12-20',
+    expenseInEuros: (expense) => Number(expense.amount || 0),
+    budgetExpenseTotals: () => ({})
+  };
+
+  vm.runInNewContext(
+    extractFunction('budgetTiming') + '\n' +
+    extractFunction('budgetSmartMetrics') + '\n' +
+    'result = budgetSmartMetrics();',
+    context
+  );
+
+  assert.equal(context.result.timing.tripStarted, false);
+  assert.equal(context.result.spentEuros, 250);
+  assert.equal(context.result.averageEuros, 0);
+  assert.equal(context.result.projectedEuros, 250);
+});
+
+test('completed trips stop projecting future daily spend', () => {
+  function extractFunction(name) {
+    const match = js.match(new RegExp('  function ' + name + '\\(\\) \\{[\\s\\S]*?\\n  \\}'));
+    assert.ok(match, 'expected to extract ' + name);
+    return match[0];
+  }
+
+  const context = {
+    state: {
+      trip: {
+        start: '2000-01-01',
+        end: '2000-01-05',
+        days: 5,
+        budget: 1000
+      },
+      expenses: [
+        { amount: 600, currency: 'EUR', category: 'אוכל', date: '2000-01-03' }
+      ],
+      budgetUnlimited: false
+    },
+    localDateValue: () => '2026-09-27',
+    expenseInEuros: (expense) => Number(expense.amount || 0),
+    budgetExpenseTotals: () => ({})
+  };
+
+  vm.runInNewContext(
+    extractFunction('budgetTiming') + '\n' +
+    extractFunction('budgetSmartMetrics') + '\n' +
+    'result = budgetSmartMetrics();',
+    context
+  );
+
+  assert.equal(context.result.timing.tripEnded, true);
+  assert.equal(context.result.timing.remainingDays, 0);
+  assert.equal(context.result.spentEuros, 600);
+  assert.equal(context.result.projectedEuros, 600);
+  assert.equal(context.result.safeTodayEuros, 0);
+  assert.match(js, /יתרה סופית לאחר סיום הטיול/);
+  assert.match(js, /הטיול הסתיים/);
+});
+
+test('currency source exposes a stale-cache fallback contract', () => {
+  assert.match(js, /function applyCachedRates\(cached, stale\)/);
+  assert.match(js, /applyCachedRates\(cached, true\)/);
+  assert.match(js, /state\.rateStale = Boolean\(stale\)/);
+  assert.match(js, /שער שמור מהמכשיר/);
+});
+
+
+
+test('stale currency cache remains usable when every live provider fails', async () => {
+  function extractFunction(name) {
+    const match = js.match(new RegExp('  (?:async )?function ' + name + '\\([^]*?\\n  \\}'));
+    assert.ok(match, 'expected to extract ' + name);
+    return match[0];
+  }
+
+  const cached = {
+    rate: 3.45,
+    rates: { ILS: 3.45, CZK: 24.5, USD: 1.17 },
+    ilsRates: { ILS: 1, EUR: 3.45, CZK: 3.45 / 24.5, USD: 3.45 / 1.17 },
+    source: 'Cached test rates',
+    sourceUrl: 'https://example.com/rates',
+    date: '2026-09-26',
+    savedAt: Date.now() - 24 * 60 * 60 * 1000
+  };
+  const context = {
+    state: {
+      localCurrency: 'CZK',
+      rates: {},
+      ilsRates: { ILS: 1 },
+      rate: null,
+      rateDate: '',
+      rateSource: '',
+      rateSourceUrl: '',
+      rateStale: false
+    },
+    readJson: () => cached,
+    fetchRateJson: async () => { throw new Error('offline'); },
+    renderCurrency: () => { context.currencyRenders += 1; },
+    renderCurrencyConverter: () => { context.converterRenders += 1; },
+    writeJson: () => {},
+    currencyRenders: 0,
+    converterRenders: 0
+  };
+
+  vm.runInNewContext(
+    extractFunction('applyCachedRates') + '\n' +
+    extractFunction('loadRate') + '\n' +
+    'loadPromise = loadRate();',
+    context
+  );
+  await context.loadPromise;
+
+  assert.equal(context.state.rate, 3.45);
+  assert.equal(context.state.rates.CZK, 24.5);
+  assert.equal(context.state.rateStale, true);
+  assert.equal(context.state.rateSource, 'Cached test rates');
+  assert.equal(context.currencyRenders, 1);
+  assert.equal(context.converterRenders, 1);
 });
