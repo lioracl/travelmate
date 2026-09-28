@@ -534,8 +534,12 @@
   var accountOpenButtons = [].slice.call(document.querySelectorAll('[data-cloud-account-open]'));
   var lastAccountOpenButton = null;
 
-  function openAccountModal(event) {
+  async function openAccountModal(event) {
     lastAccountOpenButton = event && event.currentTarget ? event.currentTarget : lastAccountOpenButton;
+    if (window.TravelMateFeatures && typeof window.TravelMateFeatures.ensureAccount === 'function') {
+      try { await window.TravelMateFeatures.ensureAccount(); }
+      catch (error) { console.error('TravelMate account feature failed to load', error); }
+    }
     accountBackdrop.hidden = false;
     accountBackdrop.setAttribute('aria-hidden', 'false');
     document.body.classList.add('cloud-account-open');

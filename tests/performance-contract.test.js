@@ -115,6 +115,11 @@ test('collaboration keeps long realtime chat sessions bounded in memory', () => 
   assert.ok((source.match(/state\.messages = state\.messages\.slice\(-MESSAGE_LIMIT\)/g) || []).length >= 2);
 });
 
+test('Home defers Account and Admin assets until account intent', () => {
+  assert.doesNotMatch(homeHtml, /assets\/(?:security-center|admin-center)\.(?:css|js)/);
+  assert.match(homeScript, /TravelMateFeatures\.ensureAccount\(\)/);
+});
+
 test('trip feature loader inherits the active asset version and keeps heavy structure lazy', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.match(source, /new URL\(appScript\.src,location\.href\)\.searchParams\.get\('v'\)/);
