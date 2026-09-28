@@ -2178,7 +2178,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
 html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
   --tm-surface-glass:linear-gradient(135deg,rgba(248,252,250,.52),rgba(232,243,238,.44));
   --tm-surface-nested:rgba(248,251,250,.38);
-  --tm-overview-card:linear-gradient(135deg,rgba(188,219,210,.54),rgba(171,207,198,.48));
+  --tm-overview-card:linear-gradient(135deg,rgba(188,219,210,.68),rgba(171,207,198,.60));
   --tm-overview-card-soft:rgba(205,229,222,.38);
   --tm-card-secondary:#26473e;
   --tm-overview-muted:#26473e;
