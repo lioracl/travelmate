@@ -8,7 +8,9 @@
     classic: Object.freeze({ label: 'Classic' }),
     'ice-aqua': Object.freeze({ label: 'Ice Aqua' }),
     'pearl-blue': Object.freeze({ label: 'Pearl Blue' }),
-    'warm-sand': Object.freeze({ label: 'Warm Sand' })
+    'warm-sand': Object.freeze({ label: 'Warm Sand' }),
+    'soft-lilac': Object.freeze({ label: 'Soft Lilac' }),
+    'nordic-slate': Object.freeze({ label: 'Nordic Slate' })
   });
   var LEGACY_ACCENTS = Object.freeze({ forest: 'emerald', violet: 'plum', coral: 'sunset' });
   var ACCENTS = Object.freeze({

@@ -282,7 +282,7 @@
       archive.className = 'ai-notes-archive';
       archive.dataset.aiNotesArchive = '';
       archive.dataset.documentGroup = 'mate';
-      var host = documents.querySelector('.doc-list') || documents;
+      var host = documents.querySelector('.vault-library') || documents.querySelector('.doc-list') || documents;
       host.parentNode.insertBefore(archive, host.nextSibling);
     }
     var trips = readTrips();

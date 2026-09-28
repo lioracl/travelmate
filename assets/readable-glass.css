@@ -2157,6 +2157,54 @@ html[data-theme="dark"][data-surface-theme="warm-sand"], html[data-theme="dark"]
   --tm-family-border:rgba(153,133,103,.58);
   --tm-family-chrome:rgba(26,22,18,.94);
 }
+html[data-surface-theme="soft-lilac"], html:not([data-theme="dark"]) [data-surface-choice="soft-lilac"]{
+  --tm-family-primary:linear-gradient(135deg,rgba(193,188,207,.86),rgba(177,172,194,.82));
+  --tm-family-solid:rgb(193,188,207);
+  --tm-family-nested:rgba(205,201,217,.60);
+  --tm-family-control:rgba(178,172,198,.94);
+  --tm-family-control-hover:color-mix(in srgb,rgb(178,172,198) 88%,#667080);
+  --tm-family-control-active:color-mix(in srgb,rgb(178,172,198) 75%,#667080);
+  --tm-family-text:#292535;
+  --tm-family-muted:#343044;
+  --tm-family-border:rgba(91,82,113,.44);
+  --tm-family-chrome:rgba(28,24,39,.94);
+}
+html[data-theme="dark"][data-surface-theme="soft-lilac"], html[data-theme="dark"] [data-surface-choice="soft-lilac"]{
+  --tm-family-primary:linear-gradient(135deg,rgba(48,43,61,.86),rgba(37,33,49,.82));
+  --tm-family-solid:rgb(48,43,61);
+  --tm-family-nested:rgba(75,68,91,.34);
+  --tm-family-control:rgba(65,58,82,.94);
+  --tm-family-control-hover:color-mix(in srgb,rgb(65,58,82) 88%,#9290A2);
+  --tm-family-control-active:color-mix(in srgb,rgb(65,58,82) 75%,#9290A2);
+  --tm-family-text:#F6F3FA;
+  --tm-family-muted:#CEC6DA;
+  --tm-family-border:rgba(137,124,162,.58);
+  --tm-family-chrome:rgba(22,19,30,.94);
+}
+html[data-surface-theme="nordic-slate"], html:not([data-theme="dark"]) [data-surface-choice="nordic-slate"]{
+  --tm-family-primary:linear-gradient(135deg,rgba(163,184,198,.86),rgba(143,166,184,.82));
+  --tm-family-solid:rgb(163,184,198);
+  --tm-family-nested:rgba(177,196,208,.60);
+  --tm-family-control:rgba(137,164,183,.94);
+  --tm-family-control-hover:color-mix(in srgb,rgb(137,164,183) 88%,#526878);
+  --tm-family-control-active:color-mix(in srgb,rgb(137,164,183) 75%,#526878);
+  --tm-family-text:#172832;
+  --tm-family-muted:#21333E;
+  --tm-family-border:rgba(61,87,105,.48);
+  --tm-family-chrome:rgba(15,29,38,.94);
+}
+html[data-theme="dark"][data-surface-theme="nordic-slate"], html[data-theme="dark"] [data-surface-choice="nordic-slate"]{
+  --tm-family-primary:linear-gradient(135deg,rgba(38,52,62,.86),rgba(28,42,52,.82));
+  --tm-family-solid:rgb(38,52,62);
+  --tm-family-nested:rgba(61,79,91,.34);
+  --tm-family-control:rgba(53,72,85,.94);
+  --tm-family-control-hover:color-mix(in srgb,rgb(53,72,85) 88%,#8A9AA5);
+  --tm-family-control-active:color-mix(in srgb,rgb(53,72,85) 75%,#8A9AA5);
+  --tm-family-text:#F2F7FA;
+  --tm-family-muted:#C2D0D8;
+  --tm-family-border:rgba(111,139,157,.60);
+  --tm-family-chrome:rgba(13,24,31,.94);
+}
 
 /* Surface Authority 2.0 Ã¢â‚¬â€ one material model for all custom-trip screens.
    Canvas = destination photo. Primary = crisp translucency. Nested = flatter depth.
