@@ -7,12 +7,19 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = p => fs.readFileSync(path.join(root,p),'utf8');
 
-test('places exposes a visible home for unscheduled saved places',()=>{
+test('places exposes a manageable home for unscheduled saved places',()=>{
   const app=read('assets/app.js');
+  const nearby=read('assets/nearby.css');
   assert.match(app,/data-saved-places-shelf/);
   assert.match(app,/מקומות שמורים/);
   assert.match(app,/נשמר כאן · עדיין לא תוזמן/);
   assert.match(app,/המקום נשמר ב״מקומות שמורים״ בכרטיסיית מקומות/);
+  assert.match(app,/data-saved-shelf-schedule/);
+  assert.match(app,/data-saved-shelf-unschedule/);
+  assert.match(app,/data-saved-shelf-delete/);
+  assert.match(app,/התזמון הוסר; המקום נשאר במקומות שמורים/);
+  assert.match(nearby,/\.saved-places-shelf__actions/);
+  assert.match(nearby,/min-height:44px/);
 });
 
 test('document vault is structural instead of another glass slab',()=>{
