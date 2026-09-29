@@ -69,6 +69,11 @@
     };
   }
 
+  function setText(node, value) {
+    value = String(value == null ? '' : value);
+    if (node.textContent !== value) node.textContent = value;
+  }
+
   function renderCollapsedSummary(card, result) {
     var activity = result.activity;
     var time = card.querySelector('[data-next-time]');
@@ -76,14 +81,14 @@
     var status = card.querySelector('[data-next-status]');
     var location = card.querySelector('[data-next-location]');
     if (!time || !title || !status || !location) return;
-    time.textContent = activity ? activity.time : '';
-    title.textContent = activity ? activity.title : result.status;
-    status.textContent = activity ? result.status : '';
-    location.textContent = activity && activity.location ? shortLocation(activity.location) : '';
+    setText(time, activity ? activity.time : '');
+    setText(title, activity ? activity.title : result.status);
+    setText(status, activity ? result.status : '');
+    setText(location, activity && activity.location ? shortLocation(activity.location) : '');
     location.hidden = !location.textContent;
   }
 
-  function setExpanded(card, open) {
+  function setExpanded(card, open, restoreFocus) {
     var toggle = card.querySelector('.today-activities-toggle');
     var expanded = card.querySelector('.today-activities-expanded');
     if (!toggle || !expanded) return;
@@ -94,7 +99,7 @@
     var icon = toggle.querySelector('i');
     if (icon) icon.className = open ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
     expanded.hidden = !open;
-    if (!open) toggle.focus();
+    if (!open && restoreFocus !== false) toggle.focus();
   }
 
   function shellHtml(id) {
@@ -240,7 +245,7 @@
     }
 
     bindShell(card, refresh);
-    setExpanded(card, card.dataset.todayActivitiesOpen === 'true');
+    setExpanded(card, card.dataset.todayActivitiesOpen === 'true', false);
     refresh();
     return true;
   }
