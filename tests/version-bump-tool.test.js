@@ -80,13 +80,6 @@ test('current repository asset version references are synchronized', () => {
     cwd: root,
     encoding: 'utf8'
   });
-  assert.match(output, new RegExp('Asset version is synchronized: ' + match[1].replace(/[.*+?^$\{\}()|[\]\\]/g, '\\test('current repository asset version references are synchronized', () => {
-  const output = execFileSync(process.execPath, ['tools/bump-version.mjs', '--check'], {
-    cwd: root,
-    encoding: 'utf8'
-  });
-  assert.match(output, /Asset version is synchronized: 20260929-46/);
-  assert.match(output, /Checked files: 7/);
-});')));
+  assert.ok(output.includes('Asset version is synchronized: ' + match[1]));
   assert.match(output, /Checked files: 7/);
 });
