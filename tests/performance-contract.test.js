@@ -131,7 +131,7 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.match(source, /assistant:\{styles:\['smart-hub\.css'\],scripts:\['ai-assistant\.js','smart-hub\.js'\]\}/);
   assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
   assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
-  assert.match(source, /scheduleIdleFeature\('account',4200\)/);
+  assert.doesNotMatch(source, /scheduleIdleFeature\('account',4200\)/);
   assert.match(source, /function createAssistantShell\(\)/);
   assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
 });
@@ -326,16 +326,18 @@ test('Auto Planner observes only planner/calendar roots instead of the entire do
   assert.doesNotMatch(source, /observer\.observe\(document\.body/);
 });
 
-test('idle Account warming skips hidden, Save-Data and very slow connections while Mate stays on demand', () => {
+test('noncritical warming is limited to Overview intelligence while Account and Mate stay on demand', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.match(source, /function canWarmNonCritical\(\)/);
   assert.match(source, /!document\.hidden/);
   assert.match(source, /connection&&connection\.saveData/);
   assert.match(source, /slow-2g\|2g/);
-  assert.match(source, /function warmNonCritical\(\)\{scheduleIdleFeature\('account',4200\)\}/);
+  assert.match(source, /scheduleIdleFeature\('intelligence',250\)/);
+  assert.doesNotMatch(source, /scheduleIdleFeature\('account'/);
   assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
   assert.match(source, /function createAssistantShell\(\)/);
   assert.match(source, /loadFeature\('assistant'\)/);
+  assert.match(source, /ensureAccount:function\(\)\{return loadFeature\('account'\)\}/);
 });
 
 test('PWA bootstrap does not dispatch the unused app-update-ready event', () => {
@@ -366,4 +368,13 @@ test('Overview defers trip intelligence until idle or explicit Overview intent',
   assert.match(appScript, /intelligence:\{styles:\[\],scripts:\['trip-intelligence\.js'\]\}/);
   assert.match(appScript, /if\(initialView==='overview'\)scheduleIdleFeature\('intelligence',250\)/);
   assert.match(appScript, /if\(link\.dataset\.view==='overview'\)loadFeature\('intelligence'\)/);
+});
+
+
+test('trip pages defer Account and Admin assets until explicit account intent', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.doesNotMatch(source, /scheduleIdleFeature\('account',4200\)/);
+  assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
+  assert.match(source, /ensureAccount:function\(\)\{return loadFeature\('account'\)\}/);
+  assert.match(source, /scheduleIdleFeature\('intelligence',250\)/);
 });
