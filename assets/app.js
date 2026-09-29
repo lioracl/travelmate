@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-37'}catch(error){return'20260929-37'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-38'}catch(error){return'20260929-38'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={};
@@ -13,8 +13,8 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     intelligence:{styles:[],scripts:['trip-intelligence.js']},
     assistant:{styles:['smart-hub.css'],scripts:['ai-assistant.js','smart-hub.js']},
     account:{styles:['security-center.css','admin-center.css'],scripts:['security-center.js','admin-center.js']},
-    places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js']},
-    plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css'],scripts:['auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
+    places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['trip-context.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
+    plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','plan-ux-polish.css'],scripts:['trip-context.js','auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js','plan-ux-polish.js']},
     documents:{styles:['document-vault.css'],scripts:['document-vault.js']},
     budget:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
     memories:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
@@ -47,6 +47,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     if(document.getElementById(view))return Promise.resolve(true);
     return new Promise(function(resolve){var deadline=Date.now()+2500;(function check(){if(document.getElementById(view)){resolve(true);return}if(Date.now()>=deadline){resolve(false);return}requestAnimationFrame(check)})()})
   }
+  function loadTodayActivities(){return Promise.all([loadStyle('today-activities.css'),loadScript('today-activities.js')])}
   function loadFeature(view){
     var feature=features[view];if(!feature)return Promise.resolve(true);
     if(featureLoads[view])return featureLoads[view];
@@ -106,10 +107,10 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
     var initialView=activeView();
     var featureReady=baseReady.then(function(){return loadFeature(initialView)});
-    Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250);warmNonCritical()});
+    Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,initialView==='overview'?baseReady.then(loadTodayActivities):Promise.resolve(true)]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250);warmNonCritical()});
   }
-  window.addEventListener('travelmate:viewchange',function(event){var view=event.detail&&event.detail.view;loadFeature(view).then(function(){if(view==='overview')scheduleIdleFeature('intelligence',250)})});
-  document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview')loadFeature('intelligence')}},{capture:true,passive:true});
+  window.addEventListener('travelmate:viewchange',function(event){var view=event.detail&&event.detail.view;loadFeature(view).then(function(){if(view==='overview'){loadTodayActivities();scheduleIdleFeature('intelligence',250)}})});
+  document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview'){loadTodayActivities();loadFeature('intelligence')}}},{capture:true,passive:true});
   document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview')loadFeature('intelligence')}},{capture:true,passive:true});
   document.addEventListener('click',function(event){var button=event.target.closest&&event.target.closest('[data-lazy-about]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();loadFeature('about').then(function(ready){if(ready===false)return;button.removeAttribute('data-lazy-about');button.click()})},true);
   window.TravelMateFeatures=Object.freeze({load:loadFeature,has:function(view){return Boolean(features[view])},ensureAssistant:function(){return loadFeature('assistant')},ensureAccount:function(){return loadFeature('account')}});
