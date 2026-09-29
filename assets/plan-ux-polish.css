@@ -153,11 +153,6 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
 }
 
 /* Mobile Visual Polish: final Plan geometry authority. */
-body.tm-new-design[data-trip-view="plan"] #plan .day-heading>div>strong{
-  font-size:17px;
-  font-weight:650
-}
-
 @media(max-width:700px){
   body.tm-new-design[data-trip-view="plan"] #plan{
     --tm-plan-toolbar-surface:var(--tm-surface-nested);
@@ -321,6 +316,13 @@ body.tm-new-design[data-trip-view="plan"] #plan .day-heading>div>strong{
     clip-path:inset(50%);
     white-space:nowrap
   }
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item:not(.tm-plan-expanded) :is([data-toggle-done],[data-toggle-saved-done])::after{
+    display:none;
+    content:""
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item:not(.tm-plan-expanded) :is([data-smart-replace-activity],[data-smart-replace-place]){
+    display:none
+  }
   body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded :is(.activity-buttons,.saved-place-actions){
     width:100%;
     justify-self:stretch;
@@ -333,8 +335,13 @@ body.tm-new-design[data-trip-view="plan"] #plan .day-heading>div>strong{
     overflow:visible;
     clip-path:none
   }
-  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded :is(.tm-plan-nav-action,[data-plan-details-toggle]){
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded :is(
+    .activity-buttons>button,
+    .saved-place-actions>button,
+    .tm-plan-nav-action
+  ){
     width:auto;
+    min-width:44px;
     padding-inline:10px
   }
   body.tm-new-design[data-trip-view="plan"] #plan .saved-place.tm-plan-item{
