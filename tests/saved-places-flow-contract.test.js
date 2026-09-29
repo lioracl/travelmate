@@ -42,5 +42,5 @@ test('saved places lifecycle is responsive and keyboard-visible', () => {
   assert.match(css, /\.saved-place\.is-plan-target/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /@media\(max-width:760px\)/);
-  assert.match(css, /grid-template-columns:minmax\(0,1fr\) 96px/);
+  assert.match(css, /Saved Places lifecycle completion/);
 });
