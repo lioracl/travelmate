@@ -2,10 +2,10 @@
   'use strict';
 
   var release = {
-    version: '1.55.41',
-    label: 'CSS architecture cleanup — Phase 10',
-    date: '26 בספטמבר 2026',
-    highlights: [
+    version: '1.55.42',
+    label: 'תוכנית קומפקטית ופעילות קרובה',
+    date: '29 בספטמבר 2026',
+    highlights: [\n      'סקירת הטיול מציגה פעילות קרובה בכרטיס קומפקטי שניתן לפתיחה, ללא מיקום מדומה כשאין מיקום אמיתי.',\n      'מסך תוכנית קיבל כרטיסי פעילות קומפקטיים, היררכיית ימים משופרת ותשתית למסלול גמיש והמלצות לפי מיקום בעתיד.',
       'CSS architecture: Phase 10 moved shared controls and overlay material to normal cascade, reduced modal-system.css to zero !important and network-usage.css to two behavioral hidden-state exceptions, and reduced whole-app !important debt from 439 to 341.',
       'CSS architecture: Phase 9 made Weather a zero-escalation component owner, removed Weather from generic Modal/Glass material selectors, consolidated Plan/Hero structural ownership, and reduced whole-app !important debt from 548 to 439.',
       'CSS architecture: Phase 8 moved Group, Memories and Currency semantic contrast out of Theme, made Documents a structural wrapper by exclusion instead of override, and reduced whole-app !important debt from 620 to 548.',
