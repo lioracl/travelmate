@@ -178,6 +178,13 @@ test('getaway destination geocoding waits for the first search submit', () => {
   assert.doesNotMatch(source, /coords=null;geocode\(trip\.city/);
 });
 
+test('service worker uses a release-scoped cache namespace and prunes older TravelMate caches', () => {
+  assert.match(serviceWorker, /const CACHE_SCHEMA='v266'/);
+  assert.match(serviceWorker, /const CACHE_NAME='travelmate-smart-'\+CACHE_SCHEMA\+'-'\+ASSET_VERSION/);
+  assert.match(serviceWorker, /TRAVELMATE_CACHE_PATTERN=\/\^travelmate-smart-v\\d\+\(\?:-20\\d\{6\}-\\d\+\)\?\$\//);
+  assert.match(serviceWorker, /keys\.filter\(key=>TRAVELMATE_CACHE_PATTERN\.test\(key\)&&key!==CACHE_NAME\)/);
+});
+
 test('service worker precaches startup essentials and runtime-caches feature-only bundles', () => {
   assert.doesNotMatch(serviceWorker, /'\.\/assets\/security-center\.js'/);
   assert.match(serviceWorker, /trip-redesign\.js/);
