@@ -1,5 +1,7 @@
-const CACHE_NAME='travelmate-smart-v266';
-const ASSET_VERSION='20260929-47';
+const ASSET_VERSION='20260929-48';
+const CACHE_SCHEMA='v266';
+const CACHE_NAME='travelmate-smart-'+CACHE_SCHEMA+'-'+ASSET_VERSION;
+const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-20\d{6}-\d+)?$/;
 const CORE_PATHS=[
   './',
   './index.html',
@@ -37,7 +39,7 @@ const CORE_PATHS=[
 ];
 const CORE=CORE_PATHS.map(path=>/\.(?:js|css|json)$/i.test(path)?path+'?v='+ASSET_VERSION:path);
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>/^travelmate-smart-v\d+$/.test(key)&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>TRAVELMATE_CACHE_PATTERN.test(key)&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting()});
 function persistResponse(event,request,response){
   if(!event||!response||!response.ok)return;
