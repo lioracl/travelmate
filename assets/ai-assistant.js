@@ -65,13 +65,14 @@
   function persistMessages() { try { sessionStorage.setItem(storageKey, JSON.stringify(state.messages.slice(-16))); } catch (error) {} }
 
   function createUi() {
-    var orb = document.createElement('button');
+    var orb = document.querySelector('.ai-orb') || document.createElement('button');
     orb.className = 'ai-orb'; orb.type = 'button'; orb.setAttribute('aria-label', 'פתיחת העוזר האישי'); orb.setAttribute('aria-expanded', 'false');
     orb.innerHTML = '<span class="ai-orb-ring"></span><i class="fa-solid fa-wand-magic-sparkles"></i><span class="ai-orb-badge">AI</span>';
+    orb.removeAttribute('data-ai-shell');
     var panel = document.createElement('aside');
     panel.className = 'ai-panel'; panel.hidden = true; panel.id = 'travelmate-ai-panel'; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-label', 'העוזר האישי של TravelMate'); orb.setAttribute('aria-controls', panel.id);
     panel.innerHTML = '<header class="ai-panel-header"><span class="ai-avatar"><i class="fa-solid fa-compass"></i></span><div class="ai-panel-title"><strong>Mate · העוזר האישי שלך</strong><small data-ai-status role="status" aria-live="polite">מוכן לעזור בכל שאלה</small></div><div class="ai-panel-actions"><button class="ai-icon-button" type="button" data-ai-clear title="שיחה חדשה" aria-label="שיחה חדשה"><i class="fa-solid fa-rotate"></i></button><button class="ai-icon-button" type="button" data-ai-close title="סגירה" aria-label="סגירת העוזר"><i class="fa-solid fa-xmark"></i></button></div></header><div class="ai-context-bar"><i class="fa-solid fa-location-dot"></i><span data-ai-context></span><button type="button" data-ai-privacy>מה נשלח?</button></div><div class="ai-chat" data-ai-chat aria-live="polite"></div><div><div class="ai-quick-prompts" data-ai-prompts></div><form class="ai-composer" data-ai-form><div class="ai-composer-row"><button class="ai-voice" type="button" data-ai-voice aria-label="הכתבה קולית" title="הכתבה קולית"><i class="fa-solid fa-microphone"></i></button><textarea name="message" rows="1" maxlength="4000" placeholder="שאל אותי על הטיול או על כל נושא…" aria-label="הודעה לעוזר"></textarea><button type="submit" data-ai-send aria-label="שליחת הודעה"><i class="fa-solid fa-arrow-up"></i></button></div><div class="ai-composer-note"><span>Enter לשליחה · Shift+Enter לשורה חדשה</span><span>AI עשוי לטעות</span></div></form></div>';
-    document.body.appendChild(orb); document.body.appendChild(panel);
+    if (!orb.isConnected) document.body.appendChild(orb); document.body.appendChild(panel);
     return { orb: orb, panel: panel, chat: panel.querySelector('[data-ai-chat]'), form: panel.querySelector('[data-ai-form]'), input: panel.querySelector('textarea'), status: panel.querySelector('[data-ai-status]'), prompts: panel.querySelector('[data-ai-prompts]') };
   }
 

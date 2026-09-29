@@ -1,5 +1,5 @@
-const CACHE_NAME='travelmate-smart-v264';
-const ASSET_VERSION='20260929-35';
+const CACHE_NAME='travelmate-smart-v265';
+const ASSET_VERSION='20260929-36';
 const CORE_PATHS=[
   './',
   './index.html',
@@ -30,8 +30,6 @@ const CORE_PATHS=[
   './assets/modal-system.css',
   './assets/theme.css',
   './assets/theme.js',
-  './assets/vendor/pdfjs/pdf.min.js',
-  './assets/vendor/pdfjs/pdf.worker.min.js',
   './assets/weather-widget.css',
   './assets/weather-widget.js',
   './assets/app-icon.svg',
@@ -43,7 +41,8 @@ self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=
 self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting()});
 function persistResponse(event,request,response){
   if(!event||!response||!response.ok)return;
-  const task=caches.open(CACHE_NAME).then(cache=>cache.put(request,response.clone()));
+  const copy=response.clone();
+  const task=caches.open(CACHE_NAME).then(cache=>cache.put(request,copy));
   event.waitUntil(task);
 }
 async function networkFirst(request,event,ignoreSearch){

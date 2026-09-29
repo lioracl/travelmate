@@ -1,17 +1,17 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-35'}catch(error){return'20260929-35'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-36'}catch(error){return'20260929-36'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={};
   var isHomePage=Boolean(document.body&&document.body.classList.contains('home-page'));
-  var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css'];
+  var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','ai-assistant.css'];
   var homeBaseStyles=['language.css','network-usage.css','theme.css'];
   var finalStyle='readable-glass.css';
   var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
   var features={
     overview:{styles:['weather-widget.css','trip-intelligence.css'],scripts:['weather-widget.js']},
     intelligence:{styles:[],scripts:['trip-intelligence.js']},
-    assistant:{styles:['ai-assistant.css','smart-hub.css'],scripts:['ai-assistant.js','smart-hub.js']},
+    assistant:{styles:['smart-hub.css'],scripts:['ai-assistant.js','smart-hub.js']},
     account:{styles:['security-center.css','admin-center.css'],scripts:['security-center.js','admin-center.js']},
     places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['lodging-manager.js','place-auto-fill.js','place-directions.js']},
     plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css'],scripts:['auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
@@ -76,8 +76,24 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     })
   }
   function canWarmNonCritical(){var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||null;return !document.hidden&&!(connection&&connection.saveData)&&!(connection&&/^(slow-2g|2g)$/i.test(String(connection.effectiveType||'')))}
-  function scheduleIdleFeature(view,delay){var run=function(){if(view==='assistant'||canWarmNonCritical())loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
-  function warmNonCritical(){scheduleIdleFeature('assistant',500);scheduleIdleFeature('account',4200)}
+  function scheduleIdleFeature(view,delay){var run=function(){if(canWarmNonCritical())loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
+  function warmNonCritical(){scheduleIdleFeature('account',4200)}
+  function createAssistantShell(){
+    if(isHomePage||document.querySelector('.ai-orb'))return;
+    var orb=document.createElement('button');
+    orb.className='ai-orb';orb.type='button';orb.dataset.aiShell='';orb.setAttribute('aria-label','פתיחת העוזר האישי');orb.setAttribute('aria-expanded','false');
+    orb.innerHTML='<span class="ai-orb-ring"></span><i class="fa-solid fa-wand-magic-sparkles"></i><span class="ai-orb-badge">AI</span>';
+    function activate(event){
+      if(window.__travelMateAiAssistantLoaded){orb.removeEventListener('click',activate,true);return}
+      event.preventDefault();event.stopImmediatePropagation();
+      loadFeature('assistant').then(function(ready){
+        if(ready===false)return;
+        orb.removeEventListener('click',activate,true);
+        window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi,{source:'assistant-shell'});
+      })
+    }
+    orb.addEventListener('click',activate,true);document.body.appendChild(orb)
+  }
   function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
   if(isHomePage){
     var homeBaseReady=Promise.all(homeBaseStyles.map(loadStyle));
@@ -86,6 +102,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   }else{
     ensureLazyNavigation();
     var baseReady=Promise.all(baseStyles.map(loadStyle));
+    baseReady.then(createAssistantShell);
     var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
     var initialView=activeView();
     var featureReady=baseReady.then(function(){return loadFeature(initialView)});

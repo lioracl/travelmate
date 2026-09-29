@@ -127,10 +127,12 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.doesNotMatch(source, /loadStructure|deferredStructureScripts|structureScripts|structureStyles/);
   assert.match(source, /ensureLazyNavigation\(\)/);
   assert.match(source, /dynamicSectionViews=\{transport:true,getaways:true,group:true,memories:true\}/);
-  assert.match(source, /assistant:\{styles:\['ai-assistant\.css','smart-hub\.css'\],scripts:\['ai-assistant\.js','smart-hub\.js'\]\}/);
+  assert.match(source, /baseStyles=\[[^\]]*'ai-assistant\.css'/);
+  assert.match(source, /assistant:\{styles:\['smart-hub\.css'\],scripts:\['ai-assistant\.js','smart-hub\.js'\]\}/);
   assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
-  assert.match(source, /scheduleIdleFeature\('assistant',500\)/);
+  assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
   assert.match(source, /scheduleIdleFeature\('account',4200\)/);
+  assert.match(source, /function createAssistantShell\(\)/);
   assert.doesNotMatch(source, /overview:\{[^}]*ai-assistant/);
 });
 
@@ -298,8 +300,9 @@ test('auto planner coalesces mutation enhancement work into one animation frame'
   assert.doesNotMatch(source, /new MutationObserver\(function\(\)\{requestAnimationFrame/);
 });
 
-test('service worker keeps cache writes alive without delaying the response', () => {
+test('service worker clones responses before returning them and keeps cache writes alive', () => {
   assert.match(serviceWorker, /function persistResponse\(event,request,response\)/);
+  assert.match(serviceWorker, /const copy=response\.clone\(\);\s*const task=caches\.open\(CACHE_NAME\)\.then\(cache=>cache\.put\(request,copy\)\)/);
   assert.match(serviceWorker, /event\.waitUntil\(task\)/);
   assert.match(serviceWorker, /persistResponse\(event,request,response\)/);
 });
@@ -323,13 +326,16 @@ test('Auto Planner observes only planner/calendar roots instead of the entire do
   assert.doesNotMatch(source, /observer\.observe\(document\.body/);
 });
 
-test('idle Account warming skips hidden, Save-Data and very slow connections', () => {
+test('idle Account warming skips hidden, Save-Data and very slow connections while Mate stays on demand', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.match(source, /function canWarmNonCritical\(\)/);
   assert.match(source, /!document\.hidden/);
   assert.match(source, /connection&&connection\.saveData/);
   assert.match(source, /slow-2g\|2g/);
-  assert.match(source, /if\(view==='assistant'\|\|canWarmNonCritical\(\)\)loadFeature\(view\)/);
+  assert.match(source, /function warmNonCritical\(\)\{scheduleIdleFeature\('account',4200\)\}/);
+  assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
+  assert.match(source, /function createAssistantShell\(\)/);
+  assert.match(source, /loadFeature\('assistant'\)/);
 });
 
 test('PWA bootstrap does not dispatch the unused app-update-ready event', () => {

@@ -52,12 +52,16 @@ test('Weather hydrates its reserved slot and is excluded from generic control he
   assert.match(weather,/scheduleInitialLoad\(ui\)/);
 });
 
-test('Mate hydrates its reserved Overview slot and loads assistant runtime on demand',()=>{
+test('Mate keeps a lightweight launcher and loads assistant runtime only on intent',()=>{
   const intelligence=read('assets/trip-intelligence.js');
   const app=read('assets/app.js');
+  const assistant=read('assets/ai-assistant.js');
   assert.match(intelligence,/document\.querySelector\('\[data-navo-trip-banner\]'\) \|\| document\.createElement\('aside'\)/);
   assert.match(intelligence,/ensureAssistant\?window\.TravelMateFeatures\.ensureAssistant\(\):Promise\.resolve\(\)/);
-  assert.match(app,/scheduleIdleFeature\('assistant',500\)/);
+  assert.match(app,/function createAssistantShell\(\)/);
+  assert.match(app,/loadFeature\('assistant'\)/);
+  assert.doesNotMatch(app,/scheduleIdleFeature\('assistant'/);
+  assert.match(assistant,/document\.querySelector\('\.ai-orb'\) \|\| document\.createElement\('button'\)/);
 });
 
 test('navigation boot uses query-state navigation without legacy hash shield or initial scroll',()=>{

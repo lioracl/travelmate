@@ -20,7 +20,10 @@ test('vendored PDF.js files exist and are non-trivial', () => {
   assert.ok(fs.statSync(worker).size > 500000);
 });
 
-test('service worker precaches and versions module assets', () => {
-  assert.match(sw, /assets\/vendor\/pdfjs\/pdf\.min\.js/);
-  assert.match(sw, /assets\/vendor\/pdfjs\/pdf\.worker\.min\.js/);
+test('PDF.js stays local but is cached on demand instead of bloating the install shell', () => {
+  const core = sw.match(/const CORE_PATHS=\[[\s\S]*?\];/);
+  assert.ok(core);
+  assert.doesNotMatch(core[0], /vendor\/pdfjs/);
+  assert.match(sw, /const versionedAsset=freshAsset&&url\.searchParams\.has\('v'\)/);
+  assert.match(sw, /cacheFirstVersioned\(event\.request,event\)/);
 });
