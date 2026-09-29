@@ -946,3 +946,17 @@ html body.tm-new-design:not(.home-page)::before{
 html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#getaways)>.section-head .mark{
   display:none
 }
+
+
+/* Mobile chrome edge fix: no page/background strip above the fixed trip header. */
+@media(max-width:1000px){
+  body:not(.home-page) .mobile-header{
+    top:0;
+    right:0;
+    left:0;
+    width:100%;
+    margin:0;
+    border-inline:0
+  }
+  body:not(.home-page) .network-usage-meter.in-trip{top:68px}
+}
