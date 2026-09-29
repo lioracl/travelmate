@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-37'}catch(error){return'20260929-37'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-38'}catch(error){return'20260929-38'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={};
@@ -9,7 +9,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   var finalStyle='readable-glass.css';
   var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
   var features={
-    overview:{styles:['weather-widget.css','trip-intelligence.css'],scripts:['weather-widget.js']},
+    overview:{styles:['weather-widget.css','trip-intelligence.css','today-activities.css'],scripts:['weather-widget.js','today-activities.js']},
     intelligence:{styles:[],scripts:['trip-intelligence.js']},
     assistant:{styles:['smart-hub.css'],scripts:['ai-assistant.js','smart-hub.js']},
     account:{styles:['security-center.css','admin-center.css'],scripts:['security-center.js','admin-center.js']},
