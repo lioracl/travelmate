@@ -751,3 +751,24 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-activi
       url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=86") center/cover;
   }
 }
+
+
+/* New-trip modal isolation: the trip gallery must never bleed through the creation flow. */
+body.home-page #modal-destination.modal-backdrop{
+  z-index:1400;
+  background:var(--bg,#fdfcf8);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+body.home-page #modal-destination .destination-modal{
+  border:1px solid var(--line,rgba(41,37,36,.08));
+  background:var(--surface,#fff);
+  color:var(--text,#292524);
+  box-shadow:0 28px 80px rgba(18,44,38,.22)
+}
+html[data-theme="dark"] body.home-page #modal-destination.modal-backdrop{background:#071611}
+html[data-theme="dark"] body.home-page #modal-destination .destination-modal{
+  border-color:rgba(255,255,255,.14);
+  background:#10231e;
+  color:#f3f5f4
+}
