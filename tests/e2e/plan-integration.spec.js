@@ -29,6 +29,19 @@ async function seed(page) {
   }, trip);
 }
 
+async function seedSavedPlaces(page) {
+  const value = JSON.parse(JSON.stringify(trip));
+  value.savedPlaces = [
+    { id:'saved-only-1', name:'Saved Cafe', category:'בית קפה', description:'Saved for later', date:'', time:'10:00', lat:'50.081', lon:'14.425', imageResolutionVersion:3 },
+    { id:'scheduled-1', name:'Scheduled Museum', category:'מוזיאון', description:'Already planned', date:'2026-09-29', time:'15:00', lat:'50.079', lon:'14.430', imageResolutionVersion:3 }
+  ];
+  await page.addInitScript(savedTrip => {
+    localStorage.setItem('travelmate-trips', JSON.stringify([savedTrip]));
+    localStorage.removeItem('travelmate-active-user');
+    localStorage.setItem('travelmate-theme', 'light');
+  }, value);
+}
+
 async function noHorizontalOverflow(page) {
   return page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 2);
 }
@@ -104,6 +117,41 @@ for (const viewport of [
       await todayCard.locator('.today-activities-less').click();
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
+      expect(await noHorizontalOverflow(page)).toBeTruthy();
+    });
+
+
+    test('Saved Places has a complete save-to-Plan lifecycle', async ({ page }) => {
+      await seedSavedPlaces(page);
+      page.on('dialog', dialog => dialog.accept());
+      await page.goto('/trip/custom/index.html?id=qa-playwright&view=places', { waitUntil: 'domcontentloaded' });
+
+      const shelf = page.locator('[data-saved-places-shelf]');
+      await expect(shelf).toBeVisible();
+      await expect(shelf.locator('[data-saved-places-count]')).toHaveText('2 מקומות');
+      await expect(shelf.locator('[data-saved-places-scheduled]')).toHaveText('1');
+      await expect(shelf.locator('[data-saved-places-unscheduled]')).toHaveText('1');
+
+      let savedOnly = shelf.locator('[data-saved-shelf-id="saved-only-1"]');
+      await savedOnly.locator('[data-saved-shelf-date]').selectOption('2026-09-30');
+      await savedOnly.locator('[data-saved-shelf-time]').fill('14:15');
+      await savedOnly.locator('[data-saved-shelf-schedule]').click();
+      await expect(shelf.locator('[data-saved-places-scheduled]')).toHaveText('2');
+      savedOnly = shelf.locator('[data-saved-shelf-id="saved-only-1"]');
+      await expect(savedOnly.locator('[data-saved-shelf-open-plan]')).toBeVisible();
+
+      let scheduled = shelf.locator('[data-saved-shelf-id="scheduled-1"]');
+      await scheduled.locator('[data-saved-shelf-unschedule]').click();
+      await expect(shelf.locator('[data-saved-places-scheduled]')).toHaveText('1');
+      await expect(shelf.locator('[data-saved-places-unscheduled]')).toHaveText('1');
+      scheduled = shelf.locator('[data-saved-shelf-id="scheduled-1"]');
+      await scheduled.locator('[data-saved-shelf-delete]').click();
+      await expect(shelf.locator('[data-saved-places-count]')).toHaveText('מקום אחד');
+
+      savedOnly = shelf.locator('[data-saved-shelf-id="saved-only-1"]');
+      await savedOnly.locator('[data-saved-shelf-open-plan]').click();
+      await expect(page.locator('body')).toHaveAttribute('data-trip-view', 'plan');
+      await expect(page.locator('[data-saved-place-id="saved-only-1"]')).toBeVisible();
       expect(await noHorizontalOverflow(page)).toBeTruthy();
     });
   });
