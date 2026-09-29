@@ -15,7 +15,7 @@ test('saved places exposes one lifecycle shelf with scheduled and saved-only cou
   assert.match(app, /data-saved-places-scheduled/);
   assert.match(app, /data-saved-places-unscheduled/);
   assert.match(app, /המקומות ששמרתי/);
-  assert.match(app, /שמור בלבד · עדיין לא בתוכנית/);
+  assert.match(app, /נשמר כאן · עדיין לא תוזמן/);
   assert.match(app, /בתוכנית · /);
 });
 
