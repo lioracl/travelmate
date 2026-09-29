@@ -78,7 +78,6 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   }
   function canWarmNonCritical(){var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||null;return !document.hidden&&!(connection&&connection.saveData)&&!(connection&&/^(slow-2g|2g)$/i.test(String(connection.effectiveType||'')))}
   function scheduleIdleFeature(view,delay){var run=function(){if(canWarmNonCritical())loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
-  function warmNonCritical(){scheduleIdleFeature('account',4200)}
   function createAssistantShell(){
     if(isHomePage||document.querySelector('.ai-orb'))return;
     var orb=document.createElement('button');
@@ -107,7 +106,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
     var initialView=activeView();
     var featureReady=baseReady.then(function(){return loadFeature(initialView)});
-    Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,initialView==='overview'?baseReady.then(loadTodayActivities):Promise.resolve(true)]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250);warmNonCritical()});
+    Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,initialView==='overview'?baseReady.then(loadTodayActivities):Promise.resolve(true)]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250)});
   }
   window.addEventListener('travelmate:viewchange',function(event){var view=event.detail&&event.detail.view;loadFeature(view).then(function(){if(view==='overview'){loadTodayActivities();scheduleIdleFeature('intelligence',250)}})});
   document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview'){loadTodayActivities();loadFeature('intelligence')}}},{capture:true,passive:true});
