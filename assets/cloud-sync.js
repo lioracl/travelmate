@@ -56,6 +56,8 @@
 
   function setLocalTrips(trips) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
+    var activeUser = localStorage.getItem(ACTIVE_USER_KEY) || '';
+    if (activeUser) localStorage.setItem(USER_STORAGE_PREFIX + activeUser, JSON.stringify(trips));
     window.dispatchEvent(new CustomEvent('travelmate:local-trips-updated', { detail: trips }));
   }
 
@@ -240,6 +242,17 @@
     return Array.from(merged.values());
   }
 
+  function mergeActiveTripsWithBackup(activeTrips, backupTrips, fallbackOwnerId) {
+    var merged = new Map();
+    (Array.isArray(backupTrips) ? backupTrips : []).forEach(function (trip) {
+      if (trip && trip.id != null) merged.set(tripIdentity(trip, fallbackOwnerId), trip);
+    });
+    (Array.isArray(activeTrips) ? activeTrips : []).forEach(function (trip) {
+      if (trip && trip.id != null) merged.set(tripIdentity(trip, fallbackOwnerId), trip);
+    });
+    return Array.from(merged.values());
+  }
+
   function activateUserStorage(userId) {
     userId = userId ? String(userId) : '';
     var activeUser = localStorage.getItem(ACTIVE_USER_KEY) || '';
@@ -247,7 +260,7 @@
       if (userId) {
         var activeSnapshotKey = USER_STORAGE_PREFIX + userId;
         var currentActiveTrips = getLocalTrips();
-        var recoveredActiveTrips = mergeTripLists([currentActiveTrips, readTripList(activeSnapshotKey)], userId);
+        var recoveredActiveTrips = mergeActiveTripsWithBackup(currentActiveTrips, readTripList(activeSnapshotKey), userId);
         localStorage.setItem(activeSnapshotKey, JSON.stringify(recoveredActiveTrips));
         if (JSON.stringify(recoveredActiveTrips) !== JSON.stringify(currentActiveTrips)) setLocalTrips(recoveredActiveTrips);
       }
