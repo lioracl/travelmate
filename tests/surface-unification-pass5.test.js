@@ -16,14 +16,14 @@ test('surface roles have one shared owner rather than per-page pale panels',()=>
   assert.doesNotMatch(css,/--tm-card-control-selected:rgba\(255,255,255/);
 });
 
-test('noncritical warming leaves Mate on demand and respects data saver for Account',()=>{
+test('Account and Mate stay on demand while noncritical warming remains available for Overview intelligence',()=>{
   const source=read('assets/app.js');
-  const block=source.slice(source.indexOf('  function scheduleIdleFeature'),source.indexOf('  function createAssistantShell'));
-  const timers=[],idle=[],loaded=[];
-  vm.runInNewContext(block+';warmNonCritical();',{setTimeout:(run,delay)=>timers.push({run,delay}),window:{requestIdleCallback:true},requestIdleCallback:run=>idle.push(run),canWarmNonCritical:()=>false,loadFeature:view=>loaded.push(view)});
-  assert.deepEqual(timers.map(t=>t.delay),[4200]);
-  timers.forEach(t=>t.run()); assert.equal(loaded.length,0);
-  idle.forEach(run=>run()); assert.deepEqual(loaded,[]);
+  assert.match(source,/function scheduleIdleFeature\(view,delay\)/);
+  assert.match(source,/scheduleIdleFeature\('intelligence',250\)/);
+  assert.doesNotMatch(source,/scheduleIdleFeature\('account'/);
+  assert.doesNotMatch(source,/scheduleIdleFeature\('assistant'/);
+  assert.match(source,/ensureAccount:function\(\)\{return loadFeature\('account'\)\}/);
+  assert.match(source,/ensureAssistant:function\(\)\{return loadFeature\('assistant'\)\}/);
 });
 
 test('Smart Hub is a native secondary-menu button without floating drag listeners',()=>{
