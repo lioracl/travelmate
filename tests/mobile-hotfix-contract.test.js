@@ -39,3 +39,11 @@ test('past Plan days remain hidden until the history strip explicitly reopens th
   const css = read('assets/plan-ux-polish.css');
   assert.match(css, /html body\.tm-new-design\[data-trip-view="plan"\] #plan \.generated-day\.past-trip-day:not\(\.past-trip-day-open\)\{\s*display:none\s*\}/);
 });
+
+
+test('past-day strip keeps stable DOM while UX polish adds progress metadata', () => {
+  const source = read('assets/auto-planner.js');
+  assert.match(source, /stripSignature=past\.map/);
+  assert.match(source, /strip\.dataset\.renderSignature!==stripSignature/);
+  assert.doesNotMatch(source, /strip\.innerHTML!==nextStripHtml/);
+});
