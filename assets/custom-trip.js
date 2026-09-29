@@ -1,5 +1,122 @@
+(function (root, factory) {
+  var helpers = factory();
+  if (typeof module === 'object' && module.exports) module.exports = helpers;
+  if (root) root.TravelMateToday = Object.freeze(helpers);
+})(typeof window === 'undefined' ? null : window, function () {
+  'use strict';
+
+  var DAY_MS = 86400000;
+
+  function localDateKey(value) {
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+    var date = value instanceof Date ? value : new Date(value == null ? Date.now() : value);
+    return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+  }
+
+  function dayStamp(value) {
+    var parts = String(value || '').split('-').map(Number);
+    return parts.length === 3 && parts.every(Number.isFinite) ? Date.UTC(parts[0], parts[1] - 1, parts[2]) : NaN;
+  }
+
+  function dayDistance(from, to) {
+    return Math.round((dayStamp(to) - dayStamp(from)) / DAY_MS);
+  }
+
+  function phase(trip, today) {
+    var date = localDateKey(today);
+    var start = String(trip && trip.start || '');
+    var end = String(trip && trip.end || start);
+    if (date < start) return { name: 'before', today: date, daysUntil: dayDistance(date, start), dayIndex: 0 };
+    if (date > end) return { name: 'after', today: date, daysUntil: 0, dayIndex: 0 };
+    return { name: 'active', today: date, daysUntil: 0, dayIndex: dayDistance(start, date) + 1 };
+  }
+
+  function normalizedTime(value) {
+    var match = String(value || '').match(/^(\d{1,2}):(\d{2})/);
+    return match ? String(match[1]).padStart(2, '0') + ':' + match[2] : '23:59';
+  }
+
+  function agenda(trip, date) {
+    var items = [];
+    (trip && trip.activities || []).forEach(function (item) {
+      if (!item || item.date !== date) return;
+      items.push({ kind: 'activity', id: item.id, title: item.title || 'פעילות', date: item.date, time: normalizedTime(item.time), duration: Math.max(0, Number(item.duration || 0)), category: item.category || 'פעילות', done: item.done === true });
+    });
+    (trip && trip.savedPlaces || []).forEach(function (item) {
+      if (!item || item.date !== date) return;
+      items.push({ kind: 'place', id: item.id, title: item.name || 'מקום שמור', date: item.date, time: normalizedTime(item.time), duration: Math.max(0, Number(item.duration || 0)), category: item.category || 'מקום שמור', done: item.done === true });
+    });
+    return items.sort(function (left, right) { return left.time.localeCompare(right.time) || left.title.localeCompare(right.title, 'he'); });
+  }
+
+  function minutes(value) {
+    var match = String(value || '').match(/^(\d{2}):(\d{2})$/);
+    return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+  }
+
+  function currentOrNext(items, nowMinutes) {
+    if (typeof nowMinutes === 'string') nowMinutes = minutes(nowMinutes);
+    else if (nowMinutes instanceof Date) nowMinutes = nowMinutes.getHours() * 60 + nowMinutes.getMinutes();
+    var remaining = (items || []).filter(function (item) { return !item.done; });
+    var current = remaining.find(function (item) {
+      var start = minutes(item.time);
+      return start !== null && item.duration > 0 && start <= nowMinutes && nowMinutes < start + item.duration;
+    });
+    if (current) return Object.assign({ state: 'current', item: current }, current);
+    var next = remaining.find(function (item) { var start = minutes(item.time); return start !== null && start >= nowMinutes; });
+    return next ? Object.assign({ state: 'next', item: next }, next) : null;
+  }
+
+  function allItems(trip) {
+    return (trip && trip.activities || []).concat(trip && trip.savedPlaces || []).filter(function (item) { return item && item.date; });
+  }
+
+  function summary(trip) {
+    var items = allItems(trip);
+    return { total: items.length, completed: items.filter(function (item) { return item.done === true; }).length };
+  }
+
+  function firstScheduled(trip) {
+    var dates = allItems(trip).map(function (item) {
+      return { title: item.title || item.name || 'פריט בתוכנית', date: item.date, time: normalizedTime(item.time) };
+    }).sort(function (left, right) { return (left.date + left.time).localeCompare(right.date + right.time); });
+    return dates[0] || null;
+  }
+
+  function model(trip, now) {
+    var date = now instanceof Date ? now : new Date(now == null ? Date.now() : now);
+    var phaseState = phase(trip, date);
+    var items = allItems(trip).slice().sort(function (left, right) {
+      return (String(left.date) + normalizedTime(left.time)).localeCompare(String(right.date) + normalizedTime(right.time));
+    });
+    var todayItems = agenda(trip, phaseState.today);
+    return {
+      phase: phaseState.name.toUpperCase(), today: phaseState.today,
+      dayIndex: phaseState.name === 'active' ? phaseState.dayIndex : null,
+      tripDays: Number(trip && trip.days || dayDistance(trip.start, trip.end) + 1),
+      daysUntilStart: phaseState.daysUntil,
+      items: items, todayItems: todayItems,
+      completedToday: todayItems.filter(function (item) { return item.done; }).length,
+      remainingToday: todayItems.filter(function (item) { return !item.done; }).length,
+      currentOrNext: currentOrNext(todayItems, date),
+      firstScheduled: firstScheduled(trip),
+      completedTotal: items.filter(function (item) { return item.done === true; }).length
+    };
+  }
+
+  return {
+    localDateKey: localDateKey, localDateValue: localDateKey,
+    dayDistance: dayDistance, daysBetween: dayDistance,
+    phase: phase, tripPhase: function (trip, now) { return phase(trip, now).name.toUpperCase(); },
+    agenda: agenda, agendaForDate: agenda,
+    currentOrNext: currentOrNext, summary: summary, firstScheduled: firstScheduled, model: model
+  };
+});
+
 (function () {
   'use strict';
+
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
   var tripId = new URLSearchParams(location.search).get('id');
   var cloud = window.TravelMateCloud;
@@ -18,9 +135,7 @@
   }
 
   function localDateValue(date) {
-    var value = date || new Date();
-    var local = new Date(value.getTime() - value.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 10);
+    return window.TravelMateToday.localDateKey(date || new Date());
   }
 
   function normalizedTime(value) {
@@ -145,6 +260,84 @@
     var today = localDateValue(new Date());
     var label = date === today ? 'היום' : new Intl.DateTimeFormat('he-IL', { weekday: 'short', day: 'numeric', month: 'short' }).format(value);
     return label + (time && time !== '23:59' ? ' · ' + time : '');
+  }
+
+  function escapeToday(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (character) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character];
+    });
+  }
+
+  function todayDateLabel(date) {
+    return new Intl.DateTimeFormat('he-IL', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(date + 'T12:00:00'));
+  }
+
+  function todayAgendaRows(items, focus) {
+    var start = 0;
+    if (items.length > 3 && focus) {
+      var focusIndex = items.findIndex(function (item) { return item.kind === focus.kind && String(item.id) === String(focus.id); });
+      if (focusIndex > 0) start = Math.min(focusIndex - 1, items.length - 3);
+    }
+    return items.slice(start, start + 3).map(function (item) {
+      var time = item.time === '23:59' ? 'ללא שעה' : item.time;
+      return '<li class="trip-today-row' + (item.done ? ' is-complete' : '') + '">' +
+        '<time datetime="' + escapeToday(item.date + 'T' + item.time) + '">' + escapeToday(time) + '</time>' +
+        '<span><strong>' + escapeToday(item.title) + '</strong><small>' + escapeToday(item.category) + (item.kind === 'place' ? ' · מקום שמור' : '') + '</small></span>' +
+        (item.done ? '<i class="fa-solid fa-check" aria-label="הושלם"></i>' : '') + '</li>';
+    }).join('');
+  }
+
+  function todayActions(includeAll, afterTrip) {
+    var actions = afterTrip
+      ? '<a class="primary" href="#plan"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i>תוכנית הטיול</a><a href="#overview"><i class="fa-solid fa-house" aria-hidden="true"></i>סקירה</a>'
+      : '<a class="primary" href="#plan"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i>תוכנית</a>';
+    if (includeAll) actions += '<a href="#places"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>מקומות</a><a href="#budget"><i class="fa-solid fa-wallet" aria-hidden="true"></i>תקציב</a><button type="button" data-today-weather><i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>מזג אוויר</button>';
+    return '<nav class="trip-today-actions" aria-label="פעולות מהירות">' + actions + '</nav>';
+  }
+
+  function renderTripToday(trip, now) {
+    var root = document.querySelector('[data-trip-today]');
+    if (!root || !trip || !trip.start || !trip.end) return;
+    now = now || new Date();
+    var state = window.TravelMateToday.phase(trip, now);
+    var heading = '<header><div><small>מצב טיול · היום</small><h2 id="trip-today-title">';
+    var closingHeading = '</h2></div>';
+
+    if (state.name === 'before') {
+      var first = window.TravelMateToday.firstScheduled(trip);
+      var countdown = state.daysUntil === 1 ? 'מחר יוצאים לדרך' : 'עוד ' + state.daysUntil + ' ימים יוצאים לדרך';
+      root.innerHTML = heading + escapeToday(countdown) + closingHeading + '<i class="fa-solid fa-suitcase-rolling" aria-hidden="true"></i></header>' +
+        '<div class="trip-today-before"><p>הטיול מתחיל ב־<strong>' + escapeToday(todayDateLabel(trip.start)) + '</strong>.</p>' +
+        (first ? '<span>הפריט הראשון: <strong>' + escapeToday(first.title) + '</strong> · ' + escapeToday(formatOverviewDate(first.date, first.time)) + '</span>' : '<span>התוכנית עדיין פתוחה — אפשר להתחיל בקצב שלך.</span>') + '</div>' + todayActions(false, false);
+    } else if (state.name === 'after') {
+      var tripSummary = window.TravelMateToday.summary(trip);
+      root.innerHTML = heading + 'הטיול הסתיים' + closingHeading + '<i class="fa-solid fa-flag-checkered" aria-hidden="true"></i></header>' +
+        '<div class="trip-today-before"><p><strong>' + tripSummary.completed + '</strong> מתוך <strong>' + tripSummary.total + '</strong> פריטים סומנו כהושלמו.</p><span>המסלול נשאר כאן לעיון, ואפשר לשמור את הרגעים שאספתם.</span></div>' + todayActions(false, true);
+    } else {
+      var items = window.TravelMateToday.agenda(trip, state.today);
+      var completed = items.filter(function (item) { return item.done; }).length;
+      var remaining = items.length - completed;
+      var nowMinutes = now.getHours() * 60 + now.getMinutes();
+      var focus = window.TravelMateToday.currentOrNext(items, nowMinutes);
+      var tripDays = Number(trip.days || window.TravelMateToday.dayDistance(trip.start, trip.end) + 1);
+      var focusHtml = focus
+        ? '<div class="trip-today-focus"><small>' + (focus.state === 'current' ? 'עכשיו' : 'הבא היום') + '</small><strong>' + escapeToday(focus.title) + '</strong><span>' + escapeToday(focus.time === '23:59' ? 'ללא שעה' : focus.time) + (focus.category ? ' · ' + escapeToday(focus.category) : '') + '</span></div>'
+        : '';
+      var agendaHtml = items.length
+        ? '<ol class="trip-today-agenda" aria-label="סדר היום">' + todayAgendaRows(items, focus) + '</ol>'
+        : '<div class="trip-today-empty"><i class="fa-regular fa-calendar-plus" aria-hidden="true"></i><div><strong>היום נשאר פתוח</strong><span>אפשר לנוח או להוסיף משהו קטן לתוכנית.</span></div><a href="#plan">לתכנון היום</a></div>';
+      root.innerHTML = heading + 'היום הוא יום ' + state.dayIndex + ' מתוך ' + tripDays + closingHeading + '<time datetime="' + state.today + '">' + escapeToday(todayDateLabel(state.today)) + '</time></header>' +
+        '<div class="trip-today-progress" aria-label="התקדמות היום"><span><strong>' + completed + '</strong> הושלמו</span><i aria-hidden="true"></i><span><strong>' + remaining + '</strong> נשארו</span></div>' + focusHtml + agendaHtml + todayActions(true, false);
+    }
+    root.hidden = false;
+    if (root.dataset.weatherBound !== 'true') {
+      root.dataset.weatherBound = 'true';
+      root.addEventListener('click', function (event) {
+        if (!event.target.closest('[data-today-weather]')) return;
+        var weather = document.querySelector('[data-weather-top-widget]');
+        if (weather) weather.click();
+      });
+    }
   }
 
   function renderOverviewControlCenter(trip) {
@@ -313,6 +506,7 @@
     text('[data-type]', trip.type);
     text('[data-budget]', Number(trip.budget).toLocaleString('he-IL'));
     text('[data-dates]', format(trip.start) + ' – ' + format(trip.end));
+    renderTripToday(trip);
     renderOverviewControlCenter(trip);
     var query = encodeURIComponent(trip.city + ', ' + trip.country);
     document.querySelectorAll('[data-maps]').forEach(function (link) { link.href = 'https://www.google.com/maps/search/?api=1&query=' + query; });
@@ -340,7 +534,10 @@
 
   function refreshOverviewFromStore() {
     var trip = localTrip();
-    if (trip) renderOverviewControlCenter(trip);
+    if (trip) {
+      renderTripToday(trip);
+      renderOverviewControlCenter(trip);
+    }
     renderSyncConflictBanner(trip);
   }
 
@@ -382,6 +579,10 @@
   });
   window.addEventListener('travelmate:local-trips-updated', refreshOverviewFromStore);
   window.addEventListener('travelmate:trip-synced', refreshOverviewFromStore);
+  window.addEventListener('focus', refreshOverviewFromStore);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') refreshOverviewFromStore();
+  });
 
   var writeForbiddenNoticeTimer = null;
   window.addEventListener('travelmate:trip-write-forbidden', function (event) {

@@ -438,6 +438,73 @@ body:not(.home-page) .trip-sidebar-more-menu i{
 
 
 /* Overview V2 control center */
+body[data-trip-view="overview"] .trip-today{
+  min-width:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(220px,.72fr);
+  gap:14px 18px;
+  margin:14px 0 16px;
+  padding:18px;
+}
+body[data-trip-view="overview"] .trip-today[hidden],body:not([data-trip-view="overview"]) .trip-today{display:none}
+body[data-trip-view="overview"] .trip-today>header{
+  grid-column:1/-1;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+body[data-trip-view="overview"] .trip-today>header>div{min-width:0}
+body[data-trip-view="overview"] .trip-today>header small{display:block;margin-bottom:3px;color:var(--tm-card-secondary);font-size:11px;font-weight:850}
+body[data-trip-view="overview"] .trip-today h2{margin:0;color:var(--tm-card-heading);font-size:clamp(20px,2.3vw,27px);line-height:1.2}
+body[data-trip-view="overview"] .trip-today>header>i,body[data-trip-view="overview"] .trip-today>header>time{flex:0 0 auto;color:var(--tm-card-secondary)}
+body[data-trip-view="overview"] .trip-today>header>i{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:var(--tm-card-bg-compact);font-size:18px}
+body[data-trip-view="overview"] .trip-today>header>time{font-size:13px;font-weight:750}
+body[data-trip-view="overview"] .trip-today-progress{grid-column:1/-1;display:flex;align-items:center;gap:9px;color:var(--tm-card-muted);font-size:12px}
+body[data-trip-view="overview"] .trip-today-progress strong{color:var(--tm-card-heading);font-size:15px}
+body[data-trip-view="overview"] .trip-today-progress i{width:4px;height:4px;border-radius:50%;background:var(--tm-card-secondary)}
+body[data-trip-view="overview"] .trip-today-focus{min-width:0;display:grid;align-content:center;gap:3px;padding:13px 14px;border-radius:14px;background:var(--tm-card-bg-compact)}
+body[data-trip-view="overview"] .trip-today-focus small{color:var(--tm-card-secondary);font-size:11px;font-weight:850}
+body[data-trip-view="overview"] .trip-today-focus strong{overflow:hidden;color:var(--tm-card-heading);font-size:17px;text-overflow:ellipsis;white-space:nowrap}
+body[data-trip-view="overview"] .trip-today-focus span,body[data-trip-view="overview"] .trip-today-before span{color:var(--tm-card-muted);font-size:12px}
+body[data-trip-view="overview"] .trip-today-agenda{min-width:0;display:grid;gap:4px;margin:0;padding:0;list-style:none}
+body[data-trip-view="overview"] .trip-today-row{min-width:0;display:grid;grid-template-columns:48px minmax(0,1fr) 22px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--tm-card-border)}
+body[data-trip-view="overview"] .trip-today-row:last-child{border-bottom:0}
+body[data-trip-view="overview"] .trip-today-row time{color:var(--tm-card-secondary);font-size:12px;font-weight:800}
+body[data-trip-view="overview"] .trip-today-row>span{min-width:0;display:grid;gap:1px}
+body[data-trip-view="overview"] .trip-today-row strong{overflow:hidden;color:var(--tm-card-heading);font-size:13px;text-overflow:ellipsis;white-space:nowrap}
+body[data-trip-view="overview"] .trip-today-row small{overflow:hidden;color:var(--tm-card-muted);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+body[data-trip-view="overview"] .trip-today-row>i{color:var(--tm-brand-primary);font-size:12px}
+body[data-trip-view="overview"] .trip-today-row.is-complete{opacity:.62}
+body[data-trip-view="overview"] .trip-today-row.is-complete strong{text-decoration:line-through}
+body[data-trip-view="overview"] .trip-today-before{grid-column:1/-1;display:grid;gap:4px}
+body[data-trip-view="overview"] .trip-today-before p{margin:0;color:var(--tm-card-text);font-size:15px}
+body[data-trip-view="overview"] .trip-today-empty{grid-column:1/-1;min-width:0;display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:var(--tm-card-bg-compact)}
+body[data-trip-view="overview"] .trip-today-empty>i{color:var(--tm-card-secondary);font-size:19px}
+body[data-trip-view="overview"] .trip-today-empty>div{min-width:0;display:grid;gap:2px}
+body[data-trip-view="overview"] .trip-today-empty strong{color:var(--tm-card-heading)}
+body[data-trip-view="overview"] .trip-today-empty span{color:var(--tm-card-muted);font-size:12px}
+body[data-trip-view="overview"] .trip-today-empty>a{margin-inline-start:auto;white-space:nowrap}
+body[data-trip-view="overview"] .trip-today-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;padding-top:2px}
+body[data-trip-view="overview"] .trip-today-actions :is(a,button),body[data-trip-view="overview"] .trip-today-empty>a{min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;border:1px solid var(--tm-card-control-border);border-radius:11px;padding:0 12px;background:var(--tm-card-control);color:var(--tm-card-control-text);font:800 12px/1 system-ui;text-decoration:none;cursor:pointer}
+body[data-trip-view="overview"] .trip-today-actions .primary{border-color:var(--tm-action-primary);background:var(--tm-action-primary);color:var(--tm-text-on-action)}
+body[data-trip-view="overview"] .trip-today :is(a,button):focus-visible{outline:3px solid color-mix(in srgb,var(--tm-brand-primary) 42%,transparent);outline-offset:2px}
+@media(max-width:700px){
+  body[data-trip-view="overview"] .trip-today{grid-template-columns:1fr;padding:15px}
+  body[data-trip-view="overview"] .trip-today>header{align-items:flex-start}
+  body[data-trip-view="overview"] .trip-today>header>time{max-width:110px;text-align:end}
+  body[data-trip-view="overview"] .trip-today-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  body[data-trip-view="overview"] .trip-today-actions :is(a,button){width:100%;min-width:0}
+}
+@media(max-width:430px){
+  body[data-trip-view="overview"] .trip-today{gap:11px;margin-inline:0}
+  body[data-trip-view="overview"] .trip-today h2{font-size:19px}
+  body[data-trip-view="overview"] .trip-today>header>time{font-size:11px}
+  body[data-trip-view="overview"] .trip-today-empty{align-items:flex-start;flex-wrap:wrap}
+  body[data-trip-view="overview"] .trip-today-empty>a{width:100%;margin-inline-start:0}
+}
+
 body[data-trip-view="overview"] .overview-control-center{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -516,7 +583,6 @@ body[data-trip-view="overview"] .overview-status-card>a:is(:hover,:focus-visible
   body[data-trip-view="overview"] .overview-status-icon{width:42px;height:42px}
   body[data-trip-view="overview"] .overview-status-card strong{font-size:16px}
 }
-
 
 /* Navigation geometry authority — Phase 2.
    Drawer/card material remains owned by readable-glass.css. */
