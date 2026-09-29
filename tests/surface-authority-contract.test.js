@@ -96,7 +96,7 @@ test('Overview and Plan local authority does not need important escalation',()=>
   const overview=css.match(/\/\* Legacy Overview layout bridge\.[\s\S]*?\/\* Canonical application-wide semantic material contract\./);
   assert.ok(overview,'Overview ownership bridge exists');
   assert.doesNotMatch(overview[0],/!important/);
-  assert.match(css,/data-trip-view="plan"[^\n]*#plan \.generated-day>div\{[\s\S]*?padding:14px;[\s\S]*?border-radius:18px/);
+  assert.match(css,/data-trip-view="plan"[^\n]*#plan \.generated-day>div\{[\s\S]*?padding:var\(--tm-plan-day-padding,14px\);[\s\S]*?border-radius:var\(--tm-plan-day-radius,18px\)/);
   assert.match(css,/data-trip-view="plan"[^\n]*#plan \.generated-day>\.badge\{[\s\S]*?min-width:84px;[\s\S]*?justify-content:center/);
 });
 

@@ -148,8 +148,8 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
 }
 
 html body.tm-new-design[data-trip-view="plan"] main.content #plan .generated-day>div{
-  padding:14px;
-  border-radius:18px
+  padding:var(--tm-plan-day-padding,14px);
+  border-radius:var(--tm-plan-day-radius,18px)
 }
 
 html body.tm-new-design[data-trip-view="plan"] main.content #plan .generated-day>.badge{
@@ -940,7 +940,7 @@ html body.tm-new-design main.content>section.section:not(.hero):not(#places):not
 html body.tm-new-design main.content>.trip-home-actions,
 html body.tm-new-design main.content :is(
   .expense-workspace,.transport-card,.travel-service-card,
-  .planner-toolbar,.fare-guide,.car-rental-card,.members-card,
+  .fare-guide,.car-rental-card,.members-card,
   .album-panel,.weather-forecast-panel
 ){
   border-radius:var(--tm-card-radius-featured)!important;
@@ -2411,7 +2411,7 @@ html body.tm-new-design :is(.danger,[data-delete],[data-remove],[data-delete-exp
 
 /* Plan depth pass: one day surface, flatter nested rows, no stacked white cards. */
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan :is(.planner-toolbar,.past-days-strip){
-  background:var(--tm-plan-shell-surface);
+  background:var(--tm-plan-toolbar-surface,var(--tm-plan-shell-surface));
   border-color:var(--tm-surface-border);
   box-shadow:0 4px 14px rgba(8,39,29,.07);
   -webkit-backdrop-filter:none;
@@ -2436,10 +2436,10 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan .g
   backdrop-filter:none
 }
 html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan .day-heading{
-  background:transparent;
+  background:var(--tm-plan-heading-surface,transparent);
   border:0;
   border-bottom:1px solid var(--tm-surface-border);
-  border-radius:0;
+  border-radius:var(--tm-plan-heading-radius,0);
   box-shadow:none;
   -webkit-backdrop-filter:none;
   backdrop-filter:none
@@ -2457,7 +2457,7 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan :i
   background:var(--tm-plan-row-surface);
   border:0;
   border-bottom:1px solid color-mix(in srgb,var(--tm-surface-border) 72%,transparent);
-  border-radius:0;
+  border-radius:var(--tm-plan-row-radius,0);
   box-shadow:none;
   -webkit-backdrop-filter:none;
   backdrop-filter:none
@@ -2489,6 +2489,99 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapse
     --tm-surface-glass:var(--tm-family-solid);
     --tm-surface-nested:var(--tm-family-solid);
     --tm-surface-photo:rgba(5,18,15,.9)
+  }
+}
+
+/* Mobile Visual Polish: final Overview density and translucency authority. */
+@media(max-width:650px){
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
+    --tm-overview-card:var(--tm-surface-nested);
+    --tm-overview-card-soft:color-mix(in srgb,var(--tm-surface-nested) 84%,transparent);
+    --tm-custom-overview-surface:var(--tm-overview-card)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] :is(
+    .today-activities-card,
+    .overview-status-card,
+    [data-navo-trip-banner],
+    .trip-home-actions
+  ){
+    background:var(--tm-overview-card);
+    box-shadow:0 4px 12px rgba(8,39,29,.08)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content{
+    gap:0
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .overview-control-center{
+    gap:8px;
+    margin:10px 0 12px
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .overview-status-card{
+    grid-template-columns:38px minmax(0,1fr) 44px;
+    gap:9px;
+    min-height:70px;
+    padding:9px 10px;
+    border-radius:14px
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .overview-status-icon{
+    width:38px;
+    height:38px;
+    border-radius:11px;
+    font-size:16px
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .overview-status-card strong{
+    display:-webkit-box;
+    overflow:hidden;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    font-size:15px;
+    line-height:1.3;
+    text-overflow:clip;
+    white-space:normal
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .overview-status-card div>span{
+    font-size:11px
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .overview-status-card>a{
+    width:44px;
+    height:44px;
+    border-radius:11px
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] [data-navo-trip-banner]{
+    grid-template-columns:38px minmax(0,1fr);
+    gap:9px;
+    margin:10px 0 12px;
+    padding:10px;
+    border-radius:14px
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] [data-navo-trip-banner]>span{
+    width:38px;
+    height:38px;
+    border-radius:11px;
+    font-size:17px
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] [data-navo-trip-banner] p{
+    font-size:12px;
+    line-height:1.4
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content>.trip-home-actions{
+    gap:8px;
+    margin-top:10px;
+    padding:12px;
+    border-radius:14px
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions h2{
+    font-size:18px
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions nav{
+    gap:7px;
+    margin-top:0;
+    grid-auto-rows:minmax(48px,auto)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .trip-home-actions a{
+    min-height:48px;
+    padding:8px 10px;
+    border-radius:12px;
+    font-size:12px
   }
 }
 
