@@ -356,7 +356,9 @@ test('Plan day notes debounce persistence and flush before focus/page exit', () 
 test('past-day enhancement avoids rewriting identical DOM and observer self-loops', () => {
   const source = fs.readFileSync(path.join(root, 'assets/auto-planner.js'), 'utf8');
   assert.match(source, /var nextStripHtml=past\.length/);
-  assert.match(source, /if\(strip\.innerHTML!==nextStripHtml\)strip\.innerHTML=nextStripHtml/);
+  assert.match(source, /var stripSignature=past\.map/);
+  assert.match(source, /if\(strip\.dataset\.renderSignature!==stripSignature\)/);
+  assert.doesNotMatch(source, /strip\.innerHTML!==nextStripHtml/);
 });
 
 test('Overview defers trip intelligence until idle or explicit Overview intent', () => {
