@@ -114,13 +114,18 @@
   function bindShell(card, onRefresh) {
     var toggle = card.querySelector('.today-activities-toggle');
     var expanded = card.querySelector('.today-activities-expanded');
-    if (!toggle || !expanded || card.dataset.todayActivitiesBound === 'true') return;
-    card.dataset.todayActivitiesBound = 'true';
-    toggle.addEventListener('click', function () { setExpanded(card, toggle.getAttribute('aria-expanded') !== 'true'); });
-    card.addEventListener('click', function (event) {
-      if (event.target.closest('.today-activities-less')) setExpanded(card, false);
-    });
+    if (!toggle || !expanded) return;
     if (onRefresh) card.__todayActivitiesRefresh = onRefresh;
+    if (toggle.dataset.todayActivitiesBound !== 'true') {
+      toggle.dataset.todayActivitiesBound = 'true';
+      toggle.addEventListener('click', function () { setExpanded(card, toggle.getAttribute('aria-expanded') !== 'true'); });
+    }
+    if (card.dataset.todayActivitiesLessBound !== 'true') {
+      card.dataset.todayActivitiesLessBound = 'true';
+      card.addEventListener('click', function (event) {
+        if (event.target.closest('.today-activities-less')) setExpanded(card, false);
+      });
+    }
   }
 
   function initLegacy() {
