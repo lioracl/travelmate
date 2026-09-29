@@ -47,3 +47,11 @@ test('past-day strip keeps stable DOM while UX polish adds progress metadata', (
   assert.match(source, /strip\.dataset\.renderSignature!==stripSignature/);
   assert.doesNotMatch(source, /strip\.innerHTML!==nextStripHtml/);
 });
+
+
+test('future empty-day CTA does not duplicate the canonical day add control', () => {
+  const source = read('assets/plan-ux-polish.js');
+  assert.match(source, /data-plan-empty-add/);
+  assert.doesNotMatch(source, /tm-plan-empty-day[^\n]*data-add-date/);
+  assert.match(source, /current-trip-day'\)\|\|card\.classList\.contains\('tm-plan-day-current'/);
+});
