@@ -367,3 +367,12 @@ test('Overview defers trip intelligence until idle or explicit Overview intent',
   assert.match(appScript, /if\(initialView==='overview'\)scheduleIdleFeature\('intelligence',250\)/);
   assert.match(appScript, /if\(link\.dataset\.view==='overview'\)loadFeature\('intelligence'\)/);
 });
+
+
+test('trip pages defer Account and Admin assets until explicit account intent', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.doesNotMatch(source, /scheduleIdleFeature\('account',4200\)/);
+  assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
+  assert.match(source, /ensureAccount:function\(\)\{return loadFeature\('account'\)\}/);
+  assert.match(source, /scheduleIdleFeature\('intelligence',250\)/);
+});
