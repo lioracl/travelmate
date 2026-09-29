@@ -2493,22 +2493,21 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapse
 }
 
 /* Mobile Visual Polish: final Overview density and translucency authority. */
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
-  --tm-overview-card:var(--tm-surface-nested);
-  --tm-overview-card-soft:color-mix(in srgb,var(--tm-surface-nested) 84%,transparent);
-  --tm-custom-overview-surface:var(--tm-overview-card)
-}
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] :is(
-  .today-activities-card,
-  .overview-status-card,
-  [data-navo-trip-banner],
-  .trip-home-actions
-){
-  background:var(--tm-overview-card);
-  box-shadow:0 4px 12px rgba(8,39,29,.08)
-}
-
 @media(max-width:650px){
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]{
+    --tm-overview-card:var(--tm-surface-nested);
+    --tm-overview-card-soft:color-mix(in srgb,var(--tm-surface-nested) 84%,transparent);
+    --tm-custom-overview-surface:var(--tm-overview-card)
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] :is(
+    .today-activities-card,
+    .overview-status-card,
+    [data-navo-trip-banner],
+    .trip-home-actions
+  ){
+    background:var(--tm-overview-card);
+    box-shadow:0 4px 12px rgba(8,39,29,.08)
+  }
   html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] main.content{
     gap:0
   }
