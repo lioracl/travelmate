@@ -366,3 +366,7 @@ body.tm-new-design[data-trip-view="places"] main.content #places .nearby-control
     margin:8px 0 0
   }
 }
+
+
+/* The modern Places flow owns search controls; keep the legacy controls only as hidden state hooks. */
+.nearby-panel[data-nearby-initialized="true"]>.nearby-controls{display:none}
