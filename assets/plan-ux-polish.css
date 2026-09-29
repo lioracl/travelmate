@@ -109,3 +109,13 @@ body.tm-new-design[data-trip-view="plan"] #plan .past-days-strip button::after{c
   body.tm-new-design[data-trip-view="plan"] #plan .planner-more>summary{font-size:11px}
   body.tm-new-design[data-trip-view="plan"] #plan .planned-activity.tm-plan-item{grid-template-columns:44px var(--tm-plan-image) minmax(0,1fr)}
 }
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div>.planned-activities,
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div>.day-note,
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed>div>.tm-plan-empty-day{
+  display:none
+}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed .day-heading{
+  margin:0;
+  padding-bottom:0;
+  border-bottom:0
+}
