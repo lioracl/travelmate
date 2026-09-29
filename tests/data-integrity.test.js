@@ -722,7 +722,7 @@ test('clear device data removes TravelMate local state and TravelMate caches but
     localStorage: localStorageMock,
     sessionStorage: { removeItem(key) { removedSessionKeys.push(key); } },
     caches: {
-      keys: async () => ['travelmate-smart-v145', 'travelmate-smart-v146', 'other-app-cache'],
+      keys: async () => ['travelmate-smart-v145', 'travelmate-smart-v266-20260929-47', 'travelmate-smart-v266-20260929-46', 'other-app-cache'],
       delete: async (name) => { deletedCaches.push(name); return true; }
     },
     window: { dispatchEvent() {}, addEventListener() {} },
@@ -734,7 +734,7 @@ test('clear device data removes TravelMate local state and TravelMate caches but
   assert.equal(storage.get('unrelated-key'), 'keep');
   assert.equal(Array.from(storage.keys()).some((key) => key.startsWith('travelmate-')), false);
   assert.deepEqual(removedSessionKeys, ['travelmate-pending-invite']);
-  assert.deepEqual(deletedCaches.sort(), ['travelmate-smart-v145', 'travelmate-smart-v146']);
+  assert.deepEqual(deletedCaches.sort(), ['travelmate-smart-v145', 'travelmate-smart-v266-20260929-46', 'travelmate-smart-v266-20260929-47']);
 });
 
 
