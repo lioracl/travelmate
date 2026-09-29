@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const assets = path.join(root, 'assets');
@@ -100,7 +101,7 @@ test('Nearby and Document Vault are feature-scoped on custom trips', () => {
 
 test('parallel requests for one feature share a single in-flight load and ready event', () => {
   const app = read('assets/app.js');
-  assert.match(app, /var loadedStyles=\{\},loadedScripts=\{\},featureLoads=\{\}/);
+  assert.match(app, /var loadedStyles=\{\},loadedScripts=\{\},featureLoads=\{\},readyFeatures=\{\}/);
   assert.match(app, /if\(featureLoads\[view\]\)return featureLoads\[view\]/);
   assert.match(app, /featureLoads\[view\]=Promise\.all/);
   assert.match(app, /delete featureLoads\[view\]/);
@@ -112,4 +113,67 @@ test('dynamic feature readiness requires its section to exist before the deadlin
   assert.match(app, /if\(document\.getElementById\(view\)\)return Promise\.resolve\(true\)/);
   assert.match(app, /if\(Date\.now\(\)>=deadline\)\{resolve\(false\);return\}/);
   assert.match(app, /return waitForSection\(view\)[\s\S]*if\(ready===false\)return false;[\s\S]*travelmate:feature-ready/);
+});
+
+
+function isolatedLoadFeatureSource() {
+  const app = read('assets/app.js');
+  const start = app.indexOf('  function loadFeature(view){');
+  const end = app.indexOf('  function ensureLazyNavigation()', start);
+  assert.ok(start >= 0 && end > start, 'loadFeature block must be extractable');
+  return app.slice(start, end);
+}
+
+test('successful feature loads are cached and do not redispatch ready events', async () => {
+  const block = isolatedLoadFeatureSource();
+  let styleLoads = 0;
+  let scriptLoads = 0;
+  let waits = 0;
+  const events = [];
+  const context = {
+    Promise,
+    features: { demo: { styles: ['demo.css'], scripts: ['demo.js'] } },
+    readyFeatures: {},
+    featureLoads: {},
+    loadStyle: async () => { styleLoads += 1; return true; },
+    loadSequence: async () => { scriptLoads += 1; return true; },
+    waitForSection: async () => { waits += 1; return true; },
+    window: { dispatchEvent: event => events.push(event.detail.view) },
+    CustomEvent: function CustomEvent(type, init) { this.type = type; this.detail = init.detail; }
+  };
+  vm.runInNewContext(block + ';this.loadFeature=loadFeature;', context);
+
+  assert.equal(await context.loadFeature('demo'), true);
+  assert.equal(context.readyFeatures.demo, true);
+  assert.equal(await context.loadFeature('demo'), true);
+
+  assert.equal(styleLoads, 1);
+  assert.equal(scriptLoads, 1);
+  assert.equal(waits, 1);
+  assert.deepEqual(events, ['demo']);
+});
+
+test('failed feature loads are not cached as ready and can retry', async () => {
+  const block = isolatedLoadFeatureSource();
+  let attempts = 0;
+  const events = [];
+  const context = {
+    Promise,
+    features: { demo: { styles: ['demo.css'], scripts: ['demo.js'] } },
+    readyFeatures: {},
+    featureLoads: {},
+    loadStyle: async () => { attempts += 1; return attempts > 1; },
+    loadSequence: async () => true,
+    waitForSection: async () => true,
+    window: { dispatchEvent: event => events.push(event.detail.view) },
+    CustomEvent: function CustomEvent(type, init) { this.type = type; this.detail = init.detail; }
+  };
+  vm.runInNewContext(block + ';this.loadFeature=loadFeature;', context);
+
+  assert.equal(await context.loadFeature('demo'), false);
+  assert.equal(Boolean(context.readyFeatures.demo), false);
+  assert.equal(await context.loadFeature('demo'), true);
+  assert.equal(context.readyFeatures.demo, true);
+  assert.equal(attempts, 2);
+  assert.deepEqual(events, ['demo']);
 });

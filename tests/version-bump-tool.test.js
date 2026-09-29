@@ -73,10 +73,13 @@ test('version manager updates all declared files atomically after validation', a
 });
 
 test('current repository asset version references are synchronized', () => {
+  const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+  const match = sw.match(/const ASSET_VERSION='(20\d{6}-\d+)'/);
+  assert.ok(match, 'sw.js must expose the canonical asset version');
   const output = execFileSync(process.execPath, ['tools/bump-version.mjs', '--check'], {
     cwd: root,
     encoding: 'utf8'
   });
-  assert.match(output, /Asset version is synchronized: 20260929-46/);
+  assert.ok(output.includes('Asset version is synchronized: ' + match[1]));
   assert.match(output, /Checked files: 7/);
 });
