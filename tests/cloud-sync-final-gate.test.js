@@ -71,12 +71,12 @@ test('outbound cloud payload strips only local sync/delete control state', () =>
   for (const key of ['syncStatus', 'syncMutationId', 'syncConflict', 'deletePending', 'deleteMutationId']) {
     assert.equal(Object.hasOwn(payload, key), false, key + ' must stay device-local');
   }
-  assert.deepEqual(payload.activities, trip.activities);
-  assert.deepEqual(payload.savedPlaces, trip.savedPlaces);
-  assert.deepEqual(payload.expenses, trip.expenses);
+  assert.equal(JSON.stringify(payload.activities), JSON.stringify(trip.activities));
+  assert.equal(JSON.stringify(payload.savedPlaces), JSON.stringify(trip.savedPlaces));
+  assert.equal(JSON.stringify(payload.expenses), JSON.stringify(trip.expenses));
   assert.equal(payload.budgetUnlimited, true);
-  assert.deepEqual(payload.budgetCategories, trip.budgetCategories);
-  assert.deepEqual(payload.memories, trip.memories);
+  assert.equal(JSON.stringify(payload.budgetCategories), JSON.stringify(trip.budgetCategories));
+  assert.equal(JSON.stringify(payload.memories), JSON.stringify(trip.memories));
   assert.equal(trip.deletePending, true, 'sanitizing must not mutate the live local trip');
 });
 
