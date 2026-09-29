@@ -132,6 +132,10 @@ for (const viewport of [
       await expect(shelf.locator('[data-saved-places-scheduled]')).toHaveText('1');
       await expect(shelf.locator('[data-saved-places-unscheduled]')).toHaveText('1');
 
+      const savedToggle = shelf.locator('[data-saved-places-toggle]');
+      if (await savedToggle.getAttribute('aria-expanded') === 'false') await savedToggle.click();
+      await expect(savedToggle).toHaveAttribute('aria-expanded', 'true');
+
       let savedOnly = shelf.locator('[data-saved-shelf-id="saved-only-1"]');
       await savedOnly.locator('[data-saved-shelf-date]').selectOption('2026-09-30');
       await savedOnly.locator('[data-saved-shelf-time]').fill('14:15');
