@@ -398,6 +398,7 @@ body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links :is(
 /* Active-trip current day */
 body.tm-new-design[data-trip-view="plan"] #plan .generated-day.current-trip-day{border-color:var(--tm-action-primary);box-shadow:inset 3px 0 0 var(--tm-action-primary),var(--tm-card-shadow)}
 body.tm-new-design[data-trip-view="plan"] #plan .generated-day.current-trip-day>.badge{background:var(--tm-action-secondary);color:var(--tm-card-heading)}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day.current-trip-day>.badge::after{content:"היום";padding:3px 7px;border-radius:999px;background:var(--tm-action-primary);color:var(--tm-text-on-action);-webkit-text-fill-color:currentColor;font-size:10px;font-weight:900;line-height:1}
 body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links :is(
   .place-directions-button,.place-share-button,.saved-calendar-link
 ) i{
