@@ -53,7 +53,7 @@
   var viewParams = new URLSearchParams(window.location.search);
   var currentView = viewParams.get('view') || 'overview';
   if (currentView === 'car-rental') currentView = 'transport';
-  var overviewClasses = ['trip-overview-summary', 'trip-today', 'trip-home-actions'];
+  var overviewClasses = ['trip-overview-summary', 'trip-today', 'trip-home-actions', 'quick-grid', 'dashboard', 'modules'];
   var placesHub = document.querySelector('[data-places-hub]');
   var placesViews = { places: true, transport: true, getaways: true, 'destination-info': true };
   function isPlacesView(view) { return Boolean(placesViews[view]); }
