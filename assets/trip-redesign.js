@@ -53,7 +53,7 @@
   var viewParams = new URLSearchParams(window.location.search);
   var currentView = viewParams.get('view') || 'overview';
   if (currentView === 'car-rental') currentView = 'transport';
-  var overviewClasses = ['trip-overview-summary', 'trip-home-actions'];
+  var overviewClasses = ['trip-overview-summary', 'trip-today', 'trip-home-actions'];
   var placesHub = document.querySelector('[data-places-hub]');
   var placesViews = { places: true, transport: true, getaways: true, 'destination-info': true };
   function isPlacesView(view) { return Boolean(placesViews[view]); }
@@ -156,7 +156,7 @@
     } catch (error) { return ''; }
   }
 
-  document.querySelectorAll('.trip-home-actions a[href^="#"], .overview-control-center a[href^="#"]').forEach(function (link) {
+  document.querySelectorAll('.trip-home-actions a[href^="#"], .overview-control-center a[href^="#"], .trip-today a[href^="#"]').forEach(function (link) {
     link.href = pageUrl(link.getAttribute('href').slice(1));
   });
   if (placesHub) {
@@ -169,7 +169,7 @@
   });
   syncTripPages();
   document.addEventListener('click', function (event) {
-    var link = event.target.closest('.sidebar nav a, .trip-home-actions a, .overview-control-center a, .places-hub-nav a, .trip-sidebar-more-menu a');
+    var link = event.target.closest('.sidebar nav a, .trip-home-actions a, .overview-control-center a, .places-hub-nav a, .trip-today a, .trip-sidebar-more-menu a');
     if (!link || event.defaultPrevented || (event.button != null && event.button !== 0) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     var view = viewFromLink(link);
     if (!view) return;
