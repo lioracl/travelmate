@@ -2,7 +2,7 @@ var appScript=document.currentScript;
 var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-46'}catch(error){return'20260929-46'}})();
 (function(){
   var version=appAssetVersion;
-  var loadedStyles={},loadedScripts={},featureLoads={};
+  var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
   var isHomePage=Boolean(document.body&&document.body.classList.contains('home-page'));
   var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','ai-assistant.css'];
   var homeBaseStyles=['language.css','network-usage.css','theme.css'];
@@ -50,6 +50,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   function loadTodayActivities(){return Promise.all([loadStyle('today-activities.css'),loadScript('today-activities.js')])}
   function loadFeature(view){
     var feature=features[view];if(!feature)return Promise.resolve(true);
+    if(readyFeatures[view])return Promise.resolve(true);
     if(featureLoads[view])return featureLoads[view];
     featureLoads[view]=Promise.all((feature.styles||[]).map(loadStyle)).then(function(results){
       if(results.some(function(result){return result===false}))return false;
@@ -63,6 +64,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
       return true
     }).then(function(ready){
       delete featureLoads[view];
+      if(ready!==false)readyFeatures[view]=true;
       return ready
     },function(error){
       delete featureLoads[view];
