@@ -8,7 +8,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const app = read('assets/app.js');
-const css = read('assets/place-planner.css');
+const css = read('assets/nearby.css');
 
 test('saved places exposes one lifecycle shelf with scheduled and saved-only counts', () => {
   assert.match(app, /data-saved-places-shelf/);
