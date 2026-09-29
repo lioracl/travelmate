@@ -357,9 +357,10 @@
       if (result && result.trip) {
         renderTrip(result.trip);
         renderSyncConflictBanner(result.trip);
-      } else {
-        refreshOverviewFromStore();
+        window.location.reload();
+        return;
       }
+      refreshOverviewFromStore();
     } catch (error) {
       console.error('TravelMate conflict resolution failed', error);
       if (message) message.textContent = 'לא הצלחנו לפתור את ההתנגשות כרגע. השינויים המקומיים נשמרו ולא נדרסו.';

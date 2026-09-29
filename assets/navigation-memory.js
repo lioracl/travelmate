@@ -17,12 +17,21 @@
     document.body.classList.remove('mobile-menu-open');
   }
 
+  function currentView() {
+    return document.body.dataset.tripView || new URLSearchParams(location.search).get('view') || 'overview';
+  }
+
   function updateExitButtons() {
+    var overview = currentView() === 'overview';
     document.querySelectorAll('.mobile-back,.hero-back').forEach(function (button) {
       if (!button.dataset.tripExitHref) button.dataset.tripExitHref = button.getAttribute('href') || '../../index.html';
-      button.setAttribute('href', button.dataset.tripExitHref);
-      button.setAttribute('aria-label', 'חזרה לכל הטיולים');
-      if (button.classList.contains('hero-back')) button.innerHTML = '<i class="fa-solid fa-arrow-right"></i> כל הטיולים';
+      button.setAttribute('href', overview ? button.dataset.tripExitHref : overviewUrl());
+      button.setAttribute('aria-label', overview ? 'חזרה לכל הטיולים' : 'חזרה למסך הקודם בטיול');
+      if (button.classList.contains('hero-back')) {
+        button.innerHTML = overview
+          ? '<i class="fa-solid fa-arrow-right"></i> כל הטיולים'
+          : '<i class="fa-solid fa-arrow-right"></i> חזרה';
+      }
     });
   }
 
@@ -63,12 +72,20 @@
   }
 
   document.addEventListener('click', function (event) {
+    var topBack = event.target.closest('.mobile-back,.hero-back');
+    if (topBack && currentView() !== 'overview') {
+      event.preventDefault();
+      returnToOverview();
+      return;
+    }
     if (event.target.closest('.trip-action-back')) {
       event.preventDefault();
       returnToOverview();
     }
   }, true);
 
+  window.addEventListener('popstate', updateExitButtons);
+  window.addEventListener('travelmate:viewchange', updateExitButtons);
   window.addEventListener('travelmate:feature-ready', function () {
     addSectionBackButtons();
     updateExitButtons();

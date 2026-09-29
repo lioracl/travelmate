@@ -9,6 +9,7 @@
   var WRITE_TIMEOUT_MS = Number(window.TRAVELMATE_CLOUD_WRITE_TIMEOUT_MS) || 15000;
   var saveTimers = new Map();
   var saveChains = new Map();
+  var syncGenerations = new Map();
   var lastSaveTime = 0;
   var fullSyncPromises = new Map();
   var deletedTripIds = new Set();
@@ -74,6 +75,32 @@
 
   function saveIdentity(trip) {
     return String(trip && trip.id || '');
+  }
+
+  function currentSyncGeneration(trip, fallbackOwnerId) {
+    return Number(syncGenerations.get(tripIdentity(trip, fallbackOwnerId)) || 0);
+  }
+
+  function stampSyncGeneration(snapshot, fallbackOwnerId) {
+    Object.defineProperty(snapshot, '__syncGeneration', {
+      value: currentSyncGeneration(snapshot, fallbackOwnerId),
+      enumerable: false,
+      configurable: true
+    });
+    return snapshot;
+  }
+
+  function isStaleSyncSnapshot(snapshot, fallbackOwnerId) {
+    return Boolean(snapshot && typeof snapshot.__syncGeneration === 'number'
+      && snapshot.__syncGeneration !== currentSyncGeneration(snapshot, fallbackOwnerId));
+  }
+
+  function invalidatePendingTripSync(trip, fallbackOwnerId) {
+    var key = tripIdentity(trip, fallbackOwnerId);
+    syncGenerations.set(key, currentSyncGeneration(trip, fallbackOwnerId) + 1);
+    clearTimeout(saveTimers.get(key));
+    saveTimers.delete(key);
+    saveChains.delete(key);
   }
 
   function deletionIdentity(trip, fallbackOwnerId) {
@@ -416,6 +443,7 @@
     snapshot.updatedAt = nextSaveTimestamp(snapshot);
     snapshot.syncStatus = 'pending';
     snapshot.syncMutationId = reuseMutation && snapshot.syncMutationId ? snapshot.syncMutationId : mutationId();
+    stampSyncGeneration(snapshot, snapshot.ownerId);
     if (snapshot.ownerId) trip.ownerId = snapshot.ownerId;
     trip.updatedAt = snapshot.updatedAt;
     trip.syncStatus = snapshot.syncStatus;
@@ -426,6 +454,7 @@
 
   function updateLocalSyncState(snapshot, status, cloudTimestamp, expectedUserId, cloudRevision) {
     if (expectedUserId && activeUserId() !== String(expectedUserId)) return;
+    if (isStaleSyncSnapshot(snapshot, expectedUserId)) return;
     var current = localTripFor(snapshot);
     if (!current || tripTimestamp(current) > tripTimestamp(snapshot)) return;
     if (snapshot.ownerId) current.ownerId = snapshot.ownerId;
@@ -509,6 +538,7 @@
       response = { result_status: 'saved', result_revision: trip.cloudRevision || 0, result_updated_at: timestamp };
     }
     if (expectedUserId) assertActiveUser(expectedUserId);
+    if (isStaleSyncSnapshot(trip, expectedUserId)) return { saved: false, reason: 'STALE_AFTER_CONFLICT_RESOLUTION' };
     timestamp = response.result_updated_at || timestamp;
     updateLocalSyncState(trip, 'synced', timestamp, expectedUserId, response.result_revision);
     window.dispatchEvent(new CustomEvent('travelmate:trip-synced', { detail: { id: trip.id, timestamp: timestamp, revision: Number(response.result_revision || 0) } }));
@@ -523,6 +553,7 @@
     saveChains.set(id, current);
     current.then(function () { if (saveChains.get(id) === current) saveChains.delete(id); }, function () { if (saveChains.get(id) === current) saveChains.delete(id); });
     return current.catch(async function (error) {
+      if (isStaleSyncSnapshot(snapshot, expectedUserId)) return { saved: false, reason: 'STALE_AFTER_CONFLICT_RESOLUTION' };
       if (acceptRemoteDeletion(snapshot, error, expectedUserId)) throw error;
       if (isTripEditForbidden(error)) {
         var restored = false;
@@ -852,6 +883,8 @@
     var resolvedOwnerId = String(ownerId || local.ownerId || requestUserId);
     var cloud = await fetchCloudTripVersion(tripId, resolvedOwnerId, requestUserId);
     if (!cloud) throw cloudError('TRIP_CONFLICT_REMOTE_UNAVAILABLE');
+
+    invalidatePendingTripSync(local, resolvedOwnerId);
 
     if (strategy === 'cloud') {
       upsertLocalTrip(cloud);
