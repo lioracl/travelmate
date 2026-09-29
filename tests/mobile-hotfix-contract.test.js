@@ -33,3 +33,9 @@ test('Places chooses search distance by context rather than exposing radius as a
   assert.doesNotMatch(source, /מקומות ברדיוס שבחרת/);
   assert.match(source, /מקומות בסביבת האזור שבחרת/);
 });
+
+
+test('past Plan days remain hidden until the history strip explicitly reopens them', () => {
+  const css = read('assets/plan-ux-polish.css');
+  assert.match(css, /html body\.tm-new-design\[data-trip-view="plan"\] #plan \.generated-day\.past-trip-day:not\(\.past-trip-day-open\)\{\s*display:none\s*\}/);
+});
