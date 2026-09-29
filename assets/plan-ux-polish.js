@@ -171,9 +171,10 @@ function enhanceDay(card,index,trip,today){
   if(!total&&content){
     if(!empty){empty=document.createElement('div');empty.className='tm-plan-empty-day';empty.innerHTML='<span>אין פעילויות ביום הזה</span><button type="button" data-add-date="'+date+'"><i class="fa-solid fa-plus" aria-hidden="true"></i> הוסף פעילות</button>';var note=content.querySelector('.day-note');content.insertBefore(empty,note||null)}
   }else if(empty)empty.remove();
-  if(window.matchMedia&&window.matchMedia('(max-width:700px)').matches&&!preparedDays[date]&&date>=today){
+  if(!preparedDays[date]&&date>=today){
     preparedDays[date]=true;
-    var focus=String(trip.start||'')<=today&&String(trip.end||'')>=today?today:(String(trip.start||'')>today?String(trip.start):'');
+    var activeTrip=String(trip.start||'')<=today&&String(trip.end||'')>=today;
+    var focus=activeTrip?today:(String(trip.start||'')>today?String(trip.start):'');
     var shouldCollapse=Boolean(focus&&date!==focus);
     if(shouldCollapse&&!card.classList.contains('day-collapsed')){var badge=card.querySelector('.badge');if(badge)setTimeout(function(){badge.click()},0)}
     if(!shouldCollapse&&card.classList.contains('day-collapsed')){var openBadge=card.querySelector('.badge');if(openBadge)setTimeout(function(){openBadge.click()},0)}
