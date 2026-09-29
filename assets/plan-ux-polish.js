@@ -165,7 +165,7 @@ function enhanceDay(card,index,trip,today){
   if(summary)summary.textContent=total?(done+' מתוך '+total+' הושלמו'+(done<total?' · '+(total-done)+' נותרו':'')):'אין פעילויות ביום הזה';
   if(heading){
     var meta=heading.querySelector('.tm-plan-day-kind');if(!meta){meta=document.createElement('span');meta.className='tm-plan-day-kind';heading.querySelector('div').appendChild(meta)}
-    meta.textContent=date===today&&card.classList.contains('tm-plan-day-current')?'היום':date<today?'עבר':index===0?'יום ראשון':'מתוכנן'
+    meta.textContent=date===today&&card.classList.contains('tm-plan-day-current')?'היום':date<today?'עבר':'עתידי'
   }
   var content=card.querySelector(':scope > div'),empty=content&&content.querySelector('.tm-plan-empty-day');
   if(!total&&content){
@@ -207,9 +207,21 @@ function setExpanded(row,open){
     var icon=toggle.querySelector('i');if(icon)icon.className=open?'fa-solid fa-chevron-up':'fa-solid fa-chevron-down'
   }
 }
+function collapseOtherOpenDays(targetDate){
+  if(!(window.matchMedia&&window.matchMedia('(max-width:700px)').matches))return;
+  var plan=document.getElementById('plan'),target=plan&&plan.querySelector('.generated-day[data-day-date="'+targetDate+'"]');
+  if(!plan||!target||target.classList.contains('day-collapsed'))return;
+  [].slice.call(plan.querySelectorAll('.generated-day')).forEach(function(card){
+    if(String(card.dataset.dayDate||'')===String(targetDate)||card.classList.contains('day-collapsed'))return;
+    var badge=card.querySelector('.badge');if(badge)badge.click()
+  })
+}
 document.addEventListener('click',function(event){
-  var toggle=event.target.closest('[data-plan-details-toggle]');if(!toggle)return;
-  var row=toggle.closest('.tm-plan-item');if(!row)return;event.preventDefault();setExpanded(row,!row.classList.contains('tm-plan-expanded'))
+  var toggle=event.target.closest('[data-plan-details-toggle]');
+  if(toggle){var row=toggle.closest('.tm-plan-item');if(!row)return;event.preventDefault();setExpanded(row,!row.classList.contains('tm-plan-expanded'));return}
+  if(event.target.closest('[data-add-date]'))return;
+  var dayToggle=event.target.closest('[data-toggle-day]');
+  if(dayToggle)setTimeout(function(){collapseOtherOpenDays(dayToggle.dataset.toggleDay)},0)
 });
 document.addEventListener('travelmate:planner-rendered',schedule);
 document.addEventListener('travelmate:places-updated',schedule);
