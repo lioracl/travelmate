@@ -93,7 +93,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     if(!strip){strip=document.createElement('section');strip.className='past-days-strip';strip.dataset.pastDaysStrip='';container.parentNode.insertBefore(strip,container)}
     strip.hidden=!past.length;
     var nextStripHtml=past.length?'<span><i class="fa-solid fa-clock-rotate-left"></i> \u05d9\u05de\u05d9\u05dd \u05e9\u05e2\u05d1\u05e8\u05d5</span><div>'+past.map(function(day){return'<button type="button" data-open-past-day="'+day.date+'" class="'+(openPastDays[day.date]?'active':'')+'">\u05d9\u05d5\u05dd '+(day.index+1)+' <small>'+new Intl.DateTimeFormat('he-IL',{day:'numeric',month:'short'}).format(new Date(day.date+'T12:00:00'))+'</small></button>'}).join('')+'</div>':'';
-    if(strip.innerHTML!==nextStripHtml)strip.innerHTML=nextStripHtml;
+    var stripSignature=past.map(function(day){return day.date+':'+(openPastDays[day.date]?'1':'0')}).join('|');
+    if(strip.dataset.renderSignature!==stripSignature){strip.innerHTML=nextStripHtml;strip.dataset.renderSignature=stripSignature}
     strip.onclick=function(event){var button=event.target.closest('[data-open-past-day]');if(!button)return;openPastDays[button.dataset.openPastDay]=!openPastDays[button.dataset.openPastDay];enhancePastDays();if(openPastDays[button.dataset.openPastDay]){var card=container.querySelector('[data-trip-date="'+button.dataset.openPastDay+'"]');card&&card.scrollIntoView({behavior:'smooth',block:'start'})}}
   }
   document.addEventListener('click',function(event){
