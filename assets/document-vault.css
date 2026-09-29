@@ -493,3 +493,301 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-t
 #documents .vault-library [data-document-category-list]{border:0;border-radius:0;background:transparent;box-shadow:none}
 #documents :is(.vault-summary,.vault-upload-section)[hidden]{display:none}
 #documents .vault-library .vault-summary{margin:0 0 14px;padding:0 0 14px;border-top:0;border-bottom:1px solid var(--tm-card-border)}
+
+
+/* Documents 2.0 final visual authority: one calm hierarchy, no black/nested glass. */
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents{
+  --tm-documents-shell:var(--tm-surface-nested);
+  --tm-documents-soft:var(--tm-card-bg-compact);
+  --tm-documents-row:var(--tm-card-bg-compact)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-intro{
+  margin:6px 0 10px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-head{
+  display:block;
+  padding:0
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-head h2{
+  margin:5px 0 4px;
+  font-size:clamp(18px,2.2vw,23px);
+  line-height:1.2
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-head p{
+  max-width:76ch;
+  margin:0;
+  color:var(--tm-card-secondary);
+  line-height:1.5
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents :is(
+  .vault-access,.vault-upload-section,.vault-library
+){
+  margin:10px 0;
+  padding:14px;
+  border:1px solid var(--tm-card-border);
+  border-radius:var(--tm-card-radius);
+  background:var(--tm-documents-shell);
+  color:var(--tm-card-text);
+  box-shadow:var(--tm-card-shadow-compact);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents :is(
+  .vault-auth,.vault-session,.vault-unlock
+){
+  background:transparent;
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-access{
+  display:grid;
+  gap:10px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-access>h3,
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-upload-section h3,
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-library>h3{
+  margin:0;
+  color:var(--tm-card-heading)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-auth{
+  margin:0;
+  padding:0;
+  gap:12px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-auth-copy{
+  min-width:0
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-auth form{
+  gap:7px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents :is(
+  .vault-auth input,.vault-unlock input,.vault-upload select,.vault-upload input[type="text"]
+){
+  min-height:44px;
+  border:1px solid var(--tm-card-control-border);
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
+  box-shadow:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents :is(
+  .vault-auth button,.vault-session button,.vault-upload-button,.doc-row>button,
+  .doc-category-file-actions button
+){
+  min-height:44px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-auth button[data-auth-signin],
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-upload-button{
+  border-color:transparent;
+  background:var(--tm-action-primary);
+  color:var(--tm-text-on-action)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents :is(
+  .vault-auth button.secondary,.vault-session button,.doc-row>button,
+  .doc-category-file-actions button
+){
+  border:1px solid var(--tm-card-control-border);
+  background:var(--tm-action-secondary);
+  color:var(--tm-card-link)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-session{
+  margin:0;
+  padding:10px 0 0;
+  border:0;
+  border-top:1px solid var(--tm-card-border);
+  border-radius:0
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-unlock{
+  margin:0;
+  padding-top:10px;
+  border-top:1px solid var(--tm-card-border)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-unlock>small{
+  border:1px solid color-mix(in srgb,var(--tm-warning) 32%,var(--tm-card-border));
+  background:color-mix(in srgb,var(--tm-warning) 9%,var(--tm-documents-soft));
+  color:var(--tm-card-text);
+  box-shadow:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-status:not(:empty){
+  margin:0;
+  padding:9px 11px;
+  border:1px solid var(--tm-card-border);
+  border-radius:var(--tm-card-radius-control);
+  background:var(--tm-documents-soft);
+  color:var(--tm-card-text);
+  box-shadow:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-status.error:not(:empty){
+  border-color:color-mix(in srgb,var(--tm-error) 40%,var(--tm-card-border));
+  background:color-mix(in srgb,var(--tm-error) 8%,var(--tm-documents-soft));
+  color:var(--tm-error);
+  box-shadow:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-upload-section>header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-upload{
+  grid-template-columns:minmax(140px,.7fr) minmax(180px,1.3fr) auto;
+  gap:8px;
+  margin-top:0
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-drop{
+  min-height:88px;
+  padding:14px;
+  border:1px dashed var(--tm-card-border-hover);
+  border-radius:var(--tm-card-radius-control);
+  background:var(--tm-documents-soft);
+  color:var(--tm-card-link);
+  box-shadow:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-drop i{
+  margin-bottom:5px;
+  font-size:24px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-library .vault-summary{
+  margin:0 0 10px;
+  padding:0 0 10px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .documents-category-nav{
+  margin:0 0 10px;
+  padding:0 0 8px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .documents-category-nav button{
+  min-height:40px;
+  padding:7px 10px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents [data-document-category-list]{
+  gap:0
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-row{
+  min-height:62px;
+  padding:9px 10px;
+  background:transparent;
+  box-shadow:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-row:hover{
+  background:var(--tm-documents-soft)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-row>button{
+  min-height:40px;
+  padding-inline:10px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file{
+  min-height:58px;
+  padding:9px 0;
+  background:var(--tm-documents-row)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-copy{
+  min-width:0
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-copy strong{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:var(--tm-card-heading)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-copy small{
+  display:-webkit-box;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-height:1.35;
+  color:var(--tm-card-secondary)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-actions{
+  gap:6px
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-actions button{
+  min-height:40px;
+  border-radius:var(--tm-card-radius-control);
+  white-space:nowrap
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-actions [data-open-document]{
+  background:var(--tm-action-secondary);
+  color:var(--tm-card-link)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-actions [data-delete-document]{
+  border-color:color-mix(in srgb,var(--tm-error) 34%,var(--tm-card-control-border));
+  background:color-mix(in srgb,var(--tm-error) 8%,var(--tm-card-control));
+  color:var(--tm-error)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents :is(
+  button,a[href],input,select,textarea
+):focus-visible{
+  outline:3px solid color-mix(in srgb,var(--tm-card-focus) 30%,transparent);
+  outline-offset:2px
+}
+@media(max-width:700px){
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents :is(
+    .vault-access,.vault-upload-section,.vault-library
+  ){
+    margin:8px 0;
+    padding:12px
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-head p{
+    font-size:12px;
+    line-height:1.45
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-upload{
+    grid-template-columns:minmax(0,1fr);
+    gap:7px
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-upload-button{
+    width:100%
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-drop{
+    grid-column:1;
+    min-height:76px;
+    padding:11px
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .documents-category-nav{
+    gap:6px
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .documents-category-nav button{
+    min-height:40px;
+    padding:6px 9px
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-row{
+    min-height:60px;
+    grid-template-columns:38px minmax(0,1fr) auto;
+    gap:8px;
+    padding:8px 9px
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-row>.icon{
+    width:38px;
+    height:38px
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-row>button{
+    min-height:44px
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file{
+    grid-template-columns:36px minmax(0,1fr);
+    gap:8px;
+    padding:9px 0
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-actions{
+    grid-column:1/-1;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px;
+    padding-top:3px
+  }
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-actions button{
+    min-width:0;
+    min-height:44px;
+    padding-inline:6px;
+    white-space:normal;
+    line-height:1.15
+  }
+}
