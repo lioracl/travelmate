@@ -54,3 +54,12 @@ test('Documents documentation seed covers requirements, data flow and user guide
   assert.match(doc, /ERD impact/);
   assert.match(doc, /User Guide Seed/);
 });
+
+
+test('Documents drop zone is keyboard operable and described', () => {
+  const vault = read('assets/document-vault.js');
+  assert.match(vault, /data-vault-drop role="button" tabindex="0" aria-describedby="vault-drop-help"/);
+  assert.match(vault, /drop\.addEventListener\('keydown'/);
+  assert.match(vault, /event\.key !== 'Enter' && event\.key !== ' '/);
+  assert.match(vault, /input\.click\(\)/);
+});
