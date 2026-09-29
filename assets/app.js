@@ -47,7 +47,8 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     if(document.getElementById(view))return Promise.resolve(true);
     return new Promise(function(resolve){var deadline=Date.now()+2500;(function check(){if(document.getElementById(view)){resolve(true);return}if(Date.now()>=deadline){resolve(false);return}requestAnimationFrame(check)})()})
   }
-  function loadTodayActivities(){return Promise.all([loadStyle('today-activities.css'),loadScript('today-activities.js')])}\n  function loadFeature(view){
+  function loadTodayActivities(){return Promise.all([loadStyle('today-activities.css'),loadScript('today-activities.js')])}
+  function loadFeature(view){
     var feature=features[view];if(!feature)return Promise.resolve(true);
     if(featureLoads[view])return featureLoads[view];
     featureLoads[view]=Promise.all((feature.styles||[]).map(loadStyle)).then(function(results){
