@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TravelMate Plan Trip-Path QA Harness</title>
+<link rel="stylesheet" href="../../assets/styles.css?v=qa">
+<link rel="stylesheet" href="../../assets/theme.css?v=qa">
+<link rel="stylesheet" href="../../assets/auto-planner.css?v=qa">
+<link rel="stylesheet" href="../../assets/plan-ux-polish.css?v=qa">
+<link rel="stylesheet" href="../../assets/readable-glass.css?v=qa">
+<style>
+body{margin:0;padding:24px;background:#eef3f5}
+main{max-width:1100px;margin:auto}
+.qa-banner{margin-bottom:16px;padding:12px 14px;border:1px solid #9ab;border-radius:12px;background:#fff;font:14px/1.5 system-ui}
+</style>
+</head>
+<body class="tm-new-design" data-trip-view="plan">
+<main>
+<div class="qa-banner" id="qa-status">QA fixture loaded. This page uses only in-memory trip data.</div>
+<section id="plan" class="section">
+  <div class="section-head"><div><p>QA</p><h1>תוכנית יומית</h1></div></div>
+  <div class="generated-days" data-generated-days>
+    <article class="generated-day"><span class="badge">יום 1</span><div><strong>יום שני, 28 בספטמבר</strong><p>יום עבר</p></div></article>
+    <article class="generated-day"><span class="badge">יום 2</span><div><strong>יום שלישי, 29 בספטמבר</strong><p>היום</p></div></article>
+    <article class="generated-day"><span class="badge">יום 3</span><div><strong>יום רביעי, 30 בספטמבר</strong><p>יום עתידי ריק</p></div></article>
+    <article class="generated-day"><span class="badge">יום 4</span><div><strong>יום חמישי, 1 באוקטובר</strong><p>יום עתידי</p></div></article>
+    <article class="generated-day"><span class="badge">יום 5</span><div><strong>יום שישי, 2 באוקטובר</strong><p>יום עתידי</p></div></article>
+  </div>
+</section>
+</main>
+<script>
+(function(){
+  var trip={
+    id:'qa-trip',city:'Prague QA',country:'Czechia',start:'2026-09-28',end:'2026-10-02',days:5,planInitialized:true,
+    dayNotes:{},
+    savedPlaces:[],
+    activities:[
+      {id:'past-1',date:'2026-09-28',time:'10:00',title:'Old Town Walk',category:'סיור',duration:90,done:true,locationName:'Old Town Square'},
+      {id:'today-1',date:'2026-09-29',time:'09:30',title:'Breakfast near Wenceslas Square',category:'אוכל',duration:60,done:false,locationName:'Wenceslas Square'},
+      {id:'today-2',date:'2026-09-29',time:'12:00',title:'National Museum Visit',category:'תרבות',duration:120,done:false,locationName:'National Museum, Prague'},
+      {id:'today-3',date:'2026-09-29',time:'16:00',title:'Charles Bridge Walk',category:'סיור',duration:90,done:false,locationName:'Charles Bridge'},
+      {id:'future-1',date:'2026-10-01',time:'11:00',title:'Prague Castle',category:'אטרקציה',duration:150,done:false,locationName:'Prague Castle'},
+      {id:'future-2',date:'2026-10-02',time:'14:00',title:'Letna Park',category:'טבע',duration:90,done:false,locationName:'Letna Park'}
+    ]
+  };
+  window.__qaTrip=trip;
+  window.TravelMateTripStore={
+    getTrips:function(){return [trip]},
+    getTrip:function(id){return String(id)===trip.id?trip:null},
+    updateTrip:function(id,mutator){if(String(id)!==trip.id)return null;mutator(trip);return trip}
+  };
+  window.TravelMateEvents={emit:function(){},names:{placesUpdated:'travelmate:places-updated'}};
+  window.TravelMateToday={
+    localDateKey:function(value){var d=value instanceof Date?value:new Date(value||Date.now());return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')},
+    phase:function(t,value){var d=this.localDateKey(value);if(d<t.start)return{name:'before'};if(d>t.end)return{name:'after'};return{name:'active'}}
+  };
+  window.travelMateTripReady=Promise.resolve(true);
+})();
+</script>
+<script src="../../assets/trip-context.js?v=qa"></script>
+<script src="../../assets/auto-planner.js?v=qa"></script>
+<script src="../../assets/plan-ux-polish.js?v=qa"></script>
+<script>
+setTimeout(function(){
+  var cards=[].slice.call(document.querySelectorAll('.generated-day'));
+  var summary={
+    cards:cards.length,
+    todayOpen:!!document.querySelector('.generated-day[data-day-date="2026-09-29"]:not(.day-collapsed)'),
+    futureCollapsed:cards.filter(function(c){return c.dataset.dayDate>'2026-09-29'&&c.classList.contains('day-collapsed')}).length,
+    pastStrip:!!document.querySelector('[data-past-days-strip]'),
+    enhancedActivities:document.querySelectorAll('.planned-activity.tm-plan-item').length,
+    emptyStates:document.querySelectorAll('.tm-plan-empty-day').length
+  };
+  document.getElementById('qa-status').textContent='QA STATE '+JSON.stringify(summary);
+},1200);
+</script>
+</body>
+</html>
