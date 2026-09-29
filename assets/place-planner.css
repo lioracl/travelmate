@@ -17,3 +17,181 @@
   .hotel-fix-form.is-collapsed .hotel-fix-status{display:none}
   .hotel-fix-form.is-collapsed .hotel-fix-heading h3{font-size:16px}
 }
+
+
+/* Saved Places lifecycle: one visible home for saved-only and scheduled places. */
+.saved-places-shelf{
+  display:grid;
+  gap:12px;
+  margin:0 0 18px;
+  padding:14px;
+  border:1px solid var(--tm-card-border);
+  border-radius:18px;
+  background:var(--tm-card-bg-nested);
+  color:var(--tm-card-text);
+  box-shadow:var(--tm-card-shadow-compact);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none
+}
+.saved-places-shelf[hidden]{display:none}
+.saved-places-shelf__head{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;
+  gap:7px 14px
+}
+.saved-places-shelf__head>div:first-child{display:grid;gap:2px}
+.saved-places-shelf__head>div:first-child>span{
+  color:var(--tm-brand-primary);
+  font-size:12px;
+  font-weight:900
+}
+.saved-places-shelf__head strong{font-size:20px;line-height:1.2}
+.saved-places-shelf__head>small{
+  grid-column:1/-1;
+  color:var(--tm-card-secondary);
+  font-size:12px;
+  line-height:1.45
+}
+.saved-places-shelf__summary{
+  grid-row:1;
+  grid-column:2;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:6px
+}
+.saved-places-shelf__summary span{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  min-height:30px;
+  padding:0 9px;
+  border:1px solid var(--tm-card-control-border,var(--line));
+  border-radius:999px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-secondary);
+  font-size:11px;
+  white-space:nowrap
+}
+.saved-places-shelf__summary b{color:var(--tm-card-heading);font-size:12px}
+.saved-places-shelf__list{display:grid;gap:9px}
+.saved-places-shelf__item{
+  display:grid;
+  grid-template-columns:38px minmax(150px,1fr) minmax(0,2fr);
+  align-items:center;
+  gap:10px;
+  padding:10px 11px;
+  border:1px solid color-mix(in srgb,var(--tm-card-border) 84%,transparent);
+  border-radius:14px;
+  background:var(--tm-card-bg-compact);
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease
+}
+.saved-places-shelf__item.is-scheduled{border-color:color-mix(in srgb,var(--tm-brand-primary) 34%,var(--tm-card-border))}
+.saved-places-shelf__item.is-just-saved,
+.saved-place.is-plan-target{
+  border-color:var(--tm-brand-primary);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--tm-brand-primary) 18%,transparent);
+  transform:translateY(-1px)
+}
+.saved-places-shelf__icon{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:var(--tm-surface-selected);
+  color:var(--tm-brand-primary)
+}
+.saved-places-shelf__copy{display:grid;gap:3px;min-width:0}
+.saved-places-shelf__copy strong{
+  overflow:hidden;
+  color:var(--tm-card-heading);
+  font-size:14px;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.saved-places-shelf__copy small{
+  color:var(--tm-card-secondary);
+  font-size:11px;
+  line-height:1.35
+}
+.saved-places-shelf__actions{
+  display:flex;
+  align-items:end;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:6px
+}
+.saved-places-shelf__actions label{display:grid;gap:3px;color:var(--tm-card-secondary);font-size:10px;font-weight:800}
+.saved-places-shelf__actions select,
+.saved-places-shelf__actions input{
+  min-height:38px;
+  border:1px solid var(--tm-card-control-border,var(--line));
+  border-radius:10px;
+  padding:0 8px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
+  font:inherit
+}
+.saved-places-shelf__actions select{min-width:112px}
+.saved-places-shelf__actions input{width:94px}
+.saved-places-shelf__actions button,
+.saved-places-shelf__actions a{
+  min-height:38px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  border:1px solid var(--tm-card-control-border,var(--line));
+  border-radius:10px;
+  padding:0 10px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-link);
+  font:inherit;
+  font-size:11px;
+  font-weight:850;
+  text-decoration:none;
+  cursor:pointer
+}
+.saved-places-shelf__actions [data-saved-shelf-schedule]{
+  border-color:var(--tm-action-primary-active,var(--tm-brand-primary));
+  background:var(--tm-action-primary);
+  color:var(--tm-text-on-action)
+}
+.saved-places-shelf__actions [data-saved-shelf-open-plan]{
+  background:var(--tm-surface-selected)
+}
+.saved-places-shelf__actions .saved-places-shelf__delete{
+  color:var(--tm-error)
+}
+.saved-places-shelf__actions :is(button,a,select,input):focus-visible{
+  outline:3px solid color-mix(in srgb,var(--tm-brand-primary) 24%,transparent);
+  outline-offset:2px
+}
+@media(max-width:760px){
+  .saved-places-shelf{padding:12px}
+  .saved-places-shelf__head{grid-template-columns:1fr}
+  .saved-places-shelf__summary{grid-row:auto;grid-column:1;justify-content:flex-start}
+  .saved-places-shelf__item{
+    grid-template-columns:38px minmax(0,1fr);
+    align-items:start
+  }
+  .saved-places-shelf__actions{
+    grid-column:1/-1;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 96px;
+    align-items:end;
+    justify-content:stretch;
+    padding-top:8px;
+    border-top:1px solid color-mix(in srgb,var(--tm-card-border) 72%,transparent)
+  }
+  .saved-places-shelf__actions label{min-width:0}
+  .saved-places-shelf__actions select,
+  .saved-places-shelf__actions input{width:100%;min-width:0}
+  .saved-places-shelf__actions button,
+  .saved-places-shelf__actions a{width:100%}
+  .saved-places-shelf__actions :is([data-saved-shelf-schedule],[data-saved-shelf-open-plan],[data-saved-shelf-unschedule],.saved-places-shelf__delete,a){
+    grid-column:1/-1
+  }
+}
