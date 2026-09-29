@@ -334,7 +334,8 @@
   }
 
   function fromRow(row) {
-    return Object.assign({}, row.payload || {}, {
+    var payload = stripTransientSyncState(Object.assign({}, row.payload || {}));
+    return Object.assign(payload, {
       id: String(row.id),
       ownerId: String(row.user_id),
       country: row.country,
@@ -406,10 +407,15 @@
     return JSON.parse(JSON.stringify(trip));
   }
 
-  function tripForCloud(trip) {
-    var payload = cloneTrip(trip);
-    delete payload.syncConflict;
+  function stripTransientSyncState(payload) {
+    ['syncStatus', 'syncMutationId', 'syncConflict', 'deletePending', 'deleteMutationId'].forEach(function (key) {
+      delete payload[key];
+    });
     return payload;
+  }
+
+  function tripForCloud(trip) {
+    return stripTransientSyncState(cloneTrip(trip));
   }
 
   async function listCloudTripTombstones() {

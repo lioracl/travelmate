@@ -145,3 +145,9 @@ body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed .da
 @media(max-width:350px){
   body.tm-new-design[data-trip-view="plan"] #plan .past-days-strip>div{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+
+/* Integration gate: collapsed past days stay hidden until explicitly reopened. */
+html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-day:not(.past-trip-day-open){
+  display:none
+}
