@@ -370,3 +370,53 @@ body.tm-new-design[data-trip-view="places"] main.content #places .nearby-control
 
 /* The modern Places flow owns search controls; keep the legacy controls only as hidden state hooks. */
 .nearby-panel[data-nearby-initialized="true"]>.nearby-controls{display:none}
+
+
+/* Saved Places lifecycle completion — keep this under Nearby/Places ownership. */
+.saved-places-shelf__summary{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:6px
+}
+.saved-places-shelf__summary span{
+  min-height:28px;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:0 8px;
+  border:1px solid var(--tm-card-control-border,var(--line));
+  border-radius:999px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-secondary);
+  white-space:nowrap
+}
+.saved-places-shelf__summary b{color:var(--tm-card-heading)}
+.saved-places-shelf__item.is-scheduled{
+  border-color:color-mix(in srgb,var(--tm-brand-primary) 34%,var(--tm-card-border))
+}
+.saved-places-shelf__item.is-just-saved,
+.saved-place.is-plan-target{
+  border-color:var(--tm-brand-primary);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--tm-brand-primary) 18%,transparent)
+}
+.saved-places-shelf__actions [data-saved-shelf-open-plan]{
+  background:var(--tm-surface-selected);
+  color:var(--tm-card-link)
+}
+.saved-places-shelf__actions .saved-places-shelf__delete{
+  width:auto;
+  min-width:0;
+  padding-inline:10px
+}
+.saved-places-shelf__actions :is(button,a,select,input):focus-visible{
+  outline:3px solid color-mix(in srgb,var(--tm-brand-primary) 24%,transparent);
+  outline-offset:2px
+}
+@media(max-width:760px){
+  .saved-places-shelf__summary{justify-content:flex-start}
+  .saved-places-shelf__actions [data-saved-shelf-open-plan],
+  .saved-places-shelf__actions [data-saved-shelf-unschedule],
+  .saved-places-shelf__actions .saved-places-shelf__delete,
+  .saved-places-shelf__actions>a{grid-column:1/-1}
+}
