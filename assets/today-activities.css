@@ -1,13 +1,13 @@
 body:not(.home-page) .today-activities-card{
   min-width:0;
   align-self:start;
-  padding:0!important;
+  padding:0;
   overflow:hidden;
-  transform:none!important
+  transform:none
 }
 html body.tm-new-design[data-trip-view="overview"] main.content .dashboard>.today-activities-card.today-activities-card.today-activities-card,
 html body.tm-new-design[data-trip-view="overview"] main.content .trip-today.today-activities-card{
-  padding:0!important
+  padding:0
 }
 body:not(.home-page) .today-activities-toggle{
   width:100%;
@@ -26,11 +26,11 @@ body:not(.home-page) .today-activities-toggle{
   cursor:pointer
 }
 html body.tm-new-design[data-trip-view="overview"] main.content .today-activities-toggle{
-  border:0!important;
-  background:transparent!important;
-  color:var(--tm-overview-text,var(--tm-card-text))!important;
-  -webkit-text-fill-color:currentColor!important;
-  box-shadow:none!important
+  border:0;
+  background:transparent;
+  color:var(--tm-overview-text,var(--tm-card-text));
+  -webkit-text-fill-color:currentColor;
+  box-shadow:none
 }
 body:not(.home-page) .today-activities-toggle:focus-visible,
 body:not(.home-page) .today-activities-less:focus-visible{
