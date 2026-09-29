@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-38'}catch(error){return'20260929-38'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-39'}catch(error){return'20260929-39'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={};
