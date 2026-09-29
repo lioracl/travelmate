@@ -1,0 +1,111 @@
+/* Plan UX Polish — structure and behavior only. Shared materials remain theme-owned. */
+body.tm-new-design[data-trip-view="plan"] #plan{--tm-plan-action-height:46px;--tm-plan-image:82px}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar{gap:12px;margin-bottom:14px}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-action,
+body.tm-new-design[data-trip-view="plan"] #plan .planner-more>summary{min-height:var(--tm-plan-action-height);height:var(--tm-plan-action-height);padding:0 14px;font-size:14px;font-weight:700;line-height:1;white-space:nowrap}
+body.tm-new-design[data-trip-view="plan"] #plan [data-new-activity]{border-color:var(--tm-action-primary-active);background:linear-gradient(135deg,var(--tm-action-primary-active),var(--tm-action-primary));color:var(--tm-text-on-action)}
+body.tm-new-design[data-trip-view="plan"] #plan [data-plan-jump-today]:disabled{opacity:.48;cursor:not-allowed}
+
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day{position:relative;margin:0;padding:14px 0 20px;border-top:1px solid color-mix(in srgb,var(--tm-card-border) 72%,transparent)}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day:first-child{border-top:0}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{min-height:36px;padding:0 11px;border-radius:12px;font-size:12px}
+body.tm-new-design[data-trip-view="plan"] #plan .day-heading{padding:8px 4px 10px;border-bottom:1px solid color-mix(in srgb,var(--tm-card-border) 72%,transparent)}
+body.tm-new-design[data-trip-view="plan"] #plan .day-heading>div>strong{font-size:18px;font-weight:700}
+body.tm-new-design[data-trip-view="plan"] #plan .day-summary{display:flex;align-items:center;gap:6px;min-height:20px;margin-top:3px;color:var(--tm-card-secondary);font-size:12px;font-weight:600}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-kind{display:inline-flex;align-items:center;min-height:22px;margin-inline-start:7px;padding:0 8px;border:1px solid var(--tm-card-control-border);border-radius:999px;background:var(--tm-card-control);color:var(--tm-card-secondary);font-size:11px;font-weight:700}
+body.tm-new-design[data-trip-view="plan"] #plan .current-trip-day .tm-plan-day-kind{border-color:color-mix(in srgb,var(--tm-action-primary) 45%,var(--tm-card-control-border));background:var(--tm-action-secondary);color:var(--tm-card-heading)}
+body.tm-new-design[data-trip-view="plan"] #plan .past-trip-day .tm-plan-day-kind{opacity:.72}
+
+body.tm-new-design[data-trip-view="plan"] #plan .planned-activities{gap:11px;margin-top:10px}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item{min-height:96px;border:1px solid var(--tm-card-border);border-radius:15px;background:var(--tm-card-bg-compact);box-shadow:none}
+body.tm-new-design[data-trip-view="plan"] #plan .planned-activity.tm-plan-item{grid-template-columns:58px var(--tm-plan-image) minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-activity-media{grid-column:2;grid-row:1;width:var(--tm-plan-image);height:72px;display:grid;place-items:center;overflow:hidden;border:1px solid var(--tm-card-border);border-radius:12px;background:var(--tm-card-bg)}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-activity-media img{width:100%;height:100%;display:block;object-fit:cover}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-image-placeholder{color:var(--tm-card-link);font-size:21px}
+body.tm-new-design[data-trip-view="plan"] #plan .planned-activity .activity-time{grid-column:1;grid-row:1;align-self:start;padding-top:9px;font-size:14px;font-weight:800}
+body.tm-new-design[data-trip-view="plan"] #plan .planned-activity .activity-copy{grid-column:3;grid-row:1;min-width:0}
+body.tm-new-design[data-trip-view="plan"] #plan .activity-copy>strong,
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place-content>h3{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;margin:0;font-size:16px;line-height:1.35;font-weight:700}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-location{display:flex;align-items:center;gap:5px;min-width:0;margin-top:4px;color:var(--tm-card-secondary);font-size:12px}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-location span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-state-badge{display:inline-flex;align-items:center;width:max-content;min-height:22px;margin-top:5px;padding:0 8px;border-radius:999px;background:var(--tm-action-secondary);color:var(--tm-card-heading);font-size:11px;font-weight:800}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-state-badge.is-now{background:var(--tm-action-primary);color:var(--tm-text-on-action)}
+
+body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons{grid-column:4;grid-row:1;display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons>button,
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place-actions>button,
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-nav-action{box-sizing:border-box;min-width:44px;min-height:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 11px;border:1px solid var(--tm-card-control-border);border-radius:12px;background:var(--tm-card-control);color:var(--tm-card-control-text);font-size:12px;font-weight:700;line-height:1;text-decoration:none;white-space:nowrap}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-nav-action{border-color:color-mix(in srgb,var(--tm-action-primary) 40%,var(--tm-card-control-border));color:var(--tm-card-link)}
+body.tm-new-design[data-trip-view="plan"] #plan :is([data-edit],[data-delete],[data-edit-saved-place],[data-delete-saved-place]){display:none}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded :is([data-edit],[data-delete],[data-edit-saved-place],[data-delete-saved-place]){display:inline-flex}
+body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons>button::after,
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place-actions>button::after{font-size:12px;font-weight:700;white-space:nowrap}
+body.tm-new-design[data-trip-view="plan"] #plan [data-plan-details-toggle]::after{content:""}
+body.tm-new-design[data-trip-view="plan"] #plan [data-plan-details-toggle] span{display:inline}
+
+body.tm-new-design[data-trip-view="plan"] #plan .activity-hotel-link,
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place .saved-place-links,
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place .saved-place-editor,
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place-content>p,
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details{display:none}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded .activity-hotel-link{display:inline-flex}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded.saved-place .saved-place-links{display:grid}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded.saved-place .saved-place-editor:not([hidden]){display:flex}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded.saved-place .saved-place-content>p{display:block}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded .tm-plan-secondary-details{display:grid}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details{grid-column:2/-1;gap:7px;padding:10px 0 2px;border-top:1px solid var(--tm-card-border);color:var(--tm-card-secondary);font-size:12px}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details p{display:flex;align-items:flex-start;gap:7px;margin:0}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details nav{display:flex;flex-wrap:wrap;gap:7px}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details a{min-height:38px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:1px solid var(--tm-card-control-border);border-radius:10px;background:var(--tm-card-control);color:var(--tm-card-link);font-weight:700;text-decoration:none}
+
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place.tm-plan-item{grid-template-columns:var(--tm-plan-image) minmax(0,1fr) auto;gap:10px;padding:10px 12px}
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place.tm-plan-item>.saved-place-image{width:var(--tm-plan-image);height:72px;max-width:none;max-height:none;object-fit:cover;border-radius:12px}
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place-actions{align-self:center;display:flex;gap:6px;flex-wrap:nowrap}
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place.done,
+body.tm-new-design[data-trip-view="plan"] #plan .planned-activity.done{opacity:.7}
+body.tm-new-design[data-trip-view="plan"] #plan .saved-place.done h3,
+body.tm-new-design[data-trip-view="plan"] #plan .planned-activity.done .activity-copy>strong{text-decoration:line-through}
+
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-empty-day{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 0;padding:12px 14px;border:1px dashed var(--tm-card-control-border);border-radius:14px;background:var(--tm-card-bg-compact);color:var(--tm-card-secondary)}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-empty-day button{min-height:42px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;border:1px solid var(--tm-card-control-border);border-radius:11px;background:var(--tm-card-control);color:var(--tm-card-link);font-weight:700;white-space:nowrap}
+body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed .tm-plan-empty-day{display:none}
+
+body.tm-new-design[data-trip-view="plan"] #plan .past-days-strip{margin:4px 0 14px;padding:9px 11px;border:1px solid var(--tm-card-border);border-radius:14px;background:var(--tm-card-bg-compact);box-shadow:none}
+body.tm-new-design[data-trip-view="plan"] #plan .past-days-strip>span{font-size:13px;font-weight:700}
+body.tm-new-design[data-trip-view="plan"] #plan .past-days-strip>span::after{content:" · " attr(data-count);font-weight:600;opacity:.78}
+body.tm-new-design[data-trip-view="plan"] #plan .past-days-strip button{min-height:38px;border-radius:10px;font-size:12px}
+body.tm-new-design[data-trip-view="plan"] #plan .past-days-strip button::after{content:attr(data-progress);display:block;margin-top:2px;font-size:10px;font-weight:600;opacity:.76}
+
+@media(max-width:700px){
+  body.tm-new-design[data-trip-view="plan"] #plan{--tm-plan-image:72px}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-action,
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-more>summary{padding-inline:7px;font-size:12px}
+  body.tm-new-design[data-trip-view="plan"] #plan .day-heading{position:sticky;top:68px;z-index:6;border:1px solid color-mix(in srgb,var(--tm-card-border) 76%,transparent);border-radius:12px;padding:8px 10px;background:color-mix(in srgb,var(--tm-card-bg) 94%,transparent)}
+  body.tm-new-design[data-trip-view="plan"] #plan .planned-activity.tm-plan-item{grid-template-columns:48px var(--tm-plan-image) minmax(0,1fr);gap:8px;padding:9px}
+  body.tm-new-design[data-trip-view="plan"] #plan .planned-activity .activity-time{grid-column:1}
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-activity-media{grid-column:2;height:68px}
+  body.tm-new-design[data-trip-view="plan"] #plan .planned-activity .activity-copy{grid-column:3}
+  body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons,
+  body.tm-new-design[data-trip-view="plan"] #plan .saved-place-actions{grid-column:1/-1;grid-row:auto;width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded .activity-buttons,
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded .saved-place-actions{display:flex;flex-wrap:wrap}
+  body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons>button,
+  body.tm-new-design[data-trip-view="plan"] #plan .saved-place-actions>button,
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-nav-action{width:100%;min-width:0;padding-inline:7px;font-size:12px}
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded .activity-buttons>button,
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded .saved-place-actions>button,
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded .tm-plan-nav-action{width:auto;min-width:44px}
+  body.tm-new-design[data-trip-view="plan"] #plan .saved-place.tm-plan-item{grid-template-columns:var(--tm-plan-image) minmax(0,1fr);padding:9px}
+  body.tm-new-design[data-trip-view="plan"] #plan .saved-place.tm-plan-item>.saved-place-image{height:68px}
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details{grid-column:1/-1}
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-empty-day{align-items:stretch;flex-direction:column}
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-empty-day button{justify-content:center;width:100%}
+}
+@media(max-width:390px){
+  body.tm-new-design[data-trip-view="plan"] #plan{--tm-plan-image:66px}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-action,
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-more>summary{font-size:11px}
+  body.tm-new-design[data-trip-view="plan"] #plan .planned-activity.tm-plan-item{grid-template-columns:44px var(--tm-plan-image) minmax(0,1fr)}
+}
