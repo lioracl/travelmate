@@ -136,3 +136,33 @@ body:not(.home-page) .today-activities-expanded-head h2{margin:4px 0 0}
   .today-activities-expanded:not([hidden]){animation:none}
   .today-activities-toggle>i{transition:none}
 }
+
+/* Mobile Visual Polish: compact Overview activity summary, full detail on demand. */
+@media(max-width:650px){
+  html body.tm-new-design[data-trip-view="overview"] main.content .today-activities-toggle{
+    min-height:78px;
+    grid-template-columns:minmax(0,1fr) 28px;
+    gap:4px 10px;
+    padding:11px 13px
+  }
+  html body.tm-new-design[data-trip-view="overview"] main.content .today-activities-label{
+    font-size:11px;
+    font-weight:750
+  }
+  html body.tm-new-design[data-trip-view="overview"] main.content :is(.today-activities-main b,.today-activities-main strong){
+    font-size:15px;
+    line-height:1.3
+  }
+  html body.tm-new-design[data-trip-view="overview"] main.content .today-activities-meta{
+    gap:5px;
+    font-size:12px;
+    line-height:1.3
+  }
+  html body.tm-new-design[data-trip-view="overview"] main.content .today-activities-expanded{
+    padding:13px
+  }
+  html body.tm-new-design[data-trip-view="overview"] main.content .today-activities-expanded .day-tabs{
+    margin-inline:-13px;
+    padding-inline:13px
+  }
+}
