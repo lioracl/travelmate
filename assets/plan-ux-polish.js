@@ -169,7 +169,7 @@ function enhanceDay(card,index,trip,today){
   }
   var content=card.querySelector(':scope > div'),empty=content&&content.querySelector('.tm-plan-empty-day');
   if(!total&&content){
-    if(!empty){empty=document.createElement('div');empty.className='tm-plan-empty-day';empty.innerHTML='<span>אין פעילויות ביום הזה</span><button type="button" data-add-date="'+date+'"><i class="fa-solid fa-plus" aria-hidden="true"></i> הוסף פעילות</button>';var note=content.querySelector('.day-note');content.insertBefore(empty,note||null)}
+    if(!empty){empty=document.createElement('div');empty.className='tm-plan-empty-day';empty.innerHTML='<span>אין פעילויות ביום הזה</span><button type="button" data-plan-empty-add="'+date+'"><i class="fa-solid fa-plus" aria-hidden="true"></i> הוסף פעילות</button>';var note=content.querySelector('.day-note');content.insertBefore(empty,note||null)}
   }else if(empty)empty.remove();
   if(!preparedDays[date]&&date>=today){
     preparedDays[date]=true;
@@ -213,13 +213,15 @@ function collapseOtherOpenDays(targetDate){
   var plan=document.getElementById('plan'),target=plan&&plan.querySelector('.generated-day[data-day-date="'+targetDate+'"]');
   if(!plan||!target||target.classList.contains('day-collapsed'))return;
   [].slice.call(plan.querySelectorAll('.generated-day')).forEach(function(card){
-    if(String(card.dataset.dayDate||'')===String(targetDate)||card.classList.contains('day-collapsed'))return;
+    if(String(card.dataset.dayDate||'')===String(targetDate)||card.classList.contains('day-collapsed')||card.classList.contains('current-trip-day')||card.classList.contains('tm-plan-day-current'))return;
     var badge=card.querySelector('.badge');if(badge)badge.click()
   })
 }
 document.addEventListener('click',function(event){
   var toggle=event.target.closest('[data-plan-details-toggle]');
   if(toggle){var row=toggle.closest('.tm-plan-item');if(!row)return;event.preventDefault();setExpanded(row,!row.classList.contains('tm-plan-expanded'));return}
+  var emptyAdd=event.target.closest('[data-plan-empty-add]');
+  if(emptyAdd){var emptyCard=emptyAdd.closest('.generated-day'),headerAdd=emptyCard&&emptyCard.querySelector('.day-add[data-add-date]');if(headerAdd)headerAdd.click();return}
   if(event.target.closest('[data-add-date]'))return;
   var dayToggle=event.target.closest('[data-toggle-day]');
   if(dayToggle)setTimeout(function(){collapseOtherOpenDays(dayToggle.dataset.toggleDay)},0)
