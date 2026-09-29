@@ -1162,7 +1162,7 @@
     if (typeof caches !== 'undefined' && caches && typeof caches.keys === 'function' && typeof caches.delete === 'function') {
       var cacheNames = await caches.keys();
       await Promise.all(cacheNames.filter(function (name) {
-        return /^travelmate-smart-v\d+$/.test(name);
+        return /^travelmate-smart-v\d+(?:-20\d{6}-\d+)?$/.test(name);
       }).map(function (name) { return caches.delete(name); }));
     }
     return keys.length;
