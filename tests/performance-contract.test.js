@@ -145,6 +145,15 @@ test('admin dialog DOM is created only after admin status is confirmed', () => {
   assert.doesNotMatch(init[1], /createDialog\(\)/);
 });
 
+test('successful feature readiness is memoized without blocking failure retries', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
+  assert.match(source, /featureLoads=\{\},readyFeatures=\{\}/);
+  assert.match(source, /if\(readyFeatures\[view\]\)return Promise\.resolve\(true\)/);
+  assert.match(source, /if\(featureLoads\[view\]\)return featureLoads\[view\]/);
+  assert.match(source, /travelmate:feature-ready[\s\S]*delete featureLoads\[view\];[\s\S]*if\(ready!==false\)readyFeatures\[view\]=true/);
+  assert.match(source, /function\(error\)\{\s*delete featureLoads\[view\];\s*throw error/);
+});
+
 test('failed dynamic assets are evicted and do not announce a ready feature', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.match(source, /style\.onerror=function\(\)\{[^}]*style\.remove\(\);delete loadedStyles\[file\];resolve\(false\)/);
