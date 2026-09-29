@@ -269,7 +269,7 @@ function initTripPlacePlanner(){var daysContainer=document.querySelector('[data-
       openSavedPlaceInPlan(place);return
     }
     if(event.target.closest('[data-saved-shelf-unschedule]')){
-      place.date='';place.time=place.time||'10:00';persist();renderSaved();if(window.showDayToast)window.showDayToast('המקום הוסר מהתוכנית ונשאר במקומות ששמרתי.');return
+      place.date='';place.time=place.time||'10:00';persist();renderSaved();if(window.showDayToast)window.showDayToast('התזמון הוסר; המקום נשאר במקומות שמורים.');return
     }
     if(event.target.closest('[data-saved-shelf-delete]')){
       if(window.confirm&& !window.confirm('למחוק את המקום מהמקומות השמורים?'))return;
