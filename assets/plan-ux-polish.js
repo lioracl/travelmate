@@ -157,7 +157,38 @@ function statusMap(trip){
   if(next)map[next.kind+':'+next.record.id]={label:'הבא',type:'next'};
   return map
 }
-function enhanceRow(row,trip,statuses){
+function transitionMap(trip){
+  var helper=context(),map=Object.create(null);
+  if(!helper||typeof helper.transitionAssessmentsForDate!=='function'||!trip)return map;
+  var dates=new Set();
+  (trip.activities||[]).forEach(function(record){if(record&&record.date)dates.add(String(record.date))});
+  (trip.savedPlaces||[]).forEach(function(record){if(record&&record.date)dates.add(String(record.date))});
+  dates.forEach(function(date){
+    var current=helper.transitionAssessmentsForDate(trip,date);
+    Object.keys(current||{}).forEach(function(key){map[key]=current[key]})
+  });
+  return map
+}
+function travelModeLabel(mode){
+  return mode==='walk'?'הליכה':mode==='drive'?'נסיעה ברכב':'תחבורה'
+}
+function addTransition(row,transition){
+  var host=row.querySelector('.activity-copy,.saved-place-content');if(!host)return;
+  var existing=host.querySelector('.tm-plan-transition');if(existing)existing.remove();
+  row.classList.toggle('tm-plan-travel-risk',Boolean(transition&&transition.risk));
+  if(!transition)return;
+  var line=document.createElement('span');
+  line.className='tm-plan-transition'+(transition.risk?' is-risk':' is-ok');
+  line.dataset.transitionSource=transition.source||'estimate';
+  var prefix=transition.source==='manual'?'זמן מעבר':'הערכת מעבר';
+  var text=prefix+' · כ־'+transition.travelMinutes+' דק׳ · '+travelModeLabel(transition.mode);
+  if(transition.risk)text+=' · חסרות כ־'+transition.shortfallMinutes+' דק׳';
+  else text+=' · נשארו '+transition.gapMinutes+' דק׳ בין הפעילויות';
+  line.innerHTML='<i class="fa-solid '+(transition.risk?'fa-triangle-exclamation':'fa-route')+'" aria-hidden="true"></i><span></span>';
+  line.querySelector('span').textContent=text;
+  host.appendChild(line)
+}
+function enhanceRow(row,trip,statuses,transitions){
   var record=recordFor(row,trip),actions=row.querySelector('.activity-buttons,.saved-place-actions');if(!record||!actions)return;
   if(row.dataset.planUxEnhanced!=='true'){
     row.dataset.planUxEnhanced='true';row.classList.add('tm-plan-item');row.dataset.planExpanded='false';
@@ -165,7 +196,8 @@ function enhanceRow(row,trip,statuses){
   }
   row.dataset.planScheduleMode=scheduleMode(record);
   syncDone(row);
-  var status=statuses[recordKind(row)+':'+record.id];addStatus(row,status&&status.label,status&&status.type)
+  var key=recordKind(row)+':'+record.id,status=statuses[key];addStatus(row,status&&status.label,status&&status.type);
+  addTransition(row,transitions&&transitions[key])
 }
 function dayRecords(trip,date){
   var list=[];
@@ -227,9 +259,9 @@ function apply(){
   if(document.body.dataset.tripView!=='plan')return;
   var plan=document.getElementById('plan'),trip=currentTrip();if(!plan||!trip)return;
   plan.dataset.planUxReady='true';ensureToolbar(plan,trip);
-  var today=localDateKey(new Date()),statuses=statusMap(trip);
+  var today=localDateKey(new Date()),statuses=statusMap(trip),transitions=transitionMap(trip);
   [].slice.call(plan.querySelectorAll('.generated-day')).forEach(function(card,index){enhanceDay(card,index,trip,today)});
-  plan.querySelectorAll('.planned-activity,.saved-place').forEach(function(row){enhanceRow(row,trip,statuses)});
+  plan.querySelectorAll('.planned-activity,.saved-place').forEach(function(row){enhanceRow(row,trip,statuses,transitions)});
   enhancePastStrip(plan,trip)
 }
 function schedule(){if(scheduled)return;scheduled=requestAnimationFrame(function(){scheduled=0;apply()})}
