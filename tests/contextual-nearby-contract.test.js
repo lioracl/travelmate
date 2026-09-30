@@ -56,6 +56,32 @@ test('Free Time Finder ignores flexible activities as hard deadlines and scales 
   assert.equal(api.buildNearbyRequest({ availableMinutes: 60 }), null);
 });
 
+test('Contextual Nearby scoring prefers options that fit the available window', () => {
+  const api = contextApi();
+  const place = { lat: 32.081, lon: 34.782, category: 'cafe', distance: 250 };
+  const next = { record: { lat: 32.09, lon: 34.79, time: '15:00', scheduleMode: 'fixed' } };
+
+  const fit = api.contextualNearbyFit(place, {
+    userInvoked: true,
+    lat: 32.08,
+    lon: 34.78,
+    availableMinutes: 90,
+    nextFixedActivity: next
+  });
+  const tooShort = api.contextualNearbyFit(place, {
+    userInvoked: true,
+    lat: 32.08,
+    lon: 34.78,
+    availableMinutes: 20,
+    nextFixedActivity: next
+  });
+
+  assert.equal(fit.fit, true);
+  assert.equal(tooShort.fit, false);
+  assert.ok(fit.totalMinutes > 0);
+  assert.equal(api.contextualNearbyFit(place, { userInvoked: false }), null);
+});
+
 test('Places exposes contextual search only as an explicit user action', () => {
   const nearby = read('assets/nearby.js');
   const css = read('assets/nearby.css');
@@ -65,6 +91,8 @@ test('Places exposes contextual search only as an explicit user action', () => {
   assert.match(nearby, /refreshFreeTimeContext/);
   assert.match(nearby, /controls\.timeSearch\.addEventListener\('click'/);
   assert.match(nearby, /requestGpsConsent\(panel\)/);
+  assert.match(nearby, /contextualNearbyFit/);
+  assert.match(nearby, /data-context-fit/);
   assert.match(nearby, /המיקום יתבקש רק אחרי אישור מפורש/);
   assert.match(css, /2\.3 Free Time Finder/);
 
