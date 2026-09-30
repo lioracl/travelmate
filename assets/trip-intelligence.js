@@ -464,7 +464,7 @@
     initExistingTrip();
   });
   if (window.TravelMateCloud && typeof window.TravelMateCloud.onAuthChange === 'function') {
-    window.TravelMateCloud.onAuthChange(function (session) {
+    window.TravelMateCloud.onAuthChange(function (event, session) {
       var profile = window.TravelMateUserProfile;
       setDeclaredPreferences(profile && profile.fromUser ? profile.fromUser(session && session.user).preferences : null);
     }).catch(function () {});
