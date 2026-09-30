@@ -1,11 +1,30 @@
 const { test, expect } = require('@playwright/test');
 
+function localDateKey(offset) {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + offset);
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
+const dates = {
+  past: localDateKey(-1),
+  today: localDateKey(0),
+  tomorrow: localDateKey(1),
+  future2: localDateKey(2),
+  future3: localDateKey(3)
+};
+
 const trip = {
   id: 'qa-playwright',
   country: 'Czechia',
   city: 'Prague QA',
-  start: '2026-09-28',
-  end: '2026-10-02',
+  start: dates.past,
+  end: dates.future3,
   days: 5,
   type: 'סולו',
   budget: 1000,
@@ -13,11 +32,11 @@ const trip = {
   dayNotes: {},
   savedPlaces: [],
   activities: [
-    { id: 'past-1', date: '2026-09-28', time: '10:00', title: 'Old Town Walk', category: 'סיור', duration: 90, done: true, locationName: 'Old Town Square' },
-    { id: 'today-1', date: '2026-09-29', time: '09:30', title: 'Breakfast near Wenceslas Square', category: 'אוכל', duration: 60, done: false, locationName: 'Wenceslas Square' },
-    { id: 'today-2', date: '2026-09-29', time: '12:00', title: 'National Museum Visit', category: 'תרבות', duration: 120, done: false, locationName: 'National Museum, Prague' },
-    { id: 'today-3', date: '2026-09-29', time: '16:00', title: 'Charles Bridge Walk', category: 'סיור', duration: 90, done: false, locationName: 'Charles Bridge' },
-    { id: 'future-1', date: '2026-10-01', time: '11:00', title: 'Prague Castle', category: 'אטרקציה', duration: 150, done: false, locationName: 'Prague Castle' }
+    { id: 'past-1', date: dates.past, time: '10:00', title: 'Old Town Walk', category: 'סיור', duration: 90, done: true, locationName: 'Old Town Square' },
+    { id: 'today-1', date: dates.today, time: '09:30', title: 'Breakfast near Wenceslas Square', category: 'אוכל', duration: 60, done: false, locationName: 'Wenceslas Square' },
+    { id: 'today-2', date: dates.today, time: '12:00', title: 'National Museum Visit', category: 'תרבות', duration: 120, done: false, locationName: 'National Museum, Prague' },
+    { id: 'today-3', date: dates.today, time: '16:00', title: 'Charles Bridge Walk', category: 'סיור', duration: 90, done: false, locationName: 'Charles Bridge' },
+    { id: 'future-1', date: dates.future2, time: '11:00', title: 'Prague Castle', category: 'אטרקציה', duration: 150, done: false, locationName: 'Prague Castle' }
   ]
 };
 
@@ -33,7 +52,7 @@ async function seedSavedPlaces(page) {
   const value = JSON.parse(JSON.stringify(trip));
   value.savedPlaces = [
     { id:'saved-only-1', name:'Saved Cafe', category:'בית קפה', description:'Saved for later', date:'', time:'10:00', lat:'50.081', lon:'14.425', imageResolutionVersion:3 },
-    { id:'scheduled-1', name:'Scheduled Museum', category:'מוזיאון', description:'Already planned', date:'2026-09-29', time:'15:00', lat:'50.079', lon:'14.430', imageResolutionVersion:3 }
+    { id:'scheduled-1', name:'Scheduled Museum', category:'מוזיאון', description:'Already planned', date:dates.today, time:'15:00', lat:'50.079', lon:'14.430', imageResolutionVersion:3 }
   ];
   await page.addInitScript(savedTrip => {
     localStorage.setItem('travelmate-trips', JSON.stringify([savedTrip]));
@@ -64,19 +83,19 @@ for (const viewport of [
       await expect(page.locator('#plan')).toBeVisible();
       await expect(page.locator('.generated-day')).toHaveCount(5);
 
-      const today = page.locator('.generated-day[data-day-date="2026-09-29"]');
+      const today = page.locator('.generated-day[data-day-date="'+dates.today+'"]');
       await expect(today).toBeVisible();
       await expect(today).not.toHaveClass(/day-collapsed/);
 
-      for (const date of ['2026-09-30','2026-10-01','2026-10-02']) {
+      for (const date of [dates.tomorrow, dates.future2, dates.future3]) {
         await expect(page.locator('.generated-day[data-day-date="'+date+'"]')).toHaveClass(/day-collapsed/);
       }
 
       const pastStrip = page.locator('[data-past-days-strip]');
       await expect(pastStrip).toBeVisible();
-      await expect(page.locator('.generated-day[data-day-date="2026-09-28"]')).not.toBeVisible();
-      await pastStrip.locator('[data-open-past-day="2026-09-28"]').click();
-      await expect(page.locator('.generated-day[data-day-date="2026-09-28"]')).toBeVisible();
+      await expect(page.locator('.generated-day[data-day-date="'+dates.past+'"]')).not.toBeVisible();
+      await pastStrip.locator('[data-open-past-day="'+dates.past+'"]').click();
+      await expect(page.locator('.generated-day[data-day-date="'+dates.past+'"]')).toBeVisible();
 
       await expect(today.locator('.planned-activity.tm-plan-item')).toHaveCount(3);
       const first = today.locator('.planned-activity.tm-plan-item').nth(0);
@@ -91,10 +110,10 @@ for (const viewport of [
       await expect(second).toHaveClass(/tm-plan-expanded/);
       await expect(first).not.toHaveClass(/tm-plan-expanded/);
 
-      const emptyDay = page.locator('.generated-day[data-day-date="2026-09-30"]');
+      const emptyDay = page.locator('.generated-day[data-day-date="'+dates.tomorrow+'"]');
       await emptyDay.locator('.badge').click();
       await expect(emptyDay.locator('.tm-plan-empty-day')).toBeVisible();
-      await expect(emptyDay.locator('[data-add-date="2026-09-30"]')).toBeVisible();
+      await expect(emptyDay.locator('[data-add-date="'+dates.tomorrow+'"]')).toBeVisible();
 
       expect(await noHorizontalOverflow(page)).toBeTruthy();
       expect(pageErrors, pageErrors.join('\n')).toEqual([]);
@@ -137,7 +156,7 @@ for (const viewport of [
       await expect(savedToggle).toHaveAttribute('aria-expanded', 'true');
 
       let savedOnly = shelf.locator('[data-saved-shelf-id="saved-only-1"]');
-      await savedOnly.locator('[data-saved-shelf-date]').selectOption('2026-09-30');
+      await savedOnly.locator('[data-saved-shelf-date]').selectOption(dates.tomorrow);
       await savedOnly.locator('[data-saved-shelf-time]').fill('14:15');
       await savedOnly.locator('[data-saved-shelf-schedule]').click();
       await expect(shelf.locator('[data-saved-places-scheduled]')).toHaveText('2');
