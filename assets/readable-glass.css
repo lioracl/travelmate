@@ -21,10 +21,7 @@ html[dir="rtl"] body.tm-new-design:not(.home-page)::after{background:none}
     min-height:100vh;
     min-height:100dvh;
     background-color:#10241e;
-    background-image:var(--tm-destination-canvas);
-    background-position:center;
-    background-size:cover;
-    background-repeat:no-repeat
+    background-image:none
   }
   html[dir="rtl"] body.tm-new-design:not(.home-page)::after{
     inset:-1px 0 calc(-1px - env(safe-area-inset-bottom,0px)) 0;

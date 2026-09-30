@@ -45,10 +45,10 @@ test('mobile Today summary is shorter while expanded content stays available', (
   assert.doesNotMatch(block, /!important/);
 });
 
-test('mobile destination canvas has a body fallback through the dynamic viewport and safe area', () => {
+test('mobile destination canvas remains pseudo-owned and covers the dynamic safe area', () => {
   const css = read('assets/readable-glass.css');
-  assert.match(css, /@media\(max-width:900px\)[\s\S]*?min-height:100dvh;[\s\S]*?background-image:var\(--tm-destination-canvas\)/);
-  assert.match(css, /safe-area-inset-bottom/);
+  assert.match(css, /@media\(max-width:900px\)[\s\S]*?min-height:100dvh;[\s\S]*?background-image:none/);
+  assert.match(css, /::after\{[\s\S]*?safe-area-inset-bottom[\s\S]*?background-image:var\(--tm-destination-canvas\)/);
 });
 
 test('Overview translucency polish is phone-scoped and preserves readable touch targets', () => {
