@@ -183,6 +183,7 @@ function addTransition(row,transition){
   var prefix=transition.source==='manual'?'זמן מעבר':'הערכת מעבר';
   var text=prefix+' · כ־'+transition.travelMinutes+' דק׳ · '+travelModeLabel(transition.mode);
   if(transition.risk)text+=' · חסרות כ־'+transition.shortfallMinutes+' דק׳';
+  else if(transition.latestDepartureTime)text+=' · כדאי לצאת עד '+transition.latestDepartureTime;
   else text+=' · נשארו '+transition.gapMinutes+' דק׳ בין הפעילויות';
   line.innerHTML='<i class="fa-solid '+(transition.risk?'fa-triangle-exclamation':'fa-route')+'" aria-hidden="true"></i><span></span>';
   line.querySelector('span').textContent=text;
