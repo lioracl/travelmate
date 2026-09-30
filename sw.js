@@ -19,6 +19,7 @@ const CORE_PATHS=[
   './assets/cloud-sync.js',
   './assets/trip-store.js',
   './assets/event-contracts.js',
+  './assets/user-profile.js',
   './assets/supabase-config.js',
   './assets/mobile-menu.css',
   './assets/language.css',
