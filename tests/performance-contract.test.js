@@ -280,7 +280,7 @@ test('home boot loads only home essentials and keeps About lazy', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   const entry = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   assert.match(source, /homeBaseStyles=\['language\.css','network-usage\.css','theme\.css'\]/);
-  assert.match(source, /if\(isHomePage\)[\s\S]*homeBaseStyles\.map\(loadStyle\)[\s\S]*loadSequence\(\['language\.js','theme\.js'\]\)/);
+  assert.match(source, /if\(isHomePage\)[\s\S]*homeBaseStyles\.map\(loadStyle\)[\s\S]*loadSequence\(\['language\.js','theme\.js','user-profile\.js'\]\)/);
   assert.match(source, /\}else\{[\s\S]*var initialView=activeView\(\)[\s\S]*loadFeature\(initialView\)/);
   assert.equal((entry.match(/data-about-open data-lazy-about/g) || []).length, 2);
 });
