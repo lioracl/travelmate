@@ -24,14 +24,34 @@ test('Places hub groups discovery, transport, getaways and destination info', ()
   assert.deepEqual(views, ['places', 'transport', 'getaways', 'destination-info']);
 });
 
-test('Group, Memories and About are secondary tools rather than primary tabs', () => {
+test('secondary tools stay grouped under More rather than primary tabs', () => {
   const html = read('trip/custom/index.html');
   assert.match(html, /class="trip-sidebar-more"/);
   assert.match(html, /data-view="group"/);
   assert.match(html, /data-view="memories"/);
+  assert.match(html, /data-smart-hub-open/);
+  assert.match(html, /data-security-open/);
+  assert.match(html, /\.\.\/\.\.\/index\.html#trip-archive/);
   assert.match(html, /data-about-open/);
   const primary = html.match(/<nav aria-label="אזורי הטיול">([\s\S]*?)<\/nav>/)[1];
-  assert.doesNotMatch(primary, /transport|getaways|group|memories|about/);
+  assert.doesNotMatch(primary, /transport|getaways|group|memories|about|security|archive|smart-hub/);
+});
+
+test('secondary menu lazy-loads Settings and Smart Hub and routes to the home archive', () => {
+  const app = read('assets/app.js');
+  const home = read('assets/home.js');
+  const hub = read('assets/smart-hub.js');
+  assert.match(app, /\[data-lazy-account\],\[data-smart-hub-open\]/);
+  assert.match(app, /loadFeature\(smartHub\?'assistant':'account'\)/);
+  assert.match(hub, /window\.TravelMateSmartHub = \{ open:/);
+  assert.match(home, /location\.hash === '#trip-archive'/);
+});
+
+test('Smart Hub still exposes all 20 grouped tools through the secondary launcher', () => {
+  const hub = read('assets/smart-hub.js');
+  const toolIds = Array.from(hub.matchAll(/\['([a-z]+)','fa-[^']+','/g), (match) => match[1]);
+  assert.equal(toolIds.length, 20);
+  assert.equal(new Set(toolIds).size, 20);
 });
 
 test('feature modules no longer append secondary features into primary sidebar navigation', () => {

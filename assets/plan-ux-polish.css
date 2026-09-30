@@ -7,6 +7,43 @@ body.tm-new-design[data-trip-view="plan"] #plan .planner-more>summary{min-height
 body.tm-new-design[data-trip-view="plan"] #plan [data-new-activity]{border-color:var(--tm-action-primary-active);background:linear-gradient(135deg,var(--tm-action-primary-active),var(--tm-action-primary));color:var(--tm-text-on-action)}
 body.tm-new-design[data-trip-view="plan"] #plan [data-plan-jump-today]:disabled{opacity:.48;cursor:not-allowed}
 
+/* Plan controls share geometry; primary and destructive colors keep their semantic owners. */
+body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
+  .planner-action,.planner-more>summary,.day-add,.day-replace,
+  .activity-buttons>button,.saved-place-actions>button,.tm-plan-nav-action,.tm-plan-empty-day button
+){
+  box-sizing:border-box;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  border-width:1px;
+  border-style:solid;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.25;
+  text-decoration:none
+}
+body.tm-new-design[data-trip-view="plan"] main.content #plan :is(.day-add,.day-replace){
+  width:44px;
+  min-width:44px;
+  height:44px;
+  padding:0;
+  flex:0 0 44px;
+  border-color:var(--tm-card-control-border)
+}
+body.tm-new-design[data-trip-view="plan"] main.content #plan :is(
+  .planner-action,.planner-more>summary,.day-add,.day-replace,
+  .activity-buttons>button,.saved-place-actions>button,.tm-plan-nav-action
+) i{flex-shrink:0;line-height:1}
+body.tm-new-design[data-trip-view="plan"] #plan .day-heading-actions{flex-shrink:0}
+/* Preserve progressive disclosure for edit/delete controls. */
+body.tm-new-design[data-trip-view="plan"] main.content #plan .tm-plan-item:not(.tm-plan-expanded) :is(
+  [data-edit],[data-delete],[data-edit-saved-place],[data-delete-saved-place]
+){display:none}
+
 body.tm-new-design[data-trip-view="plan"] #plan .generated-day{position:relative;margin:0;padding:14px 0 20px;border-top:1px solid color-mix(in srgb,var(--tm-card-border) 72%,transparent)}
 body.tm-new-design[data-trip-view="plan"] #plan .generated-day:first-child{border-top:0}
 body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{min-height:36px;padding:0 11px;border-radius:12px;font-size:12px}
@@ -162,6 +199,13 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
     --tm-plan-day-radius:14px;
     --tm-plan-row-radius:12px
   }
+  body.tm-new-design[data-trip-view="plan"] main.content #plan :is(.planner-action,.planner-more>summary){
+    min-height:46px;
+    height:auto;
+    padding:7px 6px;
+    white-space:normal;
+    overflow:visible
+  }
   body.tm-new-design[data-trip-view="plan"] .custom-hero{
     min-height:104px;
     padding:12px 16px
@@ -211,11 +255,11 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
   body.tm-new-design[data-trip-view="plan"] #plan .planner-more>summary{
     min-width:0;
     min-height:46px;
-    height:46px;
-    padding-inline:6px;
-    font-size:12px;
-    overflow:hidden;
-    text-overflow:ellipsis
+    height:auto;
+    padding:7px 6px;
+    white-space:normal;
+    overflow:visible;
+    text-align:center
   }
 
   body.tm-new-design[data-trip-view="plan"] #plan .generated-day{
@@ -229,9 +273,15 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
     border-radius:14px
   }
   body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge{
-    min-height:32px;
-    padding-inline:9px
+    width:100%;
+    min-height:44px;
+    justify-self:stretch;
+    margin:0;
+    padding-inline:10px;
+    border-radius:10px;
+    text-align:start
   }
+  body.tm-new-design[data-trip-view="plan"] #plan .generated-day>.badge i{margin-inline-start:auto}
   body.tm-new-design[data-trip-view="plan"] #plan .day-heading{
     top:64px;
     min-height:44px;
@@ -292,39 +342,44 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
   }
   body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons,
   body.tm-new-design[data-trip-view="plan"] #plan .saved-place-actions{
-    width:auto;
+    width:100%;
     display:grid;
-    grid-template-columns:repeat(3,44px);
-    justify-content:end;
-    justify-self:end;
-    gap:5px
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    align-items:stretch;
+    justify-self:stretch;
+    gap:6px
   }
   body.tm-new-design[data-trip-view="plan"] #plan .activity-buttons>button,
   body.tm-new-design[data-trip-view="plan"] #plan .saved-place-actions>button,
   body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-nav-action{
-    width:44px;
-    min-width:44px;
-    height:44px;
-    padding:0;
-    border-radius:11px
+    width:100%;
+    min-width:0;
+    min-height:44px;
+    height:auto;
+    padding:7px 6px;
+    white-space:normal;
+    text-align:center
   }
   body.tm-new-design[data-trip-view="plan"] #plan :is(.tm-plan-nav-action,[data-plan-details-toggle]) span{
-    position:absolute;
-    width:1px;
-    height:1px;
-    overflow:hidden;
-    clip-path:inset(50%);
-    white-space:nowrap
+    position:static;
+    width:auto;
+    height:auto;
+    min-width:0;
+    overflow:visible;
+    clip-path:none;
+    white-space:normal
   }
-  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item:not(.tm-plan-expanded) :is([data-toggle-done],[data-toggle-saved-done])::after{
-    display:none;
-    content:""
+  body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button::after{
+    white-space:normal;
+    line-height:1.25
   }
   body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item:not(.tm-plan-expanded) :is([data-smart-replace-activity],[data-smart-replace-place]){
     display:none
   }
   body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded :is(.activity-buttons,.saved-place-actions){
     width:100%;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
     justify-self:stretch;
     gap:6px
   }
@@ -340,9 +395,9 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
     .saved-place-actions>button,
     .tm-plan-nav-action
   ){
-    width:auto;
-    min-width:44px;
-    padding-inline:10px
+    width:100%;
+    min-width:0;
+    padding-inline:6px
   }
   body.tm-new-design[data-trip-view="plan"] #plan .saved-place.tm-plan-item{
     grid-template-columns:64px minmax(0,1fr);
@@ -376,7 +431,7 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
     padding-block:7px
   }
   body.tm-new-design[data-trip-view="plan"] #plan .generated-day.day-collapsed .day-heading{
-    min-height:40px;
+    min-height:44px;
     padding-block:4px
   }
 }

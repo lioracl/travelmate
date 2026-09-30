@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260929-48'}catch(error){return'20260929-48'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260930-1'}catch(error){return'20260930-1'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
@@ -114,6 +114,17 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview'){loadTodayActivities();loadFeature('intelligence')}}},{capture:true,passive:true});
   document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview')loadFeature('intelligence')}},{capture:true,passive:true});
   document.addEventListener('click',function(event){var button=event.target.closest&&event.target.closest('[data-lazy-about]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();loadFeature('about').then(function(ready){if(ready===false)return;button.removeAttribute('data-lazy-about');button.click()})},true);
+  document.addEventListener('click',function(event){
+    var button=event.target.closest&&event.target.closest('[data-lazy-account],[data-smart-hub-open]');
+    if(!button)return;
+    event.preventDefault();event.stopImmediatePropagation();
+    var smartHub=button.hasAttribute('data-smart-hub-open');
+    loadFeature(smartHub?'assistant':'account').then(function(ready){
+      if(ready===false)return;
+      if(smartHub){if(window.TravelMateSmartHub)window.TravelMateSmartHub.open();return}
+      button.removeAttribute('data-lazy-account');button.click();
+    });
+  },true);
   window.TravelMateFeatures=Object.freeze({load:loadFeature,has:function(view){return Boolean(features[view])},ensureAssistant:function(){return loadFeature('assistant')},ensureAccount:function(){return loadFeature('account')}});
 })();
 

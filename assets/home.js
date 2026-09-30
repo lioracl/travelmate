@@ -846,6 +846,11 @@
   document.querySelectorAll('a[href="#trip-archive"]').forEach(function (link) {
     link.addEventListener('click', openArchiveFromNavigation);
   });
+  function openArchiveRoute() {
+    if (location.hash === '#trip-archive') openArchiveFromNavigation();
+  }
+  openArchiveRoute();
+  window.addEventListener('hashchange', openArchiveRoute);
 
   if (!cloud) {
     setMessage('חיבור הענן אינו זמין כרגע. הטיולים נשמרים במכשיר בלבד.', true);

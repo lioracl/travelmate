@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#12383F"><link rel="manifest" href="../../manifest.webmanifest">
   <script>(function(){try{var r=document.documentElement,t=localStorage.getItem('travelmate-theme'),a=localStorage.getItem('travelmate-accent'),m={forest:'emerald',violet:'plum',coral:'sunset'};r.dataset.theme=t==='dark'?'dark':'light';r.dataset.accent=m[a]||a||'ocean';r.style.colorScheme=r.dataset.theme}catch(e){}})()</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link rel="stylesheet" href="../../assets/styles.css?v=20260929-48">
-  <link rel="stylesheet" data-travelmate-style="mobile-menu.css" href="../../assets/mobile-menu.css?v=20260929-48">
-  <link rel="stylesheet" data-travelmate-style="trip-redesign.css" href="../../assets/trip-redesign.css?v=20260929-48">
-  <link rel="stylesheet" data-travelmate-style="theme.css" href="../../assets/theme.css?v=20260929-48">
-  <link rel="stylesheet" data-travelmate-style="weather-widget.css" href="../../assets/weather-widget.css?v=20260929-48">
-  <link rel="stylesheet" data-travelmate-style="trip-intelligence.css" href="../../assets/trip-intelligence.css?v=20260929-48">
-  <link rel="stylesheet" data-travelmate-style="sync-status.css" href="../../assets/sync-status.css?v=20260929-48">
-  <link rel="stylesheet" data-travelmate-style="readable-glass.css" href="../../assets/readable-glass.css?v=20260929-48">
+  <link rel="stylesheet" href="../../assets/styles.css?v=20260930-1">
+  <link rel="stylesheet" data-travelmate-style="mobile-menu.css" href="../../assets/mobile-menu.css?v=20260930-1">
+  <link rel="stylesheet" data-travelmate-style="trip-redesign.css" href="../../assets/trip-redesign.css?v=20260930-1">
+  <link rel="stylesheet" data-travelmate-style="theme.css" href="../../assets/theme.css?v=20260930-1">
+  <link rel="stylesheet" data-travelmate-style="weather-widget.css" href="../../assets/weather-widget.css?v=20260930-1">
+  <link rel="stylesheet" data-travelmate-style="trip-intelligence.css" href="../../assets/trip-intelligence.css?v=20260930-1">
+  <link rel="stylesheet" data-travelmate-style="sync-status.css" href="../../assets/sync-status.css?v=20260930-1">
+  <link rel="stylesheet" data-travelmate-style="readable-glass.css" href="../../assets/readable-glass.css?v=20260930-1">
 </head>
 <body class="tm-new-design" data-trip-kind="custom">
 <script>(function(){var v=new URLSearchParams(location.search).get('view')||location.hash.slice(1)||'overview';if(v==='car-rental')v='transport';document.body.dataset.tripView=v;document.body.dataset.tripPrimaryView=/^(places|transport|getaways|destination-info)$/.test(v)?'places':v})()</script>
@@ -29,6 +29,9 @@
       <div class="trip-sidebar-more-menu">
         <a href="#group" data-view="group"><i class="fa-solid fa-user-group"></i><span>שיתוף וקבוצה</span></a>
         <a href="#memories" data-view="memories"><i class="fa-solid fa-images"></i><span>זיכרונות וסיכום</span></a>
+        <button type="button" data-security-open data-lazy-account><i class="fa-solid fa-gear" aria-hidden="true"></i><span>הגדרות</span></button>
+        <a href="../../index.html#trip-archive"><i class="fa-solid fa-box-archive" aria-hidden="true"></i><span>ארכיון הטיולים</span></a>
+        <button type="button" class="smart-hub-launch" data-smart-hub-open><i class="fa-solid fa-brain" aria-hidden="true"></i><span>מרכז חכם <small>20 כלים</small></span></button>
         <button type="button" data-about-open data-lazy-about><i class="fa-solid fa-circle-info"></i><span>אודות TravelMate</span></button>
       </div>
     </details>
@@ -95,5 +98,5 @@
     <section id="destination-info" class="external-resources"><h2>מידע נוסף ל־<span data-city></span></h2><p>חיפוש חיצוני לפי ההקשר של היעד.</p><div class="resource-links"><a class="resource-link" data-maps target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-map"></i><span><strong>Google Maps</strong><small>מפה וניווט בעיר</small></span></a><a class="resource-link" data-wiki target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-wikipedia-w"></i><span><strong>Wikipedia</strong><small>רקע על העיר והמדינה</small></span></a><a class="resource-link" data-tourism target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i><span><strong>מדריך תיירות</strong><small>חיפוש האתר הרשמי של היעד</small></span></a></div></section>
   </main>
 </div>
-<script src="../../assets/network-usage.js?v=20260929-48" defer></script><script src="../../assets/supabase-config.js?v=20260929-48" defer></script><script src="../../assets/cloud-sync.js?v=20260929-48" defer></script><script src="../../assets/trip-store.js?v=20260929-48" defer></script><script src="../../assets/event-contracts.js?v=20260929-48" defer></script><script src="../../assets/destination-images.js?v=20260929-48" defer></script><script src="../../assets/custom-trip.js?v=20260929-48" defer></script><script src="../../assets/app.js?v=20260929-48" defer></script>
+<script src="../../assets/network-usage.js?v=20260930-1" defer></script><script src="../../assets/supabase-config.js?v=20260930-1" defer></script><script src="../../assets/cloud-sync.js?v=20260930-1" defer></script><script src="../../assets/trip-store.js?v=20260930-1" defer></script><script src="../../assets/event-contracts.js?v=20260930-1" defer></script><script src="../../assets/destination-images.js?v=20260930-1" defer></script><script src="../../assets/custom-trip.js?v=20260930-1" defer></script><script src="../../assets/app.js?v=20260930-1" defer></script>
 </body></html>

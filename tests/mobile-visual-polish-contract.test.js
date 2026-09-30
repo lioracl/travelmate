@@ -20,15 +20,19 @@ test('mobile Plan polish owns compact 390/430 geometry without escalation', () =
   const css = read('assets/plan-ux-polish.css');
   const block = markedBlock(css, '/* Mobile Visual Polish: final Plan geometry authority. */');
   assert.match(block, /@media\(max-width:700px\)/);
-  assert.match(block, /\.planner-more>summary\{[\s\S]*?min-height:46px;[\s\S]*?height:46px/);
+  assert.match(block, /\.planner-more>summary\{[\s\S]*?min-height:46px;[\s\S]*?height:auto/);
   assert.match(block, /\.planned-activity\.tm-plan-item\{[\s\S]*?grid-template-columns:42px 64px minmax\(0,1fr\)/);
   assert.match(block, /\.tm-plan-activity-media,[\s\S]*?width:64px;[\s\S]*?height:64px/);
-  assert.match(block, /grid-template-columns:repeat\(3,44px\)/);
-  assert.match(block, /\.tm-plan-item:not\(\.tm-plan-expanded\)[\s\S]*?data-toggle-done[\s\S]*?display:none/);
+  assert.match(block, /\.generated-day>\.badge\{[\s\S]*?width:100%;[\s\S]*?min-height:44px/);
+  assert.match(block, /:is\(\.activity-buttons,\.saved-place-actions\)\{[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(block, /:is\(\.activity-buttons,\.saved-place-actions\)>button::after\{[\s\S]*?white-space:normal/);
   assert.match(block, /\.tm-plan-item:not\(\.tm-plan-expanded\)[\s\S]*?data-smart-replace-activity[\s\S]*?display:none/);
-  assert.match(block, /\.tm-plan-expanded :is\([\s\S]*?activity-buttons>button[\s\S]*?width:auto/);
-  assert.match(block, /\.generated-day\.day-collapsed \.day-heading\{[\s\S]*?min-height:40px/);
+  assert.match(block, /\.tm-plan-expanded :is\([\s\S]*?activity-buttons>button[\s\S]*?width:100%/);
+  assert.match(block, /\.generated-day\.day-collapsed \.day-heading\{[\s\S]*?min-height:44px/);
   assert.doesNotMatch(block, /!important/);
+
+  const glass = read('assets/readable-glass.css');
+  assert.match(glass, /data-trip-view="plan"\] #plan :is\(\[data-delete\],\[data-delete-saved-place\]\)\{[\s\S]*?--tm-control-current-bg:var\(--tm-action-danger-soft\)/);
 });
 
 test('mobile Today summary is shorter while expanded content stays available', () => {

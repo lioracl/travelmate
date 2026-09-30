@@ -156,6 +156,9 @@
     } catch (error) { return ''; }
   }
 
+  // Feature shortcuts use the same router and history as sidebar navigation.
+  window.TravelMateNavigation = { open: function (view) { activateView(view, true); } };
+
   document.querySelectorAll('.trip-home-actions a[href^="#"], .overview-control-center a[href^="#"], .trip-today a[href^="#"]').forEach(function (link) {
     link.href = pageUrl(link.getAttribute('href').slice(1));
   });

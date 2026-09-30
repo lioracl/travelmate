@@ -168,7 +168,9 @@ html body.tm-new-design[data-trip-view="plan"] main.content #plan .generated-day
     border-width:2px!important
   }
   html body.tm-new-design[data-trip-view="plan"] main.content #plan .generated-day>.badge{
-    justify-self:center
+    justify-self:stretch;
+    justify-content:flex-start;
+    box-shadow:none
   }
 }
 
@@ -2406,6 +2408,16 @@ html[data-accent]{
 }
 html body.tm-new-design :is(.danger,[data-delete],[data-remove],[data-delete-expense]){
   --tm-control-current-bg:var(--tm-action-danger);
+  --tm-control-current-border:var(--tm-action-danger)
+}
+/* Plan keeps destructive actions available without making them the dominant mobile control. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan :is([data-delete],[data-delete-saved-place]){
+  --tm-control-current-bg:var(--tm-action-danger-soft);
+  --tm-control-current-border:color-mix(in srgb,var(--tm-action-danger) 48%,var(--tm-card-control-border));
+  --tm-control-current-text:var(--tm-action-danger)
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="plan"] #plan :is([data-delete],[data-delete-saved-place]):not(:disabled):hover{
+  --tm-control-current-bg:color-mix(in srgb,var(--tm-action-danger-soft) 76%,var(--tm-action-danger) 24%);
   --tm-control-current-border:var(--tm-action-danger)
 }
 
