@@ -136,7 +136,7 @@ function statusMap(trip){
   var now=new Date(),current=now.getHours()*60+now.getMinutes(),records=[];
   (trip.activities||[]).forEach(function(record){records.push({kind:'activity',record:record})});
   (trip.savedPlaces||[]).forEach(function(record){records.push({kind:'place',record:record})});
-  records=records.filter(function(entry){return String(entry.record.date||'')===today&&!entry.record.done&&scheduleMode(entry.record)!=='flexible'}).map(function(entry){
+  records=records.filter(function(entry){var mode=scheduleMode(entry.record);return String(entry.record.date||'')===today&&!entry.record.done&&mode!=='flexible'&&mode!=='window'}).map(function(entry){
     var parts=String(entry.record.time||'').split(':').map(Number),start=Number.isFinite(parts[0])?parts[0]*60+(parts[1]||0):null;
     return{kind:entry.kind,record:entry.record,start:start,duration:Number(entry.record.duration||60)}
   }).filter(function(entry){return entry.start!==null}).sort(function(a,b){return a.start-b.start});
