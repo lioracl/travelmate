@@ -786,6 +786,7 @@
         return;
       }
       if (result.data && result.data.user) currentSession.user = result.data.user;
+      window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } }));
       var updatedProfile = personalizedUser(currentSession.user);
       profileForm.elements.displayName.value = updatedProfile.name;
       renderPersonalization(currentSession);
@@ -924,6 +925,12 @@
   });
   window.addEventListener('travelmate:user-profile-ready', function () {
     if (!currentSession) return;
+    renderPersonalization(currentSession);
+    renderAdaptiveHome(Array.from(renderedTrips.values()));
+  });
+  window.addEventListener('travelmate:profile-change', function (event) {
+    if (!currentSession) return;
+    if (event.detail && event.detail.user) currentSession.user = event.detail.user;
     renderPersonalization(currentSession);
     renderAdaptiveHome(Array.from(renderedTrips.values()));
   });
