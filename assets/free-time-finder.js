@@ -81,7 +81,7 @@ document.addEventListener('click',function(event){
   var slot=event.target.closest('[data-free-time-date]');
   if(slot){
     var plan=document.getElementById('plan'),add=plan&&plan.querySelector('[data-new-activity]');
-    if(add){add.click();window.dispatchEvent(new CustomEvent('travelmate:free-time-selected',{detail:{date:slot.dataset.freeTimeDate,time:slot.dataset.freeTimeStart}}))}
+    if(add){add.click();var composer=plan.querySelector('.planner-composer');if(composer&&composer.elements){if(composer.elements.date)composer.elements.date.value=slot.dataset.freeTimeDate;if(composer.elements.time)composer.elements.time.value=slot.dataset.freeTimeStart;if(composer.elements.title)composer.elements.title.focus()}window.dispatchEvent(new CustomEvent('travelmate:free-time-selected',{detail:{date:slot.dataset.freeTimeDate,time:slot.dataset.freeTimeStart}}))}
   }
 });
 document.addEventListener('travelmate:planner-rendered',install);
