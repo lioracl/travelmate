@@ -60,7 +60,7 @@ test('Places exposes contextual search only as an explicit user action', () => {
   const nearby = read('assets/nearby.js');
   const css = read('assets/nearby.css');
 
-  assert.match(nearby, /data-nearby-time-context/);
+  assert.match(nearby, /dataset\.nearbyTimeContext/);
   assert.match(nearby, /data-nearby-time-search/);
   assert.match(nearby, /refreshFreeTimeContext/);
   assert.match(nearby, /controls\.timeSearch\.addEventListener\('click'/);
