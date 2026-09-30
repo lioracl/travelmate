@@ -131,7 +131,7 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.match(source, /summary:\{styles:\['trip-experience\.css','trip-replay\.css'\],scripts:\['trip-context\.js','trip-analytics\.js','trip-experience\.js','trip-replay\.js'\]\}/);
   assert.match(source, /baseStyles=\[[^\]]*'ai-assistant\.css'/);
   assert.match(source, /assistant:\{styles:\['smart-hub\.css'\],scripts:\['ai-assistant\.js','smart-hub\.js'\]\}/);
-  assert.match(source, /account:\{styles:\['security-center\\.css','admin-center\\.css'\],scripts:\['learned-preferences\\.js','security-center\\.js','admin-center\\.js'\]\}/);
+  assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['learned-preferences\.js','security-center\.js','admin-center\.js'\]\}/);
   assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
   assert.doesNotMatch(source, /scheduleIdleFeature\('account',4200\)/);
   assert.match(source, /function createAssistantShell\(\)/);
