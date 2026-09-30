@@ -6,7 +6,8 @@
   var hero = document.querySelector('.hero');
   if (hero) {
     function syncDestinationBackground() {
-      var image = hero.style.backgroundImage || getComputedStyle(hero).backgroundImage;
+      var image = hero.style.getPropertyValue('--tm-destination-image') || hero.style.backgroundImage || getComputedStyle(hero).backgroundImage;
+      if (image === 'none' && window.TravelMateDestinationImages) image = 'url("' + window.TravelMateDestinationImages.fallback + '")';
       var matches = image.match(/url\((['"]?)(.*?)\1\)/);
       if (matches && matches[2]) document.body.style.setProperty('--trip-bg-image', 'url("' + matches[2] + '")');
     }

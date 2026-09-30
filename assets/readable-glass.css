@@ -2385,8 +2385,9 @@ html body[data-trip-kind="custom"].tm-new-design main.content :is(
 }
 
 /* Hero copy is the only content family that always uses photo text. */
-body.tm-new-design main.content #overview.custom-hero:before{background:linear-gradient(90deg,rgba(4,18,14,.12),rgba(4,18,14,.3))}
+body.tm-new-design main.content #overview.custom-hero:before{background:none}
 html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-hero{
+  background-image:none;
   color:var(--tm-surface-photo-text);
 }
 html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-hero>.hero-copy :is(h1,p,span,strong,a,button,i){

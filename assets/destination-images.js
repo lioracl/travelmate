@@ -95,19 +95,29 @@
     return request;
   }
 
+  function setDestinationImage(element, url) {
+    var image = "url('" + url.replace(/'/g, '%27') + "')";
+    if (element.classList.contains('custom-hero')) {
+      // The trip canvas paints this image; Hero only carries its source.
+      element.style.setProperty('--tm-destination-image', image);
+    } else {
+      element.style.backgroundImage = image;
+    }
+  }
+
   function apply(element, city, country) {
     if (!element) return Promise.resolve(FALLBACK);
     if (/^(פראג|prague)$/i.test(String(city || '').trim()) && element.classList.contains('custom-hero')) {
       var pragueHeroUrl = pragueHeroImage();
-      element.style.backgroundImage = "url('" + pragueHeroUrl + "')";
+      setDestinationImage(element, pragueHeroUrl);
       element.dataset.destinationImage = 'ready';
       return Promise.resolve(pragueHeroUrl);
     }
     var saved = cached(city, country);
-    if (saved) element.style.backgroundImage = "url('" + saved.replace(/'/g, '%27') + "')";
+    if (saved) setDestinationImage(element, saved);
     return resolve(city, country).then(function (url) {
       if (element.isConnected) {
-        element.style.backgroundImage = "url('" + url.replace(/'/g, '%27') + "')";
+        setDestinationImage(element, url);
         element.dataset.destinationImage = 'ready';
       }
       return url;

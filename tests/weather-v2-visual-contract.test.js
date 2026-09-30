@@ -20,7 +20,7 @@ test('custom trip Weather remains a sibling after Hero', () => {
 
 test('Weather 2.0 final authority is neutral and blur-free', () => {
   assert.match(block, /body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]/);
-  assert.match(block, /background:color-mix\(in srgb,var\(--tm-surface-neutral\) 72%,transparent\)/);
+  assert.match(block, /background:linear-gradient\(135deg,rgba\(244,243,239,\.82\),rgba\(217,225,223,\.72\)\)/);
   assert.match(block, /backdrop-filter:none/);
   assert.match(block, /--tm-weather-surface:var\(--tm-surface-neutral\)/);
   assert.doesNotMatch(block, /!important/);

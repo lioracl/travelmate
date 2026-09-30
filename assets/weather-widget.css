@@ -148,8 +148,8 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>
   gap:10px;
   border:1px solid var(--tm-border-control);
   border-radius:18px;
-  background:color-mix(in srgb,var(--tm-surface-neutral) 72%,transparent);
-  color:var(--tm-text-primary);
+  background:linear-gradient(135deg,rgba(244,243,239,.82),rgba(217,225,223,.72));
+  color:var(--tm-weather-card-text);
   -webkit-text-fill-color:currentColor;
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
@@ -159,12 +159,16 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] :is(.weat
   min-width:0
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-copy small{
-  color:var(--tm-text-secondary)
+  color:var(--tm-weather-card-muted)
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] :is(.weather-top-copy strong,.weather-top-temperature){
-  color:var(--tm-text-primary);
+  color:var(--tm-weather-card-text);
   font-weight:850;
   text-shadow:none
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-icon{
+  color:var(--tm-weather-card-text);
+  -webkit-text-fill-color:currentColor
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-action{
   min-width:44px;
@@ -365,6 +369,7 @@ html body #modal-weather-live .weather-source{
   body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-action{
     width:44px;
     padding:0;
+    gap:0;
     font-size:0
   }
   body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-action i{
@@ -372,3 +377,16 @@ html body #modal-weather-live .weather-source{
   }
 }
 
+
+/* Compact weather arrow uses equal axes rather than the icon font baseline. */
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-action i{
+  display:grid;place-items:center;
+  inline-size:12px;block-size:12px;
+  margin:0;padding:0;line-height:1
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-action i::before{
+  content:"";display:block;inline-size:10px;block-size:6px;
+  background:currentColor;
+  clip-path:polygon(0 0,50% 60%,100% 0,100% 40%,50% 100%,0 40%)
+}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-widget[aria-expanded="true"] .weather-top-action i::before{transform:rotate(180deg)}
