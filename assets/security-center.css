@@ -172,3 +172,76 @@ html[data-theme="dark"] .security-center-launcher{color:#f7fafa;-webkit-text-fil
   .security-profile form{grid-template-columns:1fr}
   .security-profile form button{width:100%}
 }
+
+
+/* Declared travel preferences — Profile Center */
+.security-profile-preferences{
+  display:grid;
+  gap:12px;
+  margin-top:12px;
+  padding-top:14px;
+  border-top:1px solid var(--tm-surface-border);
+}
+.security-profile-pref-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.security-profile-pref-grid label{
+  display:grid;
+  gap:6px;
+  min-width:0;
+  color:var(--tm-family-text);
+  font-weight:750;
+}
+.security-profile-pref-grid select{
+  width:100%;
+  min-height:42px;
+  box-sizing:border-box;
+  padding:0 10px;
+  border:1px solid rgba(34,112,86,.24);
+  border-radius:11px;
+  background:var(--tm-family-control);
+  color:var(--tm-family-text);
+  font:inherit;
+}
+.security-profile-interests{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin:0;
+  padding:0;
+  border:0;
+}
+.security-profile-interests legend{
+  grid-column:1/-1;
+  padding:0;
+  color:var(--tm-family-text);
+  font-size:.86rem;
+  font-weight:800;
+}
+.security-profile-interests label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+  padding:8px 9px;
+  border:1px solid var(--tm-surface-border);
+  border-radius:10px;
+  background:var(--tm-surface-control);
+  color:var(--tm-card-control-text);
+  font-size:.82rem;
+  font-weight:700;
+}
+.security-profile-interests input{
+  margin:0;
+  accent-color:var(--tm-brand-primary);
+}
+.security-profile-preferences-note{
+  color:var(--tm-family-muted);
+  line-height:1.45;
+}
+@media(max-width:680px){
+  .security-profile-pref-grid{grid-template-columns:1fr}
+  .security-profile-interests{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
