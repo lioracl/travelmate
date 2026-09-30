@@ -17,6 +17,46 @@
   var state = emptyState('NEW_TRIP:' + newTripSessionId);
   states[state.key] = state;
   var ui = {};
+  var declaredPreferences = window.TravelMateUserProfile && window.TravelMateUserProfile.normalizePreferences
+    ? window.TravelMateUserProfile.normalizePreferences(null)
+    : { pace: '', activityDensity: '', transport: '', tripStyle: '', interests: [] };
+
+  function setDeclaredPreferences(value) {
+    if (window.TravelMateUserProfile && window.TravelMateUserProfile.normalizePreferences) {
+      declaredPreferences = window.TravelMateUserProfile.normalizePreferences(value);
+    }
+    return declaredPreferences;
+  }
+
+  function refreshDeclaredPreferences() {
+    var service = window.TravelMateCloud;
+    if (!service || typeof service.getSession !== 'function') return Promise.resolve(declaredPreferences);
+    return service.getSession().then(function (session) {
+      var user = session && session.user;
+      var profile = window.TravelMateUserProfile;
+      return setDeclaredPreferences(profile && profile.fromUser ? profile.fromUser(user).preferences : null);
+    }).catch(function () {
+      return declaredPreferences;
+    });
+  }
+
+  function declaredPreferenceLines(value) {
+    var preferences = value || declaredPreferences;
+    var pace = { relaxed: 'קצב נינוח', balanced: 'קצב מאוזן', active: 'קצב אינטנסיבי' };
+    var density = { light: 'תוכנית קלילה', balanced: 'תוכנית מאוזנת', dense: 'תוכנית מלאה' };
+    var transport = { walking: 'הליכה', transit: 'תחבורה ציבורית', mixed: 'שילוב תחבורה', car: 'רכב' };
+    var style = { city: 'טיול עירוני', culture: 'תרבות והיסטוריה', nature: 'טבע', food: 'אוכל', relaxation: 'מנוחה', mixed: 'סגנון מעורב' };
+    var interest = { culture: 'תרבות', food: 'אוכל', nature: 'טבע', history: 'היסטוריה', shopping: 'קניות', nightlife: 'חיי לילה', photography: 'צילום', relaxation: 'מנוחה' };
+    var lines = [];
+    if (pace[preferences.pace]) lines.push(pace[preferences.pace]);
+    if (density[preferences.activityDensity]) lines.push(density[preferences.activityDensity]);
+    if (transport[preferences.transport]) lines.push('תחבורה מועדפת: ' + transport[preferences.transport]);
+    if (style[preferences.tripStyle]) lines.push(style[preferences.tripStyle]);
+    if (Array.isArray(preferences.interests) && preferences.interests.length) {
+      lines.push('תחומי עניין: ' + preferences.interests.map(function (item) { return interest[item] || item; }).join(', '));
+    }
+    return lines;
+  }
 
   function contextKey(context) { return context.contextMode + ':' + (context.tripId || context.sessionId || 'general'); }
   function newResponseId() {
@@ -73,6 +113,11 @@
       currency: clean(input.currency, 12) || 'EUR',
       tripType: supportedType(clean(input.tripType || input.type, 40)) || null,
       preferences: Array.isArray(input.preferences) ? input.preferences.map(function (item) { return clean(item, 80); }).filter(Boolean).slice(0, 2) : [],
+      declaredPreferences: input.declaredPreferences && typeof input.declaredPreferences === 'object'
+        ? (window.TravelMateUserProfile && window.TravelMateUserProfile.normalizePreferences
+          ? window.TravelMateUserProfile.normalizePreferences(input.declaredPreferences)
+          : input.declaredPreferences)
+        : declaredPreferences,
       itineraryContext: normalizeItinerary(input.itineraryContext || input.activities),
       savedPlacesContext: normalizePlaces(input.savedPlacesContext || input.savedPlaces),
       lodgingContext: normalizeLodging(input.lodgingContext),
@@ -80,7 +125,7 @@
     };
   }
   function fingerprint(context) {
-    return JSON.stringify([context.contextMode, context.tripId, context.destination, context.country, context.startDate, context.endDate, context.durationDays, context.budget, context.currency, context.tripType, context.preferences, context.itineraryContext, context.savedPlacesContext, context.lodgingContext, context.transportContext]);
+    return JSON.stringify([context.contextMode, context.tripId, context.destination, context.country, context.startDate, context.endDate, context.durationDays, context.budget, context.currency, context.tripType, context.preferences, context.declaredPreferences, context.itineraryContext, context.savedPlacesContext, context.lodgingContext, context.transportContext]);
   }
   function monthLabel(date) {
     if (!date) return '';
@@ -122,6 +167,7 @@
         context.tripType ? 'סוג טיול: ' + context.tripType + '. ' + typeInstruction : '',
         context.startDate && context.endDate ? 'תאריכים: ' + context.startDate + ' עד ' + context.endDate + '; ' + context.durationDays + ' ימים.' : '',
         context.budget ? 'תקציב משוער: ' + context.budget + ' ' + context.currency + '.' : '',
+        declaredPreferenceLines(context.declaredPreferences).length ? 'העדפות אישיות שהמשתמש הצהיר עליהן: ' + declaredPreferenceLines(context.declaredPreferences).join('; ') + '.' : '',
         context.itineraryContext.length ? 'מסלול מתוכנן ומאומת: ' + JSON.stringify(context.itineraryContext) : 'אין מסלול מובנה זמין לבדיקה.',
         context.savedPlacesContext.length ? 'מקומות שכבר נשמרו: ' + JSON.stringify(context.savedPlacesContext) : '',
         context.lodgingContext ? 'לינה קיימת: ' + JSON.stringify(context.lodgingContext) : '',
@@ -137,7 +183,9 @@
       context.tripType ? 'סוג טיול: ' + context.tripType + '. ' + typeInstruction : '',
       context.startDate && context.endDate ? 'תאריכים: ' + context.startDate + ' עד ' + context.endDate + '; ' + context.durationDays + ' ימים.' : '',
       context.budget ? 'תקציב משוער: ' + context.budget + ' ' + context.currency + '.' : '',
-      context.preferences.length ? 'העדפות: ' + context.preferences.join(', ') + '.' : '',
+      context.preferences.length ? 'העדפות שהוגדרו לטיול הזה: ' + context.preferences.join(', ') + '.' : '',
+      declaredPreferenceLines(context.declaredPreferences).length ? 'העדפות אישיות שהמשתמש הצהיר עליהן: ' + declaredPreferenceLines(context.declaredPreferences).join('; ') + '.' : '',
+      'התייחס להעדפות האישיות כהעדפות מוצהרות של המשתמש, לא כהסקה. אל תדרוס אותן באמצעות ניחוש התנהגותי.',
       'התמקד בהתאמת היעד, 4–6 דברים שלא כדאי לפספס, אזורי לינה, אוכל ובילוי, התניידות, קצב מומלץ, טיפ לעונה וטיפ אישי אחד של Mate.',
       'אל תטען שיש מסלול קיים. אל תמציא מחירים, שעות פתיחה, סגירות, אירועים או מצב תחבורה בזמן אמת. השתמש בכותרות קצרות ורשימות.'
     ].filter(Boolean).join('\n');
@@ -278,7 +326,7 @@
     return Boolean(added);
   }
   function formContext(form) {
-    return normalizeContext({ sessionId: 'new-trip-' + newTripSessionId, destination: form.elements.city.value, country: form.elements.country.value, startDate: form.elements.start.value, endDate: form.elements.end.value, budget: form.elements.budget.value, currency: 'EUR', tripType: form.elements.type.value }, MODE.NEW_TRIP);
+    return normalizeContext({ sessionId: 'new-trip-' + newTripSessionId, destination: form.elements.city.value, country: form.elements.country.value, startDate: form.elements.start.value, endDate: form.elements.end.value, budget: form.elements.budget.value, currency: 'EUR', tripType: form.elements.type.value, declaredPreferences: declaredPreferences }, MODE.NEW_TRIP);
   }
   function syncNewTrip(form) {
     var context = formContext(form);
@@ -348,7 +396,7 @@
       id: trip.id, destination: trip.city || trip.destination, country: trip.country,
       start: trip.start, end: trip.end, days: trip.days, budget: trip.budget,
       currency: trip.currency || 'EUR', type: supportedType(trip.type) || existingTransientTypes[String(trip.id)],
-      preferences: trip.preferences, activities: trip.activities, savedPlaces: savedPlaces,
+      preferences: trip.preferences, declaredPreferences: declaredPreferences, activities: trip.activities, savedPlaces: savedPlaces,
       lodgingContext: lodging, transportContext: trip.transportContext || trip.transport || trip.transportation
     }, MODE.EXISTING_TRIP);
   }
@@ -410,6 +458,16 @@
     });
   }
 
-  createSheet(); initNewTrip(); initExistingTrip();
-  window.TravelMateTripIntelligence = { MODE: MODE, normalizeContext: normalizeContext, promptFor: promptFor, renderAnswer: renderAnswer, sanitizeRecommendationBody: sanitizeRecommendationBody, recommendationFor: recommendationFor, open: openSheet, attachPendingToTrip: attachPendingToTrip };
+  createSheet();
+  refreshDeclaredPreferences().then(function () {
+    initNewTrip();
+    initExistingTrip();
+  });
+  if (window.TravelMateCloud && typeof window.TravelMateCloud.onAuthChange === 'function') {
+    window.TravelMateCloud.onAuthChange(function (session) {
+      var profile = window.TravelMateUserProfile;
+      setDeclaredPreferences(profile && profile.fromUser ? profile.fromUser(session && session.user).preferences : null);
+    }).catch(function () {});
+  }
+  window.TravelMateTripIntelligence = { MODE: MODE, normalizeContext: normalizeContext, promptFor: promptFor, renderAnswer: renderAnswer, sanitizeRecommendationBody: sanitizeRecommendationBody, recommendationFor: recommendationFor, open: openSheet, attachPendingToTrip: attachPendingToTrip, declaredPreferenceLines: declaredPreferenceLines };
 })();
