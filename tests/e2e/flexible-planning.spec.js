@@ -192,3 +192,46 @@ test('Day Mode can override and restore automatic inference', async ({ page }) =
 
   expect(pageErrors, pageErrors.join('\n')).toEqual([]);
 });
+
+
+test('Travel Time warns about an estimated transition risk without creating a hard overlap', async ({ page }) => {
+  const date = localDateKey(0);
+  const travelTrip = {
+    id: 'qa-travel-time',
+    country: 'Israel',
+    city: 'Tel Aviv',
+    start: date,
+    end: localDateKey(1),
+    days: 2,
+    type: 'סולו',
+    budget: 1000,
+    planInitialized: true,
+    dayNotes: {},
+    savedPlaces: [],
+    activities: [
+      { id:'fixed-a', date, time:'10:00', title:'Museum A', category:'תרבות', duration:60, scheduleMode:'fixed', lat:32.0853, lon:34.7818, done:false },
+      { id:'fixed-b', date, time:'11:15', title:'Tour B', category:'סיור', duration:60, scheduleMode:'fixed', lat:32.1093, lon:34.8555, done:false }
+    ]
+  };
+  await page.addInitScript(value => {
+    localStorage.setItem('travelmate-trips', JSON.stringify([value]));
+    localStorage.removeItem('travelmate-active-user');
+    localStorage.setItem('travelmate-theme', 'light');
+  }, travelTrip);
+
+  const pageErrors = [];
+  page.on('pageerror', error => pageErrors.push(String(error)));
+  await page.goto('/trip/custom/index.html?id=qa-travel-time&view=plan', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(window.TravelMateTripContext && window.TravelMateTripStore));
+
+  const row = page.locator('.planned-activity').filter({ hasText: 'Tour B' });
+  await expect(row).toBeVisible();
+  await expect(row).not.toHaveClass(/(^|\s)conflict(\s|$)/);
+  await expect(row).toHaveClass(/tm-plan-travel-risk/);
+  const advisory = row.locator('.tm-plan-transition');
+  await expect(advisory).toBeVisible();
+  await expect(advisory).toContainText('הערכת מעבר');
+  await expect(advisory).toContainText('חסרות');
+
+  expect(pageErrors, pageErrors.join('\n')).toEqual([]);
+});
