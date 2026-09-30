@@ -154,3 +154,41 @@ test('Quick Add creates a flexible activity with advanced details collapsed by d
 
   expect(pageErrors, pageErrors.join('\n')).toEqual([]);
 });
+
+
+test('Day Mode can override and restore automatic inference', async ({ page }) => {
+  await seed(page);
+  const pageErrors = [];
+  page.on('pageerror', error => pageErrors.push(String(error)));
+
+  await page.goto('/trip/custom/index.html?id=qa-flexible&view=plan', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(window.TravelMateTripStore));
+
+  await addActivity(page, { title: 'Flexible Walk', time: '10:30', mode: 'flexible', duration: 60 });
+
+  const todayCard = page.locator('.generated-day[data-day-date="'+localDateKey(0)+'"]');
+  const modeSelect = todayCard.locator('.tm-plan-day-mode-select');
+  await expect(modeSelect).toBeVisible();
+  await expect(modeSelect).toHaveValue('auto');
+  await expect(todayCard.locator('.tm-plan-day-mode')).toHaveText('יום גמיש');
+
+  await modeSelect.selectOption('scheduled');
+  await expect(modeSelect).toHaveValue('scheduled');
+  await expect(todayCard.locator('.tm-plan-day-mode')).toHaveText('יום מתוזמן');
+
+  await expect.poll(async () => page.evaluate(date => {
+    const item = JSON.parse(localStorage.getItem('travelmate-trips') || '[]')[0];
+    return item && item.dayModes && item.dayModes[date];
+  }, localDateKey(0))).toBe('scheduled');
+
+  await modeSelect.selectOption('auto');
+  await expect(modeSelect).toHaveValue('auto');
+  await expect(todayCard.locator('.tm-plan-day-mode')).toHaveText('יום גמיש');
+
+  await expect.poll(async () => page.evaluate(date => {
+    const item = JSON.parse(localStorage.getItem('travelmate-trips') || '[]')[0];
+    return Boolean(item && item.dayModes && Object.prototype.hasOwnProperty.call(item.dayModes, date));
+  }, localDateKey(0))).toBeFalsy();
+
+  expect(pageErrors, pageErrors.join('\n')).toEqual([]);
+});
