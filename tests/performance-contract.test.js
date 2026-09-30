@@ -383,7 +383,7 @@ test('past-day enhancement avoids rewriting identical DOM and observer self-loop
 
 test('Overview defers trip intelligence until idle or explicit Overview intent', () => {
   assert.match(appScript, /overview:\{styles:\['weather-widget\.css','trip-intelligence\.css'\],scripts:\['weather-widget\.js'\]\}/);
-  assert.match(source, /intelligence:\{styles:\[\],scripts:\['learned-preferences\.js','trip-intelligence\.js'\]\}/);
+  assert.match(appScript, /intelligence:\{styles:\[\],scripts:\['learned-preferences\.js','trip-intelligence\.js'\]\}/);
   assert.match(appScript, /if\(initialView==='overview'\)scheduleIdleFeature\('intelligence',250\)/);
   assert.match(appScript, /if\(link\.dataset\.view==='overview'\)loadFeature\('intelligence'\)/);
 });
@@ -392,7 +392,7 @@ test('Overview defers trip intelligence until idle or explicit Overview intent',
 test('trip pages defer Account and Admin assets until explicit account intent', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.doesNotMatch(source, /scheduleIdleFeature\('account',4200\)/);
-  assert.match(source, /account:\{styles:\['security-center\\.css','admin-center\\.css'\],scripts:\['learned-preferences\\.js','security-center\\.js','admin-center\\.js'\]\}/);
+  assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['learned-preferences\.js','security-center\.js','admin-center\.js'\]\}/);
   assert.match(source, /ensureAccount:function\(\)\{return loadFeature\('account'\)\}/);
   assert.match(source, /scheduleIdleFeature\('intelligence',250\)/);
 });
