@@ -12,7 +12,9 @@ test('top back exits only from Overview and stays inside the trip elsewhere',()=
   assert.match(nav,/currentView\(\) === 'overview'/);
   assert.match(nav,/overview \? button\.dataset\.tripExitHref : overviewUrl\(\)/);
   assert.match(nav,/topBack && currentView\(\) !== 'overview'/);
-  assert.match(nav,/history\.state && history\.state\.travelMateView/);
+  assert.match(nav,/travelMateHistory: tripKey/);
+  assert.match(nav,/travelMateRoot: true/);
+  assert.match(nav,/travelMateGuard: true/);
   assert.match(nav,/window\.addEventListener\('travelmate:viewchange', updateExitButtons\)/);
 });
 

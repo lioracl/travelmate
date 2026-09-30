@@ -124,11 +124,15 @@
   function activateView(view, pushHistory) {
     if (view === 'car-rental') view = 'transport';
     if (!view) view = 'overview';
+    if (pushHistory && window.TravelMateHistory && typeof window.TravelMateHistory.navigate === 'function') {
+      window.TravelMateHistory.navigate(view);
+      return;
+    }
     if (!document.getElementById(view)) {
       var featureLoader = window.TravelMateFeatures;
       if (featureLoader && featureLoader.has && featureLoader.has(view)) {
         featureLoader.load(view).then(function () {
-          if (document.getElementById(view)) activateView(view, pushHistory);
+          if (document.getElementById(view) && (!window.TravelMateHistory || window.TravelMateHistory.currentView() === view)) activateView(view, false);
         });
         return;
       }
@@ -136,10 +140,6 @@
     }
     var previousView = currentView;
     currentView = view;
-    if (pushHistory) {
-      var nextUrl = pageUrl(view);
-      if (nextUrl !== window.location.href) history.pushState({ travelMateView: view }, '', nextUrl);
-    }
     syncTripPages();
     window.scrollTo({ top: 0, behavior: 'auto' });
     window.TravelMateEvents.emit(window.TravelMateEvents.names.viewChange, {
@@ -171,7 +171,11 @@
   sidebar.querySelectorAll('.trip-sidebar-more a[href^="#"]').forEach(function (link) {
     link.href = pageUrl(link.getAttribute('href').slice(1));
   });
-  syncTripPages();
+  if (window.TravelMateHistory && typeof window.TravelMateHistory.bindView === 'function') {
+    window.TravelMateHistory.bindView(function (view) { activateView(view, false); });
+  } else {
+    syncTripPages();
+  }
   document.addEventListener('click', function (event) {
     var link = event.target.closest('.sidebar nav a, .trip-home-actions a, .overview-control-center a, .places-hub-nav a, .trip-today a, .trip-sidebar-more-menu a');
     if (!link || event.defaultPrevented || (event.button != null && event.button !== 0) || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -202,9 +206,6 @@
   });
   window.addEventListener('travelmate:feature-ready', function (event) {
     if (event.detail && event.detail.view === currentView) syncTripPages();
-  });
-  window.addEventListener('popstate', function () {
-    activateView(new URLSearchParams(window.location.search).get('view') || 'overview', false);
   });
   new MutationObserver(syncTripPages).observe(sidebar, { childList: true, subtree: true });
   if (content) new MutationObserver(syncTripPages).observe(content, { childList: true });

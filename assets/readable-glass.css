@@ -2409,15 +2409,17 @@ html body[data-trip-kind="custom"].tm-new-design main.content>#overview.custom-h
   -webkit-text-fill-color:currentColor;
 }
 
-/* Weather uses the same photo-glass language: transparent enough to show the destination, strong enough for readable text. */
+/* Weather summary is transparent photo-glass: the destination remains visible while text owns contrast. */
 html body[data-trip-kind="custom"].tm-new-design .weather-top-widget{
-  border-color:rgba(235,252,248,.46);
-  background:var(--tm-weather-card-bg);
+  border-color:rgba(235,252,248,.62);
+  background:transparent;
   color:var(--tm-weather-card-text);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 6px 16px rgba(0,0,0,.10);
-  text-shadow:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 5px 16px rgba(0,0,0,.10);
   -webkit-backdrop-filter:var(--tm-weather-card-blur);
   backdrop-filter:var(--tm-weather-card-blur);
+}
+html body[data-trip-kind="custom"].tm-new-design .weather-top-widget:hover{
+  background:transparent;
 }
 html body[data-trip-kind="custom"].tm-new-design .weather-top-widget :is(
   .weather-top-copy small,.weather-top-chevron

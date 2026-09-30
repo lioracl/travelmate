@@ -67,7 +67,9 @@ test('Mate keeps a lightweight launcher and loads assistant runtime only on inte
 test('navigation boot uses query-state navigation without legacy hash shield or initial scroll',()=>{
   const navigation=read('assets/navigation-memory.js');
   assert.match(navigation,/history\.scrollRestoration = 'manual'/);
-  assert.match(navigation,/searchParams\.set\('view', 'overview'\)/);
+  assert.match(navigation,/searchParams\.set\('view', view \|\| 'overview'\)/);
+  assert.match(navigation,/history\.replaceState\(rootState\(\), '', overviewUrl\(\)\)/);
+  assert.match(navigation,/armOverviewGuard\(\)/);
   assert.doesNotMatch(navigation,/guardDepth|travelMateTripGuard|armTripShield|restoreProtectedOverview/);
   assert.doesNotMatch(navigation,/scrollIntoView\(\{ behavior: 'smooth'/);
   assert.doesNotMatch(navigation,/location\.hash\.replace/);

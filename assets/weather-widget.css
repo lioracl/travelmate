@@ -147,14 +147,14 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>
   margin:0 0 14px;
   padding:10px 12px;
   gap:10px;
-  border:1px solid rgba(235,252,248,.52);
+  border:1px solid rgba(235,252,248,.62);
   border-radius:18px;
-  background:var(--tm-weather-card-bg);
+  background:transparent;
   color:var(--tm-weather-card-text);
   -webkit-text-fill-color:currentColor;
   -webkit-backdrop-filter:var(--tm-weather-card-blur);
   backdrop-filter:var(--tm-weather-card-blur);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 18px rgba(8,39,29,.12)
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 5px 16px rgba(8,39,29,.10)
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] :is(.weather-top-copy,.weather-top-copy>*){
   min-width:0

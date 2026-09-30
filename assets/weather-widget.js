@@ -188,8 +188,21 @@
       return !node.hidden && node.getAttribute('aria-hidden') !== 'true' && node.getClientRects().length > 0;
     });
   }
-  function open(ui) { ui.backdrop.classList.add('open'); ui.button.setAttribute('aria-expanded', 'true'); var closeButton = ui.backdrop.querySelector('[data-weather-close]'); if (closeButton) closeButton.focus(); }
-  function close(ui, restoreFocus) { ui.backdrop.classList.remove('open'); ui.button.setAttribute('aria-expanded', 'false'); if (restoreFocus !== false) ui.button.focus(); }
+  function open(ui) {
+    ui.backdrop.classList.add('open');
+    ui.button.setAttribute('aria-expanded', 'true');
+    if (window.TravelMateHistory && typeof window.TravelMateHistory.pushOverlay === 'function') {
+      window.TravelMateHistory.pushOverlay('weather', function () { close(ui); });
+    }
+    var closeButton = ui.backdrop.querySelector('[data-weather-close]');
+    if (closeButton) closeButton.focus();
+  }
+  function close(ui, restoreFocus) {
+    ui.backdrop.classList.remove('open');
+    ui.button.setAttribute('aria-expanded', 'false');
+    if (window.TravelMateHistory && typeof window.TravelMateHistory.closeOverlay === 'function') window.TravelMateHistory.closeOverlay('weather');
+    if (restoreFocus !== false) ui.button.focus();
+  }
 
   var destination = pageDestination(); if (!destination) return; state.location = destination;
   var ui = createUi(destination); if (!ui) return;

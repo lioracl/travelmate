@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260930-5'}catch(error){return'20260930-5'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20260930-6'}catch(error){return'20260930-6'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
@@ -107,7 +107,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     baseReady.then(createAssistantShell);
     var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
     var initialView=activeView();
-    var featureReady=baseReady.then(function(){return loadFeature(initialView)});
+    var featureReady=coreReady.then(function(){return loadFeature(initialView)});
     Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,initialView==='overview'?baseReady.then(loadTodayActivities):Promise.resolve(true)]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250)});
   }
   window.addEventListener('travelmate:viewchange',function(event){var view=event.detail&&event.detail.view;loadFeature(view).then(function(){if(view==='overview'){loadTodayActivities();scheduleIdleFeature('intelligence',250)}})});
@@ -155,7 +155,7 @@ var lastModalTrigger=null;
 function closeModal(){document.querySelectorAll('.modal-backdrop.open').forEach(function(modal){modal.classList.remove('open')});if(lastModalTrigger&&document.contains(lastModalTrigger)){lastModalTrigger.focus()}lastModalTrigger=null}
 function modalFocusable(modal){return [].slice.call(modal.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function(node){return node.offsetParent!==null})}
 function focusModal(modal){var targets=modalFocusable(modal),target=targets[0];if(target)requestAnimationFrame(function(){target.focus()})}
-function trapGenericModalFocus(event){if(event.key!=='Tab')return;var modal=document.querySelector('.modal-backdrop.open:not(#modal-weather-live)');if(!modal)return;var targets=modalFocusable(modal);if(!targets.length){event.preventDefault();return}var first=targets[0],last=targets[targets.length-1],active=document.activeElement;if(event.shiftKey&&(active===first||!modal.contains(active))){event.preventDefault();last.focus()}else if(!event.shiftKey&&(active===last||!modal.contains(active))){event.preventDefault();first.focus()}}
+function trapGenericModalFocus(event){if(event.key!=='Tab')return;var modal=document.querySelector('.modal-backdrop.open:not(#modal-weather-live):not(#modal-smart-hub)');if(!modal)return;var targets=modalFocusable(modal);if(!targets.length){event.preventDefault();return}var first=targets[0],last=targets[targets.length-1],active=document.activeElement;if(event.shiftKey&&(active===first||!modal.contains(active))){event.preventDefault();last.focus()}else if(!event.shiftKey&&(active===last||!modal.contains(active))){event.preventDefault();first.focus()}}
 function showDayToast(message){var toast=document.getElementById('day-toast');if(!toast)return;toast.textContent=message;toast.classList.add('show');clearTimeout(window.__dayToastTimer);window.__dayToastTimer=setTimeout(function(){toast.classList.remove('show')},2600)}
 function minutesFromTime(value){var parts=(value||'00:00').split(':').map(Number);return (parts[0]||0)*60+(parts[1]||0)}
 function checkDayConflicts(panel){if(!panel)return false;var items=[].slice.call(panel.querySelectorAll('.day-item'));var hasConflict=false;var previousStart=-1;var previousEnd=-1;items.forEach(function(item){var start=minutesFromTime(item.dataset.time);var duration=Number(item.dataset.duration||60);if(start<previousStart||start<previousEnd)hasConflict=true;previousStart=start;previousEnd=start+duration});if(hasConflict)showDayToast('יש חפיפה או סדר שעות לא רציף, אבל השינוי נשמר.');return hasConflict}

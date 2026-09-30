@@ -18,9 +18,9 @@ test('custom trip Weather remains a sibling after Hero', () => {
   assert.match(js, /button\.parentElement !== content/);
 });
 
-test('Weather 2.0 final authority uses the shared translucent glass contract', () => {
+test('Weather 2.0 summary is fully transparent glass while the forecast modal stays independent', () => {
   assert.match(block, /body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]/);
-  assert.match(block, /background:var\(--tm-weather-card-bg\)/);
+  assert.match(block, /background:transparent/);
   assert.match(block, /backdrop-filter:var\(--tm-weather-card-blur\)/);
   assert.match(block, /--tm-weather-surface:var\(--tm-surface-neutral\)/);
   assert.doesNotMatch(block, /!important/);
@@ -51,12 +51,15 @@ test('Weather forecast rows flatten and wrap metrics without horizontal overflow
   assert.match(block, /\.weather-source\{[\s\S]*?overflow-wrap:anywhere/);
 });
 
-test('Weather modal behavior and accessibility contracts remain intact', () => {
+test('Weather modal behavior, history and accessibility contracts remain intact', () => {
   assert.match(js, /aria-haspopup/);
   assert.match(js, /aria-modal/);
   assert.match(js, /aria-labelledby/);
   assert.match(js, /event\.key === 'Escape'/);
   assert.match(js, /event\.key !== 'Tab'/);
+  assert.match(js, /TravelMateHistory\.pushOverlay\('weather', function/);
+  assert.match(js, /TravelMateHistory\.closeOverlay\('weather'\)/);
+  assert.doesNotMatch(js, /window\.addEventListener\('popstate'/);
   assert.match(js, /close\(ui\); window\.TravelMateEvents\.emit/);
 });
 

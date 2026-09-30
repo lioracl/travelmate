@@ -325,15 +325,31 @@
     state.messages.forEach(function (message) { addMessage(message.role, message.content); });
   }
 
+  var tripHistory = window.TravelMateHistory || null;
   function setOpen(open, fromHistory) {
-    if (open && !state.open && !fromHistory && !(history.state && history.state.travelMateOverlay === 'ai')) {
-      var overlayState = Object.assign({}, history.state || {}, { travelMateTrip: true, travelMateOverlay: 'ai' });
-      history.pushState(overlayState, '', location.href);
+    if (open && !state.open && !fromHistory) {
+      if (tripHistory) {
+        tripHistory.pushOverlay('ai', function () {
+          setOpen(false, true);
+          requestAnimationFrame(function () { if (document.contains(ui.orb)) ui.orb.focus(); });
+        });
+      } else if (!(history.state && history.state.travelMateOverlay === 'ai')) {
+        var overlayState = Object.assign({}, history.state || {}, { travelMateTrip: true, travelMateOverlay: 'ai' });
+        history.pushState(overlayState, '', location.href);
+      }
     }
-    if (!open && state.open && !fromHistory && history.state && history.state.travelMateOverlay === 'ai') {
-      if (document.contains(ui.orb)) ui.orb.focus();
-      history.back();
-      return;
+    if (!open && state.open && !fromHistory) {
+      if (tripHistory) {
+        state.open = false; ui.panel.hidden = true; ui.orb.setAttribute('aria-expanded', 'false');
+        unlockPageScroll(); if (document.contains(ui.orb)) ui.orb.focus();
+        tripHistory.closeOverlay('ai');
+        return;
+      }
+      if (history.state && history.state.travelMateOverlay === 'ai') {
+        if (document.contains(ui.orb)) ui.orb.focus();
+        history.back();
+        return;
+      }
     }
     state.open = open; ui.panel.hidden = !open; ui.orb.setAttribute('aria-expanded', String(open));
     if (open) { lockPageScroll(); syncVisualViewport(); ui.input.focus(); ui.chat.scrollTop = ui.chat.scrollHeight; setTimeout(syncVisualViewport, 120); }
@@ -534,7 +550,7 @@
     if (prompt) { ui.input.value = prompt; autoGrow(); }
     ui.input.focus();
   });
-  window.addEventListener('popstate', function () {
+  if (!window.TravelMateHistory) window.addEventListener('popstate', function () {
     if (state.open && !(history.state && history.state.travelMateOverlay === 'ai')) { setOpen(false, true); requestAnimationFrame(function () { if (document.contains(ui.orb)) ui.orb.focus(); }); }
   });
   document.addEventListener('keydown', function (event) {
