@@ -524,3 +524,63 @@ body.tm-new-design[data-trip-view="places"] main.content #places .nearby-control
     padding:8px 3px 3px
   }
 }
+
+
+/* 2.3 Free Time Finder — contextual, user-invoked and deliberately compact. */
+body.tm-new-design[data-trip-view="places"] .nearby-time-context{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  margin:10px 0;
+  padding:10px 12px;
+  border:1px solid var(--tm-card-border);
+  border-radius:14px;
+  background:color-mix(in srgb,var(--tm-card-bg) 90%,transparent);
+  color:var(--tm-card-text)
+}
+body.tm-new-design[data-trip-view="places"] .nearby-time-context[hidden]{display:none}
+body.tm-new-design[data-trip-view="places"] .nearby-time-context>i{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:var(--tm-action-secondary);
+  color:var(--tm-action-primary)
+}
+body.tm-new-design[data-trip-view="places"] .nearby-time-context>div{
+  display:grid;
+  gap:2px;
+  min-width:0
+}
+body.tm-new-design[data-trip-view="places"] .nearby-time-context small,
+body.tm-new-design[data-trip-view="places"] .nearby-time-context span{
+  color:var(--tm-card-secondary)
+}
+body.tm-new-design[data-trip-view="places"] .nearby-time-context strong{
+  color:var(--tm-card-heading);
+  font-size:14px
+}
+body.tm-new-design[data-trip-view="places"] .nearby-time-context button{
+  min-height:40px;
+  padding:0 12px;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:11px;
+  background:var(--tm-action-primary);
+  color:var(--tm-action-primary-text);
+  font-weight:800
+}
+body.tm-new-design[data-trip-view="places"] .nearby-time-context button:disabled{
+  opacity:.55;
+  cursor:not-allowed
+}
+@media(max-width:620px){
+  body.tm-new-design[data-trip-view="places"] .nearby-time-context{
+    grid-template-columns:auto minmax(0,1fr)
+  }
+  body.tm-new-design[data-trip-view="places"] .nearby-time-context button{
+    grid-column:1/-1;
+    width:100%
+  }
+}
