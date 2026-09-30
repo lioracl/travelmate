@@ -36,3 +36,50 @@ test('Personal Travel Intelligence contract keeps private sources outside learni
   assert.match(contract, /raw GPS history/);
   assert.match(contract, /Never label coordinate-derived estimates as measured walking distance/);
 });
+
+
+test('user profile exposes a small normalized declared-preference contract', () => {
+  const vm = require('node:vm');
+  const source = fs.readFileSync('assets/user-profile.js', 'utf8');
+  const sandbox = {
+    URL,
+    Date,
+    Object,
+    String,
+    Array,
+    window: {
+      dispatchEvent() {}
+    },
+    CustomEvent: class CustomEvent {
+      constructor(type, init) {
+        this.type = type;
+        this.detail = init && init.detail;
+      }
+    },
+    location: { href: 'https://example.test/' }
+  };
+  vm.runInNewContext(source, sandbox, { filename: 'assets/user-profile.js' });
+
+  const profile = sandbox.window.TravelMateUserProfile.fromUser({
+    email: 'traveler@example.com',
+    user_metadata: {
+      display_name: 'Traveler',
+      travelmate_preferences: {
+        pace: 'active',
+        activityDensity: 'dense',
+        transport: 'transit',
+        tripStyle: 'culture',
+        interests: ['culture', 'food', 'invalid', 'food']
+      }
+    }
+  });
+
+  assert.equal(profile.firstName, 'Traveler');
+  assert.deepEqual(profile.preferences, {
+    pace: 'active',
+    activityDensity: 'dense',
+    transport: 'transit',
+    tripStyle: 'culture',
+    interests: ['culture', 'food']
+  });
+});
