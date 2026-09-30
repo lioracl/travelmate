@@ -67,6 +67,11 @@ function estimateTravelMinutes(previous,next){
   var estimated=Math.max(3,Math.ceil(routeDistance/speed*60+overhead));
   return Object.freeze({minutes:estimated,mode:mode,source:'estimate',distanceKm:distance})
 }
+function clockTime(totalMinutes){
+  if(!Number.isFinite(Number(totalMinutes))||Number(totalMinutes)<0)return'';
+  var total=Math.round(Number(totalMinutes)),hours=Math.floor(total/60)%24,mins=total%60;
+  return String(hours).padStart(2,'0')+':'+String(mins).padStart(2,'0')
+}
 function transitionAssessment(previous,next,options){
   options=options||{};
   var previousStart=minutes(previous&&previous.time),nextStart=minutes(next&&next.time);
@@ -76,13 +81,14 @@ function transitionAssessment(previous,next,options){
   var estimate=estimateTravelMinutes(previous,next);
   if(!estimate)return null;
   var configured=Number(next&&next.arrivalBufferMinutes),buffer=Number.isFinite(configured)&&configured>=0?configured:Number.isFinite(Number(options.bufferMinutes))?Math.max(0,Number(options.bufferMinutes)):10;
-  var required=estimate.minutes+buffer,shortfall=Math.max(0,required-gap);
+  var required=estimate.minutes+buffer,shortfall=Math.max(0,required-gap),leaveBy=nextStart-required;
   return Object.freeze({
     gapMinutes:gap,
     travelMinutes:estimate.minutes,
     bufferMinutes:buffer,
     requiredMinutes:required,
     shortfallMinutes:shortfall,
+    latestDepartureTime:clockTime(leaveBy),
     risk:gap>=0&&shortfall>0,
     overlap:gap<0,
     mode:estimate.mode,
@@ -112,6 +118,7 @@ function transitionAssessmentsForDate(trip,date,options){
       bufferMinutes:assessment.bufferMinutes,
       requiredMinutes:assessment.requiredMinutes,
       shortfallMinutes:assessment.shortfallMinutes,
+      latestDepartureTime:assessment.latestDepartureTime,
       risk:assessment.risk,
       mode:assessment.mode,
       source:assessment.source,
@@ -161,6 +168,7 @@ window.TravelMateTripContext=Object.freeze({
   coordinates:coordinates,
   distanceKm:distanceKm,
   estimateTravelMinutes:estimateTravelMinutes,
+  clockTime:clockTime,
   transitionAssessment:transitionAssessment,
   transitionAssessmentsForDate:transitionAssessmentsForDate,
   nextFixedActivity:nextFixedActivity,
