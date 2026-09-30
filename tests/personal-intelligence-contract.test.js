@@ -83,3 +83,24 @@ test('user profile exposes a small normalized declared-preference contract', () 
     interests: ['culture', 'food']
   });
 });
+
+
+test('Mate context consumes declared preferences without converting them into learned inference', () => {
+  const source = fs.readFileSync('assets/trip-intelligence.js', 'utf8');
+
+  assert.match(source, /declaredPreferences/);
+  assert.match(source, /declaredPreferenceLines/);
+  assert.match(source, /העדפות אישיות שהמשתמש הצהיר עליהן/);
+  assert.match(source, /התייחס להעדפות האישיות כהעדפות מוצהרות של המשתמש, לא כהסקה/);
+  assert.match(source, /context\.declaredPreferences/);
+  assert.doesNotMatch(source, /learnedPreferences\s*=\s*declaredPreferences/);
+});
+
+test('Mate auth refresh reads the session user instead of inventing a second identity source', () => {
+  const source = fs.readFileSync('assets/trip-intelligence.js', 'utf8');
+
+  assert.match(source, /TravelMateCloud\.getSession/);
+  assert.match(source, /TravelMateCloud\.onAuthChange/);
+  assert.match(source, /function \(event, session\)/);
+  assert.match(source, /TravelMateUserProfile\.fromUser/);
+});
