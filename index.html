@@ -18,7 +18,7 @@
     <button class="home-more-toggle" type="button" data-home-more-toggle aria-label="פעולות נוספות" aria-expanded="false" aria-controls="home-more-menu"><i class="fa-solid fa-ellipsis fa-fw" aria-hidden="true"></i><span class="tip">עוד</span></button>
   </nav>
   <div class="home-sidebar-utilities" id="home-more-menu" data-home-more-menu aria-label="פעולות חשבון והגדרות">
-    <button type="button" data-cloud-account-open><i class="fa-solid fa-user" aria-hidden="true"></i><span class="tip">החשבון שלי</span></button>
+    <button type="button" data-cloud-account-open><i class="fa-solid fa-user" data-account-icon aria-hidden="true"></i><span class="home-sidebar-avatar" data-user-avatar hidden aria-hidden="true"></span><span class="tip">החשבון שלי</span></button>
     <button type="button" data-about-open data-lazy-about><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span class="tip">אודות</span></button>
   </div>
 </aside>
@@ -37,6 +37,17 @@
     </div>
     <div class="carousel-dots" data-carousel-dots aria-label="בחירת יעד"></div>
   </header>
+  <section class="home-personal-summary" data-home-personal-summary hidden aria-labelledby="home-personal-greeting">
+    <button type="button" class="home-profile-launcher" data-cloud-account-open aria-label="פתיחת הפרופיל">
+      <span class="home-profile-avatar" data-user-avatar hidden aria-hidden="true"></span>
+    </button>
+    <div class="home-personal-copy">
+      <small data-home-context-kicker>TravelMate אישי</small>
+      <h1 id="home-personal-greeting" data-home-greeting>שלום</h1>
+      <p data-home-context>טוען את מצב הטיולים שלך…</p>
+    </div>
+    <a class="home-context-action" data-home-context-action href="#active-trips">לטיולים שלי <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a>
+  </section>
   <section id="active-trips" class="modules trip-list" data-trip-list>
     <a class="trip-card" data-static-id="japan-2027" data-country="יפן" data-start="2027-10-14" data-end="2027-10-28" data-days="14" href="trip/japan-2027/index.html" style="background-image:url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&amp;fit=crop&amp;w=1600&amp;q=85')"><span class="trip-overlay"></span><span class="trip-flag">🇯🇵</span><span class="trip-copy"><h2>יפן</h2><p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> טוקיו, קיוטו ואוסקה</p><span class="tag">14-28 באוקטובר 2027</span> <span class="tag">14 ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></strong></span></a>
     <a class="trip-card" data-static-id="italy-2028" data-country="איטליה" data-start="2028-04-12" data-end="2028-04-19" data-days="7" href="trip/italy-2028/index.html" style="background-image:url('https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&amp;fit=crop&amp;w=1600&amp;q=85')"><span class="trip-overlay"></span><span class="trip-flag">🇮🇹</span><span class="trip-copy"><h2>איטליה</h2><p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> רומא וטוסקנה</p><span class="tag">12-19 באפריל 2028</span> <span class="tag">7 ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></strong></span></a>
