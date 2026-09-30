@@ -225,6 +225,8 @@
     form.hidden = !user;
     if (user) {
       form.elements.displayName.value = profile.name || '';
+      form.dataset.travelStyle = profile.travelStyle || '';
+      form.dataset.travelPace = profile.travelPace || '';
       document.querySelectorAll('[data-travel-style]').forEach(function(button){ var selected=button.dataset.travelStyle===profile.travelStyle; button.classList.toggle('active',selected); button.setAttribute('aria-pressed',String(selected)); });
       document.querySelectorAll('[data-travel-pace]').forEach(function(button){ var selected=button.dataset.travelPace===profile.travelPace; button.classList.toggle('active',selected); button.setAttribute('aria-pressed',String(selected)); });
       var selectedPreferences=Array.isArray(profile.travelPreferences)?profile.travelPreferences:[];
