@@ -33,7 +33,8 @@ function normalizePreferences(value){
     activityDensity:one('activityDensity'),
     transport:one('transport'),
     tripStyle:one('tripStyle'),
-    interests:Object.freeze(interests)
+    interests:Object.freeze(interests),
+    learningEnabled:source.learningEnabled!==false
   })
 }
 function greetingAt(value){
