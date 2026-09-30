@@ -1124,10 +1124,11 @@
       activityDensity: one('activityDensity'),
       transport: one('transport'),
       tripStyle: one('tripStyle'),
-      interests: interests
+      interests: interests,
+      learningEnabled: input.learningEnabled !== false
     };
     var hasPreference = normalizedPreferences.pace || normalizedPreferences.activityDensity ||
-      normalizedPreferences.transport || normalizedPreferences.tripStyle || interests.length;
+      normalizedPreferences.transport || normalizedPreferences.tripStyle || interests.length || input.learningEnabled === false;
     return client.auth.updateUser({
       data: {
         display_name: normalizedName,
