@@ -36,7 +36,7 @@ test('learned preference review state machine enforces the contract transitions'
 
   assert.equal(candidate.reviewState, 'suggested');
   assert.equal(api.transition(candidate, 'confirmed', '2026-10-01T08:00:00Z').reviewState, 'confirmed');
-  assert.equal(api.transition(candidate, 'deleted'), 'null' === 'null' ? false : true);
+  assert.equal(api.transition(candidate, 'deleted').reviewState, 'deleted');
   assert.equal(api.transition(candidate, 'rejected').reviewState, 'rejected');
 
   const rejected = api.transition(candidate, 'rejected', '2026-10-01T08:00:00Z');
