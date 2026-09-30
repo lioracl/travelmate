@@ -24,7 +24,9 @@ test('mobile Plan polish owns compact 390/430 geometry without escalation', () =
   assert.match(block, /\.planned-activity\.tm-plan-item\{[\s\S]*?grid-template-columns:42px 64px minmax\(0,1fr\)/);
   assert.match(block, /\.tm-plan-activity-media,[\s\S]*?width:64px;[\s\S]*?height:64px/);
   assert.match(block, /\.generated-day>\.badge\{[\s\S]*?width:100%;[\s\S]*?min-height:44px/);
-  assert.match(block, /Phone action layout:[\s\S]*?:is\(\.activity-buttons,\.saved-place-actions\)[\s\S]*?grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(block, /Phone action hierarchy:[\s\S]*?:is\(\.activity-buttons,\.saved-place-actions\)[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(block, /\.saved-place-links>:is\(a,button\)\{[\s\S]*?border-radius:12px;[\s\S]*?white-space:normal/);
+  assert.match(block, /\.saved-place-links \.saved-calendar-link\{[\s\S]*?grid-column:1\/-1/);
   assert.match(block, /:is\(\.activity-buttons,\.saved-place-actions\)>button::after\{[\s\S]*?white-space:normal/);
   assert.match(block, /\.tm-plan-item:not\(\.tm-plan-expanded\)[\s\S]*?data-smart-replace-activity[\s\S]*?display:none/);
   assert.match(block, /\.tm-plan-expanded :is\([\s\S]*?activity-buttons>button[\s\S]*?width:100%/);

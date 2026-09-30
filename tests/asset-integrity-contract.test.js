@@ -74,6 +74,7 @@ test('retired duplicate style layers stay removed', () => {
 test('every entry point exposes PWA metadata without waiting for lazy features', () => {
   for (const entry of htmlEntries) {
     const source = fs.readFileSync(path.join(root, entry), 'utf8');
+    assert.match(source, /<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">/);
     assert.match(source, /<meta name="theme-color" content="#12383F">/);
     assert.match(source, /<link rel="manifest" href="(?:\.\.\/\.\.\/)?manifest\.webmanifest">/);
   }

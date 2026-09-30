@@ -435,35 +435,62 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
     padding-block:4px
   }
 
-  /* Phone action layout: two calm, readable columns instead of cramped 3-up rows. */
+  /* Phone action hierarchy: compact 3-up activity controls, uniform 2+1 place links. */
   body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions),
   body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded :is(.activity-buttons,.saved-place-actions){
     display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:8px
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px
   }
   body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>button,
   body.tm-new-design[data-trip-view="plan"] #plan :is(.activity-buttons,.saved-place-actions)>.tm-plan-nav-action{
     width:100%;
     min-width:0;
-    min-height:46px;
-    padding:8px 10px;
+    min-height:44px;
+    padding:6px 4px;
     justify-content:center;
-    white-space:normal;
-    line-height:1.2
+    gap:4px;
+    font-size:11px;
+    white-space:nowrap;
+    line-height:1.15
   }
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-nav-action{order:1}
+  body.tm-new-design[data-trip-view="plan"] #plan :is([data-toggle-done],[data-toggle-saved-done]){order:2}
+  body.tm-new-design[data-trip-view="plan"] #plan [data-plan-details-toggle]{order:3}
+  body.tm-new-design[data-trip-view="plan"] #plan :is([data-edit],[data-edit-saved-place]){order:4}
+  body.tm-new-design[data-trip-view="plan"] #plan :is([data-smart-replace-activity],[data-smart-replace-place]){order:5}
+  body.tm-new-design[data-trip-view="plan"] #plan :is([data-delete],[data-delete-saved-place]){order:6}
+
   body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links{
     grid-template-columns:repeat(2,minmax(0,1fr));
     gap:8px
   }
-  body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links :is(
-    .place-directions-button,.place-share-button,.saved-calendar-link
-  ){
-    min-height:46px;
+  body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links>:is(a,button){
+    width:100%;
+    min-width:0;
+    min-height:44px;
     height:auto;
-    padding:8px 10px;
-    white-space:normal;
-    line-height:1.2
+    box-sizing:border-box;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:8px;
+    border:1px solid var(--tm-card-control-border);
+    border-radius:12px;
+    background:var(--tm-card-control);
+    color:var(--tm-card-control-text);
+    -webkit-text-fill-color:currentColor;
+    font-size:11px;
+    font-weight:800;
+    line-height:1.15;
+    text-align:center;
+    text-decoration:none;
+    white-space:normal
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links>:is(a,button) i{
+    flex:0 0 auto;
+    margin:0
   }
   body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links .saved-calendar-link{
     grid-column:1/-1

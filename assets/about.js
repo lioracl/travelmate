@@ -2,11 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.44',
-    label: 'ליטוש תוכנית וניווט מובייל',
+    version: '1.55.45',
+    label: 'סידור פעולות תוכנית במובייל',
     date: '30 בספטמבר 2026',
     highlights: [
-      'מסך תוכנית במובייל משתמש בשתי עמודות פעולה קריאות, תמונת היעד מכסה גם את תחתית המסך, והגדרות מוצגות כפעולה נפרדת מעל ההתנתקות; ארכיון הטיולים נשאר במסך בחירת הטיולים בלבד.',
+      'פעולות המקום בתוכנית קיבלו חומר וכפתורים אחידים; פעולות פעילות מסודרות בשורה ראשית של ניווט, הושלם ופרטים ובשורה משנית של עריכה, החלפה ומחיקה. נוסף viewport-fit=cover ונעשה יישור צבע ה-PWA לאזורי המערכת הנתמכים.',
       'סקירת הטיול מציגה פעילות קרובה בכרטיס קומפקטי שניתן לפתיחה, ללא מיקום מדומה כשאין מיקום אמיתי.',
       'מסך תוכנית קיבל כרטיסי פעילות קומפקטיים, היררכיית ימים משופרת ותשתית למסלול גמיש והמלצות לפי מיקום בעתיד.',
       'CSS architecture: Phase 10 moved shared controls and overlay material to normal cascade, reduced modal-system.css to zero !important and network-usage.css to two behavioral hidden-state exceptions, and reduced whole-app !important debt from 439 to 341.',
