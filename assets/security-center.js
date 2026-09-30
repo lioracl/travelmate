@@ -44,6 +44,7 @@
     backdrop.innerHTML = '<div class="security-center" role="dialog" aria-modal="true" aria-labelledby="security-title">' +
       '<header><div><small>התאמה אישית, אבטחה וניהול המכשיר</small><h2 id="security-title">הגדרות</h2></div><button type="button" data-security-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header>' +
       '<p class="security-message" data-security-message></p>' +
+      '<section class="security-profile" data-security-profile><div class="security-profile-head"><span class="security-profile-avatar" data-security-profile-avatar aria-hidden="true"></span><div><small>הפרופיל שלך</small><strong data-security-profile-name>TravelMate</strong><span data-security-profile-email></span></div></div><form data-security-profile-form><label><span>שם תצוגה</span><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></label><button type="submit"><i class="fa-solid fa-user-check"></i> שמירת פרופיל</button></form><p data-security-profile-note></p></section>' +
       '<section class="security-preferences"><h3>העדפות האפליקציה</h3><div class="settings-list">' +
       '<div class="settings-row"><i class="fa-solid fa-language" aria-hidden="true"></i><span><strong>שפת האפליקציה</strong><small>בחר את שפת הממשק בכל המכשיר הזה</small></span><div class="settings-options" role="group" aria-label="שפת האפליקציה"><button type="button" data-language-choice="he">עברית</button><button type="button" data-language-choice="en">English</button></div></div>' +
       '<div class="settings-row"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span><strong>תצוגת האפליקציה</strong><small>בחר מצב בהיר או כהה</small></span><div class="settings-options" role="group" aria-label="תצוגת האפליקציה"><button type="button" data-theme-choice="light"><i class="fa-regular fa-sun"></i> בהיר</button><button type="button" data-theme-choice="dark"><i class="fa-regular fa-moon"></i> כהה</button></div></div>' +
@@ -195,6 +196,60 @@
     else if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); }
   }
 
+  function profileFromSession() {
+    var user = currentSession && currentSession.user;
+    var helper = window.TravelMateUserProfile;
+    if (helper && typeof helper.fromUser === 'function') return helper.fromUser(user);
+    var email = String(user && user.email || '').trim();
+    var name = String(user && user.user_metadata && (user.user_metadata.display_name || user.user_metadata.full_name || user.user_metadata.name) || '').trim();
+    if (!name && email) name = email.split('@')[0].replace(/[._-]+/g, ' ').trim();
+    return { name: name, firstName: name ? name.split(/\s+/)[0] : '', initials: name ? name.split(/\s+/).slice(0, 2).map(function (part) { return part.charAt(0); }).join('').toUpperCase() : '', avatarUrl: '' };
+  }
+
+  function renderProfile() {
+    var host = document.querySelector('[data-security-profile]');
+    if (!host) return;
+    var user = currentSession && currentSession.user;
+    var profile = profileFromSession();
+    var avatar = host.querySelector('[data-security-profile-avatar]');
+    var name = host.querySelector('[data-security-profile-name]');
+    var email = host.querySelector('[data-security-profile-email]');
+    var note = host.querySelector('[data-security-profile-note]');
+    var form = host.querySelector('[data-security-profile-form]');
+    host.classList.toggle('is-signed-out', !user);
+    name.textContent = user ? (profile.name || 'הפרופיל שלי') : 'פרופיל אישי';
+    email.textContent = user ? String(user.email || '') : 'יש להתחבר כדי לשמור שם תצוגה בין מכשירים.';
+    avatar.textContent = user && !profile.avatarUrl ? profile.initials : '';
+    avatar.classList.toggle('has-image', Boolean(user && profile.avatarUrl));
+    avatar.style.backgroundImage = user && profile.avatarUrl ? 'url("' + profile.avatarUrl.replace(/"/g, '%22') + '")' : '';
+    form.hidden = !user;
+    if (user) form.elements.displayName.value = profile.name || '';
+    note.textContent = user ? 'השם והאווטר משמשים בברכה האישית ובמסכי TravelMate.' : 'העדפות תצוגה עדיין נשמרות במכשיר גם בלי חשבון.';
+  }
+
+  async function saveProfile(event) {
+    event.preventDefault();
+    if (!currentSession || !currentSession.user || !cloud || typeof cloud.updateProfile !== 'function') return;
+    var form = event.currentTarget;
+    var button = form.querySelector('button[type="submit"]');
+    var displayName = String(form.elements.displayName.value || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    button.disabled = true;
+    message('שומר את הפרופיל…');
+    try {
+      var result = await cloud.updateProfile(displayName);
+      if (result.error) throw result.error;
+      if (result.data && result.data.user) currentSession.user = result.data.user;
+      renderProfile();
+      window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } }));
+      message(displayName ? 'הפרופיל נשמר.' : 'שם התצוגה אופס.');
+    } catch (error) {
+      console.error('TravelMate profile update failed', error);
+      message('לא הצלחנו לשמור את הפרופיל כרגע.', true);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
   async function renderMfa() {
     var host = document.querySelector('[data-security-mfa]');
     if (!host) return;
@@ -247,6 +302,7 @@
     if (result.error) return message('הקוד אינו תקין או שפג תוקפו. נסה קוד חדש.', true);
     pendingFactorId = '';
     message('האימות הדו־שלבי פעיל וההתחברות מאובטחת.');
+    renderProfile();
     await renderMfa();
     await enforceMfaChallenge();
   }
@@ -274,6 +330,8 @@
     createButton();
     createDialog();
     createMfaGate();
+    var profileForm = document.querySelector('[data-security-profile-form]');
+    if (profileForm) profileForm.addEventListener('submit', saveProfile);
     document.addEventListener('click', function (event) {
       if (event.target.closest('[data-security-open]')) openDialog();
       if (event.target.closest('[data-security-close]') || event.target.matches('[data-security-dialog]')) closeDialog();
