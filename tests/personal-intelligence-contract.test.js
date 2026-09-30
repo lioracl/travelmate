@@ -102,5 +102,5 @@ test('Mate auth refresh reads the session user instead of inventing a second ide
   assert.match(source, /service\.getSession\(\)/);
   assert.match(source, /TravelMateCloud\.onAuthChange/);
   assert.match(source, /function \(event, session\)/);
-  assert.match(source, /TravelMateUserProfile\.fromUser/);
+  assert.match(source, /profile && profile\.fromUser/);
 });
