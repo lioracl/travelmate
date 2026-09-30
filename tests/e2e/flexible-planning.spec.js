@@ -232,6 +232,7 @@ test('Travel Time warns about an estimated transition risk without creating a ha
   await expect(advisory).toBeVisible();
   await expect(advisory).toContainText('הערכת מעבר');
   await expect(advisory).toContainText('חסרות');
+  await expect(page.locator('.generated-day[data-day-date="'+date+'"] .tm-plan-day-travel-risk')).toHaveText('סיכון מעבר · 1');
 
   expect(pageErrors, pageErrors.join('\n')).toEqual([]);
 });
