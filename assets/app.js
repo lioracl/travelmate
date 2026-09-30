@@ -99,13 +99,13 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
   if(isHomePage){
     var homeBaseReady=Promise.all(homeBaseStyles.map(loadStyle));
-    var homeCoreReady=homeBaseReady.then(function(){return loadSequence(['language.js','theme.js'])});
+    var homeCoreReady=homeBaseReady.then(function(){return loadSequence(['language.js','theme.js','user-profile.js'])});
     Promise.all([homeBaseReady,loadStyle(finalStyle),homeCoreReady]);
   }else{
     ensureLazyNavigation();
     var baseReady=Promise.all(baseStyles.map(loadStyle));
     baseReady.then(createAssistantShell);
-    var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js'])});
+    var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js','user-profile.js'])});
     var initialView=activeView();
     var featureReady=coreReady.then(function(){return loadFeature(initialView)});
     Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,initialView==='overview'?baseReady.then(loadTodayActivities):Promise.resolve(true)]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250)});
