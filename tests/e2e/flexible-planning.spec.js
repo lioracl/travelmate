@@ -40,6 +40,8 @@ async function addActivity(page, options) {
   await expect(form).toBeVisible();
   await form.locator('input[name="time"]').fill(options.time);
   await form.locator('input[name="title"]').fill(options.title);
+  await form.locator('[data-planner-details-toggle]').click();
+  await expect(form.locator('[data-planner-details]')).toBeVisible();
   await form.locator('select[name="duration"]').selectOption(String(options.duration || 60));
   await form.locator('select[name="scheduleMode"]').selectOption(options.mode);
   if (options.mode === 'window') {
