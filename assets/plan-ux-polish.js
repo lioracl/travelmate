@@ -40,6 +40,17 @@ function dayMode(trip,date){
 function dayModeLabel(mode){
   return mode==='scheduled'?'יום מתוזמן':mode==='balanced'?'יום מאוזן':mode==='flexible'?'יום גמיש':''
 }
+function dayModeOverride(trip,date){
+  var helper=context();return helper&&helper.explicitDayMode?helper.explicitDayMode(trip,date):''
+}
+function saveDayMode(trip,date,value){
+  if(!trip||!date)return;
+  trip.dayModes=Object.assign({},trip.dayModes||{});
+  if(value==='auto')delete trip.dayModes[date];else trip.dayModes[date]=value;
+  var store=window.TravelMateTripStore;
+  if(store&&store.saveTrip)store.saveTrip(trip);
+  schedule()
+}
 function ensureToolbar(plan,trip){
   var toolbar=plan.querySelector('.planner-toolbar'),actions=toolbar&&toolbar.querySelector('.planner-toolbar-actions');
   if(!toolbar||!actions||toolbar.dataset.planUxToolbar==='true')return;
@@ -176,7 +187,19 @@ function enhanceDay(card,index,trip,today){
     if(modeText){
       if(!modeBadge){modeBadge=document.createElement('span');modeBadge.className='tm-plan-day-mode';heading.querySelector('div').appendChild(modeBadge)}
       modeBadge.textContent=modeText;modeBadge.dataset.dayMode=mode
-    }else if(modeBadge)modeBadge.remove()
+    }else if(modeBadge)modeBadge.remove();
+    var modeSelect=heading.querySelector('.tm-plan-day-mode-select');
+    if(!modeSelect){
+      modeSelect=document.createElement('select');
+      modeSelect.className='tm-plan-day-mode-select';
+      modeSelect.setAttribute('aria-label','בחירת אופי היום');
+      modeSelect.innerHTML='<option value="auto">אופי יום · אוטומטי</option><option value="flexible">אופי יום · גמיש</option><option value="balanced">אופי יום · מאוזן</option><option value="scheduled">אופי יום · מתוזמן</option>';
+      modeSelect.addEventListener('click',function(event){event.stopPropagation()});
+      modeSelect.addEventListener('keydown',function(event){event.stopPropagation()});
+      modeSelect.addEventListener('change',function(event){event.stopPropagation();saveDayMode(currentTrip()||trip,date,modeSelect.value)});
+      heading.appendChild(modeSelect)
+    }
+    modeSelect.value=dayModeOverride(trip,date)||'auto'
   }
   var content=card.querySelector(':scope > div'),empty=content&&content.querySelector('.tm-plan-empty-day');
   if(!total&&content){
