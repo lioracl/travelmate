@@ -130,7 +130,7 @@ function build(trip){
     }),
     status:Object.freeze({
       visits:'confirmed',
-      distance:movement.distanceCoverage===1?'estimated':'estimated',
+      distance:segments.length?'estimated':'unknown',
       travelTime:movement.manualTimeCoverage===1&&segments.length?'confirmed':segments.length?'estimated':'unknown'
     })
   })
