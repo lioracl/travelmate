@@ -72,7 +72,7 @@ test('Free Time Finder is contextual and requests app consent before browser geo
 
   const finder = page.locator('[data-nearby-time-context]');
   await expect(finder).toBeVisible();
-  await expect(finder.locator('[data-nearby-time-title]')).toContainText('90 דקות');
+  await expect(finder.locator('[data-nearby-time-title]')).toContainText('1 ש׳ ו־30 דק׳');
   await expect(finder.locator('[data-nearby-time-title]')).toContainText('Booked Tour');
 
   await finder.locator('[data-nearby-time-search]').click();
