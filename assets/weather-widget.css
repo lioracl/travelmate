@@ -140,35 +140,51 @@ html body #modal-weather-live .modal-close{
 
 /* Weather 2.0 final authority — neutral material, compact mobile, flat forecast. */
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget{
+  --tm-weather-text-shadow:0 1px 2px rgba(255,255,255,.9);
   min-width:0;
   min-height:78px;
   max-height:82px;
   margin:0 0 14px;
   padding:10px 12px;
   gap:10px;
-  border:1px solid var(--tm-border-control);
+  border:1px solid rgba(235,252,248,.52);
   border-radius:18px;
-  background:linear-gradient(135deg,rgba(244,243,239,.82),rgba(217,225,223,.72));
+  background:var(--tm-weather-card-bg);
   color:var(--tm-weather-card-text);
   -webkit-text-fill-color:currentColor;
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-  box-shadow:var(--tm-card-shadow)
+  -webkit-backdrop-filter:var(--tm-weather-card-blur);
+  backdrop-filter:var(--tm-weather-card-blur);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 18px rgba(8,39,29,.12)
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] :is(.weather-top-copy,.weather-top-copy>*){
   min-width:0
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-copy small{
-  color:var(--tm-weather-card-muted)
+  color:var(--tm-weather-card-muted);
+  text-shadow:var(--tm-weather-text-shadow)
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] :is(.weather-top-copy strong,.weather-top-temperature){
   color:var(--tm-weather-card-text);
   font-weight:850;
-  text-shadow:none
+  text-shadow:var(--tm-weather-text-shadow)
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-icon{
   color:var(--tm-weather-card-text);
-  -webkit-text-fill-color:currentColor
+  -webkit-text-fill-color:currentColor;
+  filter:drop-shadow(var(--tm-weather-text-shadow))
+}
+html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget{
+  --tm-weather-text-shadow:0 1px 2px rgba(8,24,20,.9)
+}
+@media(prefers-reduced-transparency:reduce){
+  body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget{
+    --tm-weather-card-text:var(--tm-family-text);
+    --tm-weather-card-muted:var(--tm-family-muted);
+    --tm-weather-text-shadow:none;
+    background:var(--tm-family-solid);
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none
+  }
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-action{
   min-width:44px;

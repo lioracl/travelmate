@@ -16,7 +16,7 @@ test('Light surface tokens are not legacy pale-white controls', () => {
 test('Weather stays neutral but is less opaque on the destination photo', () => {
   const css = read('assets/readable-glass.css');
   assert.match(css, /--tm-weather-card-bg:linear-gradient\(135deg,rgba\(217,225,223,\.42\),rgba\(201,213,210,\.34\)\)/);
-  assert.match(css, /--tm-weather-card-blur:none/);
+  assert.match(css, /--tm-weather-card-blur:blur\(6px\) saturate\(106%\)/);
 });
 
 test('Secondary control contract excludes semantic danger actions', () => {

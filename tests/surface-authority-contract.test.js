@@ -44,13 +44,14 @@ test('glass uses blur instead of opacity escalation',()=>{
   assert.doesNotMatch(css,/--tm-weather-card-blur:blur\(4px\)/);
 });
 
-test('weather uses a dedicated crisp translucent material without optical blur',()=>{
+test('weather uses a dedicated translucent glass material with readable theme-aware text',()=>{
   const css=read('assets/readable-glass.css');
   assert.match(css,/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(217,225,223,\.42\),rgba\(201,213,210,\.34\)\)/);
   assert.match(css,/--tm-weather-card-text:#12383F/);
   assert.match(css,/>\.hero-copy :is\(h1,p,span,strong,a,button,i\)/);
-  assert.match(css,/--tm-weather-card-blur:none/);
-  assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
+  assert.match(css,/--tm-weather-card-blur:blur\(6px\) saturate\(106%\)/);
+  assert.match(css,/html\[data-theme="dark"\][\s\S]*--tm-weather-card-text:#F7FAFA/);
+  assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:var\(--tm-weather-card-blur\);[^}]*backdrop-filter:var\(--tm-weather-card-blur\)/);
 });
 
 test('overview and places no longer own card material tokens',()=>{
@@ -105,7 +106,7 @@ test('Overview removes optical blur while retaining controlled transparency',()=
   assert.match(css,/data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]\{[^}]*--tm-surface-blur:none;[^}]*--tm-surface-blur-nested:none;[^}]*--tm-surface-blur-photo:none;[^}]*--tm-card-blur:none/);
   assert.match(css,/--tm-overview-card:var\(--tm-surface-glass\)/);
   assert.match(css,/--tm-overview-card-soft:var\(--tm-surface-nested\)/);
-  assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:none;[^}]*backdrop-filter:none/);
+  assert.match(css,/\.weather-top-widget\{[^}]*background:var\(--tm-weather-card-bg\);[^}]*-webkit-backdrop-filter:var\(--tm-weather-card-blur\);[^}]*backdrop-filter:var\(--tm-weather-card-blur\)/);
 });
 
 test('reduced transparency has an opaque fallback',()=>{

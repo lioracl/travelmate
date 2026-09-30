@@ -18,14 +18,14 @@ test('custom trip Weather remains a sibling after Hero', () => {
   assert.match(js, /button\.parentElement !== content/);
 });
 
-test('Weather 2.0 final authority is neutral and blur-free', () => {
+test('Weather 2.0 final authority uses the shared translucent glass contract', () => {
   assert.match(block, /body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]/);
-  assert.match(block, /background:linear-gradient\(135deg,rgba\(244,243,239,\.82\),rgba\(217,225,223,\.72\)\)/);
-  assert.match(block, /backdrop-filter:none/);
+  assert.match(block, /background:var\(--tm-weather-card-bg\)/);
+  assert.match(block, /backdrop-filter:var\(--tm-weather-card-blur\)/);
   assert.match(block, /--tm-weather-surface:var\(--tm-surface-neutral\)/);
   assert.doesNotMatch(block, /!important/);
   assert.doesNotMatch(block, /background:\s*(?:#000|black)\b/i);
-  assert.doesNotMatch(block, /backdrop-filter:\s*blur\(/i);
+  assert.doesNotMatch(block, /rgba\(244,243,239,\.82\)/);
 });
 
 test('Weather compact card and forecast controls keep mobile touch geometry', () => {
@@ -33,6 +33,14 @@ test('Weather compact card and forecast controls keep mobile touch geometry', ()
   assert.match(block, /\.weather-top-action\{[\s\S]*?min-width:44px;[\s\S]*?min-height:44px/);
   assert.match(block, /@media\(max-width:650px\)[\s\S]*?min-height:72px;[\s\S]*?max-height:82px/);
   assert.match(block, /:is\(\.weather-live-actions button,\.modal-close\)\{[\s\S]*?min-height:44px/);
+});
+
+test('Weather keeps centered arrow geometry and reduced-transparency fallback', () => {
+  assert.match(block, /\.weather-top-action i\{[^}]*display:grid;place-items:center;[^}]*inline-size:12px;block-size:12px/);
+  assert.match(block, /\.weather-top-action i::before\{[^}]*inline-size:10px;block-size:6px/);
+  assert.match(block, /aria-expanded="true"[^}]*transform:rotate\(180deg\)/);
+  assert.match(block, /@media\(prefers-reduced-transparency:reduce\)[\s\S]*?background:var\(--tm-family-solid\);[\s\S]*?backdrop-filter:none/);
+  assert.match(block, /html\[data-theme="dark"\][^}]*--tm-weather-text-shadow:0 1px 2px rgba\(8,24,20,\.9\)/);
 });
 
 test('Weather forecast rows flatten and wrap metrics without horizontal overflow', () => {

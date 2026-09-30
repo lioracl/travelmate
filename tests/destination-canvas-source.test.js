@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
-test('cached custom destination hands the same image to the canvas without a second Hero crop',async()=>{
+test('cached custom destination shares one source between Hero and app-wide canvas',async()=>{
  const source=fs.readFileSync(path.join(root,'assets/destination-images.js'),'utf8');
  const window={};const url='https://example.test/tel-aviv.jpg';
  vm.runInNewContext(source,{window,localStorage:{getItem:()=>JSON.stringify({'תל אביב|ישראל':url})},Map,Promise,URLSearchParams});
@@ -11,6 +11,17 @@ test('cached custom destination hands the same image to the canvas without a sec
   if(custom){assert.equal(properties['--tm-destination-image'],"url('"+url+"')");assert.equal(element.style.backgroundImage,undefined)}
   else{assert.equal(element.style.backgroundImage,"url('"+url+"')");assert.equal(properties['--tm-destination-image'],undefined)}
  }
+});
+test('Hero paints the destination source while the fixed app canvas remains independent',()=>{
+ const css=fs.readFileSync(path.join(root,'assets/readable-glass.css'),'utf8');
+ assert.match(css,/main\.content>#overview\.custom-hero\{[\s\S]*?background-image:var\(--tm-destination-image,var\(--trip-bg-image\)\);[\s\S]*?background-size:cover/);
+ assert.match(css,/body\.tm-new-design:not\(\.home-page\)\{--tm-destination-canvas:/);
+ const hero=css.match(/html body\[data-trip-kind="custom"\]\.tm-new-design main\.content>#overview\.custom-hero\{([^}]+)\}/)[1];
+ assert.doesNotMatch(hero,/background-image:none/);
+ assert.match(hero,/background-position:center/);
+ assert.match(css,/#overview\.custom-hero:before\{[^}]*background:linear-gradient/);
+ const mobile=css.slice(css.indexOf('@media(max-width:900px)'),css.indexOf('html body.tm-new-design:not([data-trip-kind'));
+ assert.match(mobile,/::after\{[^}]*position:fixed;[^}]*width:100vw;[^}]*min-height:calc\(100dvh \+ env\(safe-area-inset-bottom,0px\) \+ 2px\)/);
 });
 test('canvas synchronization follows a late destination update and keeps legacy Hero sources working',()=>{
  const source=fs.readFileSync(path.join(root,'assets/trip-redesign.js'),'utf8');

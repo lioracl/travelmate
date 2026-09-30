@@ -67,7 +67,7 @@ test('Plan shortcuts keep real labels and full toolbar geometry',()=>{
 test('custom Weather background is neutral and independent of accent',()=>{
  const css=read('assets/readable-glass.css');
  const tokens=css.match(/--tm-weather-card-bg:linear-gradient\(135deg,rgba\(217,225,223,\.42\),rgba\(201,213,210,\.34\)\);/);
- assert.ok(tokens,'dedicated neutral Weather material');
+ assert.ok(tokens,'dedicated neutral Weather glass');
  assert.doesNotMatch(tokens[0],/var\(--tm-brand|color-mix/);
- assert.match(css,/--tm-weather-card-blur:none/);
+ assert.match(css,/--tm-weather-card-blur:blur\(6px\) saturate\(106%\)/);
 });
