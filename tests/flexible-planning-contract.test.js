@@ -28,6 +28,13 @@ test('Trip context normalizes flexible, window and fixed timing modes', () => {
     { date, scheduleMode: 'fixed' },
     { date, scheduleMode: 'flexible' }
   ], savedPlaces: [] }, date), 'scheduled');
+
+  assert.equal(api.explicitDayMode({ dayModes: { [date]: 'flexible' } }, date), 'flexible');
+  assert.equal(api.dayMode({
+    dayModes: { [date]: 'flexible' },
+    activities: [{ date, scheduleMode: 'fixed' }, { date, scheduleMode: 'fixed' }, { date, scheduleMode: 'fixed' }],
+    savedPlaces: []
+  }, date), 'flexible');
 });
 
 test('Planner stores timing mode and optional preferred window without migrating old trips', () => {
@@ -84,4 +91,22 @@ test('Quick Add keeps advanced fields behind explicit progressive disclosure', (
 
   const quickAddCss = css.slice(css.indexOf('/* 2.1 Quick Add'));
   assert.doesNotMatch(quickAddCss, /!important/);
+});
+
+
+test('Plan exposes an optional day-mode override without replacing automatic inference', () => {
+  const polish = read('assets/plan-ux-polish.js');
+  const css = read('assets/auto-planner.css');
+
+  assert.match(polish, /tm-plan-day-mode-select/);
+  assert.match(polish, /value="auto"/);
+  assert.match(polish, /value="flexible"/);
+  assert.match(polish, /value="balanced"/);
+  assert.match(polish, /value="scheduled"/);
+  assert.match(polish, /delete trip\.dayModes\[date\]/);
+  assert.match(polish, /store&&store\.saveTrip/);
+  assert.match(css, /2\.1 Day Mode Control/);
+
+  const dayModeCss = css.slice(css.indexOf('/* 2.1 Day Mode Control'));
+  assert.doesNotMatch(dayModeCss, /!important/);
 });
