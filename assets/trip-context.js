@@ -127,6 +127,53 @@ function transitionAssessmentsForDate(trip,date,options){
   }
   return map
 }
+function freeTimeWindowsForDate(trip,date,options){
+  options=options||{};
+  var dayStart=minutes(options.startTime||'09:00'),dayEnd=minutes(options.endTime||'22:00');
+  var minimum=Math.max(15,Number(options.minimumMinutes||45));
+  var buffer=Number.isFinite(Number(options.bufferMinutes))?Math.max(0,Number(options.bufferMinutes)):10;
+  if(dayStart===null||dayEnd===null||dayEnd<=dayStart)return[];
+  var entries=recordsForDate(trip,date).map(function(entry){
+    var start=minutes(entry.record.time),mode=scheduleMode(entry.record);
+    return{kind:entry.kind,record:entry.record,start:start,end:start===null?null:start+Math.max(0,Number(entry.record.duration||60)),mode:mode}
+  }).filter(function(entry){
+    return entry.start!==null&&entry.mode!=='flexible'&&entry.mode!=='window'
+  }).sort(function(a,b){return a.start-b.start});
+  var windows=[],cursor=dayStart,previous=null;
+  entries.forEach(function(entry){
+    if(entry.end<=dayStart||entry.start>=dayEnd)return;
+    var gapEnd=Math.min(entry.start,dayEnd);
+    if(previous){
+      var assessment=transitionAssessment(previous.record,entry.record,{bufferMinutes:buffer});
+      if(assessment&&!assessment.overlap)gapEnd=Math.min(gapEnd,entry.start-assessment.requiredMinutes)
+    }
+    var start=Math.max(cursor,dayStart),duration=gapEnd-start;
+    if(duration>=minimum){
+      windows.push(Object.freeze({
+        date:String(date||''),
+        startTime:clockTime(start),
+        endTime:clockTime(gapEnd),
+        durationMinutes:Math.round(duration),
+        beforeId:previous?String(previous.record.id||''):'',
+        afterId:String(entry.record.id||'')
+      }))
+    }
+    cursor=Math.max(cursor,entry.end);
+    previous=entry
+  });
+  var tailStart=Math.max(cursor,dayStart),tailDuration=dayEnd-tailStart;
+  if(tailDuration>=minimum){
+    windows.push(Object.freeze({
+      date:String(date||''),
+      startTime:clockTime(tailStart),
+      endTime:clockTime(dayEnd),
+      durationMinutes:Math.round(tailDuration),
+      beforeId:previous?String(previous.record.id||''):'',
+      afterId:''
+    }))
+  }
+  return windows
+}
 function nextFixedActivity(trip,now){
   var moment=now instanceof Date?now:new Date(now||Date.now()),today=localDateKey(moment),current=moment.getHours()*60+moment.getMinutes();
   return recordsForDate(trip,today).map(function(entry){
@@ -171,6 +218,7 @@ window.TravelMateTripContext=Object.freeze({
   clockTime:clockTime,
   transitionAssessment:transitionAssessment,
   transitionAssessmentsForDate:transitionAssessmentsForDate,
+  freeTimeWindowsForDate:freeTimeWindowsForDate,
   nextFixedActivity:nextFixedActivity,
   availableMinutesUntilNextFixed:availableMinutesUntilNextFixed,
   buildNearbyRequest:buildNearbyRequest
