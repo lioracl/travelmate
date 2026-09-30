@@ -107,6 +107,8 @@ Use two explicit namespaces:
 - editable
 - deletable
 - no confidence score required
+- small values may live in the existing authenticated user's `user_metadata` rather than a new profile table
+- must never be used for authorization or security decisions
 
 `learnedPreferences`
 - system-generated suggestion
@@ -115,6 +117,7 @@ Use two explicit namespaces:
 - reviewable
 - correctable
 - deletable
+- should not be stored in `user_metadata` once provenance, evidence, cross-trip querying, review history, or deletion dependencies are required
 
 A trip-local preference must remain trip-local unless the user explicitly promotes it.
 
@@ -196,12 +199,13 @@ UX should prefer inline/contextual guidance and progressive disclosure over repe
 
 ## 9. Implementation gate
 
-Before adding Supabase schema:
-1. prove that Auth metadata/local profile storage cannot safely satisfy the declared-preference ownership requirement;
-2. define the exact RLS ownership model;
-3. define deletion/cascade behavior;
-4. define migration and rollback strategy;
-5. add contract tests;
-6. verify against the existing Cloud Sync and Trip Store boundaries.
+Before adding a new Supabase table:
+1. prove that the existing Auth `user_metadata` cannot safely satisfy the declared-preference requirement;
+2. if learned preferences require durable provenance/querying/review history, define a dedicated table only for learned intelligence rather than duplicating the profile;
+3. define the exact RLS ownership model using `auth.uid()`;
+4. define deletion/cascade behavior;
+5. define migration and rollback strategy;
+6. add contract tests;
+7. verify against the existing Cloud Sync and Trip Store boundaries.
 
 Until these are proven necessary, keep the foundation contract-only.
