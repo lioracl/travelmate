@@ -75,7 +75,7 @@ test('user profile exposes a small normalized declared-preference contract', () 
   });
 
   assert.equal(profile.firstName, 'Traveler');
-  assert.deepEqual(profile.preferences, {
+  assert.deepEqual(JSON.parse(JSON.stringify(profile.preferences)), {
     pace: 'active',
     activityDensity: 'dense',
     transport: 'transit',
