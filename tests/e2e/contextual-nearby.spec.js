@@ -54,7 +54,24 @@ test('Free Time Finder is contextual and requests app consent before browser geo
   await page.goto('/trip/custom/index.html?id=qa-context-nearby&view=places', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('body')).toHaveAttribute('data-trip-view', 'places');
 
+  await page.waitForFunction(() => Boolean(window.TravelMateTripContext && window.TravelMateTripStore));
+  const contextSnapshot = await page.evaluate(() => {
+    const trip = window.TravelMateTripStore.getTrip('qa-context-nearby');
+    const info = window.TravelMateTripContext.freeTimeWindow(trip, new Date(), { bufferMinutes: 30 });
+    return {
+      now: new Date().toString(),
+      trip: trip && { start: trip.start, end: trip.end, activities: trip.activities },
+      info: info && {
+        availableMinutes: info.availableMinutes,
+        nextId: info.nextFixedActivity && info.nextFixedActivity.record && info.nextFixedActivity.record.id
+      }
+    };
+  });
+  expect(contextSnapshot.info, JSON.stringify(contextSnapshot)).not.toBeNull();
+  expect(contextSnapshot.info.availableMinutes, JSON.stringify(contextSnapshot)).toBe(90);
+
   const finder = page.locator('[data-nearby-time-context]');
+  await page.evaluate(() => window.dispatchEvent(new CustomEvent('travelmate:activities-updated')));
   await expect(finder).toBeVisible();
   await expect(finder.locator('[data-nearby-time-title]')).toContainText('90 דקות');
   await expect(finder.locator('[data-nearby-time-title]')).toContainText('Booked Tour');
