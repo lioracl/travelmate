@@ -12,6 +12,9 @@ const assistant=read('assets/ai-assistant.js');
 const tripContext=read('assets/trip-context.js');
 const replay=read('assets/trip-replay.js');
 const intelligence=read('assets/trip-intelligence.js');
+const cloudSync=read('assets/cloud-sync.js');
+const security=read('assets/security-center.js');
+
 
 test('personal intelligence contract separates declared and learned preferences',()=>{
  assert.match(profileContract,/Declared preferences/);
@@ -26,6 +29,15 @@ test('Profile Lite remains the canonical identity source',()=>{
  assert.match(profile,/initials:initials/);
  assert.match(profile,/avatarUrl:avatarUrl/);
  assert.match(profile,/greeting:greetingAt/);
+});
+test('Profile Center exposes only normalized declared travel preference values',()=>{
+ assert.match(profile,/TRAVEL_STYLES=Object\.freeze\(\['balanced','culture','food','nature','city'\]\)/);
+ assert.match(profile,/TRAVEL_PACES=Object\.freeze\(\['relaxed','balanced','active'\]\)/);
+ assert.match(profile,/travelPreferences:preferences\.travelPreferences/);
+ assert.match(cloudSync,/auth\.updateUser\(\{ data: payload \}\)/);
+ assert.match(security,/data-travel-style/);
+ assert.match(security,/data-travel-pace/);
+ assert.match(security,/data-travel-preference/);
 });
 test('current Mate context keeps a bounded trip allowlist',()=>{
  assert.match(assistant,/expenseSummary: summarizeExpenses\(trip\.expenses\)/);
