@@ -142,6 +142,30 @@ function availableMinutesUntilNextFixed(trip,now,bufferMinutes){
   var current=moment.getHours()*60+moment.getMinutes();
   return Math.max(0,next.start-current-Number(bufferMinutes||30))
 }
+function contextualRadiusMeters(availableMinutes){
+  var minutesAvailable=Number(availableMinutes);
+  if(!Number.isFinite(minutesAvailable)||minutesAvailable<=0)return 800;
+  if(minutesAvailable<=45)return 800;
+  if(minutesAvailable<=90)return 1200;
+  if(minutesAvailable<=180)return 2000;
+  return 3000
+}
+function freeTimeWindow(trip,now,options){
+  options=options||{};
+  var moment=now instanceof Date?now:new Date(now||Date.now());
+  var today=localDateKey(moment),start=String(trip&&trip.start||''),end=String(trip&&trip.end||'');
+  if(!trip||!start||!end||today<start||today>end)return null;
+  var buffer=Number.isFinite(Number(options.bufferMinutes))?Math.max(0,Number(options.bufferMinutes)):30;
+  var next=nextFixedActivity(trip,moment),available=next?availableMinutesUntilNextFixed(trip,moment,buffer):null;
+  return Object.freeze({
+    date:today,
+    availableMinutes:available,
+    bufferMinutes:buffer,
+    nextFixedActivity:next,
+    radiusMeters:contextualRadiusMeters(available),
+    openEnded:!next
+  })
+}
 function buildNearbyRequest(options){
   options=options||{};var position=options.position||{},lat=Number(position.lat),lon=Number(position.lon);
   if(!Number.isFinite(lat)||!Number.isFinite(lon))return null;
@@ -153,6 +177,7 @@ function buildNearbyRequest(options){
     lon:lon,
     requestedAt:now.toISOString(),
     availableMinutes:available,
+    radiusMeters:contextualRadiusMeters(available),
     mood:String(options.mood||'').trim(),
     categories:Array.isArray(options.categories)?options.categories.slice():[],
     nextFixedActivity:nextFixedActivity(trip,now),
@@ -173,6 +198,8 @@ window.TravelMateTripContext=Object.freeze({
   transitionAssessmentsForDate:transitionAssessmentsForDate,
   nextFixedActivity:nextFixedActivity,
   availableMinutesUntilNextFixed:availableMinutesUntilNextFixed,
+  contextualRadiusMeters:contextualRadiusMeters,
+  freeTimeWindow:freeTimeWindow,
   buildNearbyRequest:buildNearbyRequest
 })
 })();
