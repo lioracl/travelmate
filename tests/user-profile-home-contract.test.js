@@ -40,6 +40,7 @@ test('Profile Lite derives display name, initials, avatar and time-aware greetin
   assert.equal(profile.initials, 'לא');
   assert.equal(profile.greeting, 'בוקר טוב');
   assert.equal(profile.avatarUrl, 'https://example.test/avatar.jpg');
+  assert.equal(profile.preferences.learningEnabled, true);
 });
 
 test('Profile Lite falls back to the email name and blocks unsafe avatar protocols', () => {
