@@ -91,6 +91,8 @@ test('Home exposes one profile summary and reuses the existing account/profile o
   const app = read('assets/app.js');
   const sw = read('sw.js');
   const css = read('assets/home-organizer.css');
+  const settings = read('assets/security-center.js');
+  const settingsCss = read('assets/security-center.css');
 
   assert.match(html, /data-home-personal-summary/);
   assert.match(html, /data-home-greeting/);
@@ -102,8 +104,15 @@ test('Home exposes one profile summary and reuses the existing account/profile o
   assert.match(home, /data-cloud-profile-form/);
   assert.match(app, /user-profile\.js/);
   assert.match(sw, /\.\/assets\/user-profile\.js/);
+  assert.match(settings, /data-security-profile/);
+  assert.match(settings, /data-security-profile-form/);
+  assert.match(settings, /cloud\.updateProfile\(displayName\)/);
+  assert.match(settings, /travelmate:profile-change/);
 
   const featureCss = css.slice(css.indexOf('/* 2.1 Profile Lite + Adaptive Home'));
   assert.ok(featureCss.length > 0);
   assert.doesNotMatch(featureCss, /!important/);
+  const profileSettingsCss = settingsCss.slice(settingsCss.indexOf('/* 2.1 Profile Lite settings'));
+  assert.ok(profileSettingsCss.length > 0);
+  assert.doesNotMatch(profileSettingsCss, /!important/);
 });
