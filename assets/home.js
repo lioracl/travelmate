@@ -345,6 +345,7 @@
       queueDestinationCardImage(shell, trip);
     });
     updateCounts();
+    renderAdaptiveHome(canonicalTrips);
     handlePwaShortcut(canonicalTrips);
   }
 
@@ -591,6 +592,8 @@
   }
 
   function personalizedUser(user) {
+    var shared = window.TravelMateUserProfile;
+    if (shared && typeof shared.fromUser === 'function') return shared.fromUser(user);
     var metadata = user && user.user_metadata || {};
     var email = String(user && user.email || '').trim();
     var rawName = String(metadata.display_name || metadata.full_name || metadata.name || '').trim();
@@ -600,7 +603,7 @@
     var hour = new Date().getHours();
     var greeting = hour < 5 ? 'לילה טוב' : hour < 12 ? 'בוקר טוב' : hour < 17 ? 'צהריים טובים' : 'ערב טוב';
     var initials = name ? name.split(/\s+/).slice(0, 2).map(function (part) { return part.charAt(0); }).join('').toUpperCase() : (email ? email.charAt(0).toUpperCase() : '');
-    return { name: name, firstName: firstName, greeting: greeting, initials: initials };
+    return { name: name, firstName: firstName, greeting: greeting, initials: initials, avatarUrl: '' };
   }
 
   function renderPersonalization(session) {
@@ -611,9 +614,63 @@
     });
     document.querySelectorAll('[data-user-avatar]').forEach(function (avatar) {
       avatar.hidden = !user;
-      avatar.textContent = user ? profile.initials : '';
+      avatar.textContent = user && !profile.avatarUrl ? profile.initials : '';
+      avatar.classList.toggle('has-image', Boolean(user && profile.avatarUrl));
+      avatar.style.backgroundImage = user && profile.avatarUrl ? 'url("' + profile.avatarUrl.replace(/"/g, '%22') + '")' : '';
       avatar.setAttribute('aria-label', user && profile.name ? 'משתמש: ' + profile.name : 'משתמש מחובר');
     });
+    document.querySelectorAll('[data-cloud-account-open]').forEach(function (button) {
+      var icon = button.querySelector('[data-account-icon]');
+      if (icon) icon.hidden = Boolean(user);
+    });
+  }
+
+  function adaptiveHomeContext(trips) {
+    var shared = window.TravelMateUserProfile;
+    if (shared && typeof shared.selectHomeContext === 'function') return shared.selectHomeContext(trips || [], new Date());
+    return { type: 'empty', trip: null };
+  }
+
+  function renderAdaptiveHome(trips) {
+    var host = document.querySelector('[data-home-personal-summary]');
+    if (!host) return;
+    var user = currentSession && currentSession.user;
+    host.hidden = !user;
+    if (!user) return;
+    var profile = personalizedUser(user);
+    var context = adaptiveHomeContext(trips || Array.from(renderedTrips.values()));
+    var greeting = host.querySelector('[data-home-greeting]');
+    var kicker = host.querySelector('[data-home-context-kicker]');
+    var copy = host.querySelector('[data-home-context]');
+    var action = host.querySelector('[data-home-context-action]');
+    if (greeting) greeting.textContent = profile.greeting + (profile.firstName ? ', ' + profile.firstName : '');
+    if (!kicker || !copy || !action) return;
+    var trip = context.trip;
+    if (context.type === 'current' && trip) {
+      kicker.textContent = 'הטיול שלך עכשיו';
+      copy.textContent = 'הטיול ל־' + trip.city + ' מתקיים עכשיו' + (context.daysRemaining ? ' · נשארו ' + context.daysRemaining + ' ימים' : ' · זה היום האחרון') + '.';
+      action.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
+      action.innerHTML = 'חזרה לטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
+      return;
+    }
+    if (context.type === 'upcoming' && trip) {
+      kicker.textContent = 'הטיול הבא';
+      copy.textContent = 'הטיול ל־' + trip.city + ' מתחיל ' + (context.daysUntil === 1 ? 'מחר' : 'בעוד ' + context.daysUntil + ' ימים') + '.';
+      action.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
+      action.innerHTML = 'להמשך התכנון <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
+      return;
+    }
+    if (context.type === 'recent' && trip) {
+      kicker.textContent = 'חזרת מהטיול';
+      copy.textContent = 'הטיול האחרון ל־' + trip.city + ' הסתיים ' + (context.daysAgo === 1 ? 'אתמול' : 'לפני ' + context.daysAgo + ' ימים') + '. אפשר להשלים זיכרונות ופרטים שנשארו.';
+      action.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
+      action.innerHTML = 'פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
+      return;
+    }
+    kicker.textContent = 'היעד הבא מתחיל כאן';
+    copy.textContent = 'אין כרגע טיול אישי פעיל. אפשר לבחור יעד חדש ולהתחיל לתכנן.';
+    action.href = '#active-trips';
+    action.innerHTML = 'לטיולים שלי <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
   }
 
   function setSession(session) {
@@ -622,6 +679,7 @@
     var profile = personalizedUser(user);
     document.body.classList.toggle('is-authenticated', Boolean(session));
     renderPersonalization(session);
+    renderAdaptiveHome(Array.from(renderedTrips.values()));
     window.dispatchEvent(new CustomEvent('travelmate:home-auth', { detail: { authenticated: Boolean(session) } }));
     if (passwordChangeMode && session) return;
     authForm.hidden = Boolean(session);
@@ -863,5 +921,10 @@
       return;
     }
     setSession(session);
+  });
+  window.addEventListener('travelmate:user-profile-ready', function () {
+    if (!currentSession) return;
+    renderPersonalization(currentSession);
+    renderAdaptiveHome(Array.from(renderedTrips.values()));
   });
 })();
