@@ -142,6 +142,45 @@ function availableMinutesUntilNextFixed(trip,now,bufferMinutes){
   var current=moment.getHours()*60+moment.getMinutes();
   return Math.max(0,next.start-current-Number(bufferMinutes||30))
 }
+function estimateNearbyVisitMinutes(place){
+  var value=String(place&&(place.category||place.type)||'').toLowerCase();
+  if(/cafe|coffee|bakery|קפה|מאפ/.test(value))return 35;
+  if(/restaurant|food|מסעד|אוכל/.test(value))return 60;
+  if(/supermarket|market|shop|mall|shopping|סופר|שוק|קניון|קניות/.test(value))return 45;
+  if(/museum|gallery|מוזיא|גלר/.test(value))return 75;
+  if(/park|garden|view|historic|attraction|tourism|פארק|גן|תצפ|היסטור|אטרק/.test(value))return 60;
+  return 50
+}
+function contextualNearbyFit(place,request){
+  request=request||{};
+  if(!request.userInvoked)return null;
+  var origin={lat:Number(request.lat),lon:Number(request.lon)},distanceMeters=Number(place&&place.distance);
+  var distance=Number.isFinite(distanceMeters)&&distanceMeters>=0?distanceMeters/1000:distanceKm(origin,place);
+  if(distance===null||!Number.isFinite(distance))return null;
+  var toPlace=estimateTravelMinutes(origin,Object.assign({},place||{},{travelMode:place&&place.travelMode||'auto'}));
+  if(!toPlace)return null;
+  var visitMinutes=estimateNearbyVisitMinutes(place),onwardMinutes=0;
+  var next=request.nextFixedActivity&&request.nextFixedActivity.record;
+  if(next){
+    var onward=estimateTravelMinutes(place,next);
+    onwardMinutes=onward?onward.minutes:Math.max(10,toPlace.minutes)
+  }
+  var totalMinutes=toPlace.minutes+visitMinutes+onwardMinutes;
+  var available=Number(request.availableMinutes),hasLimit=Number.isFinite(available)&&available>=0;
+  var slack=hasLimit?available-totalMinutes:null,fit=!hasLimit||slack>=0;
+  var score=(fit?1000:0)-toPlace.minutes*3-distance*12-Math.max(0,visitMinutes-45)-(hasLimit?Math.abs(slack)*.12:0);
+  return Object.freeze({
+    fit:fit,
+    score:Math.round(score*10)/10,
+    distanceKm:distance,
+    travelMinutes:toPlace.minutes,
+    visitMinutes:visitMinutes,
+    onwardMinutes:onwardMinutes,
+    totalMinutes:totalMinutes,
+    availableMinutes:hasLimit?available:null,
+    slackMinutes:slack
+  })
+}
 function contextualRadiusMeters(availableMinutes){
   var minutesAvailable=Number(availableMinutes);
   if(!Number.isFinite(minutesAvailable)||minutesAvailable<=0)return 800;
@@ -198,6 +237,8 @@ window.TravelMateTripContext=Object.freeze({
   transitionAssessmentsForDate:transitionAssessmentsForDate,
   nextFixedActivity:nextFixedActivity,
   availableMinutesUntilNextFixed:availableMinutesUntilNextFixed,
+  estimateNearbyVisitMinutes:estimateNearbyVisitMinutes,
+  contextualNearbyFit:contextualNearbyFit,
   contextualRadiusMeters:contextualRadiusMeters,
   freeTimeWindow:freeTimeWindow,
   buildNearbyRequest:buildNearbyRequest
