@@ -76,3 +76,99 @@ html[data-theme="dark"] .settings-accent-picker button{
 .settings-accent-picker button.active span{color:var(--accent-swatch)}
 html[data-theme="dark"] .settings-row-accent>i{color:#f7fafa}
 html[data-theme="dark"] .security-center-launcher{color:#f7fafa;-webkit-text-fill-color:#f7fafa}
+
+
+/* 2.1 Profile Lite settings */
+.security-profile{
+  display:grid;
+  gap:14px;
+  margin-top:14px;
+  padding:18px;
+  border:1px solid rgba(34,112,86,.22);
+  border-radius:20px;
+  background:var(--tm-family-nested);
+  box-shadow:0 12px 30px rgba(20,75,57,.08)
+}
+.security-profile-head{
+  display:flex;
+  align-items:center;
+  gap:12px
+}
+.security-profile-head>div{
+  min-width:0;
+  display:grid;
+  gap:2px
+}
+.security-profile-head small,
+.security-profile-head span,
+.security-profile>p{
+  color:var(--tm-family-muted)
+}
+.security-profile-head strong,
+.security-profile-head span{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.security-profile-avatar{
+  width:52px;
+  height:52px;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border-radius:50%;
+  background:var(--tm-brand-primary,#147D92);
+  background-position:center;
+  background-size:cover;
+  color:var(--tm-text-on-brand,#fff);
+  font-weight:850
+}
+.security-profile-avatar.has-image{
+  color:transparent;
+  text-indent:-9999px
+}
+.security-profile form{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;
+  gap:10px
+}
+.security-profile form[hidden]{display:none}
+.security-profile label{
+  min-width:0;
+  display:grid;
+  gap:6px;
+  color:var(--tm-family-text);
+  font-weight:750
+}
+.security-profile input{
+  width:100%;
+  min-height:44px;
+  box-sizing:border-box;
+  padding:0 12px;
+  border:1px solid rgba(34,112,86,.24);
+  border-radius:12px;
+  background:var(--tm-family-control);
+  color:var(--tm-family-text);
+  font:inherit
+}
+.security-profile form button{
+  min-height:44px;
+  padding:0 14px;
+  border:1px solid var(--tm-brand-primary,#147D92);
+  border-radius:12px;
+  background:var(--tm-brand-primary,#147D92);
+  color:var(--tm-text-on-brand,#fff);
+  font:inherit;
+  font-weight:800
+}
+.security-profile>p{
+  margin:0;
+  font-size:.82rem;
+  line-height:1.45
+}
+@media(max-width:680px){
+  .security-profile form{grid-template-columns:1fr}
+  .security-profile form button{width:100%}
+}
