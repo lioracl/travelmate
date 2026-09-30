@@ -34,6 +34,12 @@ function navigationUrl(record,trip){
 function scheduleMode(record){
   var helper=context();return helper&&helper.scheduleMode?helper.scheduleMode(record):'planned'
 }
+function dayMode(trip,date){
+  var helper=context();return helper&&helper.dayMode?helper.dayMode(trip,date):'unclassified'
+}
+function dayModeLabel(mode){
+  return mode==='scheduled'?'יום מתוזמן':mode==='balanced'?'יום מאוזן':mode==='flexible'?'יום גמיש':''
+}
 function ensureToolbar(plan,trip){
   var toolbar=plan.querySelector('.planner-toolbar'),actions=toolbar&&toolbar.querySelector('.planner-toolbar-actions');
   if(!toolbar||!actions||toolbar.dataset.planUxToolbar==='true')return;
@@ -144,9 +150,9 @@ function enhanceRow(row,trip,statuses){
   var record=recordFor(row,trip),actions=row.querySelector('.activity-buttons,.saved-place-actions');if(!record||!actions)return;
   if(row.dataset.planUxEnhanced!=='true'){
     row.dataset.planUxEnhanced='true';row.classList.add('tm-plan-item');row.dataset.planExpanded='false';
-    row.dataset.planScheduleMode=scheduleMode(record);
     makeActivityMedia(row,record);addLocation(row,record);addSecondaryDetails(row,record);makeNavigation(actions,record,trip);makeToggle(row,actions)
   }
+  row.dataset.planScheduleMode=scheduleMode(record);
   syncDone(row);
   var status=statuses[recordKind(row)+':'+record.id];addStatus(row,status&&status.label,status&&status.type)
 }
@@ -165,7 +171,12 @@ function enhanceDay(card,index,trip,today){
   if(summary)summary.textContent=total?(done+' מתוך '+total+' הושלמו'+(done<total?' · '+(total-done)+' נותרו':'')):'אין פעילויות ביום הזה';
   if(heading){
     var meta=heading.querySelector('.tm-plan-day-kind');if(!meta){meta=document.createElement('span');meta.className='tm-plan-day-kind';heading.querySelector('div').appendChild(meta)}
-    meta.textContent=date===today&&card.classList.contains('tm-plan-day-current')?'היום':date<today?'עבר':'עתידי'
+    meta.textContent=date===today&&card.classList.contains('tm-plan-day-current')?'היום':date<today?'עבר':'עתידי';
+    var mode=dayMode(trip,date),modeText=dayModeLabel(mode),modeBadge=heading.querySelector('.tm-plan-day-mode');
+    if(modeText){
+      if(!modeBadge){modeBadge=document.createElement('span');modeBadge.className='tm-plan-day-mode';heading.querySelector('div').appendChild(modeBadge)}
+      modeBadge.textContent=modeText;modeBadge.dataset.dayMode=mode
+    }else if(modeBadge)modeBadge.remove()
   }
   var content=card.querySelector(':scope > div'),empty=content&&content.querySelector('.tm-plan-empty-day');
   if(!total&&content){
