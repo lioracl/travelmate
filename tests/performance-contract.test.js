@@ -383,7 +383,7 @@ test('past-day enhancement avoids rewriting identical DOM and observer self-loop
 
 test('Overview defers trip intelligence until idle or explicit Overview intent', () => {
   assert.match(appScript, /overview:\{styles:\['weather-widget\.css','trip-intelligence\.css'\],scripts:\['weather-widget\.js'\]\}/);
-  assert.match(appScript, /intelligence:\{styles:\[\],scripts:\['trip-intelligence\.js'\]\}/);
+  assert.match(source, /intelligence:\{styles:\[\],scripts:\['learned-preferences\.js','trip-intelligence\.js'\]\}/);
   assert.match(appScript, /if\(initialView==='overview'\)scheduleIdleFeature\('intelligence',250\)/);
   assert.match(appScript, /if\(link\.dataset\.view==='overview'\)loadFeature\('intelligence'\)/);
 });
