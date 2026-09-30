@@ -1102,10 +1102,34 @@
     return client.auth.updateUser({ password: password });
   }
 
-  async function updateProfile(displayName) {
+  async function updateProfile(profile) {
     var client = await getClient();
-    var normalizedName = String(displayName || '').trim().replace(/\s+/g, ' ').slice(0, 80);
-    return client.auth.updateUser({ data: { display_name: normalizedName } });
+    var isLegacyName = typeof profile === 'string' || profile == null;
+    var input = isLegacyName ? { displayName: profile } : (profile || {});
+    var normalizedName = String(input.displayName || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    var payload = { display_name: normalizedName };
+    if (!isLegacyName) {
+      var profileHelper = window.TravelMateUserProfile;
+      var styles = profileHelper && Array.isArray(profileHelper.TRAVEL_STYLES) ? profileHelper.TRAVEL_STYLES : ['balanced','culture','food','nature','city'];
+      var paces = profileHelper && Array.isArray(profileHelper.TRAVEL_PACES) ? profileHelper.TRAVEL_PACES : ['relaxed','balanced','active'];
+      var preferences = profileHelper && Array.isArray(profileHelper.TRAVEL_PREFERENCES) ? profileHelper.TRAVEL_PREFERENCES : ['culture','food','nature','architecture','history','shopping','nightlife','local'];
+      function choice(value, allowed) {
+        var candidate = String(value || '').trim().toLowerCase();
+        return allowed.indexOf(candidate) !== -1 ? candidate : '';
+      }
+      function list(value, allowed) {
+        var result = [];
+        (Array.isArray(value) ? value : []).forEach(function (item) {
+          var candidate = choice(item, allowed);
+          if (candidate && result.indexOf(candidate) === -1 && result.length < 6) result.push(candidate);
+        });
+        return result;
+      }
+      payload.travel_style = choice(input.travelStyle, styles);
+      payload.travel_pace = choice(input.travelPace, paces);
+      payload.travel_preferences = list(input.travelPreferences, preferences);
+    }
+    return client.auth.updateUser({ data: payload });
   }
 
   function authRedirectUrl(hash) {
