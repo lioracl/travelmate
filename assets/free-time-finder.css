@@ -1,0 +1,17 @@
+/* 2.3 Free Time Finder */
+.tm-free-time-panel{margin:14px 0;padding:16px;border:1px solid var(--tm-border,rgba(255,255,255,.24));border-radius:18px;background:var(--tm-surface,rgba(255,255,255,.12));box-shadow:0 12px 28px rgba(0,0,0,.08)}
+.tm-free-time-panel[hidden]{display:none}
+.tm-free-time-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.tm-free-time-head small{font-weight:700;opacity:.68}
+.tm-free-time-head h3{margin:.2rem 0 .25rem;font-size:1.08rem}
+.tm-free-time-head p{margin:0;max-width:720px;font-size:.9rem;opacity:.78}
+.tm-free-time-head button{width:38px;height:38px;border-radius:12px;border:1px solid currentColor;background:transparent;color:inherit}
+.tm-free-time-results{display:grid;gap:12px;margin-top:14px}
+.tm-free-time-day{display:grid;gap:8px}
+.tm-free-time-day h4{margin:0;font-size:.95rem}
+.tm-free-time-list{display:flex;flex-wrap:wrap;gap:8px}
+.tm-free-time-window{display:grid;grid-template-columns:auto auto 18px;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--tm-border,rgba(255,255,255,.24));border-radius:12px;background:var(--tm-control,rgba(255,255,255,.1));color:inherit;text-align:start}
+.tm-free-time-window span{font-size:.82rem;opacity:.72}
+.tm-free-time-window:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.tm-free-time-empty{margin:0;opacity:.75}
+@media(max-width:640px){.tm-free-time-head{gap:10px}.tm-free-time-list{display:grid;grid-template-columns:1fr 1fr}.tm-free-time-window{grid-template-columns:1fr auto}.tm-free-time-window span{grid-column:1/-1}.tm-free-time-window i{grid-row:1;grid-column:2}}
