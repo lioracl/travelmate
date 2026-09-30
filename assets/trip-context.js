@@ -20,7 +20,13 @@ function recordsForDate(trip,date){
     .concat((trip&&trip.savedPlaces||[]).map(function(item){return{kind:'place',record:item}}))
     .filter(function(entry){return String(entry.record.date||'')===String(date||'')})
 }
+function explicitDayMode(trip,date){
+  var value=String(trip&&trip.dayModes&&trip.dayModes[date]||'').toLowerCase();
+  return value==='flexible'||value==='balanced'||value==='scheduled'?value:''
+}
 function dayMode(trip,date){
+  var override=explicitDayMode(trip,date);
+  if(override)return override;
   var records=recordsForDate(trip,date),explicit=records.filter(function(entry){return scheduleMode(entry.record)!=='planned'});
   if(!explicit.length)return'unclassified';
   var fixed=explicit.filter(function(entry){return scheduleMode(entry.record)==='fixed'}).length;
@@ -65,6 +71,7 @@ window.TravelMateTripContext=Object.freeze({
   localDateKey:localDateKey,
   scheduleMode:scheduleMode,
   recordsForDate:recordsForDate,
+  explicitDayMode:explicitDayMode,
   dayMode:dayMode,
   nextFixedActivity:nextFixedActivity,
   availableMinutesUntilNextFixed:availableMinutesUntilNextFixed,
