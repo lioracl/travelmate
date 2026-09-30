@@ -181,7 +181,7 @@ function addTransition(row,transition){
   line.className='tm-plan-transition'+(transition.risk?' is-risk':' is-ok');
   line.dataset.transitionSource=transition.source||'estimate';
   var prefix=transition.source==='manual'?'זמן מעבר':'הערכת מעבר';
-  var text=prefix+' · כ־'+transition.travelMinutes+' דק׳ · '+travelModeLabel(transition.mode);
+  var text=prefix+' · כ־'+transition.travelMinutes+' דק׳ · '+travelModeLabel(transition.mode)+(transition.bufferMinutes?' + '+transition.bufferMinutes+' דק׳ מרווח':'');
   if(transition.risk)text+=' · חסרות כ־'+transition.shortfallMinutes+' דק׳';
   else if(transition.latestDepartureTime)text+=' · כדאי לצאת עד '+transition.latestDepartureTime;
   else text+=' · נשארו '+transition.gapMinutes+' דק׳ בין הפעילויות';
