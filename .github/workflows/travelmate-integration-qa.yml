@@ -25,6 +25,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Run contract and regression tests
+        run: node --test tests/*.test.js
+
       - name: Install Playwright
         run: |
           npm install --no-save @playwright/test@1.55.0
