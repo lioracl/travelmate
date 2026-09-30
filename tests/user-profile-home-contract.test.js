@@ -103,6 +103,7 @@ test('Home exposes one profile summary and reuses the existing account/profile o
   assert.match(home, /renderAdaptiveHome/);
   assert.match(home, /data-cloud-profile-form/);
   assert.match(app, /user-profile\.js/);
+  assert.match(app, /learned-preferences\.js/);
   assert.match(sw, /\.\/assets\/user-profile\.js/);
   assert.match(settings, /data-security-profile/);
   assert.match(settings, /data-security-profile-form/);
