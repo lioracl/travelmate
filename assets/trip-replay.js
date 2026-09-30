@@ -34,6 +34,47 @@ function expenseCurrency(current){
   (current.expenses||[]).forEach(function(item){var code=clean(item&&item.currency)||'EUR';counts[code]=(counts[code]||0)+1});
   return Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]})[0]||'EUR'
 }
+function inclusiveDays(start,end){
+  var from=localDate(start),to=localDate(end);
+  if(!from||!to)return null;
+  var startDate=new Date(from+'T12:00:00'),endDate=new Date(to+'T12:00:00');
+  if(Number.isNaN(startDate.getTime())||Number.isNaN(endDate.getTime())||endDate<startDate)return null;
+  return Math.round((endDate-startDate)/86400000)+1
+}
+function expenseTotalsByCurrency(current){
+  var totals=Object.create(null),invalid=0;
+  (current.expenses||[]).forEach(function(item){
+    var amount=Number(item&&item.amount),currency=clean(item&&item.currency).toUpperCase();
+    if(!Number.isFinite(amount)||amount<0||!/^[A-Z]{3}$/.test(currency)){invalid+=1;return}
+    totals[currency]=(totals[currency]||0)+amount
+  });
+  return Object.keys(totals).sort().map(function(currency){return{currency:currency,amount:Number(totals[currency].toFixed(2))}})
+}
+function analyticsFor(current,done,planned){
+  var tripDays=Number(current&&current.days);
+  if(!Number.isFinite(tripDays)||tripDays<=0)tripDays=inclusiveDays(current&&current.start,current&&current.end);
+  var completionRate=planned>0?Math.round((done/planned)*100):null;
+  var byDate=Object.create(null);
+  done.forEach(function(item){if(item.date)byDate[item.date]=(byDate[item.date]||0)+1});
+  var busiestDates=Object.keys(byDate).sort(function(a,b){return byDate[b]-byDate[a]||a.localeCompare(b)});
+  var expenseTotals=expenseTotalsByCurrency(current||{});
+  var expenseCount=Array.isArray(current&&current.expenses)?current.expenses.length:0;
+  var invalidExpenseCount=Math.max(0,expenseCount-expenseTotals.reduce(function(sum,item){return sum+1},0));
+  var coverage={
+    dates:Boolean(current&&current.start&&current.end),
+    completion:planned>0,
+    expenses:expenseCount===0||invalidExpenseCount===0,
+    memories:Array.isArray(current&&current.memories)
+  };
+  return Object.freeze({
+    tripDays:tripDays===null?{value:null,status:'unknown'}:{value:tripDays,status:'confirmed'},
+    completionRate:completionRate===null?{value:null,status:'unknown'}:{value:completionRate,status:'confirmed'},
+    busiestDay:busiestDates.length?{date:busiestDates[0],completed:byDate[busiestDates[0]],status:'confirmed'}:{date:null,completed:null,status:'unknown'},
+    expenseTotals:Object.freeze(expenseTotals),
+    expenseStatus:expenseCount===0?'unknown':invalidExpenseCount?'unknown':'confirmed',
+    coverage:Object.freeze(coverage)
+  })
+}
 function safeMoney(amount,currency){
   try{return new Intl.NumberFormat('he-IL',{style:'currency',currency:currency,maximumFractionDigits:2}).format(amount)}
   catch(error){return amount+' '+currency}
@@ -56,6 +97,7 @@ function buildReplay(current){
     expenseTotal:total,
     expenseCurrency:currency,
     expenseLabel:total?safeMoney(total,currency):'',
+    analytics:analyticsFor(current,done,dataPlannedCount(current)),
     days:dates.map(function(date){return Object.freeze({date:date,done:byDate[date].done.slice(),memories:byDate[date].memories.slice()})})
   })
 }
@@ -85,7 +127,7 @@ function ensureCard(){
   var section=document.getElementById('memories');if(!section)return null;
   var existing=section.querySelector('[data-trip-replay]');if(existing)return existing;
   var card=document.createElement('article');card.className='trip-replay-card';card.dataset.tripReplay='';
-  card.innerHTML='<header class="trip-replay-head"><div><small>Trip Replay · 2.4</small><h2>הטיול שלך, לפי מה שבאמת קרה</h2><p data-trip-replay-summary></p></div><button type="button" data-trip-replay-ai><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>סיפור עם Mate</span></button></header><div class="trip-replay-stats" data-trip-replay-stats></div><div class="trip-replay-timeline" data-trip-replay-timeline></div>';
+  card.innerHTML='<header class="trip-replay-head"><div><small>Trip Replay · 2.4</small><h2>הטיול שלך, לפי מה שבאמת קרה</h2><p data-trip-replay-summary></p></div><button type="button" data-trip-replay-ai><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>סיפור עם Mate</span></button></header><div class="trip-replay-stats" data-trip-replay-stats></div><div class="trip-replay-analytics" data-trip-replay-analytics aria-label="נתוני טיול"></div><div class="trip-replay-timeline" data-trip-replay-timeline></div>';
   var summary=section.querySelector('.trip-summary-card');if(summary&&summary.parentNode)summary.parentNode.insertBefore(card,summary);else section.appendChild(card);
   card.querySelector('[data-trip-replay-ai]').addEventListener('click',function(){
     var current=trip(),data=buildReplay(current||{});
@@ -95,8 +137,14 @@ function ensureCard(){
 }
 function render(){
   var current=trip(),card=ensureCard();if(!current||!card)return;
-  var data=buildReplay(current),summary=card.querySelector('[data-trip-replay-summary]'),stats=card.querySelector('[data-trip-replay-stats]'),timeline=card.querySelector('[data-trip-replay-timeline]');
+  var data=buildReplay(current),summary=card.querySelector('[data-trip-replay-summary]'),stats=card.querySelector('[data-trip-replay-stats]'),timeline=card.querySelector('[data-trip-replay-timeline]'),analytics=card.querySelector('[data-trip-replay-analytics]');
   summary.textContent=narrative(data);
+  if(analytics){
+    var tripDays=data.analytics.tripDays.value===null?'לא ידוע':data.analytics.tripDays.value+' ימים';
+    var completion=data.analytics.completionRate.value===null?'אין מספיק נתונים':data.analytics.completionRate.value+'%';
+    var busiest=data.analytics.busiestDay.date?formatDate(data.analytics.busiestDay.date)+' · '+data.analytics.busiestDay.completed+' שהושלמו':'אין מספיק נתונים';
+    analytics.innerHTML='<div><small>משך הטיול</small><strong>'+escapeHtml(tripDays)+'</strong></div><div><small>השלמת התוכנית</small><strong>'+escapeHtml(completion)+'</strong></div><div><small>היום העמוס ביותר</small><strong>'+escapeHtml(busiest)+'</strong></div><div><small>מצב נתוני הוצאות</small><strong>'+escapeHtml(data.analytics.expenseStatus==='confirmed'?'מאומת':data.analytics.expenseStatus==='unknown'?'חלקי/לא ידוע':'לא ידוע')+'</strong></div>';
+  }
   var statItems=[
     ['fa-circle-check','הושלמו',String(data.completed)],
     ['fa-calendar-check','תוכננו',String(data.planned)],

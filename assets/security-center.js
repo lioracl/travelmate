@@ -44,7 +44,7 @@
     backdrop.innerHTML = '<div class="security-center" role="dialog" aria-modal="true" aria-labelledby="security-title">' +
       '<header><div><small>התאמה אישית, אבטחה וניהול המכשיר</small><h2 id="security-title">הגדרות</h2></div><button type="button" data-security-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header>' +
       '<p class="security-message" data-security-message></p>' +
-      '<section class="security-profile" data-security-profile><div class="security-profile-head"><span class="security-profile-avatar" data-security-profile-avatar aria-hidden="true"></span><div><small>הפרופיל שלך</small><strong data-security-profile-name>TravelMate</strong><span data-security-profile-email></span></div></div><form data-security-profile-form><label><span>שם תצוגה</span><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></label><button type="submit"><i class="fa-solid fa-user-check"></i> שמירת פרופיל</button></form><p data-security-profile-note></p></section>' +
+      '<section class="security-profile" data-security-profile><div class="security-profile-head"><span class="security-profile-avatar" data-security-profile-avatar aria-hidden="true"></span><div><small>הפרופיל שלך</small><strong data-security-profile-name>TravelMate</strong><span data-security-profile-email></span></div></div><form data-security-profile-form><label><span>שם תצוגה</span><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></label><div class="security-profile-preferences"><strong>סגנון הטיול</strong><div class="settings-options" role="group" aria-label="סגנון הטיול"><button type="button" data-travel-style="balanced">מאוזן</button><button type="button" data-travel-style="culture">תרבות</button><button type="button" data-travel-style="food">אוכל</button><button type="button" data-travel-style="nature">טבע</button><button type="button" data-travel-style="city">עיר</button></div><strong>קצב הטיול</strong><div class="settings-options" role="group" aria-label="קצב הטיול"><button type="button" data-travel-pace="relaxed">רגוע</button><button type="button" data-travel-pace="balanced">מאוזן</button><button type="button" data-travel-pace="active">עמוס</button></div><strong>תחומי עניין</strong><div class="settings-options" role="group" aria-label="תחומי עניין"><button type="button" data-travel-preference="culture">תרבות</button><button type="button" data-travel-preference="food">אוכל</button><button type="button" data-travel-preference="nature">טבע</button><button type="button" data-travel-preference="architecture">אדריכלות</button><button type="button" data-travel-preference="history">היסטוריה</button><button type="button" data-travel-preference="shopping">קניות</button><button type="button" data-travel-preference="nightlife">חיי לילה</button><button type="button" data-travel-preference="local">מקומי</button></div></div><button type="submit"><i class="fa-solid fa-user-check"></i> שמירת פרופיל והעדפות</button></form><p data-security-profile-note></p></section>' +
       '<section class="security-preferences"><h3>העדפות האפליקציה</h3><div class="settings-list">' +
       '<div class="settings-row"><i class="fa-solid fa-language" aria-hidden="true"></i><span><strong>שפת האפליקציה</strong><small>בחר את שפת הממשק בכל המכשיר הזה</small></span><div class="settings-options" role="group" aria-label="שפת האפליקציה"><button type="button" data-language-choice="he">עברית</button><button type="button" data-language-choice="en">English</button></div></div>' +
       '<div class="settings-row"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span><strong>תצוגת האפליקציה</strong><small>בחר מצב בהיר או כהה</small></span><div class="settings-options" role="group" aria-label="תצוגת האפליקציה"><button type="button" data-theme-choice="light"><i class="fa-regular fa-sun"></i> בהיר</button><button type="button" data-theme-choice="dark"><i class="fa-regular fa-moon"></i> כהה</button></div></div>' +
@@ -223,8 +223,16 @@
     avatar.classList.toggle('has-image', Boolean(user && profile.avatarUrl));
     avatar.style.backgroundImage = user && profile.avatarUrl ? 'url("' + profile.avatarUrl.replace(/"/g, '%22') + '")' : '';
     form.hidden = !user;
-    if (user) form.elements.displayName.value = profile.name || '';
-    note.textContent = user ? 'השם והאווטר משמשים בברכה האישית ובמסכי TravelMate.' : 'העדפות תצוגה עדיין נשמרות במכשיר גם בלי חשבון.';
+    if (user) {
+      form.elements.displayName.value = profile.name || '';
+      form.dataset.travelStyle = profile.travelStyle || '';
+      form.dataset.travelPace = profile.travelPace || '';
+      document.querySelectorAll('[data-travel-style]').forEach(function(button){ var selected=button.dataset.travelStyle===profile.travelStyle; button.classList.toggle('active',selected); button.setAttribute('aria-pressed',String(selected)); });
+      document.querySelectorAll('[data-travel-pace]').forEach(function(button){ var selected=button.dataset.travelPace===profile.travelPace; button.classList.toggle('active',selected); button.setAttribute('aria-pressed',String(selected)); });
+      var selectedPreferences=Array.isArray(profile.travelPreferences)?profile.travelPreferences:[];
+      document.querySelectorAll('[data-travel-preference]').forEach(function(button){ var selected=selectedPreferences.indexOf(button.dataset.travelPreference)!==-1; button.classList.toggle('active',selected); button.setAttribute('aria-pressed',String(selected)); });
+    }
+    note.textContent = user ? 'העדפות אלה הן העדפות שהגדרת בעצמך. Mate ישתמש בהן רק כהעדפות מוצהרות.' : 'העדפות תצוגה עדיין נשמרות במכשיר גם בלי חשבון.';
   }
 
   async function saveProfile(event) {
@@ -233,10 +241,14 @@
     var form = event.currentTarget;
     var button = form.querySelector('button[type="submit"]');
     var displayName = String(form.elements.displayName.value || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    var travelStyle = (form.dataset.travelStyle || '');
+    var travelPace = (form.dataset.travelPace || '');
+    var travelPreferences = [];
+    form.querySelectorAll('[data-travel-preference].active').forEach(function(button){ travelPreferences.push(button.dataset.travelPreference); });
     button.disabled = true;
-    message('שומר את הפרופיל…');
+    message('שומר את הפרופיל וההעדפות…');
     try {
-      var result = await cloud.updateProfile(displayName);
+      var result = await cloud.updateProfile({ displayName: displayName, travelStyle: travelStyle, travelPace: travelPace, travelPreferences: travelPreferences });
       if (result.error) throw result.error;
       if (result.data && result.data.user) currentSession.user = result.data.user;
       renderProfile();
@@ -353,6 +365,24 @@
       if (accentChoice && window.TravelMateTheme && window.TravelMateTheme.setAccent) {
         window.TravelMateTheme.setAccent(accentChoice.dataset.accentChoice);
         syncPreferences();
+      }
+      var travelStyleChoice = event.target.closest('[data-travel-style]');
+      if (travelStyleChoice) {
+        var profileForm = document.querySelector('[data-security-profile-form]');
+        if (profileForm) profileForm.dataset.travelStyle = travelStyleChoice.dataset.travelStyle;
+        document.querySelectorAll('[data-travel-style]').forEach(function(button){ var selected=button===travelStyleChoice; button.classList.toggle('active',selected); button.setAttribute('aria-pressed',String(selected)); });
+      }
+      var travelPaceChoice = event.target.closest('[data-travel-pace]');
+      if (travelPaceChoice) {
+        var profileFormPace = document.querySelector('[data-security-profile-form]');
+        if (profileFormPace) profileFormPace.dataset.travelPace = travelPaceChoice.dataset.travelPace;
+        document.querySelectorAll('[data-travel-pace]').forEach(function(button){ var selected=button===travelPaceChoice; button.classList.toggle('active',selected); button.setAttribute('aria-pressed',String(selected)); });
+      }
+      var travelPreferenceChoice = event.target.closest('[data-travel-preference]');
+      if (travelPreferenceChoice) {
+        var selectedPreference = !travelPreferenceChoice.classList.contains('active');
+        travelPreferenceChoice.classList.toggle('active',selectedPreference);
+        travelPreferenceChoice.setAttribute('aria-pressed',String(selectedPreference));
       }
     });
     document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeDialog(); else trapDialogFocus(event); });
