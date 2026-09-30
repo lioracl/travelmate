@@ -110,3 +110,49 @@ test('Plan exposes an optional day-mode override without replacing automatic inf
   const dayModeCss = css.slice(css.indexOf('/* 2.1 Day Mode Control'));
   assert.doesNotMatch(dayModeCss, /!important/);
 });
+
+
+test('Travel Time estimates transitions only between timed commitments and flags insufficient arrival time', () => {
+  const sandbox = { window: {}, Date, Object, Number, String, Array, Math, Set };
+  vm.runInNewContext(read('assets/trip-context.js'), sandbox);
+  const api = sandbox.window.TravelMateTripContext;
+  const date = '2026-10-10';
+  const trip = {
+    activities: [
+      { id:'a', date, time:'10:00', duration:60, scheduleMode:'fixed', lat:32.0853, lon:34.7818, title:'Museum' },
+      { id:'free', date, time:'11:05', duration:30, scheduleMode:'flexible', lat:32.09, lon:34.79, title:'Coffee' },
+      { id:'b', date, time:'11:15', duration:60, scheduleMode:'fixed', lat:32.1093, lon:34.8555, title:'Tour' }
+    ],
+    savedPlaces: []
+  };
+
+  const estimate = api.estimateTravelMinutes(trip.activities[0], trip.activities[2]);
+  assert.ok(estimate);
+  assert.equal(estimate.source, 'estimate');
+  assert.ok(estimate.minutes > 0);
+  assert.ok(estimate.distanceKm > 0);
+
+  const assessment = api.transitionAssessment(trip.activities[0], trip.activities[2]);
+  assert.equal(assessment.gapMinutes, 15);
+  assert.equal(assessment.risk, true);
+  assert.ok(assessment.shortfallMinutes > 0);
+
+  const map = api.transitionAssessmentsForDate(trip, date);
+  assert.ok(map['activity:b']);
+  assert.equal(map['activity:b'].fromId, 'a');
+  assert.equal(map['activity:b'].risk, true);
+  assert.equal(map['activity:free'], undefined);
+});
+
+test('Travel Time UI remains advisory and introduces no important escalation', () => {
+  const polish = read('assets/plan-ux-polish.js');
+  const css = read('assets/auto-planner.css');
+
+  assert.match(polish, /transitionAssessmentsForDate/);
+  assert.match(polish, /tm-plan-transition/);
+  assert.match(polish, /tm-plan-travel-risk/);
+  assert.match(css, /2\.2 Travel Time \+ Smart Conflicts/);
+
+  const featureCss = css.slice(css.indexOf('/* 2.2 Travel Time + Smart Conflicts'));
+  assert.doesNotMatch(featureCss, /!important/);
+});
