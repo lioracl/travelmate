@@ -525,3 +525,31 @@ body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced .plan
   body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced{grid-template-columns:1fr}
   body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced .planner-window-field{grid-column:auto}
 }
+
+
+/* 2.1 Day Mode Control — explicit override stays compact and optional. */
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-mode-select{
+  min-height:28px;
+  max-width:150px;
+  margin-inline-start:6px;
+  padding:2px 26px 2px 8px;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:999px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-heading);
+  -webkit-text-fill-color:currentColor;
+  font:inherit;
+  font-size:11px;
+  font-weight:750;
+  cursor:pointer
+}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-mode-select:focus-visible{
+  outline:2px solid var(--tm-focus-ring);
+  outline-offset:2px
+}
+@media(max-width:560px){
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-mode-select{
+    max-width:132px;
+    font-size:10px
+  }
+}
