@@ -67,3 +67,21 @@ test('Plan surfaces timing mode and inferred day tone without adding important e
   const featureBlock = css.slice(css.indexOf('/* 2.1 Flexible Planning'));
   assert.doesNotMatch(featureBlock, /!important/);
 });
+
+
+test('Quick Add keeps advanced fields behind explicit progressive disclosure', () => {
+  const planner = read('assets/auto-planner.js');
+  const css = read('assets/auto-planner.css');
+
+  assert.match(planner, /data-planner-details-toggle/);
+  assert.match(planner, /data-planner-details hidden/);
+  assert.match(planner, /function setComposerDetails\(expanded\)/);
+  assert.match(planner, /setComposerDetails\(Boolean\(activity\)\)/);
+  assert.match(planner, /function preferredComposerDate\(\)/);
+  assert.match(planner, /scheduleMode\.value='flexible'/);
+  assert.match(css, /2\.1 Quick Add/);
+  assert.match(css, /planner-composer-advanced\[hidden\]/);
+
+  const quickAddCss = css.slice(css.indexOf('/* 2.1 Quick Add'));
+  assert.doesNotMatch(quickAddCss, /!important/);
+});
