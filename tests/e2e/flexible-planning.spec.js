@@ -145,6 +145,8 @@ test('Quick Add creates a flexible activity with advanced details collapsed by d
     mode: 'flexible'
   });
 
+  const detailsToggle = row.locator('[data-plan-details-toggle]');
+  if (await detailsToggle.count()) await detailsToggle.click();
   await row.locator('[data-edit]').click();
   await expect(form).toBeVisible();
   await expect(form.locator('[data-planner-details-toggle]')).toHaveAttribute('aria-expanded', 'true');
