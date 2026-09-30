@@ -152,6 +152,16 @@
     return String(match[1]).padStart(2, '0') + ':' + match[2];
   }
 
+  function overviewTimingMode(item) {
+    var helper = window.TravelMateTripContext;
+    if (helper && helper.scheduleMode) return helper.scheduleMode(item);
+    var raw = String(item && (item.scheduleMode || item.timingMode || item.flexibility) || '').toLowerCase();
+    if (raw === 'fixed' || raw === 'booked' || raw === 'reservation') return 'fixed';
+    if (raw === 'window' || raw === 'time-window' || raw === 'time_window') return 'window';
+    if (raw === 'flexible' || raw === 'free') return 'flexible';
+    return 'planned';
+  }
+
   function overviewItems(trip) {
     var items = [];
     (trip.activities || []).forEach(function (activity) {
@@ -164,7 +174,7 @@
         duration: Math.max(0, Number(activity.duration || 0)),
         category: activity.category || '',
         location: activity.locationName || activity.address || '',
-        scheduleMode: timingMode(activity)
+        scheduleMode: overviewTimingMode(activity)
       });
     });
     (trip.savedPlaces || []).forEach(function (place) {
@@ -177,7 +187,7 @@
         duration: Math.max(0, Number(place.duration || 0)),
         category: place.category || '',
         location: place.address || place.description || '',
-        scheduleMode: timingMode(place)
+        scheduleMode: overviewTimingMode(place)
       });
     });
     return items.sort(function (a, b) {
