@@ -232,7 +232,13 @@ function enhanceDay(card,index,trip,today){
       modeSelect.addEventListener('change',function(event){event.stopPropagation();saveDayMode(currentTrip()||trip,date,modeSelect.value)});
       heading.appendChild(modeSelect)
     }
-    modeSelect.value=dayModeOverride(trip,date)||'auto'
+    modeSelect.value=dayModeOverride(trip,date)||'auto';
+    var helper=context(),dayTransitions=helper&&helper.transitionAssessmentsForDate?helper.transitionAssessmentsForDate(trip,date):{},riskCount=Object.keys(dayTransitions||{}).filter(function(key){return dayTransitions[key]&&dayTransitions[key].risk}).length;
+    var riskBadge=heading.querySelector('.tm-plan-day-travel-risk');
+    if(riskCount){
+      if(!riskBadge){riskBadge=document.createElement('span');riskBadge.className='tm-plan-day-travel-risk';heading.querySelector('div').appendChild(riskBadge)}
+      riskBadge.textContent='סיכון מעבר · '+riskCount
+    }else if(riskBadge)riskBadge.remove()
   }
   var content=card.querySelector(':scope > div'),empty=content&&content.querySelector('.tm-plan-empty-day');
   if(!total&&content){
