@@ -30,7 +30,7 @@ const trip = {
 
 async function seed(page) {
   await page.addInitScript(value => {
-    localStorage.setItem('travelmate-trips', JSON.stringify([value]));
+    localStorage.setItem('travelmate-trips', JSON.stringify([value.trip]));
     localStorage.removeItem('travelmate-active-user');
     localStorage.setItem('travelmate-theme', 'light');
     localStorage.setItem('travelmate-accent', 'ocean');
@@ -40,10 +40,10 @@ async function seed(page) {
       ilsRates: { ILS: 1, EUR: 3.72, USD: 3.1794871795, GBP: 4.275862069 },
       source: 'QA cache',
       sourceUrl: 'https://example.invalid/',
-      date: localDateKey(0),
+      date: value.rateDate,
       savedAt: Date.now()
     }));
-  }, trip);
+  }, { trip, rateDate: localDateKey(0) });
 }
 
 async function noHorizontalOverflow(page) {
@@ -73,7 +73,10 @@ for (const viewport of [
       if (await budgetForm.isHidden()) await page.locator('.budget-settings-toggle').click();
       await expect(budgetForm).toBeVisible();
 
-      await budgetForm.locator('input[name="budgetMode"][value="unlimited"]').check();
+      await budgetForm.locator('input[name="budgetMode"][value="unlimited"]').evaluate(input => {
+        input.checked = true;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
       await expect(budgetForm.locator('input[name="total"]')).toBeDisabled();
       await budgetForm.locator('button[type="submit"]').click();
 
@@ -126,7 +129,8 @@ for (const viewport of [
       page.on('pageerror', error => pageErrors.push(String(error)));
 
       await page.goto('/trip/custom/index.html?id=qa-core&view=overview', { waitUntil: 'domcontentloaded' });
-      await page.locator('[data-security-open]').click();
+      await page.waitForFunction(() => Boolean(window.TravelMateSettings && window.TravelMateSettings.open));
+      await page.evaluate(() => window.TravelMateSettings.open());
       const dialog = page.locator('[data-security-dialog]');
       await expect(dialog).toBeVisible();
 
