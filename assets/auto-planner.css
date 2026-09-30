@@ -473,3 +473,55 @@ body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-mode{margin-inline-
   body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{grid-template-columns:1fr}
   body.tm-new-design[data-trip-view="plan"] #plan .planner-window-field{grid-column:auto}
 }
+
+
+/* 2.1 Quick Add — keep the common add path lightweight; advanced planning stays one tap away. */
+body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{
+  grid-template-columns:110px 100px minmax(200px,1fr) auto auto;
+  align-items:center
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-details-toggle,
+body.tm-new-design[data-trip-view="plan"] #plan .planner-quick-save{
+  min-height:44px;
+  border-radius:12px;
+  font-weight:800
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-details-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border:1px solid var(--tm-card-control-border);
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
+  -webkit-text-fill-color:currentColor
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:minmax(130px,1fr) minmax(110px,.75fr) minmax(140px,1fr) minmax(180px,1.2fr);
+  gap:8px;
+  min-width:0
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced[hidden]{display:none}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced .planner-window-field{
+  min-width:0
+}
+@media(max-width:850px){
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{grid-template-columns:1fr 1fr}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer input[name="title"]{grid-column:1/-1}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced{
+    grid-column:1/-1;
+    grid-template-columns:1fr 1fr
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced .planner-window-field{grid-column:1/-1}
+}
+@media(max-width:560px){
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{grid-template-columns:1fr 1fr}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer select[name="date"],
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer input[name="time"]{min-width:0}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-details-toggle,
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-quick-save{width:100%}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced{grid-template-columns:1fr}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced .planner-window-field{grid-column:auto}
+}
