@@ -35,6 +35,91 @@ function dayMode(trip,date){
   if(!fixed&&flexible===explicit.length)return'flexible';
   return'balanced'
 }
+function coordinates(record){
+  var lat=Number(record&&(record.lat!==undefined?record.lat:record.latitude));
+  var lon=Number(record&&(record.lon!==undefined?record.lon:record.lng!==undefined?record.lng:record.longitude));
+  if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return null;
+  return{lat:lat,lon:lon}
+}
+function distanceKm(first,second){
+  var a=coordinates(first),b=coordinates(second);
+  if(!a||!b)return null;
+  var toRad=Math.PI/180,dLat=(b.lat-a.lat)*toRad,dLon=(b.lon-a.lon)*toRad;
+  var lat1=a.lat*toRad,lat2=b.lat*toRad;
+  var hav=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return 6371*2*Math.atan2(Math.sqrt(hav),Math.sqrt(Math.max(0,1-hav)))
+}
+function travelMode(record,distance){
+  var raw=String(record&&(record.travelMode||record.transportMode)||'auto').toLowerCase();
+  if(raw==='walk'||raw==='walking'||raw==='foot')return'walk';
+  if(raw==='drive'||raw==='driving'||raw==='car')return'drive';
+  if(raw==='transit'||raw==='public'||raw==='public_transport')return'transit';
+  return Number(distance)<=1.4?'walk':'transit'
+}
+function estimateTravelMinutes(previous,next){
+  var explicit=Number(next&&(next.travelMinutesBefore||next.transitionMinutes||next.travelMinutes));
+  var distance=distanceKm(previous,next),mode=travelMode(next,distance);
+  if(Number.isFinite(explicit)&&explicit>0){
+    return Object.freeze({minutes:Math.max(1,Math.round(explicit)),mode:mode,source:'manual',distanceKm:distance})
+  }
+  if(distance===null)return null;
+  var routeDistance=Math.max(.05,distance*1.25),speed=mode==='walk'?4.5:mode==='drive'?24:16,overhead=mode==='walk'?2:mode==='drive'?5:8;
+  var estimated=Math.max(3,Math.ceil(routeDistance/speed*60+overhead));
+  return Object.freeze({minutes:estimated,mode:mode,source:'estimate',distanceKm:distance})
+}
+function transitionAssessment(previous,next,options){
+  options=options||{};
+  var previousStart=minutes(previous&&previous.time),nextStart=minutes(next&&next.time);
+  if(previousStart===null||nextStart===null)return null;
+  var duration=Math.max(0,Number(previous&&previous.duration||60));
+  var gap=nextStart-(previousStart+duration);
+  var estimate=estimateTravelMinutes(previous,next);
+  if(!estimate)return null;
+  var configured=Number(next&&next.arrivalBufferMinutes),buffer=Number.isFinite(configured)&&configured>=0?configured:Number.isFinite(Number(options.bufferMinutes))?Math.max(0,Number(options.bufferMinutes)):10;
+  var required=estimate.minutes+buffer,shortfall=Math.max(0,required-gap);
+  return Object.freeze({
+    gapMinutes:gap,
+    travelMinutes:estimate.minutes,
+    bufferMinutes:buffer,
+    requiredMinutes:required,
+    shortfallMinutes:shortfall,
+    risk:gap>=0&&shortfall>0,
+    overlap:gap<0,
+    mode:estimate.mode,
+    source:estimate.source,
+    distanceKm:estimate.distanceKm
+  })
+}
+function transitionAssessmentsForDate(trip,date,options){
+  var entries=recordsForDate(trip,date).map(function(entry){
+    return{kind:entry.kind,record:entry.record,start:minutes(entry.record.time)}
+  }).filter(function(entry){
+    var mode=scheduleMode(entry.record);
+    return entry.start!==null&&mode!=='flexible'&&mode!=='window'
+  }).sort(function(a,b){return a.start-b.start});
+  var map=Object.create(null);
+  for(var index=1;index<entries.length;index+=1){
+    var previous=entries[index-1],next=entries[index],assessment=transitionAssessment(previous.record,next.record,options);
+    if(!assessment||assessment.overlap)continue;
+    map[next.kind+':'+String(next.record.id)]=Object.freeze({
+      fromKind:previous.kind,
+      fromId:String(previous.record.id),
+      fromTitle:String(previous.record.title||previous.record.name||'הפעילות הקודמת'),
+      toKind:next.kind,
+      toId:String(next.record.id),
+      gapMinutes:assessment.gapMinutes,
+      travelMinutes:assessment.travelMinutes,
+      bufferMinutes:assessment.bufferMinutes,
+      requiredMinutes:assessment.requiredMinutes,
+      shortfallMinutes:assessment.shortfallMinutes,
+      risk:assessment.risk,
+      mode:assessment.mode,
+      source:assessment.source,
+      distanceKm:assessment.distanceKm
+    })
+  }
+  return map
+}
 function nextFixedActivity(trip,now){
   var moment=now instanceof Date?now:new Date(now||Date.now()),today=localDateKey(moment),current=moment.getHours()*60+moment.getMinutes();
   return recordsForDate(trip,today).map(function(entry){
@@ -73,6 +158,11 @@ window.TravelMateTripContext=Object.freeze({
   recordsForDate:recordsForDate,
   explicitDayMode:explicitDayMode,
   dayMode:dayMode,
+  coordinates:coordinates,
+  distanceKm:distanceKm,
+  estimateTravelMinutes:estimateTravelMinutes,
+  transitionAssessment:transitionAssessment,
+  transitionAssessmentsForDate:transitionAssessmentsForDate,
   nextFixedActivity:nextFixedActivity,
   availableMinutesUntilNextFixed:availableMinutesUntilNextFixed,
   buildNearbyRequest:buildNearbyRequest
