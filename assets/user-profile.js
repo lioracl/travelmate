@@ -12,6 +12,30 @@ function safeAvatarUrl(value){
     return /^https?:$/.test(url.protocol)?url.href:''
   }catch(error){return''}
 }
+var preferenceOptions=Object.freeze({
+  pace:['relaxed','balanced','active'],
+  activityDensity:['light','balanced','dense'],
+  transport:['walking','transit','mixed','car'],
+  tripStyle:['city','culture','nature','food','relaxation','mixed'],
+  interests:['culture','food','nature','history','shopping','nightlife','photography','relaxation']
+});
+function normalizePreferences(value){
+  var source=value&&typeof value==='object'?value:{};
+  function one(key){
+    var candidate=clean(source[key]);
+    return preferenceOptions[key].indexOf(candidate)>=0?candidate:'';
+  }
+  var interests=Array.isArray(source.interests)?source.interests.map(clean).filter(function(item,index,list){
+    return preferenceOptions.interests.indexOf(item)>=0&&list.indexOf(item)===index;
+  }).slice(0,6):[];
+  return Object.freeze({
+    pace:one('pace'),
+    activityDensity:one('activityDensity'),
+    transport:one('transport'),
+    tripStyle:one('tripStyle'),
+    interests:Object.freeze(interests)
+  })
+}
 function greetingAt(value){
   var date=value instanceof Date?value:new Date(value||Date.now());
   var hour=date.getHours();
@@ -26,12 +50,14 @@ function fromUser(user,now){
   var firstName=name?name.split(/\s+/)[0]:'';
   var initials=name?name.split(/\s+/).slice(0,2).map(function(part){return part.charAt(0)}).join('').toUpperCase():(email?email.charAt(0).toUpperCase():'');
   var avatarUrl=safeAvatarUrl(metadata.avatar_url||metadata.picture||metadata.photo_url||'');
+  var preferences=normalizePreferences(metadata.travelmate_preferences);
   return Object.freeze({
     name:name,
     firstName:firstName,
     initials:initials,
     avatarUrl:avatarUrl,
-    greeting:greetingAt(now)
+    greeting:greetingAt(now),
+    preferences:preferences
   })
 }
 function localDateKey(value){
@@ -90,6 +116,7 @@ function selectHomeContext(trips,now){
 
 window.TravelMateUserProfile=Object.freeze({
   fromUser:fromUser,
+  normalizePreferences:normalizePreferences,
   greetingAt:greetingAt,
   localDateKey:localDateKey,
   selectHomeContext:selectHomeContext
