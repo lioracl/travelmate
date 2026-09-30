@@ -1102,10 +1102,38 @@
     return client.auth.updateUser({ password: password });
   }
 
-  async function updateProfile(displayName) {
+  async function updateProfile(displayName, preferences) {
     var client = await getClient();
     var normalizedName = String(displayName || '').trim().replace(/\s+/g, ' ').slice(0, 80);
-    return client.auth.updateUser({ data: { display_name: normalizedName } });
+    var input = preferences && typeof preferences === 'object' ? preferences : {};
+    var allowed = {
+      pace: ['relaxed', 'balanced', 'active'],
+      activityDensity: ['light', 'balanced', 'dense'],
+      transport: ['walking', 'transit', 'mixed', 'car'],
+      tripStyle: ['city', 'culture', 'nature', 'food', 'relaxation', 'mixed'],
+      interests: ['culture', 'food', 'nature', 'history', 'shopping', 'nightlife', 'photography', 'relaxation']
+    };
+    function one(key) {
+      return allowed[key].indexOf(String(input[key] || '')) >= 0 ? String(input[key]) : '';
+    }
+    var interests = Array.isArray(input.interests) ? input.interests.filter(function (item, index, list) {
+      return allowed.interests.indexOf(String(item)) >= 0 && list.indexOf(item) === index;
+    }).slice(0, 6) : [];
+    var normalizedPreferences = {
+      pace: one('pace'),
+      activityDensity: one('activityDensity'),
+      transport: one('transport'),
+      tripStyle: one('tripStyle'),
+      interests: interests
+    };
+    var hasPreference = normalizedPreferences.pace || normalizedPreferences.activityDensity ||
+      normalizedPreferences.transport || normalizedPreferences.tripStyle || interests.length;
+    return client.auth.updateUser({
+      data: {
+        display_name: normalizedName,
+        travelmate_preferences: hasPreference ? normalizedPreferences : null
+      }
+    });
   }
 
   function authRedirectUrl(hash) {
