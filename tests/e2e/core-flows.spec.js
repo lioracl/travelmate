@@ -129,6 +129,8 @@ for (const viewport of [
       page.on('pageerror', error => pageErrors.push(String(error)));
 
       await page.goto('/trip/custom/index.html?id=qa-core&view=overview', { waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => Boolean(window.TravelMateFeatures && window.TravelMateFeatures.load));
+      await page.evaluate(() => window.TravelMateFeatures.load('account'));
       await page.waitForFunction(() => Boolean(window.TravelMateSettings && window.TravelMateSettings.open));
       await page.evaluate(() => window.TravelMateSettings.open());
       const dialog = page.locator('[data-security-dialog]');
