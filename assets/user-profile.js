@@ -17,6 +17,30 @@ function greetingAt(value){
   var hour=date.getHours();
   return hour<5?'לילה טוב':hour<12?'בוקר טוב':hour<17?'צהריים טובים':'ערב טוב'
 }
+var TRAVEL_STYLES=Object.freeze(['balanced','culture','food','nature','city']);
+var TRAVEL_PACES=Object.freeze(['relaxed','balanced','active']);
+var TRAVEL_PREFERENCES=Object.freeze(['culture','food','nature','architecture','history','shopping','nightlife','local']);
+function normalizeChoice(value,allowed){
+  var candidate=clean(value).toLowerCase();
+  return allowed.indexOf(candidate)!==-1?candidate:'';
+}
+function normalizeList(value,allowed,max){
+  var list=Array.isArray(value)?value:[];
+  var result=[];
+  list.forEach(function(item){
+    var candidate=normalizeChoice(item,allowed);
+    if(candidate&&result.indexOf(candidate)===-1&&result.length<(max||6))result.push(candidate)
+  });
+  return result
+}
+function declaredPreferences(user){
+  var metadata=user&&user.user_metadata||{};
+  return Object.freeze({
+    travelStyle:normalizeChoice(metadata.travel_style,TRAVEL_STYLES),
+    travelPace:normalizeChoice(metadata.travel_pace,TRAVEL_PACES),
+    travelPreferences:Object.freeze(normalizeList(metadata.travel_preferences,TRAVEL_PREFERENCES,6))
+  })
+}
 function fromUser(user,now){
   var metadata=user&&user.user_metadata||{};
   var email=clean(user&&user.email);
@@ -26,12 +50,16 @@ function fromUser(user,now){
   var firstName=name?name.split(/\s+/)[0]:'';
   var initials=name?name.split(/\s+/).slice(0,2).map(function(part){return part.charAt(0)}).join('').toUpperCase():(email?email.charAt(0).toUpperCase():'');
   var avatarUrl=safeAvatarUrl(metadata.avatar_url||metadata.picture||metadata.photo_url||'');
+  var preferences=declaredPreferences(user);
   return Object.freeze({
     name:name,
     firstName:firstName,
     initials:initials,
     avatarUrl:avatarUrl,
-    greeting:greetingAt(now)
+    greeting:greetingAt(now),
+    travelStyle:preferences.travelStyle,
+    travelPace:preferences.travelPace,
+    travelPreferences:preferences.travelPreferences
   })
 }
 function localDateKey(value){
@@ -89,6 +117,10 @@ function selectHomeContext(trips,now){
 }
 
 window.TravelMateUserProfile=Object.freeze({
+  TRAVEL_STYLES:TRAVEL_STYLES,
+  TRAVEL_PACES:TRAVEL_PACES,
+  TRAVEL_PREFERENCES:TRAVEL_PREFERENCES,
+  declaredPreferences:declaredPreferences,
   fromUser:fromUser,
   greetingAt:greetingAt,
   localDateKey:localDateKey,
