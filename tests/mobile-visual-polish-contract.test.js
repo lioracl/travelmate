@@ -24,7 +24,7 @@ test('mobile Plan polish owns compact 390/430 geometry without escalation', () =
   assert.match(block, /\.planned-activity\.tm-plan-item\{[\s\S]*?grid-template-columns:42px 64px minmax\(0,1fr\)/);
   assert.match(block, /\.tm-plan-activity-media,[\s\S]*?width:64px;[\s\S]*?height:64px/);
   assert.match(block, /\.generated-day>\.badge\{[\s\S]*?width:100%;[\s\S]*?min-height:44px/);
-  assert.match(block, /:is\(\.activity-buttons,\.saved-place-actions\)\{[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(block, /Phone action layout:[\s\S]*?:is\(\.activity-buttons,\.saved-place-actions\)[\s\S]*?grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(block, /:is\(\.activity-buttons,\.saved-place-actions\)>button::after\{[\s\S]*?white-space:normal/);
   assert.match(block, /\.tm-plan-item:not\(\.tm-plan-expanded\)[\s\S]*?data-smart-replace-activity[\s\S]*?display:none/);
   assert.match(block, /\.tm-plan-expanded :is\([\s\S]*?activity-buttons>button[\s\S]*?width:100%/);
@@ -43,6 +43,12 @@ test('mobile Today summary is shorter while expanded content stays available', (
   assert.match(block, /\.today-activities-expanded\{[\s\S]*?padding:13px/);
   assert.doesNotMatch(block, /display:none/);
   assert.doesNotMatch(block, /!important/);
+});
+
+test('mobile destination canvas has a body fallback through the dynamic viewport and safe area', () => {
+  const css = read('assets/readable-glass.css');
+  assert.match(css, /@media\(max-width:900px\)[\s\S]*?min-height:100dvh;[\s\S]*?background-image:var\(--tm-destination-canvas\)/);
+  assert.match(css, /safe-area-inset-bottom/);
 });
 
 test('Overview translucency polish is phone-scoped and preserves readable touch targets', () => {

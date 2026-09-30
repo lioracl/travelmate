@@ -2,11 +2,11 @@
   'use strict';
 
   var release = {
-    version: '1.55.43',
-    label: 'פעולות תוכנית ותפריט טיול מלא',
+    version: '1.55.44',
+    label: 'ליטוש תוכנית וניווט מובייל',
     date: '30 בספטמבר 2026',
     highlights: [
-      'פעולות התוכנית אחידות וקריאות במובייל; הגדרות, ארכיון הטיולים והמרכז החכם נגישים מתוך עוד, וקיצורי הכלים פותחים את מסכי הטיול המתאימים.',
+      'מסך תוכנית במובייל משתמש בשתי עמודות פעולה קריאות, תמונת היעד מכסה גם את תחתית המסך, והגדרות מוצגות כפעולה נפרדת מעל ההתנתקות; ארכיון הטיולים נשאר במסך בחירת הטיולים בלבד.',
       'סקירת הטיול מציגה פעילות קרובה בכרטיס קומפקטי שניתן לפתיחה, ללא מיקום מדומה כשאין מיקום אמיתי.',
       'מסך תוכנית קיבל כרטיסי פעילות קומפקטיים, היררכיית ימים משופרת ותשתית למסלול גמיש והמלצות לפי מיקום בעתיד.',
       'CSS architecture: Phase 10 moved shared controls and overlay material to normal cascade, reduced modal-system.css to zero !important and network-usage.css to two behavioral hidden-state exceptions, and reduced whole-app !important debt from 439 to 341.',

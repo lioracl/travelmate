@@ -24,27 +24,28 @@ test('Places hub groups discovery, transport, getaways and destination info', ()
   assert.deepEqual(views, ['places', 'transport', 'getaways', 'destination-info']);
 });
 
-test('secondary tools stay grouped under More rather than primary tabs', () => {
+test('secondary tools stay grouped under More while Settings is a separate sidebar action', () => {
   const html = read('trip/custom/index.html');
-  assert.match(html, /class="trip-sidebar-more"/);
-  assert.match(html, /data-view="group"/);
-  assert.match(html, /data-view="memories"/);
-  assert.match(html, /data-smart-hub-open/);
-  assert.match(html, /data-security-open/);
-  assert.match(html, /\.\.\/\.\.\/index\.html#trip-archive/);
-  assert.match(html, /data-about-open/);
+  const more = html.match(/<details class="trip-sidebar-more"[\s\S]*?<\/details>/);
+  assert.ok(more, 'More menu must exist');
+  assert.match(more[0], /data-view="group"/);
+  assert.match(more[0], /data-view="memories"/);
+  assert.match(more[0], /data-smart-hub-open/);
+  assert.match(more[0], /data-about-open/);
+  assert.doesNotMatch(more[0], /data-security-open|trip-archive/);
+  assert.match(html, /<\/details>\s*<button[^>]*class="security-center-launcher"[^>]*data-security-open[^>]*data-lazy-account/);
   const primary = html.match(/<nav aria-label="אזורי הטיול">([\s\S]*?)<\/nav>/)[1];
   assert.doesNotMatch(primary, /transport|getaways|group|memories|about|security|archive|smart-hub/);
 });
 
-test('secondary menu lazy-loads Settings and Smart Hub and routes to the home archive', () => {
+test('trip menu lazy-loads Settings and Smart Hub without linking the home archive', () => {
   const app = read('assets/app.js');
-  const home = read('assets/home.js');
+  const html = read('trip/custom/index.html');
   const hub = read('assets/smart-hub.js');
   assert.match(app, /\[data-lazy-account\],\[data-smart-hub-open\]/);
   assert.match(app, /loadFeature\(smartHub\?'assistant':'account'\)/);
   assert.match(hub, /window\.TravelMateSmartHub = \{ open:/);
-  assert.match(home, /location\.hash === '#trip-archive'/);
+  assert.doesNotMatch(html, /trip-archive/);
 });
 
 test('Smart Hub still exposes all 20 grouped tools through the secondary launcher', () => {
