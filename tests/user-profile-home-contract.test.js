@@ -106,7 +106,7 @@ test('Home exposes one profile summary and reuses the existing account/profile o
   assert.match(sw, /\.\/assets\/user-profile\.js/);
   assert.match(settings, /data-security-profile/);
   assert.match(settings, /data-security-profile-form/);
-  assert.match(settings, /cloud\.updateProfile\(displayName\)/);
+  assert.match(settings, /cloud\.updateProfile\(displayName,\s*preferences\)/);
   assert.match(settings, /travelmate:profile-change/);
 
   const featureCss = css.slice(css.indexOf('/* 2.1 Profile Lite + Adaptive Home'));
