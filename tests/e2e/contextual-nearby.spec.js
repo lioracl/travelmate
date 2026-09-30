@@ -71,7 +71,6 @@ test('Free Time Finder is contextual and requests app consent before browser geo
   expect(contextSnapshot.info.availableMinutes, JSON.stringify(contextSnapshot)).toBe(90);
 
   const finder = page.locator('[data-nearby-time-context]');
-  await page.evaluate(() => window.dispatchEvent(new CustomEvent('travelmate:activities-updated')));
   await expect(finder).toBeVisible();
   await expect(finder.locator('[data-nearby-time-title]')).toContainText('90 דקות');
   await expect(finder.locator('[data-nearby-time-title]')).toContainText('Booked Tour');
