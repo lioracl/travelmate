@@ -53,7 +53,7 @@ function clean(value,max){
 function clamp(value){
   var number=Number(value);
   if(!Number.isFinite(number))return 0;
-  return Math.max(0,Math.min(1,number));
+  return Math.round(Math.max(0,Math.min(1,number))*1000)/1000;
 }
 
 function iso(value){
