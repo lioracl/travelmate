@@ -136,6 +136,12 @@ test('Travel Time estimates transitions only between timed commitments and flags
   assert.equal(assessment.gapMinutes, 15);
   assert.equal(assessment.risk, true);
   assert.ok(assessment.shortfallMinutes > 0);
+  assert.match(assessment.latestDepartureTime, /^\d{2}:\d{2}$/);
+
+  const relaxedNext = Object.assign({}, trip.activities[2], { id:'c', time:'13:00' });
+  const relaxed = api.transitionAssessment(trip.activities[0], relaxedNext);
+  assert.equal(relaxed.risk, false);
+  assert.match(relaxed.latestDepartureTime, /^\d{2}:\d{2}$/);
 
   const map = api.transitionAssessmentsForDate(trip, date);
   assert.ok(map['activity:b']);
