@@ -101,3 +101,54 @@ test('Flexible, window and fixed activities persist distinct timing semantics', 
   await expect(page.locator('.tm-plan-day-mode')).toHaveText(/יום מאוזן|יום מתוזמן/);
   expect(pageErrors, pageErrors.join('\n')).toEqual([]);
 });
+
+
+test('Quick Add creates a flexible activity with advanced details collapsed by default', async ({ page }) => {
+  await seed(page);
+  const pageErrors = [];
+  page.on('pageerror', error => pageErrors.push(String(error)));
+
+  await page.goto('/trip/custom/index.html?id=qa-flexible&view=plan', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(window.TravelMateTripStore));
+
+  await page.locator('[data-new-activity]').click();
+  const form = page.locator('.planner-composer');
+  await expect(form).toBeVisible();
+  await expect(form.locator('[data-planner-details-toggle]')).toHaveAttribute('aria-expanded', 'false');
+  await expect(form.locator('[data-planner-details]')).toBeHidden();
+
+  await form.locator('input[name="time"]').fill('11:15');
+  await form.locator('input[name="title"]').fill('Quick Coffee');
+  await form.locator('button[type="submit"]').click();
+  await expect(form).toBeHidden();
+
+  const row = page.locator('.planned-activity').filter({ hasText: 'Quick Coffee' });
+  await expect(row).toBeVisible();
+  await expect(row.locator('.activity-schedule-mode')).toHaveText('גמיש');
+
+  const stored = await page.evaluate(() => {
+    const item = JSON.parse(localStorage.getItem('travelmate-trips') || '[]')[0];
+    const activity = item.activities.find(entry => entry.title === 'Quick Coffee');
+    return activity && {
+      date: activity.date,
+      time: activity.time,
+      category: activity.category,
+      duration: activity.duration,
+      mode: activity.scheduleMode
+    };
+  });
+  expect(stored).toEqual({
+    date: localDateKey(0),
+    time: '11:15',
+    category: 'אטרקציה',
+    duration: 60,
+    mode: 'flexible'
+  });
+
+  await row.locator('[data-edit]').click();
+  await expect(form).toBeVisible();
+  await expect(form.locator('[data-planner-details-toggle]')).toHaveAttribute('aria-expanded', 'true');
+  await expect(form.locator('[data-planner-details]')).toBeVisible();
+
+  expect(pageErrors, pageErrors.join('\n')).toEqual([]);
+});
