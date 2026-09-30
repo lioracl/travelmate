@@ -587,6 +587,23 @@ body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-transition.is-risk>i{
   color:var(--tm-warning);
   -webkit-text-fill-color:currentColor
 }
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-travel-risk{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  min-height:22px;
+  margin-top:4px;
+  margin-inline-start:6px;
+  padding:0 8px;
+  border:1px solid color-mix(in srgb,var(--tm-warning) 52%,var(--tm-card-control-border));
+  border-radius:999px;
+  background:color-mix(in srgb,var(--tm-warning) 13%,var(--tm-card-control));
+  color:var(--tm-card-heading);
+  -webkit-text-fill-color:currentColor;
+  font-size:10px;
+  font-weight:850;
+  line-height:1
+}
 body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item.tm-plan-travel-risk{
   border-color:color-mix(in srgb,var(--tm-warning) 44%,var(--tm-card-border))
 }
