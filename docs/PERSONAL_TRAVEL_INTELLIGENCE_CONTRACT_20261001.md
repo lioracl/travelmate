@@ -1,7 +1,7 @@
 # TravelMate — Personal Travel Intelligence Contract
 Date: 2026-10-01
 Baseline: GitHub preview at c51ac288d4d9b3aea260b8784dad8d4a8955d0ab
-Status: contract-only foundation; no database migration and no learned-preference persistence
+Status: declared-preference foundation implemented through existing Auth metadata; learned-preference persistence remains contract-only
 
 ## 1. Purpose
 Define ownership and privacy for Personal Travel Intelligence without creating a parallel profile system or prematurely changing Supabase schema.
