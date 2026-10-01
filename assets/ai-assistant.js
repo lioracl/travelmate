@@ -5,7 +5,7 @@
   window.__travelMateAiAssistantLoaded = true;
 
   var cloud = window.TravelMateCloud;
-  var state = { open: false, busy: false, session: null, messages: [], recognition: null };
+  var state = { open: false, busy: false, session: null, messages: [], recognition: null, lifecycleGeneration: 0 };
   var pageLock = null;
   var tripContext = collectTripContext();
   var storageKey = conversationStorageKey();
@@ -361,6 +361,12 @@
   function typingRow() { return addMessage('assistant', '<span class="ai-typing" aria-label="Mate חושב"><i></i><i></i><i></i></span>', { html: true, temporary: true }); }
 
   function activeCloud() { return window.TravelMateCloud || cloud; }
+  function currentAuthUserId() { return String((state.session && state.session.user && state.session.user.id) || localStorage.getItem('travelmate-active-user') || ''); }
+  function requestIsCurrent(context) {
+    if (!context || context.generation !== state.lifecycleGeneration) return false;
+    if (context.userId && currentAuthUserId() !== context.userId) return false;
+    return context.storageKey === storageKey;
+  }
 
   async function getSession() {
     var service = activeCloud();
@@ -440,11 +446,17 @@
   }
 
   async function requestWithContext(messages, context) {
+    var requestGeneration = state.lifecycleGeneration;
     var session = await getSession();
+    if (requestGeneration !== state.lifecycleGeneration) throw new Error('AI_REQUEST_STALE');
     if (!session || !session.user) throw new Error('NAVO_AUTH_REQUIRED');
+    var requestContext = { generation: requestGeneration, userId: String(session.user.id), storageKey: conversationStorageKey(session.user.id) };
+    if (!requestIsCurrent(requestContext)) throw new Error('AI_REQUEST_STALE');
     var service = activeCloud();
     var client = await service.getClient();
+    if (!requestIsCurrent(requestContext)) throw new Error('AI_REQUEST_STALE');
     var result = await invokeAssistant(client, messages, context);
+    if (!requestIsCurrent(requestContext)) throw new Error('AI_REQUEST_STALE');
     if (result.error) throw result.error;
     var answer = String(result.data && result.data.answer || '').trim();
     if (!answer) throw new Error('EMPTY_AI_RESPONSE');
@@ -477,18 +489,24 @@
   async function sendMessage(forcedText) {
     if (state.busy) return;
     var content = trimText(forcedText || ui.input.value, 4000); if (!content) return;
+    var requestGeneration = state.lifecycleGeneration;
     setOpen(true); ui.input.value = ''; autoGrow();
     state.messages.push({ role: 'user', content: content }); state.messages = state.messages.slice(-16); persistMessages(); addMessage('user', content);
     setBusy(true); setStatus('חושב על התשובה…'); var typing = typingRow();
     try {
       var session = await getSession();
+      if (requestGeneration !== state.lifecycleGeneration) { typing.remove(); return; }
       if (!session || !session.user) {
         typing.remove(); showInlineLogin(content);
         setStatus('נדרשת התחברות'); return;
       }
+      var requestContext = { generation: requestGeneration, userId: String(session.user.id), storageKey: conversationStorageKey(session.user.id) };
+      if (!requestIsCurrent(requestContext)) { typing.remove(); return; }
       var service = activeCloud();
       var client = await service.getClient();
+      if (!requestIsCurrent(requestContext)) { typing.remove(); return; }
       var result = await invokeAssistant(client, state.messages.slice(-12));
+      if (!requestIsCurrent(requestContext)) { typing.remove(); return; }
       if (result.error) {
         try { var errorBody = await result.error.context.clone().json(); result.error.travelMateCode = [errorBody && errorBody.error, errorBody && errorBody.providerCode, errorBody && errorBody.providerStatus].filter(Boolean).join(':'); } catch (parseError) {}
         throw result.error;
@@ -516,12 +534,17 @@
 
   ui.panel.querySelector('[data-ai-context]').textContent = contextLabel(); renderPrompts(); restoreMessages(); renderHistory(); renderAiNotesArchive(); setupVoice();
   if (activeCloud() && activeCloud().onAuthChange) activeCloud().onAuthChange(function (event, session) {
+    state.lifecycleGeneration += 1;
+    state.session = session || null;
+    tripContext = collectTripContext();
     var nextKey = conversationStorageKey(session && session.user ? session.user.id : 'guest');
-    if (nextKey === storageKey) return;
     storageKey = nextKey;
     state.messages = [];
     restoreMessages();
+    ui.panel.querySelector('[data-ai-context]').textContent = contextLabel();
+    renderPrompts();
     renderHistory();
+    window.dispatchEvent(new CustomEvent('travelmate:ai-account-context-changed', { detail: { event: event, userId: session && session.user ? String(session.user.id) : null, generation: state.lifecycleGeneration } }));
   });
   ui.orb.addEventListener('click', function () { setOpen(!state.open); });
   ui.panel.querySelector('[data-ai-close]').addEventListener('click', function () { setOpen(false); });
