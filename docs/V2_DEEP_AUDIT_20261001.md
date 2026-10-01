@@ -140,3 +140,5 @@ Changed files relative to final preview:
 - trip/japan-2027/index.html (asset version only)
 
 The audit branch is retained for review. It is not merged to preview because the overall architecture/privacy gate still has the documented HIGH findings. Existing active learning remains contract-only; this patch does not enable automatic learning.
+
+Published audit-branch history was discovered when the first push was rejected: 41f5bdb and d99c02e already existed on the requested remote branch. Their combined tree matches preview ade0a4a. A normal merge preserves those published commits; the analytics overlap retains the exact previously tested audit implementation. No force-push or published-history rewrite occurred. Source content after reconciliation is unchanged from the final 537/537 and 26/26 tested tree.
