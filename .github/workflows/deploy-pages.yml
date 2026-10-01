@@ -32,6 +32,11 @@ jobs:
       - name: Run regression tests
         run: node --test tests/*.test.js
 
+      - name: Verify document recovery migration locally
+        run: |
+          npm ci --prefix tools/document-recovery --ignore-scripts --no-audit --no-fund
+          npm test --prefix tools/document-recovery
+
       - name: Verify required files
         run: |
           test -f index.html

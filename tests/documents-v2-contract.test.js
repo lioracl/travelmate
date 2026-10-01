@@ -84,7 +84,8 @@ test('Documents V2 filtering is responsive and feature-scoped', () => {
 test('Document Vault ignores stale metadata responses after session changes', () => {
   assert.match(vault, /var documentSessionEpoch = 0/);
   assert.match(vault, /var sessionEpoch = \+\+documentSessionEpoch/);
-  assert.match(vault, /renderDocuments\(sessionEpoch, currentUser\.id\)/);
+  assert.match(vault, /var sessionUserId = currentUser\.id/);
+  assert.match(vault, /isDocumentSession\(sessionUserId, sessionEpoch\)\) await renderDocuments\(sessionEpoch, sessionUserId\)/);
   assert.match(vault, /requestEpoch !== documentSessionEpoch \|\| !currentUser \|\| currentUser\.id !== requestUserId/);
   assert.match(vault, /documentSessionEpoch \+= 1;[\s\S]*clearRemoteDocumentMetadata\(\);[\s\S]*client\.auth\.signOut\(\)/);
 });
@@ -154,15 +155,14 @@ test('Document Vault accurately distinguishes encrypted file contents from prote
   assert.match(vault, /אין להזין בהם מידע רגיש/);
 });
 
-test('Document Vault deletes metadata first and queues encrypted blob cleanup safely', () => {
+test('Document Vault metadata deletion creates durable server cleanup rather than browser removal', () => {
   assert.match(vault, /var metadataResult = await client\.from\('travel_documents'\)\.delete\(\)\.eq\('id', record\.id\)/);
-  assert.match(vault, /var storageResult = await client\.storage\.from\(bucket\)\.remove\(\[record\.storage_path\]\)/);
-  assert.ok(
-    vault.indexOf("var metadataResult = await client.from('travel_documents').delete().eq('id', record.id);")
-      < vault.indexOf("var storageResult = await client.storage.from(bucket).remove([record.storage_path]);"),
-    'metadata must be removed before the encrypted blob'
-  );
-  assert.match(vault, /queuePendingCleanup\(currentUser\.id, record\.storage_path\)/);
-  assert.match(vault, /await flushPendingCleanup\(\)/);
-  assert.match(vault, /window\.addEventListener\('online', function \(\) \{ if \(currentUser\) flushPendingCleanup\(\); \}\)/);
+  const journal = fs.readFileSync('supabase/migrations/20261001151643_document_lifecycle_journal.sql','utf8');
+  assert.doesNotMatch(vault, /storage\.from\(bucket\)\.remove\(/);
+  assert.match(journal, /create trigger document_metadata_delete after delete on public\.travel_documents/);
+  assert.match(journal, /where storage_path=u\.storage_path/);
+  assert.match(journal, /state='cleanup_requested'/);
+  assert.match(journal, /interval '24 hours'/);
+  assert.match(vault, /window\.addEventListener\('online'/);
+  assert.match(vault, /renderDocuments\(\)\.catch/);
 });
