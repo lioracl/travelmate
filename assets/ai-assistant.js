@@ -5,10 +5,11 @@
   window.__travelMateAiAssistantLoaded = true;
 
   var cloud = window.TravelMateCloud;
-  var state = { open: false, busy: false, session: null, messages: [], recognition: null };
+  var state = { open: false, busy: false, session: null, messages: [], recognition: null, lifecycleGeneration: 0 };
   var pageLock = null;
   var tripContext = collectTripContext();
   var storageKey = conversationStorageKey();
+  var lifecycleUserId = String(localStorage.getItem('travelmate-active-user') || '');
 
   function conversationStorageKey(userId) {
     var owner = userId || localStorage.getItem('travelmate-active-user') || 'guest';
@@ -224,6 +225,7 @@
       continueButton.innerHTML = '<i class="fa-solid fa-forward-step"></i> המשך תשובה';
       continueButton.addEventListener('click', async function () {
         if (responseState.continuing) return;
+        var generation = state.lifecycleGeneration;
         responseState.continuing = true; continueButton.disabled = true; continueButton.textContent = 'ממשיך…';
         try {
           var continued = await continueResponse(responseState.content, responseState.messages, responseState.context);
@@ -234,6 +236,7 @@
           addMessageTools(bubble, responseState);
           ui.chat.scrollTop = ui.chat.scrollHeight;
         } catch (error) {
+          if (generation !== state.lifecycleGeneration) return;
           continueButton.disabled = false; continueButton.innerHTML = '<i class="fa-solid fa-forward-step"></i> המשך תשובה';
           setStatus(friendlyError(error));
         } finally { responseState.continuing = false; }
@@ -361,17 +364,29 @@
   function typingRow() { return addMessage('assistant', '<span class="ai-typing" aria-label="Mate חושב"><i></i><i></i><i></i></span>', { html: true, temporary: true }); }
 
   function activeCloud() { return window.TravelMateCloud || cloud; }
+  function currentAuthUserId() { return String((state.session && state.session.user && state.session.user.id) || localStorage.getItem('travelmate-active-user') || ''); }
+  function requestIsCurrent(context) {
+    if (!context || context.generation !== state.lifecycleGeneration) return false;
+    if (context.userId && currentAuthUserId() !== context.userId) return false;
+    return context.storageKey === storageKey;
+  }
 
   async function getSession() {
     var service = activeCloud();
     if (!service) return null;
+    var generation = state.lifecycleGeneration;
     try {
-      state.session = await service.getSession();
-      if (state.session && state.session.expires_at && state.session.expires_at * 1000 < Date.now() + 60000) {
+      var session = await service.getSession();
+      if (generation !== state.lifecycleGeneration) return null;
+      if (session && session.expires_at && session.expires_at * 1000 < Date.now() + 60000) {
         var client = await service.getClient();
+        if (generation !== state.lifecycleGeneration) return null;
         var refreshed = await client.auth.refreshSession();
-        state.session = refreshed.data && refreshed.data.session || state.session;
+        if (generation !== state.lifecycleGeneration) return null;
+        session = refreshed.data && refreshed.data.session || session;
       }
+      if (String(session && session.user && session.user.id || '') !== String(localStorage.getItem('travelmate-active-user') || '')) return null;
+      state.session = session;
       return state.session;
     } catch (error) { return null; }
   }
@@ -423,28 +438,29 @@
   }
 
   async function continueResponse(previousAnswer, messages, context) {
-    var session = await getSession();
-    if (!session || !session.user) throw new Error('NAVO_AUTH_REQUIRED');
-    var service = activeCloud();
-    var client = await service.getClient();
     var continuationAnchor = String(previousAnswer || '').slice(-3500);
     var continuationMessages = (messages || []).concat([
       { role: 'assistant', content: continuationAnchor },
       { role: 'user', content: 'התשובה הקודמת נקטעה. המשך בדיוק מהמקום שבו נעצרת, ללא חזרה על כותרות או מידע שכבר נכתב.' }
     ]);
-    var result = await invokeAssistant(client, continuationMessages, context);
-    if (result.error) throw result.error;
-    var extra = String(result.data && result.data.answer || '').trim();
+    var result = await requestWithContext(continuationMessages, context);
+    var extra = result.answer;
     if (!extra) throw new Error('EMPTY_AI_RESPONSE');
     return { answer: mergeContinuation(previousAnswer, extra), data: result.data || {} };
   }
 
   async function requestWithContext(messages, context) {
+    var requestGeneration = state.lifecycleGeneration;
     var session = await getSession();
+    if (requestGeneration !== state.lifecycleGeneration) throw new Error('AI_REQUEST_STALE');
     if (!session || !session.user) throw new Error('NAVO_AUTH_REQUIRED');
+    var requestContext = { generation: requestGeneration, userId: String(session.user.id), storageKey: conversationStorageKey(session.user.id) };
+    if (!requestIsCurrent(requestContext)) throw new Error('AI_REQUEST_STALE');
     var service = activeCloud();
     var client = await service.getClient();
+    if (!requestIsCurrent(requestContext)) throw new Error('AI_REQUEST_STALE');
     var result = await invokeAssistant(client, messages, context);
+    if (!requestIsCurrent(requestContext)) throw new Error('AI_REQUEST_STALE');
     if (result.error) throw result.error;
     var answer = String(result.data && result.data.answer || '').trim();
     if (!answer) throw new Error('EMPTY_AI_RESPONSE');
@@ -477,20 +493,27 @@
   async function sendMessage(forcedText) {
     if (state.busy) return;
     var content = trimText(forcedText || ui.input.value, 4000); if (!content) return;
+    var requestGeneration = state.lifecycleGeneration;
     setOpen(true); ui.input.value = ''; autoGrow();
     state.messages.push({ role: 'user', content: content }); state.messages = state.messages.slice(-16); persistMessages(); addMessage('user', content);
     setBusy(true); setStatus('חושב על התשובה…'); var typing = typingRow();
     try {
       var session = await getSession();
+      if (requestGeneration !== state.lifecycleGeneration) { typing.remove(); return; }
       if (!session || !session.user) {
         typing.remove(); showInlineLogin(content);
         setStatus('נדרשת התחברות'); return;
       }
+      var requestContext = { generation: requestGeneration, userId: String(session.user.id), storageKey: conversationStorageKey(session.user.id) };
+      if (!requestIsCurrent(requestContext)) { typing.remove(); return; }
       var service = activeCloud();
       var client = await service.getClient();
+      if (!requestIsCurrent(requestContext)) { typing.remove(); return; }
       var result = await invokeAssistant(client, state.messages.slice(-12));
+      if (!requestIsCurrent(requestContext)) { typing.remove(); return; }
       if (result.error) {
         try { var errorBody = await result.error.context.clone().json(); result.error.travelMateCode = [errorBody && errorBody.error, errorBody && errorBody.providerCode, errorBody && errorBody.providerStatus].filter(Boolean).join(':'); } catch (parseError) {}
+        if (!requestIsCurrent(requestContext)) { typing.remove(); return; }
         throw result.error;
       }
       var answer = String(result.data && result.data.answer || '').trim() || 'לא התקבלה תשובה. נסה לנסח את השאלה מחדש.';
@@ -498,8 +521,9 @@
       var responseState = { id: 'navo-response-' + Date.now(), content: answer, data: result.data || {}, messages: state.messages.slice(-12), context: tripContext ? JSON.parse(JSON.stringify(tripContext)) : null, message: assistantMessage };
       typing.remove(); state.messages.push(assistantMessage); state.messages = state.messages.slice(-16); persistMessages(); addMessage('assistant', answer, { responseState: responseState }); setStatus('מחובר · ההקשר של הטיול פעיל');
     } catch (error) {
+      if (requestGeneration !== state.lifecycleGeneration || requestContext && !requestIsCurrent(requestContext)) { typing.remove(); return; }
       console.error('TravelMate AI request failed', error); typing.remove(); addMessage('assistant', '<div class="ai-login-card ai-error-card">' + escapeText(friendlyError(error)) + '</div>', { html: true, temporary: true }); setStatus('החיבור ל־AI אינו זמין');
-    } finally { setBusy(false); ui.input.focus(); }
+    } finally { if (requestGeneration === state.lifecycleGeneration) { setBusy(false); ui.input.focus(); } }
   }
 
   function autoGrow() { ui.input.style.height = 'auto'; ui.input.style.height = Math.min(ui.input.scrollHeight, 110) + 'px'; }
@@ -515,14 +539,33 @@
   }
 
   ui.panel.querySelector('[data-ai-context]').textContent = contextLabel(); renderPrompts(); restoreMessages(); renderHistory(); renderAiNotesArchive(); setupVoice();
-  if (activeCloud() && activeCloud().onAuthChange) activeCloud().onAuthChange(function (event, session) {
+  function applyAccountContext(event, session) {
+    var previousUserId = lifecycleUserId;
+    var nextUserId = String((session && session.user && session.user.id) || '');
+    state.session = session || null;
+    if (previousUserId === nextUserId) return;
+    lifecycleUserId = nextUserId;
+    state.lifecycleGeneration += 1;
+    setBusy(false);
+    ui.input.value = ''; autoGrow();
+    if (state.recognition) { try { state.recognition.abort(); } catch (error) {} }
+    tripContext = collectTripContext();
     var nextKey = conversationStorageKey(session && session.user ? session.user.id : 'guest');
-    if (nextKey === storageKey) return;
     storageKey = nextKey;
     state.messages = [];
     restoreMessages();
+    ui.panel.querySelector('[data-ai-context]').textContent = contextLabel();
+    renderPrompts();
     renderHistory();
+    renderAiNotesArchive();
+    setStatus('מוכן לעזור בכל שאלה');
+    window.dispatchEvent(new CustomEvent('travelmate:ai-account-context-changed', { detail: { event: event, userId: session && session.user ? String(session.user.id) : null, generation: state.lifecycleGeneration } }));
+  }
+  window.addEventListener('travelmate:account-context-changed', function (event) {
+    var userId = event.detail && event.detail.userId;
+    applyAccountContext('ACCOUNT_CHANGED', userId ? { user: { id: userId } } : null);
   });
+  if (activeCloud() && activeCloud().onAuthChange) activeCloud().onAuthChange(applyAccountContext);
   ui.orb.addEventListener('click', function () { setOpen(!state.open); });
   ui.panel.querySelector('[data-ai-close]').addEventListener('click', function () { setOpen(false); });
   ui.panel.querySelector('[data-ai-clear]').addEventListener('click', function () { state.messages = []; persistMessages(); renderHistory(); setStatus('שיחה חדשה'); });
