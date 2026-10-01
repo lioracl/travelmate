@@ -85,6 +85,17 @@ test('document-like and private sources are never read by the cross-trip builder
   assert.equal(suggestions.length, 0);
 });
 
+
+test('cross-trip evidence requires stable record ids and does not store place names', () => {
+  const a = api();
+  const suggestions = a.buildCrossTripSuggestions([
+    { id: 't1', ownerId: 'u1', activities: [{ name: 'Museum of Example', category: 'museum', done: true }] },
+    { id: 't2', ownerId: 'u1', activities: [{ id: 'a2', name: 'Museum of Example', category: 'museum', done: true }] }
+  ], 'u1');
+
+  assert.equal(suggestions.length, 0);
+});
+
 test('learning disabled is enforced before Mate export', () => {
   const a = api();
   const suggestion = a.buildCrossTripSuggestions([
