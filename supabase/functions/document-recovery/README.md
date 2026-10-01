@@ -8,8 +8,8 @@ decrypts, inspects or logs file contents, passphrases, salt/IV or document names
 
 `begin_document_upload(trip_id, expected_owner)` records a private, owner-bound operation and
 server-generated Storage path before the browser starts upload. The browser
-cannot choose another owner/path. Every new private Storage write requires a live
-operation, including requests from old cached clients. A lost begin response
+cannot choose another owner/path. Every new vault Storage write requires a live
+operation, including requests from old cached vault clients. A lost begin response
 cannot start an unjournaled upload. Existing legacy documents remain readable and
 their metadata editable; their paths/owners cannot be changed.
 `expected_owner` is a consistency guard, never an authorization source: it must
@@ -50,6 +50,16 @@ policies remain unchanged. Row locks serialize Storage writes, metadata commits
 and recovery. Once held/claimed, late metadata commits and path replacements are
 rejected. Deleted journal tombstones remain to prevent path reuse. Object identity
 or timestamp changes quarantine an operation rather than authorize deletion.
+
+The integration migration preserves the existing shared-bucket Memories and
+receipt attachment paths (`owner/memories/trip/memory/file` and
+`owner/receipts/trip/file`). Their metadata remains in the canonical trip.
+Only these exact owner-scoped non-vault shapes may be written without a journal;
+existing Storage ownership and MFA policies still apply. Any existing journal,
+including a cleanup intent or tombstone, takes precedence over that exception.
+These attachments cannot be inserted into `travel_documents` without a vault
+journal and are never adopted by the recovery worker. Durable recovery for
+non-vault attachments remains outside this encrypted document lifecycle.
 
 The worker accepts a dedicated scheduler bearer secret of at least 32 characters,
 not a user JWT. `verify_jwt=false` applies only to this internal endpoint; its
@@ -98,7 +108,7 @@ no longer owns physical deletion.
    The activation script is not a migration and is not run by CI or deployments.
 5. Publish the client only after RPC availability is confirmed. It deliberately
    fails closed if the migration is unavailable; there is no legacy upload fallback.
-   Old cached clients are denied new unjournaled writes and must refresh. Coordinate
+   Old cached vault clients are denied new unjournaled vault writes and must refresh. Coordinate
    the transition to avoid leaving users with an unsupported upload protocol.
 6. Monitor aggregate worker results plus private journal state/attempt counts.
    Alert on ambiguous entries/backlog; do not delete them automatically. Disabling

@@ -49,7 +49,7 @@ before(async () => {
     create function storage.foldername(text) returns text[] language sql immutable as $$ select string_to_array($1,'/') $$;
   `);
   await db.query('insert into auth.users values($1),($2)',[A,B]);
-  for (const name of ['20260719090000_private_document_vault.sql','20260814213000_mfa_personal_data.sql','20260814233000_repair_private_uploads.sql','20261001151643_document_lifecycle_journal.sql']) {
+  for (const name of ['20260719090000_private_document_vault.sql','20260814213000_mfa_personal_data.sql','20260814233000_repair_private_uploads.sql','20261001151643_document_lifecycle_journal.sql','20261001175005_preserve_nonvault_attachment_uploads.sql']) {
     if (name === '20261001151643_document_lifecycle_journal.sql') {
       // Synthetic document that predates the journal migration.
       await db.query("insert into storage.objects(bucket_id,name,owner_id) values('travel-documents',$1,$2)",[A+'/legacy/referenced',A]);
@@ -224,4 +224,36 @@ test('explicit deletion binds the current timestamp of the same owned object', a
   await admin("update storage.objects set updated_at=updated_at+interval '1 second' where name=$1",[j.storage_path]);
   await role('authenticated');await db.query('delete from public.travel_documents where storage_path=$1',[j.storage_path]);
   await due(j,'cleanup_after');assert.ok(await claim(j));
+});
+
+test('integration preserves existing owned Memories/receipt uploads without adopting them as vault documents', async () => {
+  for (const suffix of ['memories/trip/memory/synthetic.txt','receipts/trip/synthetic.txt']) {
+    const j={storage_path:A+'/'+suffix}; await object(j);
+    await assert.rejects(metadata(j),/DOCUMENT_JOURNAL_REQUIRED/);
+    assert.equal((await admin('select count(*)::int as n from document_recovery.uploads where storage_path=$1',[j.storage_path])).rows[0].n,0);
+    await role('service_role'); assert.equal((await db.query('select * from public.claim_document_cleanup(100)')).rows.some(c=>c.storage_path===j.storage_path),false);
+  }
+});
+
+test('integration path exceptions cannot cross owners or permit arbitrary/vault/traversal uploads', async () => {
+  await assert.rejects(object({storage_path:A+'/memories/trip/foreign/synthetic.txt'},B),/row-level security/);
+  for(const suffix of ['legacy/untracked','__lifecycle_v1/unjournaled.vault','memories/trip/file','receipts/trip/extra/file','memories/trip/memory/../file','memories/trip/memory/back\\slash','receipts//file']) {
+    await assert.rejects(object({storage_path:A+'/'+suffix}),/row-level security/);
+  }
+});
+
+test('integration non-vault uploads retain verified MFA enforcement', async () => {
+  await admin("insert into auth.mfa_factors(user_id,status) values($1,'verified')",[B]);
+  await assert.rejects(object({storage_path:B+'/memories/trip/mfa/file'},B),/row-level security/);
+  await role('authenticated',B,'aal2');
+  await db.query("insert into storage.objects(bucket_id,name,owner_id) values('travel-documents',$1,$2)",[B+'/memories/trip/mfa/file',B]);
+  await admin('delete from auth.mfa_factors where user_id=$1',[B]);
+});
+
+test('integration cleanup journals and tombstones still fence non-vault path reuse', async () => {
+  const name=A+'/memories/trip/cleanup/file';
+  await admin("insert into document_recovery.uploads(user_id,trip_id,storage_path,state) values($1,'trip',$2,'cleanup_requested')",[A,name]);
+  await assert.rejects(object({storage_path:name}),/row-level security/);
+  await admin("update document_recovery.uploads set state='deleted' where storage_path=$1",[name]);
+  await assert.rejects(object({storage_path:name}),/row-level security/);
 });
