@@ -400,22 +400,32 @@
         }
         var storageAccess = await requirePrivateStorageAccess();
         currentUser = storageAccess.session.user;
+        var uploadUserId = String(currentUser.id);
+        var uploadSessionEpoch = documentSessionEpoch;
         var selectedCategory = form.elements.category.value;
         var selectedNote = form.elements.note.value.trim();
         for (var index = 0; index < preparedFiles.length; index += 1) {
+          if (documentSessionEpoch !== uploadSessionEpoch || !currentUser || String(currentUser.id) !== uploadUserId) {
+            throw new Error('DOCUMENT_SESSION_CHANGED');
+          }
           var file = preparedFiles[index].file;
           setStatus('מצפין/ה ומעלה ' + (index + 1) + ' מתוך ' + preparedFiles.length + '…');
           var encrypted = await encryptBytes(preparedFiles[index].bytes, passphrase);
           var safeName = sanitizeFileName(file.name);
-          var objectName = currentUser.id + '/' + encodeURIComponent(tripId) + '/' + secureObjectId() + '-' + safeName + '.vault';
+          var objectName = uploadUserId + '/' + encodeURIComponent(tripId) + '/' + secureObjectId() + '-' + safeName + '.vault';
           var uploadResult = await client.storage.from(bucket).upload(objectName, encrypted.blob, {
             contentType: 'application/octet-stream',
             cacheControl: '0',
             upsert: false
           });
           if (uploadResult.error) throw uploadResult.error;
+          if (documentSessionEpoch !== uploadSessionEpoch || !currentUser || String(currentUser.id) !== uploadUserId) {
+            var switchedCleanup = await client.storage.from(bucket).remove([objectName]);
+            if (switchedCleanup.error) queuePendingCleanup(uploadUserId, objectName);
+            throw new Error('DOCUMENT_SESSION_CHANGED');
+          }
           var metadataResult = await client.from('travel_documents').insert({
-            user_id: currentUser.id,
+            user_id: uploadUserId,
             trip_id: tripId,
             file_name: file.name,
             storage_path: objectName,
@@ -428,7 +438,8 @@
             encryption_iv: bytesToBase64(encrypted.iv)
           });
           if (metadataResult.error) {
-            await client.storage.from(bucket).remove([objectName]);
+            var rollback = await client.storage.from(bucket).remove([objectName]);
+            if (rollback.error) queuePendingCleanup(uploadUserId, objectName);
             throw metadataResult.error;
           }
           uploadedCount += 1;
