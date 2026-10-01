@@ -122,8 +122,8 @@
     return error;
   }
 
-  function assertActiveUser(userId) {
-    if (activeUserId() !== String(userId || '')) throw authContextError();
+  function assertActiveUser(userId, generation) {
+    if (activeUserId() !== String(userId || '') || generation != null && generation !== authGeneration) throw authContextError();
   }
 
   function isTripDeleted(trip, fallbackOwnerId) {
@@ -361,8 +361,11 @@
   }
 
   async function getSession() {
+    var generation = authGeneration;
     var client = await getClient();
+    if (generation !== authGeneration) throw authContextError();
     var result = await client.auth.getSession();
+    if (generation !== authGeneration) throw authContextError();
     if (result.error) throw result.error;
     var session = result.data.session;
     activateUserStorage(session && session.user ? session.user.id : null);
@@ -383,8 +386,11 @@
   }
 
   async function getPrivateStorageSession() {
+    var generation = authGeneration;
     var client = await getClient();
+    if (generation !== authGeneration) throw authContextError();
     var sessionResult = await client.auth.getSession();
+    if (generation !== authGeneration) throw authContextError();
     if (sessionResult.error) throw sessionResult.error;
     var session = sessionResult.data.session;
     if (!session || !session.user) {
@@ -393,6 +399,7 @@
       throw signedOutError;
     }
     var assuranceResult = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (generation !== authGeneration) throw authContextError();
     if (assuranceResult.error) throw assuranceResult.error;
     var assurance = assuranceResult.data || {};
     if (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
@@ -516,14 +523,16 @@
     var current = localTripFor(incoming);
     if (current && !shouldUseCloudTrip(current, incoming)) return false;
     upsertLocalTrip(incoming);
-    window.dispatchEvent(new CustomEvent('travelmate:canonical-trip-replaced', { detail: { userId: incoming.ownerId || activeUserId(), tripId: incoming.id, trip: incoming, generation: authGeneration, source: 'realtime' } }));
+    window.dispatchEvent(new CustomEvent('travelmate:canonical-trip-replaced', { detail: { userId: activeUserId(), tripId: incoming.id, trip: incoming, generation: authGeneration, source: 'realtime' } }));
     return true;
   }
 
-  async function performTripSave(trip, expectedUserId) {
-    if (expectedUserId) assertActiveUser(expectedUserId);
+  async function performTripSave(trip, expectedUserId, generation) {
+    if (generation !== authGeneration) throw authContextError();
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     var client = await getClient();
     var session = await getSession();
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     if (expectedUserId && (!session || !session.user || String(session.user.id) !== String(expectedUserId))) throw authContextError();
     if (!session || !session.user) {
       updateLocalSyncState(trip, 'local', null, expectedUserId);
@@ -565,7 +574,7 @@
       if (String(row.user_id) !== String(session.user.id) && !result.data) throw new Error('TRIP_EDIT_FORBIDDEN');
       response = { result_status: 'saved', result_revision: trip.cloudRevision || 0, result_updated_at: timestamp };
     }
-    if (expectedUserId) assertActiveUser(expectedUserId);
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     if (isStaleSyncSnapshot(trip, expectedUserId)) return { saved: false, reason: 'STALE_AFTER_CONFLICT_RESOLUTION' };
     timestamp = response.result_updated_at || timestamp;
     updateLocalSyncState(trip, 'synced', timestamp, expectedUserId, response.result_revision);
@@ -574,13 +583,15 @@
   }
 
   function enqueueTripSave(snapshot, expectedUserId) {
+    var generation = authGeneration;
     var id = tripIdentity(snapshot, expectedUserId);
     if (isTripDeleted(snapshot, expectedUserId)) return Promise.resolve({ saved: false, reason: 'DELETED' });
     var previous = saveChains.get(id) || Promise.resolve();
-    var current = previous.catch(function () {}).then(function () { return performTripSave(snapshot, expectedUserId); });
+    var current = previous.catch(function () {}).then(function () { return performTripSave(snapshot, expectedUserId, generation); });
     saveChains.set(id, current);
     current.then(function () { if (saveChains.get(id) === current) saveChains.delete(id); }, function () { if (saveChains.get(id) === current) saveChains.delete(id); });
     return current.catch(async function (error) {
+      if (generation !== authGeneration) throw authContextError();
       if (isStaleSyncSnapshot(snapshot, expectedUserId)) return { saved: false, reason: 'STALE_AFTER_CONFLICT_RESOLUTION' };
       if (acceptRemoteDeletion(snapshot, error, expectedUserId)) throw error;
       if (isTripEditForbidden(error)) {
@@ -623,6 +634,7 @@
   }
 
   function deleteTrip(trip, expectedUserId) {
+    var generation = authGeneration;
     expectedUserId = expectedUserId || activeUserId();
     var id = tripIdentity(trip, expectedUserId);
     if (expectedUserId) assertActiveUser(expectedUserId);
@@ -637,8 +649,10 @@
     saveTimers.delete(timerKey);
     var previous = saveChains.get(id) || Promise.resolve();
     var current = previous.catch(function () {}).then(async function () {
+      if (generation !== authGeneration) throw authContextError();
       var client = await getClient();
       var session = await getSession();
+      if (expectedUserId) assertActiveUser(expectedUserId, generation);
       if (expectedUserId && (!session || !session.user || String(session.user.id) !== String(expectedUserId))) throw authContextError();
       if (!session || !session.user) {
         deletedTripIds.delete(deletionKey);
@@ -668,13 +682,14 @@
           .eq('user_id', ownerId).eq('id', String(trip.id)).select('id').maybeSingle());
         if (result.error) throw result.error;
       }
-      if (expectedUserId) assertActiveUser(expectedUserId);
+      if (expectedUserId) assertActiveUser(expectedUserId, generation);
       removeLocalTrip(trip.id, ownerId);
       window.dispatchEvent(new CustomEvent('travelmate:trip-deleted', { detail: { id: trip.id, ownerId: ownerId } }));
       return { deleted: true };
     });
     saveChains.set(id, current);
     current.then(function () { if (saveChains.get(id) === current) saveChains.delete(id); }, function (error) {
+      if (generation !== authGeneration) return;
       deletedTripIds.delete(deletionKey);
       updateLocalSyncState(trip, error && error.code === 'TRIP_CONFLICT' ? 'conflict'
         : error && error.code === 'TRIP_WRITE_TIMEOUT' ? 'unknown' : 'failed', error && error.cloud && error.cloud.result_updated_at, expectedUserId, error && error.cloud && error.cloud.result_revision);
@@ -703,6 +718,7 @@
   async function getTrip(id, expectedOwnerId) {
     if (expectedOwnerId && isTripDeleted(id, expectedOwnerId)) return null;
     var session = await getSession();
+    var generation = authGeneration;
     var local = findLocalTrip(id, expectedOwnerId);
     if (!session || !session.user) return local || null;
     await assertMfaReadyForPersonalData();
@@ -714,7 +730,7 @@
       .eq('id', String(id))
       .order('updated_at', { ascending: false })
       .limit(10);
-    assertActiveUser(requestUserId);
+    assertActiveUser(requestUserId, generation);
     if (isTripDeleted(id, deletionOwnerId)) return null;
     if (result.error) throw result.error;
     local = findLocalTrip(id, expectedOwnerId);
@@ -753,7 +769,7 @@
     var localNeedsSave = (hasUnsyncedChanges(local) && !localConflict) || legacyLocalAhead;
     if (local.ownerId && String(local.ownerId) !== requestUserId && (localConflict || localNeedsSave)) {
       var editable = await canEditSharedTrip(local.ownerId, local.id);
-      assertActiveUser(requestUserId);
+      assertActiveUser(requestUserId, generation);
       if (!editable) {
         upsertLocalTrip(cloud);
         return cloud;
@@ -851,10 +867,11 @@
     var client = await getClient();
     var session = await getSession();
     var subscriberUserId = session && session.user ? String(session.user.id) : '';
+    var subscriberGeneration = authGeneration;
     callbacks = callbacks || {};
     var channel = client.channel('travelmate-trip:' + ownerId + ':' + tripId)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'travel_trips', filter: 'id=eq.' + String(tripId) }, function (payload) {
-        if (activeUserId() !== subscriberUserId) return;
+        if (activeUserId() !== subscriberUserId || subscriberGeneration !== authGeneration) return;
         if (!payload.new || String(payload.new.user_id) !== String(ownerId)) return;
         var incoming = fromRow(payload.new);
         if (!acceptCloudTrip(incoming)) return;
@@ -863,15 +880,16 @@
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'trip_members', filter: 'trip_id=eq.' + String(tripId) }, function (payload) {
-        if (activeUserId() !== subscriberUserId) return;
+        if (activeUserId() !== subscriberUserId || subscriberGeneration !== authGeneration) return;
         var row = payload.new || payload.old;
         if (row && String(row.trip_owner_id) === String(ownerId) && callbacks.onMembersChange) callbacks.onMembersChange(payload);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'trip_messages', filter: 'trip_id=eq.' + String(tripId) }, function (payload) {
-        if (activeUserId() !== subscriberUserId) return;
+        if (activeUserId() !== subscriberUserId || subscriberGeneration !== authGeneration) return;
         if (payload.new && String(payload.new.trip_owner_id) === String(ownerId) && callbacks.onMessage) callbacks.onMessage(payload.new);
       });
     await channel.subscribe();
+    if (subscriberGeneration !== authGeneration) { client.removeChannel(channel); throw authContextError(); }
     return function () { client.removeChannel(channel); };
   }
 
@@ -887,26 +905,28 @@
   }
 
   async function fetchCloudTripVersion(tripId, ownerId, expectedUserId) {
-    if (expectedUserId) assertActiveUser(expectedUserId);
+    var generation = authGeneration;
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     await assertMfaReadyForPersonalData();
     var client = await getClient();
     var result = await client.from('travel_trips').select('*')
       .eq('id', String(tripId))
       .eq('user_id', String(ownerId))
       .maybeSingle();
-    if (expectedUserId) assertActiveUser(expectedUserId);
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     if (result.error) throw result.error;
     return result.data ? fromRow(result.data) : null;
   }
 
   async function resolveTripConflict(tripId, ownerId, strategy) {
+    var generation = authGeneration;
     strategy = String(strategy || '').toLowerCase();
     if (strategy !== 'local' && strategy !== 'cloud') throw cloudError('INVALID_CONFLICT_STRATEGY');
 
     var session = await getSession();
     if (!session || !session.user) throw cloudError('SIGNED_OUT');
     var requestUserId = String(session.user.id);
-    assertActiveUser(requestUserId);
+    assertActiveUser(requestUserId, generation);
 
     var local = findLocalTrip(tripId, ownerId);
     if (!local || String(local.syncStatus || '') !== 'conflict') throw cloudError('TRIP_CONFLICT_NOT_FOUND');
@@ -926,7 +946,7 @@
 
     if (resolvedOwnerId !== requestUserId) {
       var editable = await canEditSharedTrip(resolvedOwnerId, tripId);
-      assertActiveUser(requestUserId);
+      assertActiveUser(requestUserId, generation);
       if (!editable) throw cloudError('TRIP_EDIT_FORBIDDEN');
     }
 
@@ -945,14 +965,15 @@
   }
 
   async function performLocalTripSync(session, syncUserId) {
-    assertActiveUser(syncUserId);
+    var generation = authGeneration;
+    assertActiveUser(syncUserId, generation);
     await assertMfaReadyForPersonalData();
-    assertActiveUser(syncUserId);
+    assertActiveUser(syncUserId, generation);
     var localTrips = getLocalTrips().filter(function (trip) { return !isTripDeleted(trip); });
     var cloudState = await Promise.all([listCloudTrips(), listCloudTripTombstones()]);
     var cloudTrips = cloudState[0];
     var tombstones = cloudState[1];
-    assertActiveUser(syncUserId);
+    assertActiveUser(syncUserId, generation);
     var tombstoneIds = new Set(tombstones.map(function (trip) { return tripIdentity(trip, syncUserId); }));
     tombstones.forEach(function (trip) {
       deletedTripIds.add(deletionIdentity(trip, syncUserId));
@@ -966,11 +987,11 @@
     var cloudById = new Map(cloudTrips.map(function (trip) { return [tripIdentity(trip, syncUserId), trip]; }));
     var readOnlySharedIds = new Set();
     var merged = await Promise.all(localTrips.map(async function (local) {
-      assertActiveUser(syncUserId);
+      assertActiveUser(syncUserId, generation);
       if (isTripDeleted(local)) return null;
       if (local.deletePending) {
         await deleteTrip(local, syncUserId);
-        assertActiveUser(syncUserId);
+        assertActiveUser(syncUserId, generation);
         return null;
       }
       var identity = tripIdentity(local, syncUserId);
@@ -983,7 +1004,7 @@
         }
         try { await saveTrip(local, syncUserId, true); }
         catch (error) { if (acceptRemoteDeletion(local, error, syncUserId)) return null; throw error; }
-        assertActiveUser(syncUserId);
+        assertActiveUser(syncUserId, generation);
         if (isTripDeleted(local)) return null;
         return localTripFor(local) || local;
       }
@@ -994,7 +1015,7 @@
       var localNeedsSave = (hasUnsyncedChanges(local) && !localConflict) || legacyLocalAhead;
       if (local.ownerId && String(local.ownerId) !== syncUserId && (localConflict || localNeedsSave)) {
         var editable = await canEditSharedTrip(local.ownerId, local.id);
-        assertActiveUser(syncUserId);
+        assertActiveUser(syncUserId, generation);
         if (!editable) {
           readOnlySharedIds.add(identity);
           removeLocalTrip(local.id, local.ownerId);
@@ -1010,7 +1031,7 @@
           if (error && error.code === 'TRIP_CONFLICT') return localTripFor(local) || local;
           throw error;
         }
-        assertActiveUser(syncUserId);
+        assertActiveUser(syncUserId, generation);
         if (isTripDeleted(local)) return null;
         return localTripFor(local) || local;
       }
@@ -1018,7 +1039,7 @@
     }));
     merged = merged.filter(Boolean);
     cloudById.forEach(function (trip) { if (!isTripDeleted(trip)) merged.push(trip); });
-    assertActiveUser(syncUserId);
+    assertActiveUser(syncUserId, generation);
     var latestLocalTrips = getLocalTrips().filter(function (trip) {
       if (isTripDeleted(trip)) return false;
       if (!trip.ownerId || String(trip.ownerId) === syncUserId) return true;
@@ -1028,7 +1049,7 @@
     merged = mergeTripLists([merged, latestLocalTrips], syncUserId)
       .filter(function (trip) { return !isTripDeleted(trip); });
     merged.sort(function (a, b) { return String(a.start).localeCompare(String(b.start)); });
-    assertActiveUser(syncUserId);
+    assertActiveUser(syncUserId, generation);
     setLocalTrips(merged);
     window.dispatchEvent(new CustomEvent('travelmate:canonical-trip-replaced', { detail: { userId: syncUserId, generation: authGeneration, trips: merged, source: 'cloud-sync' } }));
     return merged;
@@ -1036,9 +1057,11 @@
 
   function syncLocalTrips() {
     var requestedUserId = activeUserId();
+    var requestedGeneration = authGeneration;
     var syncKey = requestedUserId || '__session__';
     if (fullSyncPromises.has(syncKey)) return fullSyncPromises.get(syncKey);
     var syncPromise = getSession().then(function (session) {
+      if (requestedUserId && requestedGeneration !== authGeneration) throw authContextError();
       if (!session || !session.user) return getLocalTrips();
       var syncUserId = String(session.user.id);
       if (requestedUserId && requestedUserId !== syncUserId) throw authContextError();
@@ -1211,9 +1234,13 @@
 
   async function onAuthChange(callback) {
     var client = await getClient();
+    var sequence = 0;
     return client.auth.onAuthStateChange(function (event, session) {
+      var delivery = ++sequence;
+      activateUserStorage(session && session.user ? session.user.id : null);
+      var generation = authGeneration;
       setTimeout(function () {
-        activateUserStorage(session && session.user ? session.user.id : null);
+        if (delivery !== sequence || generation !== authGeneration) return;
         callback(event, session);
       }, 0);
     });
