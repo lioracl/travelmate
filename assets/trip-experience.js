@@ -12,6 +12,12 @@
   function activeOwnerId() { return String(state.trip && state.trip.ownerId || localStorage.getItem('travelmate-active-user') || ''); }
   function legacyStorageKey(name) { return 'travelmate-experience:' + tripId() + ':' + name; }
   function storageKey(name) { var owner = activeOwnerId(); return 'travelmate-experience:' + (owner || 'guest') + ':' + tripId() + ':' + name; }
+  function legacyMatchesCanonical(name, value) {
+    var fields = { 'budget-unlimited': 'budgetUnlimited', 'secondary-currency': 'secondaryCurrency', expenses: 'expenses', 'budget-categories': 'budgetCategories', memories: 'memories', 'album-url': 'photoAlbumUrl', 'currency-fee': 'currencyFee' };
+    var field = fields[name];
+    if (!field || !state.trip || !Object.prototype.hasOwnProperty.call(state.trip, field)) return false;
+    try { return JSON.stringify(state.trip[field]) === JSON.stringify(value); } catch (error) { return false; }
+  }
   function readExperienceJson(name, fallback) {
     var ownedKey = storageKey(name);
     if (localStorage.getItem(ownedKey) !== null) return readJson(ownedKey, fallback);
@@ -26,6 +32,7 @@
     var legacyKey = legacyStorageKey(name);
     if (localStorage.getItem(legacyKey) === null) return fallback;
     var value = readJson(legacyKey, fallback);
+    if (!legacyMatchesCanonical(name, value)) return fallback;
     try { localStorage.setItem(ownedKey, JSON.stringify(value)); localStorage.setItem(migrationKey, '1'); } catch (error) {}
     return value;
   }
