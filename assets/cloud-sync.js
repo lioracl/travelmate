@@ -13,6 +13,7 @@
   var lastSaveTime = 0;
   var fullSyncPromises = new Map();
   var deletedTripIds = new Set();
+  var authGeneration = 0;
 
   function loadLibrary() {
     if (window.supabase && window.supabase.createClient) return Promise.resolve(window.supabase);
@@ -267,12 +268,18 @@
       return;
     }
 
+    authGeneration += 1;
+    saveTimers.forEach(function (timer) { clearTimeout(timer); });
+    saveTimers.clear();
+    saveChains.clear();
+    fullSyncPromises.clear();
     var currentTrips = getLocalTrips();
     if (activeUser) localStorage.setItem(USER_STORAGE_PREFIX + activeUser, JSON.stringify(currentTrips));
 
     if (!userId) {
       localStorage.removeItem(ACTIVE_USER_KEY);
       setLocalTrips([]);
+      window.dispatchEvent(new CustomEvent('travelmate:account-context-changed', { detail: { previousUserId: activeUser || null, userId: null, generation: authGeneration, trips: [] } }));
       return;
     }
 
@@ -286,6 +293,7 @@
     localStorage.setItem(ACTIVE_USER_KEY, userId);
     localStorage.setItem(userStorageKey, JSON.stringify(userTrips));
     setLocalTrips(userTrips);
+    window.dispatchEvent(new CustomEvent('travelmate:account-context-changed', { detail: { previousUserId: activeUser || null, userId: userId, generation: authGeneration, trips: userTrips } }));
   }
 
   function upsertLocalTrip(trip) {
@@ -508,6 +516,7 @@
     var current = localTripFor(incoming);
     if (current && !shouldUseCloudTrip(current, incoming)) return false;
     upsertLocalTrip(incoming);
+    window.dispatchEvent(new CustomEvent('travelmate:canonical-trip-replaced', { detail: { userId: incoming.ownerId || activeUserId(), tripId: incoming.id, trip: incoming, generation: authGeneration, source: 'realtime' } }));
     return true;
   }
 
@@ -676,12 +685,14 @@
 
   function queueTripSave(trip, delay) {
     var expectedUserId = activeUserId();
+    var expectedGeneration = authGeneration;
     if (isTripDeleted(trip, expectedUserId)) return;
     var snapshot = prepareTripSave(trip);
     var id = tripIdentity(snapshot, expectedUserId);
     clearTimeout(saveTimers.get(id));
     saveTimers.set(id, setTimeout(function () {
       saveTimers.delete(id);
+      if (expectedGeneration !== authGeneration || activeUserId() !== String(expectedUserId || '')) return;
       enqueueTripSave(snapshot, expectedUserId).catch(function (error) {
         console.error('TravelMate cloud save failed', error);
         window.dispatchEvent(new CustomEvent('travelmate:sync-error', { detail: error }));
@@ -1019,6 +1030,7 @@
     merged.sort(function (a, b) { return String(a.start).localeCompare(String(b.start)); });
     assertActiveUser(syncUserId);
     setLocalTrips(merged);
+    window.dispatchEvent(new CustomEvent('travelmate:canonical-trip-replaced', { detail: { userId: syncUserId, generation: authGeneration, trips: merged, source: 'cloud-sync' } }));
     return merged;
   }
 
