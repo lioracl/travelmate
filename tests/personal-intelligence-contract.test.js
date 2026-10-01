@@ -69,7 +69,8 @@ test('user profile exposes a small normalized declared-preference contract', () 
         activityDensity: 'dense',
         transport: 'transit',
         tripStyle: 'culture',
-        interests: ['culture', 'food', 'invalid', 'food']
+        interests: ['culture', 'food', 'invalid', 'food'],
+        learningEnabled: false
       }
     }
   });
@@ -80,7 +81,8 @@ test('user profile exposes a small normalized declared-preference contract', () 
     activityDensity: 'dense',
     transport: 'transit',
     tripStyle: 'culture',
-    interests: ['culture', 'food']
+    interests: ['culture', 'food'],
+    learningEnabled: false
   });
 });
 

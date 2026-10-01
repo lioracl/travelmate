@@ -41,6 +41,9 @@ function safeMoney(amount,currency){
 function buildReplay(current){
   current=current||{};
   var done=completedItems(current),notes=memories(current),byDate=Object.create(null);
+  var analytics=window.TravelMateTripAnalytics&&typeof window.TravelMateTripAnalytics.build==='function'
+    ? window.TravelMateTripAnalytics.build(current)
+    : null;
   done.forEach(function(item){if(!item.date)return;(byDate[item.date]||(byDate[item.date]={done:[],memories:[]})).done.push(item)});
   notes.forEach(function(item){if(!item.date)return;(byDate[item.date]||(byDate[item.date]={done:[],memories:[]})).memories.push(item)});
   var dates=Object.keys(byDate).sort(),total=expenseTotal(current),currency=expenseCurrency(current);
@@ -56,6 +59,7 @@ function buildReplay(current){
     expenseTotal:total,
     expenseCurrency:currency,
     expenseLabel:total?safeMoney(total,currency):'',
+    analytics:analytics,
     days:dates.map(function(date){return Object.freeze({date:date,done:byDate[date].done.slice(),memories:byDate[date].memories.slice()})})
   })
 }
@@ -69,6 +73,9 @@ function narrative(data){
   else if(data.planned)lines.push('יש '+data.planned+' פריטים מתוכננים, אך עדיין לא סומנו פעילויות או מקומות כהושלמו.');
   if(data.memories)lines.push('נשמרו '+data.memories+' רגעים מהטיול'+(data.attachments?' עם '+data.attachments+' קבצים מצורפים.':'.'));
   if(data.expenses)lines.push('נרשמו '+data.expenses+' הוצאות'+(data.expenseLabel?' בסכום כולל של '+data.expenseLabel+'.':'.'));
+  if(data.analytics&&data.analytics.movement&&data.analytics.movement.distanceKm>0){
+    lines.push('לפי הנתונים הזמינים הוערכו '+data.analytics.movement.walkingDistanceKm+' ק״מ בהליכה ועוד '+data.analytics.movement.transportDistanceKm+' ק״מ בתחבורה; אלה חישובים משוערים המבוססים על נקודות עם קואורדינטות.');
+  }
   if(data.savedOnly)lines.push(data.savedOnly+' מקומות נשמרו כרעיונות בלי תאריך ולכן אינם נספרים כביקורים.');
   if(!lines.length)lines.push('ככל שתסמן פעילויות כהושלמו ותשמור רגעים, ה־Replay ייבנה אוטומטית.');
   return lines.join(' ')
@@ -104,6 +111,11 @@ function render(){
     ['fa-camera','רגעים',String(data.memories)]
   ];
   if(data.expenses)statItems.push(['fa-wallet','הוצאות',data.expenseLabel||String(data.expenses)]);
+  if(data.analytics&&data.analytics.movement){
+    if(data.analytics.movement.walkingDistanceKm>0)statItems.push(['fa-person-walking','הליכה משוערת',data.analytics.movement.walkingDistanceKm+' ק״מ']);
+    if(data.analytics.movement.transportDistanceKm>0)statItems.push(['fa-route','תחבורה משוערת',data.analytics.movement.transportDistanceKm+' ק״מ']);
+    if(data.analytics.movement.travelMinutes>0)statItems.push(['fa-clock','זמן נסיעה/מעבר',Math.round(data.analytics.movement.travelMinutes/60*10)/10+' שעות']);
+  }
   stats.innerHTML='';
   statItems.forEach(function(item){var box=document.createElement('div');box.innerHTML='<i class="fa-solid '+item[0]+'" aria-hidden="true"></i><span><small>'+item[1]+'</small><strong>'+item[2]+'</strong></span>';stats.appendChild(box)});
   timeline.innerHTML='';

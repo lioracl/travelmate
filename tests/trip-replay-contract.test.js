@@ -39,6 +39,19 @@ test('Trip Replay distinguishes completed visits from planned and saved-only pla
   assert.equal(replay.days.length,2);
 });
 
+
+test('Trip Replay consumes the shared Trip Analytics contract when it is available',()=>{
+  const window={addEventListener(){},TravelMateEvents:null,TravelMateTripAnalytics:{build(trip){return {completedVisits:1,movement:{walkingDistanceKm:4.2,transportDistanceKm:8.1,travelMinutes:42}}}}};
+  const document={readyState:'loading',addEventListener(){},getElementById(){return null}};
+  const sandbox={window,document,URLSearchParams,Date,Object,Number,String,Array,Math,Intl,setTimeout(){}};
+  vm.runInNewContext(read('assets/trip-replay.js'),sandbox);
+  const replay=window.TravelMateTripReplay.build({activities:[{id:'a',date:'2026-09-02',time:'10:00',title:'Castle',done:true}],savedPlaces:[],memories:[],expenses:[]});
+  assert.equal(replay.analytics.movement.walkingDistanceKm,4.2);
+  assert.equal(replay.analytics.movement.transportDistanceKm,8.1);
+  assert.equal(replay.analytics.movement.travelMinutes,42);
+  assert.equal(replay.analytics.movement.travelMinutes,42);
+});
+
 test('Trip Replay prompt explicitly forbids inventing visits',()=>{
   const module=api(),data=module.build({city:'Prague',activities:[{id:'a',date:'2026-09-02',title:'Castle',done:true}],savedPlaces:[],memories:[],expenses:[]});
   const text=module.prompt(data);

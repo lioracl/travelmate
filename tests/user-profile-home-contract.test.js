@@ -40,6 +40,7 @@ test('Profile Lite derives display name, initials, avatar and time-aware greetin
   assert.equal(profile.initials, 'לא');
   assert.equal(profile.greeting, 'בוקר טוב');
   assert.equal(profile.avatarUrl, 'https://example.test/avatar.jpg');
+  assert.equal(profile.preferences.learningEnabled, true);
 });
 
 test('Profile Lite falls back to the email name and blocks unsafe avatar protocols', () => {
@@ -103,6 +104,7 @@ test('Home exposes one profile summary and reuses the existing account/profile o
   assert.match(home, /renderAdaptiveHome/);
   assert.match(home, /data-cloud-profile-form/);
   assert.match(app, /user-profile\.js/);
+  assert.match(app, /learned-preferences\.js/);
   assert.match(sw, /\.\/assets\/user-profile\.js/);
   assert.match(settings, /data-security-profile/);
   assert.match(settings, /data-security-profile-form/);
