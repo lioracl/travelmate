@@ -139,11 +139,15 @@ function build(trip){
 function buildPersonalStats(trips,authenticatedUserId){
   var list=Array.isArray(trips)?trips:[];
   var userId=String(authenticatedUserId||'');
-  var owned=list.filter(function(trip){
+  var ownedAll=list.filter(function(trip){
     return trip&&String(trip.ownerId||'')===userId&&!trip.deletedAt&&!trip.deletePending;
-  }).slice(0,50);
+  });
+  var owned=ownedAll.slice(0,50);
   var stats={
     tripsCount:owned.length,
+    tripsAvailable:ownedAll.length,
+    tripsConsidered:owned.length,
+    truncated:ownedAll.length>owned.length,
     totalDays:0,
     completedVisits:0,
     completedActivities:0,
@@ -156,7 +160,8 @@ function buildPersonalStats(trips,authenticatedUserId){
     distanceCoverage:0,
     timeCoverage:0
   };
-  var coverageWeight=0;
+  var distanceCoverageWeight=0;
+  var timeCoverageWeight=0;
   owned.forEach(function(trip){
     var result=build(trip);
     stats.totalDays+=Number(trip.days||0)||0;
@@ -168,14 +173,16 @@ function buildPersonalStats(trips,authenticatedUserId){
     stats.walkingDistanceKm+=result.movement.walkingDistanceKm;
     stats.transportDistanceKm+=result.movement.transportDistanceKm;
     stats.travelMinutes+=result.movement.travelMinutes;
-    coverageWeight+=1;
-    stats.distanceCoverage+=result.movement.distanceCoverage;
-    stats.timeCoverage+=result.movement.timeCoverage;
+    var possibleSegments=Number(result.coverage&&result.coverage.possibleSegments||0);
+    if(possibleSegments>0){
+      distanceCoverageWeight+=possibleSegments;
+      timeCoverageWeight+=possibleSegments;
+      stats.distanceCoverage+=result.movement.distanceCoverage*possibleSegments;
+      stats.timeCoverage+=result.movement.timeCoverage*possibleSegments;
+    }
   });
-  if(coverageWeight){
-    stats.distanceCoverage=Math.round(stats.distanceCoverage/coverageWeight*100)/100;
-    stats.timeCoverage=Math.round(stats.timeCoverage/coverageWeight*100)/100;
-  }
+  if(distanceCoverageWeight)stats.distanceCoverage=Math.round(stats.distanceCoverage/distanceCoverageWeight*100)/100;
+  if(timeCoverageWeight)stats.timeCoverage=Math.round(stats.timeCoverage/timeCoverageWeight*100)/100;
   stats.distanceKm=round(stats.distanceKm);
   stats.walkingDistanceKm=round(stats.walkingDistanceKm);
   stats.transportDistanceKm=round(stats.transportDistanceKm);

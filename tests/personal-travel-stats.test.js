@@ -44,6 +44,9 @@ test('personal stats aggregate only owned trips', () => {
   ], 'u1');
 
   assert.equal(stats.tripsCount, 2);
+  assert.equal(stats.tripsAvailable, 2);
+  assert.equal(stats.tripsConsidered, 2);
+  assert.equal(stats.truncated, false);
   assert.equal(stats.totalDays, 5);
   assert.equal(stats.completedVisits, 3);
   assert.equal(stats.completedActivities, 2);
@@ -61,4 +64,7 @@ test('personal stats exclude deleted trips and cap the input safely', () => {
   trips[2].deletedAt = '2026-09-01T00:00:00Z';
   const stats = a.buildPersonalStats(trips, 'u1');
   assert.equal(stats.tripsCount, 50);
+  assert.equal(stats.tripsAvailable, 59);
+  assert.equal(stats.tripsConsidered, 50);
+  assert.equal(stats.truncated, true);
 });
