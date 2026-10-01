@@ -200,10 +200,6 @@
     }
     var bucket = config.documentBucket || 'travel-documents';
 
-    function pendingCleanupKey(userId) {
-      return 'travelmate-document-cleanup:' + String(userId || '');
-    }
-
     function ownsStoragePath(userId, path) {
       if (typeof path !== 'string' || path.indexOf(String(userId) + '/') !== 0 || /\\/.test(path)) return false;
       return path.split('/').every(function (part) { return part && part !== '.' && part !== '..'; });
@@ -222,54 +218,10 @@
       return access;
     }
 
-    function readPendingCleanup(userId) {
-      try {
-        var parsed = JSON.parse(localStorage.getItem(pendingCleanupKey(userId)) || '[]');
-        return Array.isArray(parsed) ? parsed.filter(function (path) { return ownsStoragePath(userId, path); }) : [];
-      } catch (error) {
-        return [];
-      }
-    }
-
-    function writePendingCleanup(userId, paths) {
-      var unique = Array.from(new Set((paths || []).filter(function (path) { return ownsStoragePath(userId, path); })));
-      if (unique.length) localStorage.setItem(pendingCleanupKey(userId), JSON.stringify(unique));
-      else localStorage.removeItem(pendingCleanupKey(userId));
-    }
-
-    function queuePendingCleanup(userId, storagePath) {
-      if (!ownsStoragePath(userId, storagePath)) return;
-      var pending = readPendingCleanup(userId);
-      if (pending.indexOf(storagePath) < 0) pending.push(storagePath);
-      writePendingCleanup(userId, pending);
-    }
-
-    async function flushPendingCleanup() {
-      if (!currentUser) return;
-      var cleanupUserId = String(currentUser.id);
-      var cleanupEpoch = documentSessionEpoch;
-      var pending = readPendingCleanup(cleanupUserId);
-      if (!pending.length) return;
-      try { await requireDocumentAccess(cleanupUserId, cleanupEpoch); } catch (error) { return; }
-      for (var index = 0; index < pending.length; index += 1) {
-        var path = pending[index];
-        if (!isDocumentSession(cleanupUserId, cleanupEpoch)) return;
-        try {
-          // A lost metadata response may still have committed. Never remove a
-          // blob that has a surviving metadata reference.
-          var references = await client.from('travel_documents').select('id').eq('user_id', cleanupUserId).eq('storage_path', path).limit(1);
-          if (!isDocumentSession(cleanupUserId, cleanupEpoch)) return;
-          if (references.error) continue;
-          if (!(references.data || []).length) {
-            var result = await client.storage.from(bucket).remove([path]);
-            if (result.error) continue;
-            if (!isDocumentSession(cleanupUserId, cleanupEpoch)) return;
-          }
-          // Merge against the latest queue, preserving new failures queued while
-          // the network request was in flight.
-          writePendingCleanup(cleanupUserId, readPendingCleanup(cleanupUserId).filter(function (item) { return item !== path; }));
-        } catch (error) { /* Retain the owner-scoped retry after transport failure. */ }
-      }
+    async function abandonUpload(uploadId, userId, epoch) {
+      if (!uploadId || !isDocumentSession(userId, epoch)) return;
+      try { await client.rpc('abandon_document_upload', { p_upload_id: uploadId }); }
+      catch (error) { /* The durable deadline recovers even a lost abandon request. */ }
     }
 
     function clearRemoteDocumentMetadata() {
@@ -321,7 +273,6 @@
       setTimeout(async function () {
         if (!isDocumentSession(sessionUserId, sessionEpoch)) return;
         try {
-          await flushPendingCleanup();
           if (isDocumentSession(sessionUserId, sessionEpoch)) await renderDocuments(sessionEpoch, sessionUserId);
         } catch (error) {
           if (isDocumentSession(sessionUserId, sessionEpoch)) setStatus(storageErrorMessage(error), true);
@@ -458,6 +409,7 @@
       uploadInProgress = true;
       var uploadedCount = 0;
       var objectName = null;
+      var uploadId = null;
       try {
         // Android document providers can revoke a temporary File handle while an
         // authentication request is in flight. Copy every selected file into
@@ -477,8 +429,20 @@
           setStatus('מצפין/ה ומעלה ' + (index + 1) + ' מתוך ' + preparedFiles.length + '…');
           var encrypted = await encryptBytes(preparedFiles[index].bytes, passphrase);
           if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) throw new Error('DOCUMENT_SESSION_CHANGED');
-          var safeName = sanitizeFileName(file.name);
-          objectName = uploadUserId + '/' + encodeURIComponent(tripId) + '/' + secureObjectId() + '-' + safeName + '.vault';
+          // Durable intent must exist before Storage upload; fail closed if the
+          // server migration is unavailable. The server assigns the owner/path.
+          var journalResult = await client.rpc('begin_document_upload', { p_trip_id: tripId, p_expected_owner: uploadUserId });
+          if (journalResult.error) throw journalResult.error;
+          var journal = journalResult.data && journalResult.data[0];
+          if (!journal || typeof journal.upload_id !== 'string' ||
+              !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(journal.upload_id) ||
+              !ownsStoragePath(uploadUserId, journal.storage_path) ||
+              journal.storage_path !== uploadUserId + '/__lifecycle_v1/' + journal.upload_id + '.vault') {
+            throw new Error('DOCUMENT_JOURNAL_INVALID');
+          }
+          uploadId = journal.upload_id;
+          objectName = journal.storage_path;
+          if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) throw new Error('DOCUMENT_SESSION_CHANGED');
           var uploadResult = await client.storage.from(bucket).upload(objectName, encrypted.blob, {
             contentType: 'application/octet-stream',
             cacheControl: '0',
@@ -486,7 +450,6 @@
           });
           if (uploadResult.error) throw uploadResult.error;
           if (documentSessionEpoch !== uploadSessionEpoch || !currentUser || String(currentUser.id) !== uploadUserId) {
-            queuePendingCleanup(uploadUserId, objectName);
             throw new Error('DOCUMENT_SESSION_CHANGED');
           }
           var metadataResult = await client.from('travel_documents').insert({
@@ -503,12 +466,10 @@
             encryption_iv: bytesToBase64(encrypted.iv)
           });
           if (metadataResult.error) {
-            queuePendingCleanup(uploadUserId, objectName);
-            if (isDocumentSession(uploadUserId, uploadSessionEpoch)) await flushPendingCleanup();
-            if (readPendingCleanup(uploadUserId).indexOf(objectName) < 0) objectName = null;
             throw metadataResult.error;
           }
           objectName = null;
+          uploadId = null;
           if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) return;
           uploadedCount += 1;
         }
@@ -517,9 +478,7 @@
         setStatus(uploadedCount + ' קבצים הוצפנו ונשמרו בהצלחה בענן הפרטי.');
         await renderDocuments();
       } catch (error) {
-        if (objectName) queuePendingCleanup(uploadUserId, objectName);
-        if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) return;
-        if (objectName) await flushPendingCleanup();
+        await abandonUpload(uploadId, uploadUserId, uploadSessionEpoch);
         if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) return;
         console.error('TravelMate vault upload failed', error);
         if (uploadedCount > 0) {
@@ -695,21 +654,13 @@
       if (!confirm('למחוק לצמיתות את המסמך מהענן? לא ניתן לבטל פעולה זו.')) return;
       setStatus('מוחק/ת את המסמך…');
       try {
-      await requireDocumentAccess(deleteUserId, deleteEpoch);
-      // Record intent before metadata removal so a lost response remains retryable.
-      queuePendingCleanup(currentUser.id, record.storage_path);
-      var metadataResult = await client.from('travel_documents').delete().eq('id', record.id).eq('user_id', deleteUserId).eq('storage_path', record.storage_path);
-      if (!isDocumentSession(deleteUserId, deleteEpoch)) return;
-      if (metadataResult.error) return setStatus(databaseErrorMessage(metadataResult.error), true);
-      await flushPendingCleanup();
-      if (!isDocumentSession(deleteUserId, deleteEpoch)) return;
-      if (readPendingCleanup(deleteUserId).indexOf(record.storage_path) >= 0) {
-        setStatus('המסמך הוסר מהרשימה. ניקוי הקובץ המוצפן יושלם אוטומטית כשהחיבור יאפשר זאת.');
+        await requireDocumentAccess(deleteUserId, deleteEpoch);
+        // The database DELETE trigger records cleanup in the same transaction.
+        var metadataResult = await client.from('travel_documents').delete().eq('id', record.id).eq('user_id', deleteUserId).eq('storage_path', record.storage_path);
+        if (!isDocumentSession(deleteUserId, deleteEpoch)) return;
+        if (metadataResult.error) return setStatus(databaseErrorMessage(metadataResult.error), true);
+        setStatus('המסמך הוסר מהרשימה. ניקוי הקובץ המוצפן יתבצע בשרת לאחר תקופת המתנה בטוחה.');
         await renderDocuments();
-        return;
-      }
-      setStatus('המסמך נמחק לצמיתות.');
-      await renderDocuments();
       } catch (error) {
         if (isDocumentSession(deleteUserId, deleteEpoch)) setStatus(storageErrorMessage(error), true);
       }
@@ -769,7 +720,9 @@
 
     var authEventVersion = 0;
     client.auth.onAuthStateChange(function (_event, session) { authEventVersion += 1; applySession(session); });
-    window.addEventListener('online', function () { if (currentUser) flushPendingCleanup(); });
+    window.addEventListener('online', function () {
+      if (currentUser) renderDocuments().catch(function () { /* Leave retry available. */ });
+    });
     var initialAuthVersion = authEventVersion;
     var sessionResult = await client.auth.getSession();
     if (initialAuthVersion === authEventVersion) await applySession(sessionResult.data.session);
@@ -842,7 +795,7 @@
     bytes[8] = (bytes[8] & 63) | 128;
     return Array.from(bytes, function (byte) { return byte.toString(16).padStart(2, '0'); }).join('');
   }
-  function storageErrorMessage(error) { var quota = String(error && (error.code || error.error || error.message) || ''); if (/EntityTooLarge|exceed.*(?:size|limit)|(?:size|limit).*exceed|413/i.test(quota)) return 'הקובץ המוצפן חורג ממגבלת האחסון. בחר קובץ קטן יותר ונסה שוב.'; if (/quota|capacity|storage.*full|insufficient.*storage/i.test(quota)) return 'אין כרגע מספיק מקום באחסון הענן. הקובץ לא נשמר; אפשר לנסות שוב כשהאחסון יהיה זמין.'; var message = String(error && (error.message || error.code || error.name) || ''); if (/requested file|directory could not be found|NotFoundError|FILE_SELECTION_ABORTED/i.test(message)) return 'הקובץ שבחרת לא היה זמין לקריאה. בחר אותו שוב מתוך „קבצים” או „הורדות” במכשיר.'; if (/MFA_REQUIRED/i.test(message)) return 'כדי לגשת למסמכים אישיים יש להשלים אימות דו־שלבי. פתח את ההגדרות, השלם אימות ונסה שוב.'; if (/STORAGE_SIGN_IN_REQUIRED|JWT|session/i.test(message)) return 'ההתחברות פגה. התחבר מחדש ולאחר מכן נסה להעלות שוב.'; if (/STORAGE_CLOUD_UNAVAILABLE/i.test(message)) return 'שירות הענן עדיין לא נטען. רענן את האפליקציה ונסה שוב.'; if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/mime|content.?type/i.test(message)) return 'סוג הקובץ אינו מורשה עדיין באחסון. הפעל את עדכון ההעלאות ב־Supabase ונסה שוב.'; if (/row-level security|unauthorized|permission|403/i.test(message)) return 'האחסון דחה את ההרשאה. השלם אימות דו־שלבי או התחבר מחדש ונסה שוב.'; if (/network|fetch|timeout/i.test(message)) return 'החיבור לענן נכשל. בדוק את הרשת ונסה שוב.'; return 'הפעולה מול האחסון נכשלה: ' + (message || 'נסה שוב.'); }
+  function storageErrorMessage(error) { var setup = String(error && (error.message || error.code) || ''); if (/DOCUMENT_JOURNAL|begin_document_upload|PGRST202/i.test(setup)) return 'שירות ההעלאה המאובטחת עדיין אינו זמין. הקובץ לא הועלה; רענן או נסה שוב מאוחר יותר.'; var quota = String(error && (error.code || error.error || error.message) || ''); if (/EntityTooLarge|exceed.*(?:size|limit)|(?:size|limit).*exceed|413/i.test(quota)) return 'הקובץ המוצפן חורג ממגבלת האחסון. בחר קובץ קטן יותר ונסה שוב.'; if (/quota|capacity|storage.*full|insufficient.*storage/i.test(quota)) return 'אין כרגע מספיק מקום באחסון הענן. הקובץ לא נשמר; אפשר לנסות שוב כשהאחסון יהיה זמין.'; var message = String(error && (error.message || error.code || error.name) || ''); if (/requested file|directory could not be found|NotFoundError|FILE_SELECTION_ABORTED/i.test(message)) return 'הקובץ שבחרת לא היה זמין לקריאה. בחר אותו שוב מתוך „קבצים” או „הורדות” במכשיר.'; if (/MFA_REQUIRED/i.test(message)) return 'כדי לגשת למסמכים אישיים יש להשלים אימות דו־שלבי. פתח את ההגדרות, השלם אימות ונסה שוב.'; if (/STORAGE_SIGN_IN_REQUIRED|JWT|session/i.test(message)) return 'ההתחברות פגה. התחבר מחדש ולאחר מכן נסה להעלות שוב.'; if (/STORAGE_CLOUD_UNAVAILABLE/i.test(message)) return 'שירות הענן עדיין לא נטען. רענן את האפליקציה ונסה שוב.'; if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/mime|content.?type/i.test(message)) return 'סוג הקובץ אינו מורשה עדיין באחסון. הפעל את עדכון ההעלאות ב־Supabase ונסה שוב.'; if (/row-level security|unauthorized|permission|403/i.test(message)) return 'האחסון דחה את ההרשאה. השלם אימות דו־שלבי או התחבר מחדש ונסה שוב.'; if (/network|fetch|timeout/i.test(message)) return 'החיבור לענן נכשל. בדוק את הרשת ונסה שוב.'; return 'הפעולה מול האחסון נכשלה: ' + (message || 'נסה שוב.'); }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

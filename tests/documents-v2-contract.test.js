@@ -155,17 +155,14 @@ test('Document Vault accurately distinguishes encrypted file contents from prote
   assert.match(vault, /אין להזין בהם מידע רגיש/);
 });
 
-test('Document Vault deletes metadata first and queues encrypted blob cleanup safely', () => {
+test('Document Vault metadata deletion creates durable server cleanup rather than browser removal', () => {
   assert.match(vault, /var metadataResult = await client\.from\('travel_documents'\)\.delete\(\)\.eq\('id', record\.id\)/);
-  assert.match(vault, /var result = await client\.storage\.from\(bucket\)\.remove\(\[path\]\)/);
-  const deletion = vault.slice(vault.indexOf('async function deleteDocument('), vault.indexOf('function requestDocumentUpload('));
-  assert.ok(
-    deletion.indexOf("var metadataResult = await client.from('travel_documents').delete().eq('id', record.id)") >= 0
-      && deletion.indexOf('var metadataResult = await') < deletion.indexOf('await flushPendingCleanup();'),
-    'metadata must be removed before the encrypted blob'
-  );
-  assert.match(vault, /queuePendingCleanup\(currentUser\.id, record\.storage_path\)/);
-  assert.match(vault, /eq\('user_id', cleanupUserId\)\.eq\('storage_path', path\)\.limit\(1\)/);
-  assert.match(vault, /await flushPendingCleanup\(\)/);
-  assert.match(vault, /window\.addEventListener\('online', function \(\) \{ if \(currentUser\) flushPendingCleanup\(\); \}\)/);
+  const journal = fs.readFileSync('supabase/migrations/20261001151643_document_lifecycle_journal.sql','utf8');
+  assert.doesNotMatch(vault, /storage\.from\(bucket\)\.remove\(/);
+  assert.match(journal, /create trigger document_metadata_delete after delete on public\.travel_documents/);
+  assert.match(journal, /where storage_path=u\.storage_path/);
+  assert.match(journal, /state='cleanup_requested'/);
+  assert.match(journal, /interval '24 hours'/);
+  assert.match(vault, /window\.addEventListener\('online'/);
+  assert.match(vault, /renderDocuments\(\)\.catch/);
 });

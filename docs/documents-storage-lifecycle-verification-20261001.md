@@ -1,72 +1,23 @@
-# Documents Storage Lifecycle verification — PR #141
+# Durable Documents recovery verification — PR #141
 
-Branch: `codex/documents-storage-lifecycle-20261001`; original head: `01db9f7`.
+Branch: codex/documents-storage-lifecycle-20261001. Starting commit: 73e298ea759d2467c29df085a348f5663db43f0c.
 
-## Two-pass findings
+Browser cleanup cannot survive process termination between upload and metadata persistence. The new private PostgreSQL journal commits an authenticated owner-bound intent before upload. Storage requires that intent; metadata triggers atomically commit or schedule cleanup. An internal Edge worker uses leases and tokens, rechecks owner/object identity/references, and removes confirmed candidates through the Storage API. It never reads document contents or encryption keys. See [architecture and rollout](../supabase/functions/document-recovery/README.md).
 
-The original 531 Node tests passed. Six new executable regression cases failed
-before the fix: account changes during preparation/encryption, rejected metadata
-requests, foreign cleanup paths/concurrent queue additions, cleanup of referenced
-files, and sign-out after upload. Pass two traced the remaining async boundaries,
-delete races, initial session ordering, token refresh, download, retry and limits.
+Expired uploads require two stable observations separated by an additional grace period. Missing metadata alone never authorizes deletion. Unknown objects, foreign owners, changed identity and uncertain completion remain ambiguous. Explicit metadata deletion establishes cleanup provenance. No existing orphan is adopted. The logged server journal survives browser termination; recovery runs independently once the scheduler and worker are enabled.
 
-The fix pins operations to their initiating owner/epoch before preparation,
-guards continuations, clears metadata/form/passphrase/preview on identity change,
-preserves same-owner refresh, and ignores superseded initial session responses.
-Record and path ownership are checked on list/open/delete/cleanup. Delete intent
-is queued before metadata deletion. Failed cleanup stays owner-scoped and retries
-on reconnect or return to that owner. Cleanup checks surviving metadata references,
-handles thrown transport errors and preserves newly queued paths. Duplicate upload
-submission is blocked. Contract assertions follow the guarded cleanup path and
-are supplemented by behavioral coverage.
+Pass one traced encryption, upload, metadata, cleanup, reconnect, existing policies/migrations and server infrastructure. Pass two checked lost acknowledgments, rollback, expiry, identity changes, legacy clients and token idempotence. Cached clients cannot make new unjournaled uploads. Existing legacy documents remain readable/editable; future explicit deletion may establish cleanup provenance.
 
-Document bytes remain AES-GCM encrypted in Supabase Storage. Database rows contain
-metadata and salt/IV only. No second document store was introduced.
+Owner RPCs require authenticated identity, existing MFA rules and an expected-owner consistency guard. The private table denies direct access. Security-definer functions have fixed empty search paths and explicit grants/principal checks. Worker RPCs are service-only. HTTP invocation additionally requires a dedicated scheduler secret; recovery is disabled by default. Existing ownership/MFA policies remain effective with an additional restrictive Storage write fence.
 
-## Read-only production inspection
+Verification: 562 main Node tests plus 25 actual PostgreSQL/PGlite migration tests = **587 passed**. Full Playwright: **32 passed**, including eight document browser flows. JavaScript syntax, Deno frozen type check/lint, assets, whitespace and staged sensitive-content checks passed before commit. Coverage includes process loss, metadata failure, cleanup failure/retry, account change/sign-out, duplicate submissions, reconnect, foreign objects, references, rollback, expiry, stale worker tokens, idempotence and ambiguous completion.
 
-The bucket is private, permits encrypted `application/octet-stream`, and limits
-each object to 26,214,400 bytes. RLS is enabled on metadata and Storage objects.
-Metadata policies require `auth.uid() = user_id`; Storage policies require the
-owning first path segment and the private document bucket. MFA policies are
-restrictive, so they do not bypass ownership. The metadata schema has no binary
-document column. Only schema, bucket settings and policy definitions were read.
-No document rows/objects were read or modified; no schema/RLS/migration changes.
-Actual cross-account denial was modeled locally rather than exercised in production.
+Browser tests use real encryption and synthetic backend responses, with external requests blocked. SQL tests execute the actual migration and original ownership/MFA policies with synthetic accounts/objects in memory. They do not exercise hosted Storage or simultaneous transactions on separate connections.
 
-## Quota and user experience
+Only read-only production inspection occurred. No production data, schema, RLS, migrations, Storage objects, secrets or cron jobs were modified. The four known orphan objects were not deleted or migrated. The existing private bucket and 25 MiB limit remain unchanged. Upload quota/provider errors produce no document metadata, display failure and allow retry; durable intent is abandoned or expires. Missing or uncertain objects are retained safely.
 
-The plaintext limit reserves the 16-byte AES-GCM tag: 26,214,384 bytes. Oversized
-files fail before upload. Server size/quota failures stop before metadata insertion,
-display inline smaller-file/insufficient-space guidance, and allow retry. Network
-errors give connection/retry guidance. Preparation, encryption/upload, success,
-failure, removal and pending cleanup use the existing status region. Single-file
-failure preserves selection; partial success asks users to reselect failures only.
-Offline binaries are not stored locally or automatically replayed.
-The existing size display is trip-scoped and its fixed 1 GiB progress denominator
-does not represent actual project capacity or available quota.
+Remaining risks: isolated real Storage/API, JWT/MFA and concurrent claim verification; coordinated migration/worker/client rollout; monitoring of backlog, ambiguity and tombstone growth. Production currently lacks this journal/RPC/worker/scheduler, so the new client deliberately fails closed until the migration is available. No authorized isolated hosted stack or local Docker stack was available.
 
-## Verification
+Existing production advisor warnings for authenticated security-definer functions and disabled leaked-password protection were left unchanged. References: [function lint](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection), [Storage API requirement](https://supabase.com/docs/guides/storage/schema/design).
 
-- Full Node suite: 549 passed, including 18 new executable lifecycle cases.
-- Focused Documents/storage/account-session/asset contracts passed.
-- Playwright: 29 passed, including 5 new lifecycle flows with real encryption,
-  synthetic accounts/files, mocked Supabase and external networking blocked.
-- All six changed/new JavaScript files passed syntax checks.
-- Asset checks cover index/trip pages, stylesheets, service-worker and lazy assets.
-- `git diff --check` passed; staged sensitive-content scan completed before commit.
-
-## Remaining blocker
-
-Storage upload and metadata insertion are separate requests. Process termination
-after Storage acceptance but before metadata or cleanup intent is recorded can
-leave an untracked object. A lost acknowledgement can also race eventual server
-completion. Client rollback/reference checks do not make these requests atomic.
-Cleanup depends on retained localStorage and returning to the owning account.
-
-Orphan-free recovery after process loss or ambiguous completion is not certified.
-An authoritative pending lifecycle/reconciliation design is required to close
-that guarantee; production schema/RLS changes are prohibited in this task.
-No existing production objects were enumerated or deleted to hide this gap.
-
-Merge readiness: **NOT READY** for the requested complete lifecycle guarantee.
+**Merge readiness: NOT READY** pending isolated provider/concurrency verification and a coordinated rollout plan. No merge or preview deployment occurred.

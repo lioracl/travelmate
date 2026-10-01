@@ -5,3 +5,8 @@ verify_jwt = true
 
 [functions.admin-center]
 verify_jwt = true
+
+# Internal scheduler only: dedicated secret authorization in the handler.
+# User operations remain JWT/MFA-protected database RPCs, not this endpoint.
+[functions.document-recovery]
+verify_jwt = false

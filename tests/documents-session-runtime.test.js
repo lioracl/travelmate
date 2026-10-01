@@ -7,7 +7,7 @@ const source = fs.readFileSync('assets/document-vault.js', 'utf8');
 function between(start, end) { return source.slice(source.indexOf(start), source.indexOf(end)); }
 function deferred() { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; }
 function fixture() {
-  const calls = { uploads: [], inserts: [], removes: [], statuses: [], renders: 0 };
+  const calls = { uploads: [], inserts: [], removes: [], statuses: [], renders: 0, journals: [], abandoned: [], deletes: [] };
   const store = new Map();
   const ctx = {
     currentUser: { id: 'A' }, documentSessionEpoch: 1, uploadInProgress: false,
@@ -23,14 +23,26 @@ function fixture() {
     requirePrivateStorageAccess: async () => ({ session: { user: ctx.currentUser } }),
     localStorage: { getItem: k => store.get(k), setItem: (k, v) => store.set(k, v), removeItem: k => store.delete(k) },
     client: {
+      rpc: async (name, args) => {
+        if (name === 'begin_document_upload') {
+          if (args.p_expected_owner !== ctx.currentUser.id) return { error: new Error('DOCUMENT_SESSION_CHANGED') };
+          const upload_id = '00000000-0000-4000-8000-' + String(calls.journals.length).padStart(12,'0');
+          const row = { upload_id, user_id: ctx.currentUser.id, storage_path: ctx.currentUser.id + '/__lifecycle_v1/' + upload_id + '.vault', state: 'pending' };
+          calls.journals.push(row); return { data: [row] };
+        }
+        calls.abandoned.push(args.p_upload_id);
+        const row = calls.journals.find(j => j.upload_id === args.p_upload_id);
+        if (row && !calls.inserts.some(d => d.storage_path === row.storage_path)) row.state = 'cleanup_requested';
+        return {};
+      },
       storage: { from: () => ({ upload: async path => { calls.uploads.push(path); return {}; }, remove: async paths => { calls.removes.push(...paths); return {}; } }) },
       from: () => ({ insert: async row => { calls.inserts.push(row); return {}; },
         select() { return this; }, eq() { return this; }, limit: async () => ({ data: [], error: null }),
-        delete() { return this; }, then(resolve) { resolve({ data: [], error: null }); } })
+        delete() { calls.deletes.push(ctx.currentUser.id); return this; }, then(resolve) { resolve({ data: [], error: null }); } })
     }
   };
   vm.createContext(ctx);
-  vm.runInContext(between('function pendingCleanupKey(', 'function clearRemoteDocumentMetadata(') + '\n' + between('async function saveFiles(', 'function downloadBlob(') + '\n' + between('async function deleteDocument(', 'function requestDocumentUpload('), ctx);
+  vm.runInContext(between('function ownsStoragePath(', 'function clearRemoteDocumentMetadata(') + '\n' + between('async function saveFiles(', 'function downloadBlob(') + '\n' + between('async function deleteDocument(', 'function requestDocumentUpload('), ctx);
   return { ctx, calls, store };
 }
 const file = { name: 'synthetic.txt', size: 1, type: 'text/plain' };
@@ -57,23 +69,18 @@ test('rejected metadata request retains owner-scoped cleanup', async () => {
   ctx.client.from = () => ({ insert: async () => { throw new Error('network'); }, select() { return this; }, eq() { return this; }, limit: async () => ({ error: new Error('offline') }) });
   await ctx.saveFiles([file]);
   assert.equal(calls.uploads.length, 1);
-  assert.equal(ctx.readPendingCleanup('A').length, 1);
-  assert.equal(ctx.readPendingCleanup('B').length, 0);
+  assert.equal(calls.journals[0].user_id, 'A');
+  assert.equal(calls.journals[0].state, 'cleanup_requested');
 });
-test('cleanup refuses another owner path and preserves additions during an in-flight remove', async () => {
-  const { ctx, calls } = fixture(), wait = deferred();
-  ctx.writePendingCleanup('A', ['A/trip/old', 'B/trip/private']);
-  ctx.client.storage.from = () => ({ remove: async paths => { calls.removes.push(...paths); await wait.promise; return {}; } });
-  const pending = ctx.flushPendingCleanup(); await new Promise(r => setImmediate(r));
-  ctx.queuePendingCleanup('A', 'A/trip/new'); wait.resolve(); await pending;
-  assert.deepEqual(calls.removes, ['A/trip/old']);
-  assert.deepEqual(Array.from(ctx.readPendingCleanup('A')), ['A/trip/new']);
-});
-test('cleanup never removes a path still referenced by document metadata', async () => {
+test('foreign journal response fails closed without constructing or deleting its path', async () => {
   const { ctx, calls } = fixture();
-  ctx.queuePendingCleanup('A', 'A/trip/managed');
-  ctx.client.from = () => ({ select() { return this; }, eq() { return this; }, limit: async () => ({ data: [{ id: 'existing' }] }) });
-  await ctx.flushPendingCleanup(); assert.equal(calls.removes.length, 0);
+  ctx.client.rpc = async () => ({ data: [{ upload_id: 'synthetic', storage_path: 'B/__lifecycle_v1/synthetic.vault' }] });
+  await ctx.saveFiles([file]); assert.equal(calls.uploads.length, 0); assert.equal(calls.removes.length, 0);
+});
+test('lost metadata success response never causes client deletion of a referenced blob', async () => {
+  const { ctx, calls } = fixture();
+  ctx.client.from = () => ({ insert: async row => { calls.inserts.push(row); throw new Error('lost reply'); } });
+  await ctx.saveFiles([file]); assert.equal(calls.removes.length, 0); assert.equal(calls.journals[0].state, 'pending');
 });
 test('sign-out after upload cannot mutate metadata or the signed-out UI', async () => {
   const { ctx, calls } = fixture(), wait = deferred();
@@ -83,7 +90,8 @@ test('sign-out after upload cannot mutate metadata or the signed-out UI', async 
   wait.resolve({}); await pending;
   assert.equal(calls.inserts.length, 0); assert.equal(calls.removes.length, 0);
   assert.equal(calls.statuses.length, statusCount);
-  assert.equal(ctx.readPendingCleanup('A').length, 1);
+  assert.equal(calls.journals[0].user_id, 'A'); assert.equal(calls.journals[0].state, 'pending');
+  assert.equal(calls.abandoned.length, 0);
 });
 test('switch during metadata persistence preserves the managed file and next-account UI', async () => {
   const { ctx, calls } = fixture(), wait = deferred();
@@ -94,27 +102,26 @@ test('switch during metadata persistence preserves the managed file and next-acc
   assert.equal(calls.inserts[0].user_id, 'A'); assert.equal(calls.removes.length, 0);
   assert.equal(ctx.passphraseInput.value, 'B-passphrase'); assert.equal(calls.statuses.length, statusCount);
 });
-test('switch during metadata deletion queues cleanup for the initiating owner only', async () => {
+test('switch during metadata deletion cannot initiate any storage cleanup in B', async () => {
   const { ctx, calls } = fixture(), wait = deferred();
   ctx.client.from = () => ({ delete() { return this; }, eq() { return this; }, then(resolve) { wait.promise.then(resolve); } });
   const pending = ctx.deleteDocument({ id: 'id', user_id: 'A', storage_path: 'A/trip/file' });
   await new Promise(r => setImmediate(r)); ctx.currentUser = { id: 'B' }; ctx.documentSessionEpoch++;
   wait.resolve({}); await pending;
-  assert.equal(calls.removes.length, 0); assert.equal(ctx.readPendingCleanup('A').length, 1);
-  assert.equal(ctx.readPendingCleanup('B').length, 0);
+  assert.equal(calls.removes.length, 0); assert.equal(calls.journals.length, 0);
 });
-test('failed storage deletion remains queued and reconnect retry removes it', async () => {
-  const { ctx, calls } = fixture(); let offline = true;
-  ctx.client.storage.from = () => ({ remove: async paths => { calls.removes.push(...paths); if (offline) throw new Error('offline'); return {}; } });
+test('metadata deletion delegates durable retry to server without browser storage calls', async () => {
+  const { ctx, calls } = fixture();
+  ctx.client.storage.from = () => ({ remove: async () => { throw new Error('must never execute'); } });
   await ctx.deleteDocument({ id: 'id', user_id: 'A', storage_path: 'A/trip/file' });
-  assert.equal(ctx.readPendingCleanup('A').length, 1);
-  offline = false; await ctx.flushPendingCleanup(); assert.equal(ctx.readPendingCleanup('A').length, 0);
+  assert.deepEqual(calls.deletes, ['A']); assert.equal(calls.removes.length, 0);
+  assert.match(calls.statuses.at(-1)[0], /בשרת/);
 });
-test('metadata error rolls back only an unreferenced uploaded blob', async () => {
+test('metadata error records abandonment and leaves grace-period cleanup to server', async () => {
   const { ctx, calls } = fixture();
   ctx.client.from = () => ({ insert: async () => ({ error: new Error('metadata denied') }), select() { return this; }, eq() { return this; }, limit: async () => ({ data: [] }) });
-  await ctx.saveFiles([file]); assert.ok(calls.removes.length > 0);
-  assert.equal(ctx.readPendingCleanup('A').length, 0); assert.equal(ctx.uploadButton.disabled, false);
+  await ctx.saveFiles([file]); assert.equal(calls.removes.length, 0);
+  assert.equal(calls.journals[0].state, 'cleanup_requested'); assert.equal(ctx.uploadButton.disabled, false);
 });
 test('capacity failure creates no metadata and leaves upload retry available', async () => {
   const { ctx, calls } = fixture();
@@ -136,13 +143,12 @@ test('access resolved for another account cannot rebind the initiating operation
   const { ctx, calls } = fixture(); ctx.requirePrivateStorageAccess = async () => ({ session: { user: { id: 'B' } } });
   await ctx.saveFiles([file]); assert.equal(calls.uploads.length, 0); assert.equal(ctx.currentUser.id, 'A');
 });
-test('cleanup transport completion after switch only changes the original owner queue', async () => {
-  const { ctx } = fixture(), wait = deferred();
-  ctx.queuePendingCleanup('A', 'A/trip/file'); ctx.queuePendingCleanup('B', 'B/trip/private');
-  ctx.client.storage.from = () => ({ remove: () => wait.promise });
-  const pending = ctx.flushPendingCleanup(); await new Promise(r => setImmediate(r));
-  ctx.currentUser = { id: 'B' }; ctx.documentSessionEpoch++; wait.resolve({}); await pending;
-  assert.equal(ctx.readPendingCleanup('A').length, 1); assert.equal(ctx.readPendingCleanup('B').length, 1);
+test('lost abandon request cannot erase the server journal or disable retry', async () => {
+  const { ctx, calls } = fixture(), rpc = ctx.client.rpc;
+  ctx.client.rpc = (name,args) => name === 'abandon_document_upload' ? Promise.reject(new Error('offline')) : rpc(name,args);
+  ctx.client.from = () => ({ insert: async () => { throw new Error('offline'); } });
+  await ctx.saveFiles([file]); assert.equal(calls.journals.length, 1);
+  assert.equal(calls.journals[0].state, 'pending'); assert.equal(ctx.uploadButton.disabled, false);
 });
 test('foreign metadata records and traversal paths never reach delete', async () => {
   const { ctx, calls } = fixture();

@@ -30,6 +30,11 @@ jobs:
       - name: Run contract and regression tests
         run: node --test tests/*.test.js
 
+      - name: Verify document recovery migration locally
+        run: |
+          npm ci --prefix tools/document-recovery --ignore-scripts --no-audit --no-fund
+          npm test --prefix tools/document-recovery
+
       - name: Install Playwright
         run: |
           npm install --no-save @playwright/test@1.55.0
