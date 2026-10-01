@@ -189,7 +189,7 @@ function categoryToInterests(value){
 
 function ownedTrip(trip,authenticatedUserId){
   var ownerId=clean(trip&&trip.ownerId,120);
-  return Boolean(ownerId&&clean(authenticatedUserId,120)===ownerId&&!trip.deletedAt&&!trip.deletePending);
+  return Boolean(ownerId&&clean(trip&&trip.id,120)&&clean(authenticatedUserId,120)===ownerId&&!trip.deletedAt&&!trip.deletePending);
 }
 
 function completedCategoryEvidence(trip,authenticatedUserId){
@@ -216,7 +216,14 @@ function completedCategoryEvidence(trip,authenticatedUserId){
 
 function buildCrossTripSuggestions(trips,authenticatedUserId){
   var list=Array.isArray(trips)?trips:[];
-  var owned=list.filter(function(trip){return ownedTrip(trip,authenticatedUserId);});
+  var seenTrips=Object.create(null);
+  var owned=list.filter(function(trip){
+    if(!ownedTrip(trip,authenticatedUserId))return false;
+    var id=clean(trip.id,120);
+    if(seenTrips[id])return false;
+    seenTrips[id]=true;
+    return true;
+  });
   if(owned.length<2)return [];
   var byPreference=Object.create(null);
   owned.forEach(function(trip){

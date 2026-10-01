@@ -32,7 +32,8 @@ function expenseTotal(current){
 function expenseCurrency(current){
   var counts=Object.create(null);
   (current.expenses||[]).forEach(function(item){var code=clean(item&&item.currency)||'EUR';counts[code]=(counts[code]||0)+1});
-  return Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]})[0]||'EUR'
+  var codes=Object.keys(counts);
+  return codes.length>1?'':codes[0]||'EUR'
 }
 function safeMoney(amount,currency){
   try{return new Intl.NumberFormat('he-IL',{style:'currency',currency:currency,maximumFractionDigits:2}).format(amount)}
@@ -46,7 +47,7 @@ function buildReplay(current){
     : null;
   done.forEach(function(item){if(!item.date)return;(byDate[item.date]||(byDate[item.date]={done:[],memories:[]})).done.push(item)});
   notes.forEach(function(item){if(!item.date)return;(byDate[item.date]||(byDate[item.date]={done:[],memories:[]})).memories.push(item)});
-  var dates=Object.keys(byDate).sort(),total=expenseTotal(current),currency=expenseCurrency(current);
+  var dates=Object.keys(byDate).sort(),currency=expenseCurrency(current),total=currency?expenseTotal(current):null;
   return Object.freeze({
     destination:[clean(current.city),clean(current.country)].filter(Boolean).join(', '),
     start:clean(current.start),end:clean(current.end),

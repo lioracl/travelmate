@@ -36,8 +36,11 @@ function dayMode(trip,date){
   return'balanced'
 }
 function coordinates(record){
-  var lat=Number(record&&(record.lat!==undefined?record.lat:record.latitude));
-  var lon=Number(record&&(record.lon!==undefined?record.lon:record.lng!==undefined?record.lng:record.longitude));
+  if(!record)return null;
+  var rawLat=record.lat!==undefined?record.lat:record.latitude;
+  var rawLon=record.lon!==undefined?record.lon:record.lng!==undefined?record.lng:record.longitude;
+  if(rawLat==null||rawLon==null||String(rawLat).trim()===''||String(rawLon).trim()==='')return null;
+  var lat=Number(rawLat),lon=Number(rawLon);
   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return null;
   return{lat:lat,lon:lon}
 }

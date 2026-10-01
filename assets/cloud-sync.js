@@ -1105,6 +1105,7 @@
   async function updateProfile(displayName, preferences) {
     var client = await getClient();
     var normalizedName = String(displayName || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+    if (preferences === undefined) return client.auth.updateUser({ data: { display_name: normalizedName } });
     var input = preferences && typeof preferences === 'object' ? preferences : {};
     var allowed = {
       pace: ['relaxed', 'balanced', 'active'],

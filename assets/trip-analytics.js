@@ -6,7 +6,7 @@ if(window.TravelMateTripAnalytics)return;
 var context=window.TravelMateTripContext;
 
 function clean(value){return String(value==null?'':value).trim()}
-function number(value){var n=Number(value);return Number.isFinite(n)?n:null}
+function number(value){if(value==null||String(value).trim()==='')return null;var n=Number(value);return Number.isFinite(n)?n:null}
 function round(value,decimals){
   var factor=Math.pow(10,decimals||2);
   return Math.round(Number(value)*factor)/factor
@@ -130,7 +130,7 @@ function build(trip){
     }),
     status:Object.freeze({
       visits:'confirmed',
-      distance:segments.length?'estimated':'unknown',
+      distance:movement.distanceCoverage>0?'estimated':'unknown',
       travelTime:movement.manualTimeCoverage===1&&segments.length?'confirmed':segments.length?'estimated':'unknown'
     })
   })
@@ -140,7 +140,7 @@ function buildPersonalStats(trips,authenticatedUserId){
   var list=Array.isArray(trips)?trips:[];
   var userId=String(authenticatedUserId||'');
   var ownedAll=list.filter(function(trip){
-    return trip&&String(trip.ownerId||'')===userId&&!trip.deletedAt&&!trip.deletePending;
+    return Boolean(userId)&&trip&&String(trip.ownerId||'')===userId&&!trip.deletedAt&&!trip.deletePending;
   });
   var owned=ownedAll.slice(0,50);
   var stats={
