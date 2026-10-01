@@ -20,8 +20,7 @@ var ALLOWED_EVENT_KINDS=Object.freeze([
   'completed_place',
   'saved_place',
   'expense_aggregate',
-  'declared_preference',
-  'user_memory'
+  'declared_preference'
 ]);
 
 var FORBIDDEN_EVENT_KINDS=Object.freeze([
@@ -154,8 +153,18 @@ function removeEvidence(candidate,predicate){
 
 function canPersonalize(candidate,learningEnabled){
   var current=normalizeCandidate(candidate);
-  return learningEnabled!==false &&
-    (current.reviewState===REVIEW_STATES.SUGGESTED||current.reviewState===REVIEW_STATES.CONFIRMED);
+  return learningEnabled!==false && current.reviewState===REVIEW_STATES.CONFIRMED;
+}
+
+function evidenceOwnedBy(evidence,authenticatedUserId){
+  var userId=clean(authenticatedUserId,120);
+  var ownerId=clean(evidence&&evidence.sourceOwnerId,120);
+  return Boolean(userId&&ownerId&&userId===ownerId);
+}
+
+function createOwnedEvidence(input,authenticatedUserId){
+  if(!evidenceOwnedBy(input,authenticatedUserId))return null;
+  return createEvidence(input);
 }
 
 function exportForMate(candidate,learningEnabled){
@@ -176,6 +185,8 @@ window.TravelMateLearnedPreferences=Object.freeze({
   FORBIDDEN_EVENT_KINDS:FORBIDDEN_EVENT_KINDS,
   isAllowedEventKind:isAllowedEventKind,
   createEvidence:createEvidence,
+  createOwnedEvidence:createOwnedEvidence,
+  evidenceOwnedBy:evidenceOwnedBy,
   normalizeCandidate:normalizeCandidate,
   transition:transition,
   addEvidence:addEvidence,
