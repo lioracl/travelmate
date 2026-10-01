@@ -197,15 +197,15 @@ function completedCategoryEvidence(trip,authenticatedUserId){
   var records=[];
   ['activities','savedPlaces','places'].forEach(function(key){
     (Array.isArray(trip[key])?trip[key]:[]).forEach(function(item){
-      if(!item||item.done!==true)return;
+      if(!item||item.done!==true||!item.id)return;
       var interests=categoryToInterests(item.category);
       interests.forEach(function(preferenceKey){
         var evidence=createOwnedEvidence({
-          id:clean(trip.id,120)+':'+clean(item.id||item.name||item.title,120)+':'+preferenceKey,
+          id:clean(trip.id,120)+':'+clean(item.id,120)+':'+preferenceKey,
           sourceOwnerId:authenticatedUserId,
           sourceTripId:clean(trip.id,120),
           eventKind:key==='activities'?'completed_activity':'completed_place',
-          eventRef:clean(item.id||item.name||item.title,160)
+          eventRef:clean(item.id,160)
         },authenticatedUserId);
         if(evidence)records.push({preferenceKey:preferenceKey,evidence:evidence});
       });
