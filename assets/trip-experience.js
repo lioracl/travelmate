@@ -9,7 +9,26 @@
   function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch (error) { return fallback; } }
   function writeJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) {} }
   function tripId() { return String(state.trip && state.trip.id || new URLSearchParams(location.search).get('id') || location.pathname); }
-  function storageKey(name) { return 'travelmate-experience:' + tripId() + ':' + name; }
+  function activeOwnerId() { return String(state.trip && state.trip.ownerId || localStorage.getItem('travelmate-active-user') || ''); }
+  function legacyStorageKey(name) { return 'travelmate-experience:' + tripId() + ':' + name; }
+  function storageKey(name) { var owner = activeOwnerId(); return 'travelmate-experience:' + (owner || 'guest') + ':' + tripId() + ':' + name; }
+  function readExperienceJson(name, fallback) {
+    var ownedKey = storageKey(name);
+    if (localStorage.getItem(ownedKey) !== null) return readJson(ownedKey, fallback);
+    var owner = activeOwnerId();
+    var tripOwner = String(state.trip && state.trip.ownerId || '');
+    if (!owner || !tripOwner || owner !== tripOwner) return fallback;
+    var migrationKey = 'travelmate-experience-migrated:' + owner + ':' + tripId();
+    if (localStorage.getItem(migrationKey) === '1') return fallback;
+    var snapshot = readJson('travelmate-trips-user:' + owner, []);
+    var canonicalTrip = Array.isArray(snapshot) ? snapshot.find(function (item) { return item && String(item.id) === tripId() && String(item.ownerId || '') === owner; }) : null;
+    if (!canonicalTrip) return fallback;
+    var legacyKey = legacyStorageKey(name);
+    if (localStorage.getItem(legacyKey) === null) return fallback;
+    var value = readJson(legacyKey, fallback);
+    try { localStorage.setItem(ownedKey, JSON.stringify(value)); localStorage.setItem(migrationKey, '1'); } catch (error) {}
+    return value;
+  }
   function localDateValue(date) { var value = date || new Date(); return value.getFullYear() + '-' + String(value.getMonth() + 1).padStart(2, '0') + '-' + String(value.getDate()).padStart(2, '0'); }
   function selectedReceiptFile(form) { return form.receiptCamera && form.receiptCamera.files[0] || form.receiptFile && form.receiptFile.files[0] || null; }
   function money(value, currency) { return new Intl.NumberFormat('he-IL', { style: 'currency', currency: currency, maximumFractionDigits: 2 }).format(Number(value || 0)); }
@@ -840,8 +859,8 @@
     try { state.trip = window.travelMateTripReady ? await window.travelMateTripReady : null; } catch (error) {}
     if (!state.trip) { var heroTitle = clean(document.querySelector('.hero h1') && document.querySelector('.hero h1').textContent); var heroSubtitle = clean(document.querySelector('.hero .hero-copy p') && document.querySelector('.hero .hero-copy p').textContent); state.trip = { id: new URLSearchParams(location.search).get('id') || location.pathname, city: document.querySelector('[data-city]') && clean(document.querySelector('[data-city]').textContent) || heroSubtitle.split('·')[0].trim() || heroTitle || 'היעד', country: document.querySelector('[data-country]') && clean(document.querySelector('[data-country]').textContent) || heroTitle, budget: 0 }; }
     state.localCurrency = countryCurrency(state.trip.country);
-    state.budgetUnlimited = typeof state.trip.budgetUnlimited === 'boolean' ? state.trip.budgetUnlimited : readJson(storageKey('budget-unlimited'), false) === true;
-    state.secondaryCurrency = state.trip.secondaryCurrency || readJson(storageKey('secondary-currency'), state.localCurrency === 'ILS' ? 'EUR' : 'ILS');
+    state.budgetUnlimited = typeof state.trip.budgetUnlimited === 'boolean' ? state.trip.budgetUnlimited : readExperienceJson('budget-unlimited', false) === true;
+    state.secondaryCurrency = state.trip.secondaryCurrency || readExperienceJson('secondary-currency', state.localCurrency === 'ILS' ? 'EUR' : 'ILS');
     window.TravelMateCurrency = {
       code: function () { return state.localCurrency; },
       formatFromEuros: function (euros) {
@@ -849,12 +868,36 @@
         return value ? money(value, state.localCurrency) : money(euros, 'EUR');
       }
     };
-    state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readJson(storageKey('expenses'), []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) && state.trip.budgetCategories.length ? state.trip.budgetCategories : readJson(storageKey('budget-categories'), null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readJson(storageKey('memories'), []); state.albumUrl = state.trip.photoAlbumUrl || readJson(storageKey('album-url'), ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readJson(storageKey('currency-fee'), 2.5));
+    state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readExperienceJson('expenses', []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) && state.trip.budgetCategories.length ? state.trip.budgetCategories : readExperienceJson('budget-categories', null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readExperienceJson('memories', []); state.albumUrl = state.trip.photoAlbumUrl || readExperienceJson('album-url', ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readExperienceJson('currency-fee', 2.5));
     injectCurrencyCards(); createBudgetTools(); createCurrencyConverter(); createMemoriesSection(); setupCollapsibleSections();
     loadRate();
     migrateInlineReceipts();
     syncPendingReceipts();
     window.addEventListener('online', syncPendingReceipts);
   }
+  function refreshFromCanonicalTrip(detail) {
+    var tripIdValue = new URLSearchParams(location.search).get('id');
+    if (!tripIdValue || !detail) return;
+    var incoming = detail.trip || (Array.isArray(detail.trips) ? detail.trips.find(function (item) { return item && String(item.id) === String(tripIdValue); }) : null);
+    if (!incoming || String(incoming.id) !== String(tripIdValue)) return;
+    var activeOwner = String(localStorage.getItem('travelmate-active-user') || '');
+    if (activeOwner && incoming.ownerId && String(incoming.ownerId) !== activeOwner) return;
+    state.trip = incoming;
+    state.localCurrency = countryCurrency(state.trip.country);
+    state.budgetUnlimited = typeof state.trip.budgetUnlimited === 'boolean' ? state.trip.budgetUnlimited : readExperienceJson('budget-unlimited', false) === true;
+    state.secondaryCurrency = state.trip.secondaryCurrency || readExperienceJson('secondary-currency', state.localCurrency === 'ILS' ? 'EUR' : 'ILS');
+    state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readExperienceJson('expenses', []);
+    state.budgetCategories = Array.isArray(state.trip.budgetCategories) && state.trip.budgetCategories.length ? state.trip.budgetCategories : readExperienceJson('budget-categories', null) || defaultBudgetCategories();
+    state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readExperienceJson('memories', []);
+    state.albumUrl = state.trip.photoAlbumUrl || readExperienceJson('album-url', '');
+    state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readExperienceJson('currency-fee', 2.5));
+    renderCurrency(); renderExpenseList(); renderMemories(); renderSummary(); renderBudgetCharts();
+    window.dispatchEvent(new CustomEvent('travelmate:experience-canonical-refreshed', { detail: { tripId: tripIdValue, ownerId: incoming.ownerId || activeOwner || null, source: detail.source || 'canonical' } }));
+  }
+  window.addEventListener('travelmate:account-context-changed', function (event) {
+    if (event.detail && event.detail.userId === null) return;
+    refreshFromCanonicalTrip({ trips: event.detail && event.detail.trips || [], source: 'account-switch' });
+  });
+  window.addEventListener('travelmate:canonical-trip-replaced', function (event) { refreshFromCanonicalTrip(event.detail || {}); });
   init();
 })();
