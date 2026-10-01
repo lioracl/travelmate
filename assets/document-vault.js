@@ -109,6 +109,8 @@
     var categoryList = section.querySelector('[data-document-category-list]');
     var currentUser = null;
     var documentSessionEpoch = 0;
+    var hasDocumentSession = false;
+    var uploadInProgress = false;
     var categoryTargets = {};
     var activeDocumentFilter = 'all';
 
@@ -202,22 +204,41 @@
       return 'travelmate-document-cleanup:' + String(userId || '');
     }
 
+    function ownsStoragePath(userId, path) {
+      if (typeof path !== 'string' || path.indexOf(String(userId) + '/') !== 0 || /\\/.test(path)) return false;
+      return path.split('/').every(function (part) { return part && part !== '.' && part !== '..'; });
+    }
+
+    function isDocumentSession(userId, epoch) {
+      return epoch === documentSessionEpoch && currentUser && String(currentUser.id) === String(userId);
+    }
+
+    async function requireDocumentAccess(userId, epoch) {
+      if (!isDocumentSession(userId, epoch)) throw new Error('DOCUMENT_SESSION_CHANGED');
+      var access = await requirePrivateStorageAccess();
+      if (!isDocumentSession(userId, epoch) || !access.session || String(access.session.user.id) !== String(userId)) {
+        throw new Error('DOCUMENT_SESSION_CHANGED');
+      }
+      return access;
+    }
+
     function readPendingCleanup(userId) {
       try {
         var parsed = JSON.parse(localStorage.getItem(pendingCleanupKey(userId)) || '[]');
-        return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+        return Array.isArray(parsed) ? parsed.filter(function (path) { return ownsStoragePath(userId, path); }) : [];
       } catch (error) {
         return [];
       }
     }
 
     function writePendingCleanup(userId, paths) {
-      var unique = Array.from(new Set((paths || []).filter(Boolean)));
+      var unique = Array.from(new Set((paths || []).filter(function (path) { return ownsStoragePath(userId, path); })));
       if (unique.length) localStorage.setItem(pendingCleanupKey(userId), JSON.stringify(unique));
       else localStorage.removeItem(pendingCleanupKey(userId));
     }
 
     function queuePendingCleanup(userId, storagePath) {
+      if (!ownsStoragePath(userId, storagePath)) return;
       var pending = readPendingCleanup(userId);
       if (pending.indexOf(storagePath) < 0) pending.push(storagePath);
       writePendingCleanup(userId, pending);
@@ -225,16 +246,30 @@
 
     async function flushPendingCleanup() {
       if (!currentUser) return;
-      var pending = readPendingCleanup(currentUser.id);
+      var cleanupUserId = String(currentUser.id);
+      var cleanupEpoch = documentSessionEpoch;
+      var pending = readPendingCleanup(cleanupUserId);
       if (!pending.length) return;
-      try { await requirePrivateStorageAccess(); } catch (error) { return; }
-      var remaining = [];
+      try { await requireDocumentAccess(cleanupUserId, cleanupEpoch); } catch (error) { return; }
       for (var index = 0; index < pending.length; index += 1) {
         var path = pending[index];
-        var result = await client.storage.from(bucket).remove([path]);
-        if (result.error) remaining.push(path);
+        if (!isDocumentSession(cleanupUserId, cleanupEpoch)) return;
+        try {
+          // A lost metadata response may still have committed. Never remove a
+          // blob that has a surviving metadata reference.
+          var references = await client.from('travel_documents').select('id').eq('user_id', cleanupUserId).eq('storage_path', path).limit(1);
+          if (!isDocumentSession(cleanupUserId, cleanupEpoch)) return;
+          if (references.error) continue;
+          if (!(references.data || []).length) {
+            var result = await client.storage.from(bucket).remove([path]);
+            if (result.error) continue;
+            if (!isDocumentSession(cleanupUserId, cleanupEpoch)) return;
+          }
+          // Merge against the latest queue, preserving new failures queued while
+          // the network request was in flight.
+          writePendingCleanup(cleanupUserId, readPendingCleanup(cleanupUserId).filter(function (item) { return item !== path; }));
+        } catch (error) { /* Retain the owner-scoped retry after transport failure. */ }
       }
-      writePendingCleanup(currentUser.id, remaining);
     }
 
     function clearRemoteDocumentMetadata() {
@@ -251,6 +286,9 @@
     }
 
     async function applySession(session) {
+      var nextUser = session && session.user ? session.user : null;
+      if (hasDocumentSession && String(currentUser && currentUser.id || '') === String(nextUser && nextUser.id || '')) return;
+      hasDocumentSession = true;
       var sessionEpoch = ++documentSessionEpoch;
       currentUser = session && session.user ? session.user : null;
       authPanel.hidden = Boolean(currentUser);
@@ -264,6 +302,13 @@
         button.toggleAttribute('data-auth-required', !currentUser);
       });
       vault.querySelector('[data-vault-email]').textContent = currentUser ? currentUser.email : '';
+      passphraseInput.value = '';
+      form.reset();
+      uploadInProgress = false;
+      uploadButton.disabled = false;
+      clearRemoteDocumentMetadata();
+      var preview = document.querySelector('[data-vault-preview]');
+      if (preview && preview._closePreview) preview._closePreview();
       if (!currentUser) {
         passphraseInput.value = '';
         clearRemoteDocumentMetadata();
@@ -271,8 +316,17 @@
         return;
       }
       setStatus('הכספת מחוברת. הזן את סיסמת ההצפנה כדי להעלות או לפתוח מסמך.');
-      await flushPendingCleanup();
-      await renderDocuments(sessionEpoch, currentUser.id);
+      var sessionUserId = currentUser.id;
+      // Supabase auth callbacks must not await another auth call under its lock.
+      setTimeout(async function () {
+        if (!isDocumentSession(sessionUserId, sessionEpoch)) return;
+        try {
+          await flushPendingCleanup();
+          if (isDocumentSession(sessionUserId, sessionEpoch)) await renderDocuments(sessionEpoch, sessionUserId);
+        } catch (error) {
+          if (isDocumentSession(sessionUserId, sessionEpoch)) setStatus(storageErrorMessage(error), true);
+        }
+      }, 0);
     }
 
     authForm.addEventListener('submit', async function (event) {
@@ -317,12 +371,18 @@
     });
 
     vault.querySelector('[data-vault-signout]').addEventListener('click', async function () {
+      var signingOutUser = currentUser;
       documentSessionEpoch += 1;
       clearRemoteDocumentMetadata();
-      var result = await client.auth.signOut();
-      if (result && result.error) {
-        setStatus(authErrorMessage(result.error), true);
-        if (currentUser) await renderDocuments();
+      await applySession(null);
+      var signoutEpoch = documentSessionEpoch;
+      try {
+        var result = await client.auth.signOut();
+        if (result && result.error) throw result.error;
+      } catch (error) {
+        if (documentSessionEpoch !== signoutEpoch || currentUser) return;
+        if (signingOutUser) await applySession({ user: signingOutUser });
+        setStatus(authErrorMessage(error), true);
       }
     });
 
@@ -341,13 +401,13 @@
       if (!currentUser) return;
       var requestEpoch = typeof expectedEpoch === 'number' ? expectedEpoch : documentSessionEpoch;
       var requestUserId = expectedUserId || currentUser.id;
-      var result = await client.from('travel_documents').select('*').eq('trip_id', tripId).order('created_at', { ascending: false });
+      var result = await client.from('travel_documents').select('*').eq('user_id', requestUserId).eq('trip_id', tripId).order('created_at', { ascending: false });
       if (requestEpoch !== documentSessionEpoch || !currentUser || currentUser.id !== requestUserId) return;
       if (result.error) {
         setStatus(databaseErrorMessage(result.error), true);
         return;
       }
-      var documents = result.data || [];
+      var documents = (result.data || []).filter(function (record) { return String(record.user_id) === String(requestUserId) && ownsStoragePath(requestUserId, record.storage_path); });
       var total = documents.reduce(function (sum, item) { return sum + Number(item.file_size || 0); }, 0);
       section.querySelector('[data-vault-count]').textContent = documents.length + ' מסמכים';
       section.querySelector('[data-vault-size]').textContent = formatSize(total) + ' בענן';
@@ -381,14 +441,23 @@
     }
 
     async function saveFiles(files) {
+      if (uploadInProgress) return;
+      if (!currentUser) return setStatus('יש להתחבר לפני העלאת מסמך.', true);
+      var uploadUserId = String(currentUser.id);
+      var uploadSessionEpoch = documentSessionEpoch;
+      var selectedCategory = form.elements.category.value;
+      var selectedNote = form.elements.note.value.trim();
       if (!files.length) return setStatus('בחר לפחות קובץ אחד.', true);
-      var tooLarge = files.find(function (file) { return file.size > MAX_FILE_SIZE; });
-      if (tooLarge) return setStatus('הקובץ ' + tooLarge.name + ' גדול מ־25MB.', true);
+      // AES-GCM adds a 16-byte authentication tag to the stored ciphertext.
+      var tooLarge = files.find(function (file) { return file.size > MAX_FILE_SIZE - 16; });
+      if (tooLarge) return setStatus('הקובץ ' + tooLarge.name + ' חורג ממגבלת 25MB לאחר ההצפנה. בחר קובץ קטן יותר ונסה שוב.', true);
       var passphrase = passphraseInput.value;
       if (passphrase.length < 10) return setStatus('בחר סיסמת הצפנה באורך 10 תווים לפחות.', true);
 
       uploadButton.disabled = true;
+      uploadInProgress = true;
       var uploadedCount = 0;
+      var objectName = null;
       try {
         // Android document providers can revoke a temporary File handle while an
         // authentication request is in flight. Copy every selected file into
@@ -397,13 +466,9 @@
         var preparedFiles = [];
         for (var prepareIndex = 0; prepareIndex < files.length; prepareIndex += 1) {
           preparedFiles.push({ file: files[prepareIndex], bytes: await readSelectedFile(files[prepareIndex]) });
+          if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) throw new Error('DOCUMENT_SESSION_CHANGED');
         }
-        var storageAccess = await requirePrivateStorageAccess();
-        currentUser = storageAccess.session.user;
-        var uploadUserId = String(currentUser.id);
-        var uploadSessionEpoch = documentSessionEpoch;
-        var selectedCategory = form.elements.category.value;
-        var selectedNote = form.elements.note.value.trim();
+        await requireDocumentAccess(uploadUserId, uploadSessionEpoch);
         for (var index = 0; index < preparedFiles.length; index += 1) {
           if (documentSessionEpoch !== uploadSessionEpoch || !currentUser || String(currentUser.id) !== uploadUserId) {
             throw new Error('DOCUMENT_SESSION_CHANGED');
@@ -411,8 +476,9 @@
           var file = preparedFiles[index].file;
           setStatus('מצפין/ה ומעלה ' + (index + 1) + ' מתוך ' + preparedFiles.length + '…');
           var encrypted = await encryptBytes(preparedFiles[index].bytes, passphrase);
+          if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) throw new Error('DOCUMENT_SESSION_CHANGED');
           var safeName = sanitizeFileName(file.name);
-          var objectName = uploadUserId + '/' + encodeURIComponent(tripId) + '/' + secureObjectId() + '-' + safeName + '.vault';
+          objectName = uploadUserId + '/' + encodeURIComponent(tripId) + '/' + secureObjectId() + '-' + safeName + '.vault';
           var uploadResult = await client.storage.from(bucket).upload(objectName, encrypted.blob, {
             contentType: 'application/octet-stream',
             cacheControl: '0',
@@ -420,8 +486,7 @@
           });
           if (uploadResult.error) throw uploadResult.error;
           if (documentSessionEpoch !== uploadSessionEpoch || !currentUser || String(currentUser.id) !== uploadUserId) {
-            var switchedCleanup = await client.storage.from(bucket).remove([objectName]);
-            if (switchedCleanup.error) queuePendingCleanup(uploadUserId, objectName);
+            queuePendingCleanup(uploadUserId, objectName);
             throw new Error('DOCUMENT_SESSION_CHANGED');
           }
           var metadataResult = await client.from('travel_documents').insert({
@@ -438,10 +503,13 @@
             encryption_iv: bytesToBase64(encrypted.iv)
           });
           if (metadataResult.error) {
-            var rollback = await client.storage.from(bucket).remove([objectName]);
-            if (rollback.error) queuePendingCleanup(uploadUserId, objectName);
+            queuePendingCleanup(uploadUserId, objectName);
+            if (isDocumentSession(uploadUserId, uploadSessionEpoch)) await flushPendingCleanup();
+            if (readPendingCleanup(uploadUserId).indexOf(objectName) < 0) objectName = null;
             throw metadataResult.error;
           }
+          objectName = null;
+          if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) return;
           uploadedCount += 1;
         }
         form.reset();
@@ -449,37 +517,52 @@
         setStatus(uploadedCount + ' קבצים הוצפנו ונשמרו בהצלחה בענן הפרטי.');
         await renderDocuments();
       } catch (error) {
+        if (objectName) queuePendingCleanup(uploadUserId, objectName);
+        if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) return;
+        if (objectName) await flushPendingCleanup();
+        if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) return;
         console.error('TravelMate vault upload failed', error);
         if (uploadedCount > 0) {
           input.value = '';
           await renderDocuments();
+          if (!isDocumentSession(uploadUserId, uploadSessionEpoch)) return;
           var remainingCount = Math.max(1, preparedFiles.length - uploadedCount);
           setStatus(uploadedCount + ' קבצים נשמרו בהצלחה, אבל ' + remainingCount + ' לא נשמרו. בחר מחדש רק את הקבצים שלא נשמרו כדי למנוע כפילויות.', true);
         } else {
           setStatus(storageErrorMessage(error), true);
         }
       } finally {
-        uploadButton.disabled = false;
+        if (isDocumentSession(uploadUserId, uploadSessionEpoch)) {
+          uploadInProgress = false;
+          uploadButton.disabled = false;
+        }
       }
     }
 
     async function openDocument(record, download) {
+      if (!currentUser || String(record.user_id) !== String(currentUser.id) || !ownsStoragePath(currentUser.id, record.storage_path)) return;
+      var openUserId = String(currentUser.id);
+      var openEpoch = documentSessionEpoch;
       var passphrase = passphraseInput.value;
       if (passphrase.length < 10) return setStatus('הזן את סיסמת הצפנת הכספת לפני פתיחת המסמך.', true);
       setStatus('מוריד/ה ומפענח/ת את המסמך…');
-      try { await requirePrivateStorageAccess(); } catch (accessError) { return setStatus(storageErrorMessage(accessError), true); }
-      var result = await client.storage.from(bucket).download(record.storage_path);
-      if (result.error) return setStatus(storageErrorMessage(result.error), true);
       try {
+        await requireDocumentAccess(openUserId, openEpoch);
+        var result = await client.storage.from(bucket).download(record.storage_path);
+        if (!isDocumentSession(openUserId, openEpoch)) return;
+        if (result.error) return setStatus(storageErrorMessage(result.error), true);
         var decrypted = await decryptBlob(result.data, passphrase, base64ToBytes(record.encryption_salt), base64ToBytes(record.encryption_iv), record.mime_type);
+        if (!isDocumentSession(openUserId, openEpoch)) return;
         if (download) {
           downloadBlob(decrypted, record.file_name);
           setStatus('המסמך פוענח והורד למכשיר.');
         } else {
           await showDocumentPreview(decrypted, record);
+          if (!isDocumentSession(openUserId, openEpoch)) return;
           setStatus('המסמך פוענח ונפתח בתצוגה המאובטחת.');
         }
       } catch (error) {
+        if (!isDocumentSession(openUserId, openEpoch)) return;
         console.error('TravelMate vault decrypt failed', error);
         setStatus('סיסמת ההצפנה שגויה או שהקובץ פגום.', true);
       }
@@ -606,20 +689,30 @@
     }
 
     async function deleteDocument(record) {
+      if (!currentUser || String(record.user_id) !== String(currentUser.id) || !ownsStoragePath(currentUser.id, record.storage_path)) return;
+      var deleteUserId = String(currentUser.id);
+      var deleteEpoch = documentSessionEpoch;
       if (!confirm('למחוק לצמיתות את המסמך מהענן? לא ניתן לבטל פעולה זו.')) return;
       setStatus('מוחק/ת את המסמך…');
-      try { await requirePrivateStorageAccess(); } catch (accessError) { return setStatus(storageErrorMessage(accessError), true); }
-      var metadataResult = await client.from('travel_documents').delete().eq('id', record.id);
+      try {
+      await requireDocumentAccess(deleteUserId, deleteEpoch);
+      // Record intent before metadata removal so a lost response remains retryable.
+      queuePendingCleanup(currentUser.id, record.storage_path);
+      var metadataResult = await client.from('travel_documents').delete().eq('id', record.id).eq('user_id', deleteUserId).eq('storage_path', record.storage_path);
+      if (!isDocumentSession(deleteUserId, deleteEpoch)) return;
       if (metadataResult.error) return setStatus(databaseErrorMessage(metadataResult.error), true);
-      var storageResult = await client.storage.from(bucket).remove([record.storage_path]);
-      if (storageResult.error) {
-        if (currentUser && record.storage_path) queuePendingCleanup(currentUser.id, record.storage_path);
+      await flushPendingCleanup();
+      if (!isDocumentSession(deleteUserId, deleteEpoch)) return;
+      if (readPendingCleanup(deleteUserId).indexOf(record.storage_path) >= 0) {
         setStatus('המסמך הוסר מהרשימה. ניקוי הקובץ המוצפן יושלם אוטומטית כשהחיבור יאפשר זאת.');
         await renderDocuments();
         return;
       }
       setStatus('המסמך נמחק לצמיתות.');
       await renderDocuments();
+      } catch (error) {
+        if (isDocumentSession(deleteUserId, deleteEpoch)) setStatus(storageErrorMessage(error), true);
+      }
     }
 
     function requestDocumentUpload(categoryName) {
@@ -674,10 +767,12 @@
       });
     });
 
-    client.auth.onAuthStateChange(function (_event, session) { setTimeout(function () { applySession(session); }, 0); });
+    var authEventVersion = 0;
+    client.auth.onAuthStateChange(function (_event, session) { authEventVersion += 1; applySession(session); });
     window.addEventListener('online', function () { if (currentUser) flushPendingCleanup(); });
+    var initialAuthVersion = authEventVersion;
     var sessionResult = await client.auth.getSession();
-    await applySession(sessionResult.data.session);
+    if (initialAuthVersion === authEventVersion) await applySession(sessionResult.data.session);
   }
 
   async function deriveKey(passphrase, salt, usage) {
@@ -747,7 +842,7 @@
     bytes[8] = (bytes[8] & 63) | 128;
     return Array.from(bytes, function (byte) { return byte.toString(16).padStart(2, '0'); }).join('');
   }
-  function storageErrorMessage(error) { var message = String(error && (error.message || error.code || error.name) || ''); if (/requested file|directory could not be found|NotFoundError|FILE_SELECTION_ABORTED/i.test(message)) return 'הקובץ שבחרת לא היה זמין לקריאה. בחר אותו שוב מתוך „קבצים” או „הורדות” במכשיר.'; if (/MFA_REQUIRED/i.test(message)) return 'כדי לגשת למסמכים אישיים יש להשלים אימות דו־שלבי. פתח את ההגדרות, השלם אימות ונסה שוב.'; if (/STORAGE_SIGN_IN_REQUIRED|JWT|session/i.test(message)) return 'ההתחברות פגה. התחבר מחדש ולאחר מכן נסה להעלות שוב.'; if (/STORAGE_CLOUD_UNAVAILABLE/i.test(message)) return 'שירות הענן עדיין לא נטען. רענן את האפליקציה ונסה שוב.'; if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/mime|content.?type/i.test(message)) return 'סוג הקובץ אינו מורשה עדיין באחסון. הפעל את עדכון ההעלאות ב־Supabase ונסה שוב.'; if (/row-level security|unauthorized|permission|403/i.test(message)) return 'האחסון דחה את ההרשאה. השלם אימות דו־שלבי או התחבר מחדש ונסה שוב.'; if (/network|fetch|timeout/i.test(message)) return 'החיבור לענן נכשל. בדוק את הרשת ונסה שוב.'; return 'הפעולה מול האחסון נכשלה: ' + (message || 'נסה שוב.'); }
+  function storageErrorMessage(error) { var quota = String(error && (error.code || error.error || error.message) || ''); if (/EntityTooLarge|exceed.*(?:size|limit)|(?:size|limit).*exceed|413/i.test(quota)) return 'הקובץ המוצפן חורג ממגבלת האחסון. בחר קובץ קטן יותר ונסה שוב.'; if (/quota|capacity|storage.*full|insufficient.*storage/i.test(quota)) return 'אין כרגע מספיק מקום באחסון הענן. הקובץ לא נשמר; אפשר לנסות שוב כשהאחסון יהיה זמין.'; var message = String(error && (error.message || error.code || error.name) || ''); if (/requested file|directory could not be found|NotFoundError|FILE_SELECTION_ABORTED/i.test(message)) return 'הקובץ שבחרת לא היה זמין לקריאה. בחר אותו שוב מתוך „קבצים” או „הורדות” במכשיר.'; if (/MFA_REQUIRED/i.test(message)) return 'כדי לגשת למסמכים אישיים יש להשלים אימות דו־שלבי. פתח את ההגדרות, השלם אימות ונסה שוב.'; if (/STORAGE_SIGN_IN_REQUIRED|JWT|session/i.test(message)) return 'ההתחברות פגה. התחבר מחדש ולאחר מכן נסה להעלות שוב.'; if (/STORAGE_CLOUD_UNAVAILABLE/i.test(message)) return 'שירות הענן עדיין לא נטען. רענן את האפליקציה ונסה שוב.'; if (/bucket|not found/i.test(message)) return 'תיקיית המסמכים הפרטית עדיין לא הוגדרה ב־Supabase.'; if (/mime|content.?type/i.test(message)) return 'סוג הקובץ אינו מורשה עדיין באחסון. הפעל את עדכון ההעלאות ב־Supabase ונסה שוב.'; if (/row-level security|unauthorized|permission|403/i.test(message)) return 'האחסון דחה את ההרשאה. השלם אימות דו־שלבי או התחבר מחדש ונסה שוב.'; if (/network|fetch|timeout/i.test(message)) return 'החיבור לענן נכשל. בדוק את הרשת ונסה שוב.'; return 'הפעולה מול האחסון נכשלה: ' + (message || 'נסה שוב.'); }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
