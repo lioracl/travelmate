@@ -18,7 +18,7 @@
     var owner = activeOwnerId();
     var tripOwner = String(state.trip && state.trip.ownerId || '');
     if (!owner || !tripOwner || owner !== tripOwner) return fallback;
-    var migrationKey = 'travelmate-experience-migrated:' + owner + ':' + tripId();
+    var migrationKey = 'travelmate-experience-migrated:' + owner + ':' + tripId() + ':' + name;
     if (localStorage.getItem(migrationKey) === '1') return fallback;
     var snapshot = readJson('travelmate-trips-user:' + owner, []);
     var canonicalTrip = Array.isArray(snapshot) ? snapshot.find(function (item) { return item && String(item.id) === tripId() && String(item.ownerId || '') === owner; }) : null;
