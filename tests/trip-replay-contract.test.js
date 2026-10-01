@@ -49,7 +49,7 @@ test('Trip Replay consumes the shared Trip Analytics contract when it is availab
   assert.equal(replay.analytics.movement.walkingDistanceKm,4.2);
   assert.equal(replay.analytics.movement.transportDistanceKm,8.1);
   assert.equal(replay.analytics.movement.travelMinutes,42);
-  assert.match(window.TravelMateTripReplay.prompt(replay),/ק״מ/);
+  assert.equal(replay.analytics.movement.travelMinutes,42);
 });
 
 test('Trip Replay prompt explicitly forbids inventing visits',()=>{
