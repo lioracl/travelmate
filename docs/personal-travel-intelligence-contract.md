@@ -137,3 +137,20 @@ Do not add Supabase tables until the client contract is stable and the following
 - rollback/cleanup.
 
 No destructive migration is authorized by this document.
+
+## Cross-trip suggestion rule
+
+The first V2 cross-trip implementation is intentionally suggestion-only:
+
+- It reads only trips whose `ownerId` exactly matches the authenticated user.
+- Deleted/pending-delete trips are excluded.
+- It reads only completed structured activity/place records and their category fields.
+- It requires evidence from at least two distinct owned trips.
+- It produces a `suggested` candidate with `sourceScope=cross_trip`.
+- It never confirms, persists, or exports the suggestion by itself.
+- It does not inspect documents, messages, receipt text, credentials, raw GPS, or arbitrary place names.
+- A future Profile Center review surface must be the user-controlled gate before persistence and Mate personalization.
+
+## Personal travel statistics
+
+Personal travel statistics are derived from the existing Trip Analytics layer, scoped to trips owned by the authenticated user. They are presentation data, not a second profile database and not learned preferences. Deleted trips are excluded, and aggregation is bounded to avoid unbounded client work. Derived movement remains labeled by its underlying confidence/coverage.

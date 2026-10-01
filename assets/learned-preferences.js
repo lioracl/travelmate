@@ -167,6 +167,86 @@ function createOwnedEvidence(input,authenticatedUserId){
   return createEvidence(input);
 }
 
+
+function categoryToInterests(value){
+  var text=clean(value,100).toLowerCase();
+  var map=[
+    {key:'culture',words:['culture','תרבות','museum','מוזיאון','art','אמנות','gallery','גלריה']},
+    {key:'history',words:['history','histor','היסטוריה','historic','old town','עיר עתיקה','castle','טירה']},
+    {key:'food',words:['food','אוכל','restaurant','מסעדה','cafe','בית קפה','culinary','מטבח']},
+    {key:'nature',words:['nature','טבע','park','פארק','garden','גן','hiking','הליכה','trail','שביל']},
+    {key:'shopping',words:['shopping','קניות','mall','קניון','market','שוק','outlet']},
+    {key:'nightlife',words:['nightlife','חיי לילה','bar','מועדון','club','pub']},
+    {key:'photography',words:['photography','צילום','viewpoint','תצפית','scenic','נוף']},
+    {key:'relaxation',words:['relaxation','מנוחה','spa','ספא','beach','חוף']}
+  ];
+  var result=[];
+  map.forEach(function(item){
+    if(item.words.some(function(word){return text.indexOf(word)>=0;}))result.push(item.key);
+  });
+  return result;
+}
+
+function ownedTrip(trip,authenticatedUserId){
+  var ownerId=clean(trip&&trip.ownerId,120);
+  return Boolean(ownerId&&clean(authenticatedUserId,120)===ownerId&&!trip.deletedAt&&!trip.deletePending);
+}
+
+function completedCategoryEvidence(trip,authenticatedUserId){
+  if(!ownedTrip(trip,authenticatedUserId))return [];
+  var records=[];
+  ['activities','savedPlaces','places'].forEach(function(key){
+    (Array.isArray(trip[key])?trip[key]:[]).forEach(function(item){
+      if(!item||item.done!==true||!item.id)return;
+      var interests=categoryToInterests(item.category);
+      interests.forEach(function(preferenceKey){
+        var evidence=createOwnedEvidence({
+          id:clean(trip.id,120)+':'+clean(item.id,120)+':'+preferenceKey,
+          sourceOwnerId:authenticatedUserId,
+          sourceTripId:clean(trip.id,120),
+          eventKind:key==='activities'?'completed_activity':'completed_place',
+          eventRef:clean(item.id,160)
+        },authenticatedUserId);
+        if(evidence)records.push({preferenceKey:preferenceKey,evidence:evidence});
+      });
+    });
+  });
+  return records;
+}
+
+function buildCrossTripSuggestions(trips,authenticatedUserId){
+  var list=Array.isArray(trips)?trips:[];
+  var owned=list.filter(function(trip){return ownedTrip(trip,authenticatedUserId);});
+  if(owned.length<2)return [];
+  var byPreference=Object.create(null);
+  owned.forEach(function(trip){
+    var seenInTrip=Object.create(null);
+    completedCategoryEvidence(trip,authenticatedUserId).forEach(function(item){
+      if(seenInTrip[item.preferenceKey])return;
+      seenInTrip[item.preferenceKey]=true;
+      (byPreference[item.preferenceKey]||(byPreference[item.preferenceKey]={tripIds:Object.create(null),evidence:[]})).tripIds[String(trip.id)]=true;
+      byPreference[item.preferenceKey].evidence.push(item.evidence);
+    });
+  });
+  var totalTrips=owned.length;
+  return Object.keys(byPreference).map(function(preferenceKey){
+    var bucket=byPreference[preferenceKey];
+    var tripIds=Object.keys(bucket.tripIds);
+    if(tripIds.length<2)return null;
+    var coverage=tripIds.length/totalTrips;
+    var confidence=Math.min(0.9,Math.round((0.5+(coverage*0.4))*1000)/1000);
+    return normalizeCandidate({
+      id:'cross-trip:'+preferenceKey,
+      preferenceKey:'interests',
+      value:preferenceKey,
+      confidence:confidence,
+      reviewState:REVIEW_STATES.SUGGESTED,
+      sourceScope:SOURCE_SCOPES.CROSS_TRIP,
+      evidence:bucket.evidence
+    });
+  }).filter(Boolean);
+}
+
 function exportForMate(candidate,learningEnabled){
   var current=normalizeCandidate(candidate);
   if(!canPersonalize(current,learningEnabled))return null;
@@ -192,6 +272,7 @@ window.TravelMateLearnedPreferences=Object.freeze({
   addEvidence:addEvidence,
   removeEvidence:removeEvidence,
   canPersonalize:canPersonalize,
+  buildCrossTripSuggestions:buildCrossTripSuggestions,
   exportForMate:exportForMate
 });
 window.dispatchEvent(new CustomEvent('travelmate:learned-preferences-ready'));
