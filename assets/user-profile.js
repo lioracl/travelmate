@@ -34,7 +34,7 @@ function normalizePreferences(value){
     transport:one('transport'),
     tripStyle:one('tripStyle'),
     interests:Object.freeze(interests),
-    learningEnabled:source.learningEnabled!==false
+    learningEnabled:source.learningEnabled===true
   })
 }
 function greetingAt(value){
