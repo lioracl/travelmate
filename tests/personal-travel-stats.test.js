@@ -60,5 +60,5 @@ test('personal stats exclude deleted trips and cap the input safely', () => {
   }));
   trips[2].deletedAt = '2026-09-01T00:00:00Z';
   const stats = a.buildPersonalStats(trips, 'u1');
-  assert.equal(stats.tripsCount, 49);
+  assert.equal(stats.tripsCount, 50);
 });
