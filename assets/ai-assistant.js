@@ -534,7 +534,9 @@
 
   ui.panel.querySelector('[data-ai-context]').textContent = contextLabel(); renderPrompts(); restoreMessages(); renderHistory(); renderAiNotesArchive(); setupVoice();
   if (activeCloud() && activeCloud().onAuthChange) activeCloud().onAuthChange(function (event, session) {
-    state.lifecycleGeneration += 1;
+    var previousUserId = String((state.session && state.session.user && state.session.user.id) || '');
+    var nextUserId = String((session && session.user && session.user.id) || '');
+    if (previousUserId !== nextUserId) state.lifecycleGeneration += 1;
     state.session = session || null;
     tripContext = collectTripContext();
     var nextKey = conversationStorageKey(session && session.user ? session.user.id : 'guest');
