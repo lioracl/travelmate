@@ -89,9 +89,12 @@ self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;
   const url=new URL(event.request.url);
   const freshAsset=/\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
+  const livePatchAsset=/\/assets\/phone-visual-qa\.css$/i.test(url.pathname);
   const versionedAsset=freshAsset&&url.searchParams.has('v');
   event.respondWith(event.request.mode==='navigate'
     ?networkFirst(event.request,event,true).catch(()=>navigationFallback(url))
+    :livePatchAsset
+      ?networkFirst(event.request,event,false)
     :versionedAsset
       ?cacheFirstVersioned(event.request,event)
     :freshAsset

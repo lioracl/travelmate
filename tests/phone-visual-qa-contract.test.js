@@ -19,11 +19,19 @@ test('visual QA patch owns the four phone regressions', () => {
   assert.match(css, /button,a\[href\],\[role="button"\][\s\S]*inline-grid/);
 });
 
-test('phone overlay shells stay genuinely translucent and flatten nested light layers', () => {
+test('phone overlays obscure the live page while keeping nested rows flat', () => {
   const css = read('assets/phone-visual-qa.css');
-  assert.match(css, /#modal-destination \.destination-modal[\s\S]*rgba\(224,238,242,\.54\)/);
-  assert.match(css, /#modal-destination \.destination-modal :is\(input,select\)[\s\S]*rgba\(238,246,248,\.52\)/);
-  assert.match(css, /#modal-weather-live \.weather-live-modal[\s\S]*rgba\(218,234,239,\.54\)/);
+  assert.match(css, /#modal-destination\.modal-backdrop[\s\S]*blur\(16px\)/);
+  assert.match(css, /#modal-destination \.destination-modal[\s\S]*rgba\(234,243,245,\.94\)/);
+  assert.match(css, /#modal-weather-live\.modal-backdrop[\s\S]*blur\(18px\)/);
+  assert.match(css, /#modal-weather-live \.weather-live-modal[\s\S]*rgba\(232,241,243,\.94\)/);
   assert.match(css, /#modal-weather-live :is\(\.weather-insight,\.weather-live-grid,\.weather-live-day\)[\s\S]*background:transparent/);
-  assert.match(css, /#modal-weather-live \.weather-live-day\.today[\s\S]*rgba\(169,220,231,\.10\)/);
+});
+
+test('light mobile account panel uses app material instead of the photographic dark split', () => {
+  const css = read('assets/phone-visual-qa.css');
+  assert.match(css, /cloud-account-backdrop \.cloud-account-split[\s\S]*background:#e8f1ef/);
+  assert.match(css, /cloud-account-split:before\{display:none\}/);
+  assert.match(css, /cloud-account-split \.cloud-account-close[\s\S]*rgba\(255,255,255,\.78\)/);
+  assert.match(css, /\[data-cloud-sync-now\][\s\S]*var\(--tm-auth-action\)/);
 });
