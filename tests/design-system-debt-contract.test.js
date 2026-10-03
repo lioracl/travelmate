@@ -191,7 +191,10 @@ test('Personalization reuses authenticated Supabase user identity', () => {
 
   assert.match(cloud, /client\.auth\.getSession\(\)/);
   assert.match(cloud, /function updateProfile\(displayName, preferences\)/);
-  assert.match(cloud, /client\.auth\.updateUser\(\{[\s\S]*display_name: normalizedName,[\s\S]*travelmate_preferences: hasPreference \? normalizedPreferences : null[\s\S]*\}\)/);
+  assert.match(cloud, /var hasPreferencesArgument = preferences && typeof preferences === 'object'/);
+  assert.match(cloud, /var metadataPatch = \{ display_name: normalizedName \}/);
+  assert.match(cloud, /if \(hasPreferencesArgument\) metadataPatch\.travelmate_preferences = hasPreference \? normalizedPreferences : null/);
+  assert.match(cloud, /client\.auth\.updateUser\(\{ data: metadataPatch \}\)/);
   assert.match(cloud, /learningEnabled: input\.learningEnabled !== false/);
   assert.match(home, /user\.user_metadata/);
   assert.match(home, /metadata\.display_name \|\| metadata\.full_name \|\| metadata\.name/);

@@ -3,7 +3,9 @@
 ## Product principle
 TravelMate should help the traveler make decisions without turning the trip into a task manager. Time is context, not authority. The user decides when an activity starts, ends, is skipped, or is replaced.
 
-## Implementation status -- TravelMate 2.12.0
+## Implementation status -- TravelMate 2.13.0
+
+Profile & Avatar is implemented in 2.13.0: the existing Supabase Auth profile owns display name and avatar metadata, users can explicitly upload/replace/remove a JPEG, PNG, or WebP avatar up to 2 MB, initials remain the fallback, and avatar objects live in a dedicated owner-written public Storage bucket without reusing the private document vault.
 
 Contextual Nearby V1 is implemented in Places and Mate. It is user-invoked, calculates the free-time window against the next fixed commitment, asks for GPS consent only after activation, reuses the existing Nearby pipeline, bounds suggestions to six time-feasible places, and keeps Navigate / Save / Add to today as explicit user actions. Mate recognizes explicit nearby/free-time requests locally and does not send GPS coordinates to Gemini. Opening hours are not claimed unless independently verified.
 

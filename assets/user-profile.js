@@ -50,13 +50,15 @@ function fromUser(user,now){
   var name=rawName||emailName;
   var firstName=name?name.split(/\s+/)[0]:'';
   var initials=name?name.split(/\s+/).slice(0,2).map(function(part){return part.charAt(0)}).join('').toUpperCase():(email?email.charAt(0).toUpperCase():'');
-  var avatarUrl=safeAvatarUrl(metadata.avatar_url||metadata.picture||metadata.photo_url||'');
+  var avatarRemoved=metadata.avatar_removed===true;
+  var avatarUrl=avatarRemoved?'':safeAvatarUrl(metadata.avatar_url||metadata.picture||metadata.photo_url||'');
   var preferences=normalizePreferences(metadata.travelmate_preferences);
   return Object.freeze({
     name:name,
     firstName:firstName,
     initials:initials,
     avatarUrl:avatarUrl,
+    avatarRemoved:avatarRemoved,
     greeting:greetingAt(now),
     preferences:preferences
   })

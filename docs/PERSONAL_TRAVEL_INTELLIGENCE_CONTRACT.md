@@ -105,7 +105,16 @@ Allowed profile identity fields:
 
 Do not create a second profile table or second identity object.
 
-Avatar upload is a separate future storage task because the current Supabase storage inventory has only the private `travel-documents` bucket. Do not reuse the document bucket for avatars.
+Avatar editing is implemented in 2.13.0 without creating a second profile table. TravelMate uses the canonical Supabase Auth user profile and a dedicated `profile-avatars` Storage bucket; the private `travel-documents` bucket remains isolated and is never reused for avatars.
+
+Avatar rules in 2.13.0:
+- accepted uploads: JPEG, PNG, or WebP up to 2 MB; MIME, extension, file signature, and browser decode must agree;
+- objects live under `<auth.uid()>/<unique-file>` and authenticated writes/deletes are owner-scoped by the first path segment;
+- the avatar bucket is public for stable rendering, and the account UI explicitly discloses that the image is retrievable by its public URL;
+- the stable public URL and owned object path are stored only in Auth user metadata as `avatar_url` and `avatar_path`; `avatar_removed=true` suppresses provider-image fallback after an explicit removal;
+- upload/remove operations are online-only, serialized per owner, use an isolated non-persistent Supabase client bound to the initiating session, and never queue image blobs offline;
+- metadata failure rolls back the new object, while cleanup failures are surfaced rather than hidden; provider or foreign paths are never deleted;
+- initials remain the visual fallback for missing, removed, or broken images.
 
 ## 4. Preference contract
 

@@ -343,3 +343,24 @@ html body.home-page .cloud-account-split .security-captcha-development i{flex:0 
 .cloud-account-split .cloud-account-session .account-accent-picker button.active{border-color:#fff;background:color-mix(in srgb,var(--accent-swatch) 26%,rgba(255,255,255,.08));box-shadow:0 0 0 2px var(--accent-swatch)}
 .cloud-account-split .cloud-account-session .account-accent-picker button:focus-visible{outline:3px solid rgba(255,255,255,.7);outline-offset:2px}
 @media(max-width:520px){.account-accent-picker>div{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 2.13 Profile Avatar */
+.cloud-avatar-editor{display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:center;width:100%;padding:14px;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:18px;background:color-mix(in srgb,var(--tm-card-control,#fff) 72%,transparent)}
+.cloud-avatar-preview{display:grid;place-items:center;width:72px;height:72px;border-radius:22px;background:color-mix(in srgb,var(--tm-brand-primary,#1f7a68) 18%,#fff);background-position:center;background-size:cover;background-repeat:no-repeat;font-size:22px;font-weight:800;color:var(--tm-text,#17352d);overflow:hidden}
+.cloud-avatar-preview.has-image{color:transparent}
+.cloud-avatar-copy{min-width:0;display:grid;gap:4px;text-align:start}
+.cloud-avatar-copy strong{font-size:16px}
+.cloud-avatar-copy small,.cloud-avatar-status{font-size:13px;line-height:1.45;opacity:.78}
+.cloud-avatar-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cloud-avatar-actions .secondary,.cloud-avatar-pick{min-height:44px;margin:0;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer}
+.cloud-avatar-pick input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.cloud-avatar-pick:has(input:focus-visible){outline:3px solid color-mix(in srgb,var(--tm-brand-primary,#1f7a68) 35%,transparent);outline-offset:2px}
+.cloud-avatar-pick:has(input:disabled){opacity:.5;cursor:not-allowed}
+.cloud-avatar-status{grid-column:1/-1;min-height:1.45em;margin:0}
+.cloud-avatar-status.error{color:var(--tm-danger,#b42318);opacity:1}
+@media(max-width:560px){
+  .cloud-avatar-editor{grid-template-columns:60px minmax(0,1fr);padding:12px}
+  .cloud-avatar-preview{width:60px;height:60px;border-radius:18px}
+  .cloud-avatar-actions{grid-template-columns:1fr 1fr}
+  .cloud-avatar-pick{grid-column:1/-1}
+}

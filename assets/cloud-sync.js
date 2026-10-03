@@ -1119,10 +1119,184 @@
     return client.auth.updateUser({ password: password });
   }
 
+  var AVATAR_BUCKET = 'profile-avatars';
+  var AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+  var AVATAR_TYPES = Object.freeze({ 'image/jpeg': ['jpg','jpeg'], 'image/png': ['png'], 'image/webp': ['webp'] });
+  var avatarOperationChains = new Map();
+
+  function validateAvatarFile(file) {
+    if (!file) return { ok: false, error: 'יש לבחור תמונה.' };
+    var mime = String(file.type || '').toLowerCase();
+    var name = String(file.name || '');
+    var ext = (name.split('.').pop() || '').toLowerCase();
+    if (!AVATAR_TYPES[mime] || AVATAR_TYPES[mime].indexOf(ext) < 0) return { ok: false, error: 'אפשר להעלות JPG, PNG או WebP בלבד.' };
+    if (!Number(file.size) || Number(file.size) > AVATAR_MAX_BYTES) return { ok: false, error: 'גודל התמונה חייב להיות עד 2MB.' };
+    return { ok: true, mime: mime, ext: mime === 'image/jpeg' ? 'jpg' : ext };
+  }
+  async function validateAvatarSignature(file, mime) {
+    if (!file || typeof file.arrayBuffer !== 'function') return false;
+    var bytes = new Uint8Array(await file.arrayBuffer());
+    if (mime === 'image/jpeg' && !(bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff)) return false;
+    if (mime === 'image/png' && !(bytes.length >= 8 && [0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a].every(function(value,index){ return bytes[index] === value; }))) return false;
+    if (mime === 'image/webp' && !(bytes.length >= 12 && String.fromCharCode.apply(null,bytes.slice(0,4)) === 'RIFF' && String.fromCharCode.apply(null,bytes.slice(8,12)) === 'WEBP')) return false;
+    if (typeof window.__travelMateAvatarDecode === 'function') { try { return Boolean(await window.__travelMateAvatarDecode(file)); } catch(error) { return false; } }
+    if (typeof window.createImageBitmap === 'function') {
+      try { var bitmap = await window.createImageBitmap(file); var valid = Boolean(bitmap && bitmap.width > 0 && bitmap.height > 0); if (bitmap && typeof bitmap.close === 'function') bitmap.close(); if (valid) return true; } catch(error) {}
+    }
+    if (typeof window.Image === 'function' && window.URL && typeof window.URL.createObjectURL === 'function') {
+      try { return await new Promise(function(resolve){ var url=window.URL.createObjectURL(file),image=new window.Image(); image.onload=function(){window.URL.revokeObjectURL(url);resolve(Boolean(image.naturalWidth&&image.naturalHeight))}; image.onerror=function(){window.URL.revokeObjectURL(url);resolve(false)}; image.src=url; }); } catch(error) { return false; }
+    }
+    return false;
+  }
+  function ownedAvatarPath(value, userId) {
+    var candidate = String(value || ''), owner = String(userId || '');
+    if (!candidate || !owner || candidate.indexOf('..') !== -1) return '';
+    var parts = candidate.split('/');
+    return parts.length === 2 && parts[0] === owner && /^[A-Za-z0-9._-]+$/.test(parts[1]) ? candidate : '';
+  }
+  function avatarObjectName(ext) { var token = window.crypto && typeof window.crypto.randomUUID === 'function' ? window.crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2); return token + '.' + ext; }
+  function avatarSnapshot(user) { var metadata=user&&user.user_metadata||{}; return {avatarUrl:metadata.avatar_url||null,avatarPath:metadata.avatar_path||null,avatarRemoved:metadata.avatar_removed===true}; }
+  function avatarMutationMatches(user, expectedUrl, expectedPath, expectedRemoved) { var metadata=user&&user.user_metadata||{}; return String(metadata.avatar_url||'')===String(expectedUrl||'')&&String(metadata.avatar_path||'')===String(expectedPath||'')&&Boolean(metadata.avatar_removed===true)===Boolean(expectedRemoved); }
+  function queueAvatarOperation(owner, task) {
+    function locked(){ if(typeof navigator!=='undefined'&&navigator.locks&&typeof navigator.locks.request==='function')return navigator.locks.request('travelmate-avatar:'+owner,{mode:'exclusive'},task); return task(); }
+    var prior=avatarOperationChains.get(owner)||Promise.resolve();
+    var current=prior.catch(function(){}).then(locked);
+    avatarOperationChains.set(owner,current);
+    current.finally(function(){if(avatarOperationChains.get(owner)===current)avatarOperationChains.delete(owner)}).catch(function(){});
+    return current;
+  }
+  async function requireAvatarSession(client, owner, fresh) { var result=await client.auth.getSession(); if(result.error)throw result.error; var session=result.data&&result.data.session; var user=session&&session.user; if(!user)throw new Error('AUTH_REQUIRED'); if(fresh&&client.auth.getUser){var current=await client.auth.getUser();if(current.error)throw current.error;if(current.data&&current.data.user)user=current.data.user;session=Object.assign({},session,{user:user});} if(owner&&String(user.id)!==String(owner))throw authContextError(); return session; }
+  async function createAvatarScopedClient(session) {
+    if (!session || !session.user) throw new Error('AUTH_REQUIRED');
+    if (typeof window.__travelMateAvatarClientFactory === 'function') return window.__travelMateAvatarClientFactory(session);
+    var config=window.TRAVELMATE_SUPABASE;
+    if(!config||!config.url||!config.publishableKey||!session.access_token||!session.refresh_token)throw new Error('AVATAR_SESSION_UNAVAILABLE');
+    var library=await loadLibrary();
+    var scoped=library.createClient(config.url,config.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    var setResult=await scoped.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token});
+    if(setResult.error)throw setResult.error;
+    var scopedUser=setResult.data&&setResult.data.session&&setResult.data.session.user;
+    if(!scopedUser||String(scopedUser.id)!==String(session.user.id))throw authContextError();
+    return scoped;
+  }
+  async function removeAvatarObject(client, objectPath) { var first=await client.storage.from(AVATAR_BUCKET).remove([objectPath]); if(!first.error)return null; var retry=await client.storage.from(AVATAR_BUCKET).remove([objectPath]); return retry.error||null; }
+  async function scopedAvatarUser(client) {
+    var result=client.auth.getUser?await client.auth.getUser():await client.auth.getSession();
+    if(result.error)throw result.error;
+    return result.data&&((result.data.user)||(result.data.session&&result.data.session.user));
+  }
+  function avatarPathReferenced(user, path) {
+    if(!path)return false;var metadata=user&&user.user_metadata||{};
+    if(String(metadata.avatar_path||'')===String(path))return true;
+    var url=String(metadata.avatar_url||'').split('?')[0];
+    return Boolean(url&&url.endsWith('/profile-avatars/'+path));
+  }
+  async function cleanupSupersededAvatarPaths(client, owner, paths, currentUser) {
+    var user=currentUser||await scopedAvatarUser(client);if(!user||String(user.id)!==String(owner))return authContextError();
+    var firstError=null,seen={};for(var index=0;index<paths.length;index+=1){var path=ownedAvatarPath(paths[index],owner);if(!path||seen[path]||avatarPathReferenced(user,path))continue;seen[path]=true;var error=await removeAvatarObject(client,path);if(error&&!firstError)firstError=error;}
+    return firstError;
+  }
+  function avatarConflictError(){var error=new Error('AVATAR_CONFLICT');error.code='AVATAR_CONFLICT';return error;}
+  async function compareAndSetAvatar(client, expected, next) {
+    if(!client||typeof client.rpc!=='function')return {changed:false,error:new Error('AVATAR_CAS_UNAVAILABLE')};
+    var result=await client.rpc('travelmate_compare_and_set_avatar',{
+      p_expected_avatar_url:expected.avatarUrl,
+      p_expected_avatar_path:expected.avatarPath,
+      p_expected_avatar_removed:Boolean(expected.avatarRemoved),
+      p_new_avatar_url:next.avatarUrl,
+      p_new_avatar_path:next.avatarPath,
+      p_new_avatar_removed:Boolean(next.avatarRemoved)
+    });
+    if(result.error)return {changed:false,error:result.error};
+    return {changed:result.data===true,error:null};
+  }
+  async function compensateAvatarMutation(client, owner, expected, previous) {
+    try {
+      var changed=await compareAndSetAvatar(client,expected,previous);
+      if(changed.error)return {restored:false,safeToDelete:false,error:changed.error};
+      if(changed.changed)return {restored:true,safeToDelete:true,error:null};
+      var current=await scopedAvatarUser(client);if(!current||String(current.id)!==String(owner))return {restored:false,safeToDelete:false,error:authContextError()};
+      return {restored:false,safeToDelete:false,error:null};
+    } catch(error){return {restored:false,safeToDelete:false,error:error};}
+  }
+  async function resolveAvatarCasError(client, owner, previous, next, error) {
+    try {
+      var current=await scopedAvatarUser(client);
+      if(!current||String(current.id)!==String(owner))return {state:'unknown',user:current||null,error:error};
+      if(avatarMutationMatches(current,next.avatarUrl,next.avatarPath,next.avatarRemoved))return {state:'committed',user:current,error:error};
+      if(avatarMutationMatches(current,previous.avatarUrl,previous.avatarPath,previous.avatarRemoved))return {state:'not_committed',user:current,error:error};
+      return {state:'superseded',user:current,error:error};
+    } catch(readError){return {state:'unknown',user:null,error:error,readError:readError};}
+  }
+  async function uploadAvatar(file) {
+    if(typeof navigator!=='undefined'&&navigator.onLine===false)return {data:null,error:new Error('AVATAR_OFFLINE')};
+    var check=validateAvatarFile(file);if(!check.ok)return {data:null,error:new Error(check.error)};
+    if(!(await validateAvatarSignature(file,check.mime)))return {data:null,error:new Error('AVATAR_CONTENT_INVALID')};
+    var mainClient=await getClient(),initial;try{initial=await requireAvatarSession(mainClient)}catch(error){return {data:null,error:error}}
+    var owner=String(initial.user.id);
+    return queueAvatarOperation(owner,async function(){
+      var liveSession;try{liveSession=await requireAvatarSession(mainClient,owner,true)}catch(error){return {data:null,error:error}}
+      var previous=avatarSnapshot(liveSession.user),scoped;try{scoped=await createAvatarScopedClient(liveSession)}catch(error){return {data:null,error:error}}
+      var oldPath=ownedAvatarPath(previous.avatarPath,owner),objectPath=owner+'/'+avatarObjectName(check.ext);
+      var uploaded=await scoped.storage.from(AVATAR_BUCKET).upload(objectPath,file,{cacheControl:'31536000',contentType:check.mime,upsert:false});
+      if(uploaded.error)return {data:null,error:uploaded.error};
+      var publicResult=scoped.storage.from(AVATAR_BUCKET).getPublicUrl(objectPath),publicUrl=publicResult&&publicResult.data&&publicResult.data.publicUrl;
+      if(!publicUrl){var urlRollback=await removeAvatarObject(scoped,objectPath);return {data:null,error:new Error('AVATAR_URL_FAILED'),rollbackError:urlRollback}}
+      try{await requireAvatarSession(mainClient,owner,true)}catch(error){var staleRollback=await removeAvatarObject(scoped,objectPath);return {data:null,error:error,rollbackError:staleRollback}}
+      var next={avatarUrl:publicUrl,avatarPath:objectPath,avatarRemoved:false};
+      var cas=await compareAndSetAvatar(scoped,previous,next);
+      if(cas.error){
+        var resolution=await resolveAvatarCasError(scoped,owner,previous,next,cas.error);
+        if(resolution.state==='committed'){cas={changed:true,error:null};}
+        else if(resolution.state==='not_committed'){var casRollback=await removeAvatarObject(scoped,objectPath);return {data:{user:resolution.user},error:cas.error,rollbackError:casRollback};}
+        else if(resolution.state==='superseded'){var predecessorCleanup=await cleanupSupersededAvatarPaths(scoped,owner,[oldPath],resolution.user);return {data:{user:resolution.user},error:avatarConflictError(),rollbackError:predecessorCleanup,superseded:true};}
+        else return {data:null,error:cas.error,rollbackError:resolution.readError||null,uncertain:true};
+      }
+      if(!cas.changed){var conflictRollback=await removeAvatarObject(scoped,objectPath),conflictUser=await scopedAvatarUser(scoped);return {data:{user:conflictUser},error:avatarConflictError(),rollbackError:conflictRollback,superseded:true}}
+      try{await requireAvatarSession(mainClient,owner,true)}catch(error){
+        var compensation=await compensateAvatarMutation(scoped,owner,next,previous);
+        var staleCleanup=compensation.safeToDelete?await removeAvatarObject(scoped,objectPath):null;
+        return {data:null,error:error,rollbackError:compensation.error||staleCleanup,stale:true};
+      }
+      var authoritative=await scopedAvatarUser(scoped);
+      if(!authoritative||String(authoritative.id)!==owner)return {data:null,error:authContextError()};
+      if(!avatarMutationMatches(authoritative,publicUrl,objectPath,false)){
+        var supersededCleanup=await cleanupSupersededAvatarPaths(scoped,owner,[oldPath],authoritative);
+        return {data:{user:authoritative},error:avatarConflictError(),rollbackError:supersededCleanup,superseded:true};
+      }
+      var cleanupError=oldPath&&oldPath!==objectPath?await removeAvatarObject(scoped,oldPath):null;
+      return {data:{user:authoritative},error:null,cleanupError:cleanupError};
+    });
+  }
+
+  async function removeAvatar() {
+    if(typeof navigator!=='undefined'&&navigator.onLine===false)return {data:null,error:new Error('AVATAR_OFFLINE')};
+    var mainClient=await getClient(),initial;try{initial=await requireAvatarSession(mainClient)}catch(error){return {data:null,error:error}}
+    var owner=String(initial.user.id);
+    return queueAvatarOperation(owner,async function(){
+      var liveSession;try{liveSession=await requireAvatarSession(mainClient,owner,true)}catch(error){return {data:null,error:error}}
+      var previous=avatarSnapshot(liveSession.user),scoped;try{scoped=await createAvatarScopedClient(liveSession)}catch(error){return {data:null,error:error}}
+      var oldPath=ownedAvatarPath(previous.avatarPath,owner),next={avatarUrl:null,avatarPath:null,avatarRemoved:true};
+      var cas=await compareAndSetAvatar(scoped,previous,next);
+      if(cas.error)return {data:null,error:cas.error};
+      if(!cas.changed){var conflictUser=await scopedAvatarUser(scoped);return {data:{user:conflictUser},error:avatarConflictError(),superseded:true};}
+      try{await requireAvatarSession(mainClient,owner,true)}catch(error){
+        var compensation=await compensateAvatarMutation(scoped,owner,next,previous);
+        return {data:null,error:error,rollbackError:compensation.error,stale:true};
+      }
+      var authoritative=await scopedAvatarUser(scoped);
+      if(!authoritative||String(authoritative.id)!==owner)return {data:null,error:authContextError()};
+      if(!avatarMutationMatches(authoritative,null,null,true)){var supersededCleanup=await cleanupSupersededAvatarPaths(scoped,owner,[oldPath],authoritative);return {data:{user:authoritative},error:avatarConflictError(),rollbackError:supersededCleanup,superseded:true};}
+      var cleanupError=oldPath?await removeAvatarObject(scoped,oldPath):null;
+      return {data:{user:authoritative},error:null,cleanupError:cleanupError};
+    });
+  }
+
   async function updateProfile(displayName, preferences) {
     var client = await getClient();
     var normalizedName = String(displayName || '').trim().replace(/\s+/g, ' ').slice(0, 80);
-    var input = preferences && typeof preferences === 'object' ? preferences : {};
+    var hasPreferencesArgument = preferences && typeof preferences === 'object';
+    var input = hasPreferencesArgument ? preferences : {};
     var allowed = {
       pace: ['relaxed', 'balanced', 'active'],
       activityDensity: ['light', 'balanced', 'dense'],
@@ -1146,12 +1320,9 @@
     };
     var hasPreference = normalizedPreferences.pace || normalizedPreferences.activityDensity ||
       normalizedPreferences.transport || normalizedPreferences.tripStyle || interests.length || input.learningEnabled === false;
-    return client.auth.updateUser({
-      data: {
-        display_name: normalizedName,
-        travelmate_preferences: hasPreference ? normalizedPreferences : null
-      }
-    });
+    var metadataPatch = { display_name: normalizedName };
+    if (hasPreferencesArgument) metadataPatch.travelmate_preferences = hasPreference ? normalizedPreferences : null;
+    return client.auth.updateUser({ data: metadataPatch });
   }
 
   function authRedirectUrl(hash) {
@@ -1271,6 +1442,9 @@
     resetPassword: resetPassword,
     updatePassword: updatePassword,
     updateProfile: updateProfile,
+    validateAvatarFile: validateAvatarFile,
+    uploadAvatar: uploadAvatar,
+    removeAvatar: removeAvatar,
     authRedirectUrl: authRedirectUrl,
     signOut: signOut,
     listMfaFactors: listMfaFactors,

@@ -519,7 +519,7 @@
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-labelledby', 'cloud-account-title');
-    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message role="status" aria-live="polite" data-message-state="info">התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><div class="cloud-auth-secondary" aria-label="אפשרויות התחברות נוספות"><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></div></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><form class="cloud-profile-form" data-cloud-profile-form><label class="cloud-auth-field"><span>שם תצוגה</span><span class="cloud-auth-input"><i class="fa-regular fa-user" aria-hidden="true"></i><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></span></label><button type="submit" class="secondary" data-cloud-profile-save><i class="fa-solid fa-user-check"></i> שמירת שם</button></form><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
+    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message role="status" aria-live="polite" data-message-state="info">התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><div class="cloud-auth-secondary" aria-label="אפשרויות התחברות נוספות"><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></div></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><section class="cloud-avatar-editor" data-cloud-avatar-editor aria-labelledby="cloud-avatar-title"><span class="cloud-avatar-preview" data-cloud-avatar-preview data-user-avatar hidden aria-hidden="true"></span><div class="cloud-avatar-copy"><strong id="cloud-avatar-title">תמונת פרופיל</strong><small>JPG, PNG או WebP עד 2MB. התמונה זמינה לצפייה באמצעות כתובת ציבורית.</small></div><div class="cloud-avatar-actions"><label class="secondary cloud-avatar-pick">בחירת תמונה<input type="file" data-cloud-avatar-input accept="image/jpeg,image/png,image/webp"></label><button type="button" class="secondary" data-cloud-avatar-upload disabled>שמירת תמונה</button><button type="button" class="secondary" data-cloud-avatar-remove>הסרת תמונה</button></div><small class="cloud-avatar-status" data-cloud-avatar-status role="status" aria-live="polite"></small></section><form class="cloud-profile-form" data-cloud-profile-form><label class="cloud-auth-field"><span>שם תצוגה</span><span class="cloud-auth-input"><i class="fa-regular fa-user" aria-hidden="true"></i><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></span></label><button type="submit" class="secondary" data-cloud-profile-save><i class="fa-solid fa-user-check"></i> שמירת שם</button></form><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
     panel.classList.add('cloud-account-split');
     panel.insertAdjacentHTML('afterbegin', '<button class="cloud-account-close" type="button" data-cloud-account-close aria-label="סגירת חלון ההתחברות"><i class="fa-solid fa-xmark"></i></button>');
     backdrop.appendChild(panel);
@@ -532,6 +532,16 @@
   var authForm = accountPanel.querySelector('[data-cloud-auth-form]');
   var passwordForm = accountPanel.querySelector('[data-cloud-password-form]');
   var profileForm = accountPanel.querySelector('[data-cloud-profile-form]');
+  var avatarInput = accountPanel.querySelector('[data-cloud-avatar-input]');
+  var avatarUpload = accountPanel.querySelector('[data-cloud-avatar-upload]');
+  var avatarRemove = accountPanel.querySelector('[data-cloud-avatar-remove]');
+  var avatarPreview = accountPanel.querySelector('[data-cloud-avatar-preview]');
+  var avatarStatus = accountPanel.querySelector('[data-cloud-avatar-status]');
+  var pendingAvatarFile = null;
+  var pendingAvatarPreviewUrl = '';
+  var avatarBusy = false;
+  var avatarRenderGeneration = 0;
+
   var sessionPanel = accountPanel.querySelector('[data-cloud-session]');
   var message = accountPanel.querySelector('[data-cloud-message]');
   var accountBackdrop = accountPanel.closest('[data-cloud-account-backdrop]');
@@ -591,6 +601,9 @@
     if (/email address not authorized/i.test(value)) return 'Supabase אינו מורשה לשלוח לכתובת הזו. יש להגדיר SMTP פרטי או להשתמש בכתובת של חבר צוות הפרויקט.';
     if (/rate limit|too many requests|over_email_send_rate_limit/i.test(value)) return 'הגעת למגבלת השליחה של Supabase. המתן כשעה ונסה שוב, או הגדר SMTP פרטי.';
     if (/invalid login/i.test(value)) return 'כתובת הדוא״ל או הסיסמה אינן נכונות. אם טרם אימתת את החשבון, שלח שוב את מייל האימות.';
+    if (/AVATAR_CONFLICT/i.test(value)) return 'תמונת הפרופיל השתנתה במכשיר או בחלון אחר. המצב העדכני נטען; אפשר לבחור שוב תמונה אם רוצים להחליף אותה.';
+    if (/AVATAR_OFFLINE/i.test(value)) return 'שינוי תמונת פרופיל דורש חיבור לרשת.';
+    if (/AUTH_CONTEXT_CHANGED/i.test(value)) return 'החשבון השתנה בזמן הפעולה. לא בוצע שינוי בחשבון החדש.';
     return 'לא הצלחנו להשלים את הפעולה. נסו שוב בעוד רגע.';
   }
 
@@ -609,19 +622,30 @@
     return { name: name, firstName: firstName, greeting: greeting, initials: initials, avatarUrl: '' };
   }
 
+  function paintAvatar(avatar, user, profile) {
+    avatar.hidden = !user;
+    avatar.textContent = user ? profile.initials : '';
+    avatar.classList.toggle('has-image', Boolean(user && profile.avatarUrl));
+    avatar.style.backgroundImage = user && profile.avatarUrl ? 'url("' + profile.avatarUrl.replace(/"/g, '%22') + '")' : '';
+    avatar.dataset.avatarUrl = user && profile.avatarUrl ? profile.avatarUrl : '';
+    var renderGeneration = String(++avatarRenderGeneration);
+    avatar.dataset.avatarGeneration = renderGeneration;
+    avatar.setAttribute('aria-label', user && profile.name ? 'משתמש: ' + profile.name : 'משתמש מחובר');
+    if (user && profile.avatarUrl && typeof window.Image === 'function') {
+      var expected = profile.avatarUrl;
+      var probe = new window.Image();
+      probe.onerror = function () { if (avatar.dataset.avatarGeneration === renderGeneration && avatar.dataset.avatarUrl === expected) { avatar.classList.remove('has-image'); avatar.style.backgroundImage = ''; avatar.dataset.avatarUrl = ''; } };
+      probe.src = expected;
+    }
+  }
+
   function renderPersonalization(session) {
     var user = session && session.user;
     var profile = personalizedUser(user);
     document.querySelectorAll('[data-account-label]').forEach(function (label) {
       label.textContent = user ? profile.greeting + (profile.firstName ? ', ' + profile.firstName : '') : 'התחברות';
     });
-    document.querySelectorAll('[data-user-avatar]').forEach(function (avatar) {
-      avatar.hidden = !user;
-      avatar.textContent = user && !profile.avatarUrl ? profile.initials : '';
-      avatar.classList.toggle('has-image', Boolean(user && profile.avatarUrl));
-      avatar.style.backgroundImage = user && profile.avatarUrl ? 'url("' + profile.avatarUrl.replace(/"/g, '%22') + '")' : '';
-      avatar.setAttribute('aria-label', user && profile.name ? 'משתמש: ' + profile.name : 'משתמש מחובר');
-    });
+    document.querySelectorAll('[data-user-avatar]').forEach(function (avatar) { paintAvatar(avatar, user, profile); });
     document.querySelectorAll('[data-cloud-account-open]').forEach(function (button) {
       var icon = button.querySelector('[data-account-icon]');
       if (icon) icon.hidden = Boolean(user);
@@ -698,6 +722,8 @@
     sessionPanel.hidden = !session;
     accountPanel.querySelector('[data-cloud-email]').textContent = session && session.user ? session.user.email : '';
     if (profileForm) profileForm.elements.displayName.value = user ? profile.name : '';
+    clearPendingAvatar();
+    updateAvatarControls();
     accountOpenButtons.forEach(function (button) {
       var label = session ? 'החשבון שלי' : 'התחברות';
       button.setAttribute('aria-label', label);
@@ -786,6 +812,80 @@
       submitButton.removeAttribute('aria-busy');
     }
   });
+
+  function clearPendingAvatar() {
+    pendingAvatarFile = null;
+    if (pendingAvatarPreviewUrl) { URL.revokeObjectURL(pendingAvatarPreviewUrl); pendingAvatarPreviewUrl = ''; }
+    if (avatarInput) avatarInput.value = '';
+  }
+  function setAvatarStatus(value, error) {
+    if (!avatarStatus) return;
+    avatarStatus.textContent = value || '';
+    avatarStatus.classList.toggle('error', Boolean(error));
+    avatarStatus.setAttribute('role', error ? 'alert' : 'status');
+  }
+  function updateAvatarControls() {
+    if (!avatarInput || !avatarUpload || !avatarRemove) return;
+    var user = currentSession && currentSession.user;
+    var online = typeof navigator === 'undefined' || navigator.onLine !== false;
+    var profile = personalizedUser(user);
+    avatarInput.disabled = avatarBusy || !user || !online;
+    avatarUpload.disabled = avatarBusy || !user || !online || !pendingAvatarFile;
+    avatarRemove.disabled = avatarBusy || !user || !online || !profile.avatarUrl;
+    if (user && !online) setAvatarStatus('כדי לשנות תמונת פרופיל יש להתחבר לרשת.', false);
+  }
+  if (avatarInput) avatarInput.addEventListener('change', function () {
+    var file = avatarInput.files && avatarInput.files[0];
+    clearPendingAvatar();
+    if (!file) { renderPersonalization(currentSession); updateAvatarControls(); return; }
+    var check = cloud && cloud.validateAvatarFile ? cloud.validateAvatarFile(file) : { ok: false, error: 'שירות האווטר עדיין נטען.' };
+    if (!check.ok) { setAvatarStatus(check.error, true); renderPersonalization(currentSession); updateAvatarControls(); return; }
+    var previewUrl = URL.createObjectURL(file);
+    pendingAvatarPreviewUrl = previewUrl;
+    var profile = personalizedUser(currentSession && currentSession.user);
+    if (avatarPreview) { avatarPreview.hidden = false; avatarPreview.textContent = profile.initials || ''; avatarPreview.classList.remove('has-image'); avatarPreview.style.backgroundImage = ''; }
+    if (typeof window.Image !== 'function') { pendingAvatarFile = file; if (avatarPreview) { avatarPreview.classList.add('has-image'); avatarPreview.style.backgroundImage = 'url("' + previewUrl.replace(/"/g, '%22') + '")'; } setAvatarStatus('התמונה מוכנה לתצוגה מקדימה. לחץ על „שמירת תמונה” כדי לעדכן.', false); updateAvatarControls(); return; }
+    var probe = new window.Image();
+    probe.onload = function () { if (pendingAvatarPreviewUrl !== previewUrl) return; pendingAvatarFile = file; if (avatarPreview) { avatarPreview.classList.add('has-image'); avatarPreview.style.backgroundImage = 'url("' + previewUrl.replace(/"/g, '%22') + '")'; } setAvatarStatus('התמונה מוכנה לתצוגה מקדימה. לחץ על „שמירת תמונה” כדי לעדכן.', false); updateAvatarControls(); };
+    probe.onerror = function () { if (pendingAvatarPreviewUrl !== previewUrl) return; clearPendingAvatar(); renderPersonalization(currentSession); setAvatarStatus('לא הצלחנו לקרוא את קובץ התמונה. נסו קובץ אחר.', true); updateAvatarControls(); };
+    probe.src = previewUrl;
+    updateAvatarControls();
+  });
+  if (avatarUpload) avatarUpload.addEventListener('click', async function () {
+    if (!pendingAvatarFile || !cloud || typeof cloud.uploadAvatar !== 'function' || !currentSession || !currentSession.user) return;
+    var ownerId = String(currentSession.user.id);
+    avatarBusy = true; avatarUpload.setAttribute('aria-busy', 'true'); updateAvatarControls();
+    setAvatarStatus('מעלה את תמונת הפרופיל…', false);
+    try {
+      var result = await cloud.uploadAvatar(pendingAvatarFile);
+      if (!currentSession || !currentSession.user || String(currentSession.user.id) !== ownerId) return;
+      if (result.error) { if (result.data && result.data.user && String(result.data.user.id) === ownerId) { currentSession.user = result.data.user; clearPendingAvatar(); renderPersonalization(currentSession); window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } })); } setAvatarStatus(result.rollbackError ? 'העדכון נכשל וגם ניקוי הקובץ החדש לא הושלם. נסו שוב מאוחר יותר.' : authMessage(result.error), true); return; }
+      if (!result.data || !result.data.user || String(result.data.user.id) !== ownerId) { setAvatarStatus('החשבון השתנה בזמן העדכון. התמונה לא הוחלה במסך הנוכחי.', true); return; }
+      currentSession.user = result.data.user;
+      clearPendingAvatar(); renderPersonalization(currentSession); updateAvatarControls();
+      window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } }));
+      setAvatarStatus(result.cleanupError ? 'התמונה נשמרה. ניקוי הגרסה הקודמת לא הושלם.' : 'תמונת הפרופיל נשמרה.', Boolean(result.cleanupError));
+    } catch (error) { if (currentSession && currentSession.user && String(currentSession.user.id) === ownerId) { console.error('TravelMate avatar upload failed', error); setAvatarStatus(authMessage(error), true); } }
+    finally { avatarBusy = false; avatarUpload.removeAttribute('aria-busy'); updateAvatarControls(); }
+  });
+  if (avatarRemove) avatarRemove.addEventListener('click', async function () {
+    if (!cloud || typeof cloud.removeAvatar !== 'function' || !currentSession || !currentSession.user) return;
+    var ownerId = String(currentSession.user.id);
+    avatarBusy = true; avatarRemove.setAttribute('aria-busy', 'true'); updateAvatarControls(); setAvatarStatus('מסיר את תמונת הפרופיל…', false);
+    try {
+      var result = await cloud.removeAvatar();
+      if (!currentSession || !currentSession.user || String(currentSession.user.id) !== ownerId) return;
+      if (result.error) { if (result.data && result.data.user && String(result.data.user.id) === ownerId) { currentSession.user = result.data.user; renderPersonalization(currentSession); window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } })); } setAvatarStatus(authMessage(result.error), true); return; }
+      if (!result.data || !result.data.user || String(result.data.user.id) !== ownerId) { setAvatarStatus('החשבון השתנה בזמן העדכון. השינוי לא הוחל במסך הנוכחי.', true); return; }
+      currentSession.user = result.data.user;
+      clearPendingAvatar(); renderPersonalization(currentSession); updateAvatarControls();
+      window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } }));
+      setAvatarStatus(result.cleanupError ? 'האווטר הוסר מהפרופיל, אך ניקוי הקובץ הישן לא הושלם.' : 'תמונת הפרופיל הוסרה. מוצגים כעת ראשי התיבות.', Boolean(result.cleanupError));
+    } catch (error) { if (currentSession && currentSession.user && String(currentSession.user.id) === ownerId) { console.error('TravelMate avatar removal failed', error); setAvatarStatus(authMessage(error), true); } }
+    finally { avatarBusy = false; avatarRemove.removeAttribute('aria-busy'); updateAvatarControls(); }
+  });
+  window.addEventListener('online', updateAvatarControls);
+  window.addEventListener('offline', updateAvatarControls);
 
   if (profileForm) profileForm.addEventListener('submit', async function (event) {
     event.preventDefault();
