@@ -40,3 +40,22 @@ test('Contextual results are time-feasible, bounded and keep explicit save/add a
   assert.match(app,/contextualTodayValid/);assert.match(app,/scheduleButton\.addEventListener\('click'/);
   assert.match(app,/savePlace\(true\)/);assert.match(app,/trip\.savedPlaces\.push\(placeData\)/);
 });
+
+test('Mini Route chooses a compact 2-3 stop sequence only when it fits',()=>{
+  const helper=tripContext(),places=[{id:'a',name:'A',lat:32.101,lon:34.800},{id:'b',name:'B',lat:32.102,lon:34.801},{id:'c',name:'C',lat:32.103,lon:34.802}];
+  const three=helper.buildMiniRoute(places,{lat:32.1,lon:34.8,availableMinutes:150,routeStops:3});
+  assert.equal(three.stops.length,3);assert.ok(three.totalEstimatedMinutes<=150);assert.ok(three.totalTravelMinutes>0);
+  const fallback=helper.buildMiniRoute(places,{lat:32.1,lon:34.8,availableMinutes:75,routeStops:3});
+  assert.equal(fallback.stops.length,2);assert.ok(fallback.totalEstimatedMinutes<=75);
+  assert.equal(helper.buildMiniRoute(places,{lat:32.1,lon:34.8,availableMinutes:60,routeStops:3}),null);
+  const blankNext=helper.buildMiniRoute(places,{lat:32.1,lon:34.8,availableMinutes:90,routeStops:2,nextFixedActivity:{record:{lat:'',lon:''}}});
+  assert.equal(blankNext.stops.length,2);assert.equal(blankNext.onwardMinutes,0);
+  assert.equal(helper.coordinates({lat:'',lon:''}),null);
+});
+
+test('Mini Route stays explicit and reuses Contextual Nearby without automatic persistence',()=>{
+  const app=read('assets/app.js'),nearby=read('assets/nearby.js');
+  assert.match(app,/data-contextual-mini-route/);assert.match(app,/aria-pressed=\"false\"/);assert.match(app,/miniRoute:contextualMiniRoute/);
+  assert.match(nearby,/buildMiniRoute\(assessed\.map/);assert.match(nearby,/data-contextual-mini-route-result/);
+  assert.match(nearby,/requestGpsConsent\(panel\)/);assert.doesNotMatch(nearby,/buildMiniRoute[\s\S]{0,500}saveTrip|buildMiniRoute[\s\S]{0,500}savedPlaces\.push/);
+});

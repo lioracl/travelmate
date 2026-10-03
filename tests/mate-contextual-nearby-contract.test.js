@@ -102,3 +102,16 @@ test('local nearby action returns before the normal Gemini path',()=>{
   assert.match(assistant,/שום מקום לא יישמר או יתווסף לתוכנית אוטומטית/);
   assert.match(assistant,/invokeAssistant\(client, state\.messages\.slice\(-12\)\)/);
 });
+
+test('Mate requests Mini Route only from explicit nearby route language',()=>{
+  const helper=tripContext();
+  const hebrew=helper.parseMateNearbyIntent('יש לי שעתיים, תן לי 2-3 מקומות קרובים ברצף');
+  assert.equal(hebrew.miniRoute,true);assert.equal(hebrew.routeStops,3);assert.equal(hebrew.availableMinutes,120);
+  const english=helper.parseMateNearbyIntent('I have two hours, find 2 nearby places in a row');
+  assert.equal(english.miniRoute,true);assert.equal(english.routeStops,2);assert.equal(english.availableMinutes,120);
+  assert.equal(helper.parseMateNearbyIntent('Explain what a mini route near me means'),null);
+  assert.equal(helper.parseMateNearbyIntent('I already have 2 stops nearby'),null);
+  assert.equal(helper.parseMateNearbyIntent("I don't need a mini route near me"),null);
+  assert.equal(helper.parseMateNearbyIntent('I do not need 2 nearby places'),null);
+  assert.equal(helper.parseMateNearbyIntent("Please don't build a short route near me"),null);
+});

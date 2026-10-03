@@ -504,7 +504,7 @@
     if (loaded === false) throw new Error('NEARBY_NOT_READY');
     navigation.open('places');
     var panel = await waitForNearbyPanel();
-    var detail = { trip: action.trip, now: new Date(), bufferMinutes: 30, source: 'mate', mood: action.intent.mood || '', categories: Array.isArray(action.intent.categories) ? action.intent.categories.slice() : [] };
+    var detail = { trip: action.trip, now: new Date(), bufferMinutes: 30, source: 'mate', mood: action.intent.mood || '', categories: Array.isArray(action.intent.categories) ? action.intent.categories.slice() : [], miniRoute: Boolean(action.intent.miniRoute), routeStops: Number(action.intent.routeStops || 0) };
     if (Number.isFinite(action.intent.availableMinutes)) detail.availableMinutes = action.intent.availableMinutes;
     panel.dispatchEvent(new CustomEvent('travelmate:contextual-nearby', { detail: detail }));
   }
@@ -516,7 +516,7 @@
     state.messages.push({ role: 'user', content: content }); state.messages = state.messages.slice(-16); persistMessages(); addMessage('user', content);
     var nearbyAction = contextualNearbyIntent(content);
     if (nearbyAction) {
-      var confirmation = 'פותח את Places לחיפוש קרוב. המיקום יתבקש רק דרך מסך ההסכמה הקיים, ושום מקום לא יישמר או יתווסף לתוכנית אוטומטית.';
+      var confirmation = nearbyAction.intent.miniRoute ? 'פותח את Places כדי לבנות מסלול קצר של עד ' + nearbyAction.intent.routeStops + ' תחנות. המיקום יתבקש רק דרך מסך ההסכמה הקיים, ושום מקום לא יישמר או יתווסף לתוכנית אוטומטית.' : 'פותח את Places לחיפוש קרוב. המיקום יתבקש רק דרך מסך ההסכמה הקיים, ושום מקום לא יישמר או יתווסף לתוכנית אוטומטית.';
       state.messages.push({ role: 'assistant', content: confirmation }); state.messages = state.messages.slice(-16); persistMessages(); addMessage('assistant', confirmation);
       setBusy(true); setStatus('פותח את Places…');
       try {

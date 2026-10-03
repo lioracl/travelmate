@@ -3,11 +3,11 @@
 ## Product principle
 TravelMate should help the traveler make decisions without turning the trip into a task manager. Time is context, not authority. The user decides when an activity starts, ends, is skipped, or is replaced.
 
-## Implementation status — TravelMate 2.7.0
+## Implementation status — TravelMate 2.8.0
 
 Contextual Nearby V1 is implemented in Places and Mate. It is user-invoked, calculates the free-time window against the next fixed commitment, asks for GPS consent only after activation, reuses the existing Nearby pipeline, bounds suggestions to six time-feasible places, and keeps Navigate / Save / Add to today as explicit user actions. Mate recognizes explicit nearby/free-time requests locally and does not send GPS coordinates to Gemini. Opening hours are not claimed unless independently verified.
 
-Mood/category shortcuts and Mate integration are now implemented on the same contextual contract. Remaining future work in this family: optional mini-routes only on request, opt-in fixed-event reminders, richer routing data, and more reliable live opening-hours signals.
+Mood/category shortcuts, Mate integration, and optional Mini Route are now implemented on the same contextual contract. Mini Route is user-invoked only, evaluates at most six nearby candidates, prefers 2–3 time-feasible stops, falls back from three to two when needed, and never saves or schedules a stop automatically. Remaining future work in this family: opt-in fixed-event reminders, richer live routing data, and more reliable live opening-hours signals.
 ## Timing model (future additive fields)
 No schema migration is required for the current Plan UX pass. When this model is implemented, add nullable fields so old trips keep working:
 
@@ -67,7 +67,7 @@ Outputs:
 - why each option fits the available time
 - distance / travel time
 - actions: Navigate, Save, Add to today
-- optional mini-route of 2–3 stops only when the user asks for it
+- optional mini-route of 2–3 stops only when the user asks for it — implemented in 2.8.0 with bounded distance-based travel estimates and safe fallback to fewer stops
 
 TravelMate should never silently insert a nearby recommendation into the itinerary.
 
@@ -81,6 +81,8 @@ Mate now calls the same contextual-nearby contract rather than inventing a separ
 
 Six shared intent presets are available in Places and understood by Mate: food, coffee, quiet, culture, view/scenic, and shopping. Each preset maps to existing Places category keys; it changes only the search scope and explanatory context, never GPS consent, persistence, or scheduling behavior.
 
+Mini Route uses the same explicit contextual request. It accounts for travel from the current position, travel between stops, and onward travel to the next fixed commitment when coordinates are available. The route is advisory: estimates are not live navigation, opening hours are not assumed, and the user must explicitly save or schedule any stop.
+
 ## Technical seam created in this branch
 `assets/trip-context.js` is a side-effect-free helper layer. It:
 - normalizes future schedule modes
@@ -88,6 +90,7 @@ Six shared intent presets are available in Places and understood by Mate: food, 
 - finds the next fixed activity
 - calculates a free-time window with a buffer
 - builds a nearby-request context from a position supplied by the caller
+- can evaluate a bounded 2–3 stop Mini Route without side effects
 
 It does **not** request geolocation, create timers, send notifications, or mutate trip data.
 
@@ -97,5 +100,5 @@ It does **not** request geolocation, create timers, send notifications, or mutat
 3. Transition-time suggestions.
 4. Opt-in fixed-event reminders.
 5. Travel-time conflict warnings.
-6. Contextual Nearby Suggestions in Places and Mate — implemented in 2.6.0; next: optional mood/category shortcuts.
+6. Contextual Nearby Suggestions — V1 in 2.6.0, Mood shortcuts in 2.7.0, Mini Route in 2.8.0; next: richer live routing/opening-hours signals.
 7. Day-mode controls and per-activity Flexible / Window / Fixed editing.

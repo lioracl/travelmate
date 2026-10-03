@@ -36,8 +36,9 @@ function dayMode(trip,date){
   return'balanced'
 }
 function coordinates(record){
-  var lat=Number(record&&(record.lat!==undefined?record.lat:record.latitude));
-  var lon=Number(record&&(record.lon!==undefined?record.lon:record.lng!==undefined?record.lng:record.longitude));
+  var rawLat=record&&(record.lat!==undefined?record.lat:record.latitude),rawLon=record&&(record.lon!==undefined?record.lon:record.lng!==undefined?record.lng:record.longitude);
+  if(rawLat===null||rawLat===undefined||rawLon===null||rawLon===undefined||String(rawLat).trim()===''||String(rawLon).trim()==='')return null;
+  var lat=Number(rawLat),lon=Number(rawLon);
   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return null;
   return{lat:lat,lon:lon}
 }
@@ -239,22 +240,40 @@ function parseNearbyDuration(value){
 function parseMateNearbyIntent(value){
   var text=String(value||'').toLowerCase().replace(/[׳״]/g,"'").replace(/\s+/g,' ').trim();
   if(!text)return null;
-  var metaOrNegated=/(?:\b(?:do\s+not|don't|dont|never)\s+(?:find|show|suggest|recommend)\b|\b(?:do\s+not|don't|dont)\s+want\b|\b(?:would\s+rather|rather)\s+not\b|\bnot\s+looking\s+for\b|\bno\s+(?:coffee|cafe|food|restaurant|shopping|museum|view|quiet)\b|\bavoid\s+(?:finding|showing|suggesting|recommending)?\b|\b(?:translate|rewrite|summari[sz]e|explain|define)\b|\b(?:wording|phrasing|phrase|prompt)\b|\bwrite\s+(?:(?:a|an|the)\s+)?(?:poem|story|sentence|prompt|message)\b|\bfind\s+the\s+(?:word|phrase)\b|אל\s+(?:תציע|תמליץ|תמצא|תמצאי|תראה|תציג)|בלי\s+(?:להציע|להמליץ|למצוא)|לא\s+(?:רוצה|רוצים|רוצות|מחפש|מחפשת|מחפשים|מחפשות|בא\s+לי)|אין\s+לי\s+חשק|תרג(?:ם|מי)|תסביר|הסבר|נסח|נסחי|ניסוח|כתוב\s+(?:שיר|סיפור|משפט|פרומפט)|כתבי\s+(?:שיר|סיפור|משפט|פרומפט)|מצא\s+את\s+(?:המילה|הביטוי))/i.test(text);
+  var metaOrNegated=/(?:\b(?:do\s+not|don't|dont|never)\s+(?:find|show|suggest|recommend)\b|\b(?:do\s+not|don't|dont)\s+(?:want|need|build|make)\b|\b(?:would\s+rather|rather)\s+not\b|\bnot\s+looking\s+for\b|\bno\s+(?:coffee|cafe|food|restaurant|shopping|museum|view|quiet)\b|\bavoid\s+(?:finding|showing|suggesting|recommending)?\b|\b(?:translate|rewrite|summari[sz]e|explain|define)\b|\b(?:wording|phrasing|phrase|prompt)\b|\bwrite\s+(?:(?:a|an|the)\s+)?(?:poem|story|sentence|prompt|message)\b|\bfind\s+the\s+(?:word|phrase)\b|אל\s+(?:תציע|תמליץ|תמצא|תמצאי|תראה|תציג)|בלי\s+(?:להציע|להמליץ|למצוא)|לא\s+(?:רוצה|רוצים|רוצות|מחפש|מחפשת|מחפשים|מחפשות|בא\s+לי)|אין\s+לי\s+חשק|תרג(?:ם|מי)|תסביר|הסבר|נסח|נסחי|ניסוח|כתוב\s+(?:שיר|סיפור|משפט|פרומפט)|כתבי\s+(?:שיר|סיפור|משפט|פרומפט)|מצא\s+את\s+(?:המילה|הביטוי))/i.test(text);
   if(metaOrNegated)return null;
   var preference=nearbyPreferencePreset(text);
   var negativePreference=/(?:\b(?:(?:do|does|did)\s+not|don't|doesn't|didn't|dont|doesnt|didnt|would\s+rather\s+not|rather\s+not|not)\s+(?:really\s+)?(?:want|need|feel\s+like|look(?:ing)?\s+for|get|grab)\b|\b(?:no|without)\s+(?:coffee|cafe|food|restaurant|shopping|museum|view|quiet)\b|(?:לא|אל)\s+(?:בא\s+לי|מתחשק\s+לי|רוצה|רוצים|רוצות|מחפש|מחפשת|מחפשים|מחפשות)|אין\s+לי\s+חשק)/i.test(text);
   if(preference&&negativePreference)return null;
-  var nearby=/(?:\bnearby\b|\bnear\s+(?:me|us)\b|\bclose\s+by\b|\baround\s+(?:me|here)\b|\bin\s+(?:my|the)\s+area\b|לידי|לידינו|בסביבה|בסביבתי|סביבי|קרוב\s+אלי|קרוב\s+אליי|קרוב\s+אלינו|באזור\s+שלי)/i.test(text);
+  var nearby=/(?:\bnearby\b|\bnear\s+(?:me|us)\b|\bclose\s+by\b|\baround\s+(?:me|here)\b|\bin\s+(?:my|the)\s+area\b|לידי|לידינו|בסביבה|בסביבתי|סביבי|קרוב\s+אלי|קרוב\s+אליי|קרוב\s+אלינו|באזור\s+שלי|מקומות?\s+קרוב(?:ים|ות)?)/i.test(text);
   var discovery=/(?:\b(?:something|anything|things?)\s+to\s+do\b|\bwhat\s+(?:can|could|should)\s+(?:i|we)\s+do\b|\bwhere\s+(?:can|could|should)\s+(?:i|we)\s+go\b|\b(?:free|spare)\s+time\b|\b(?:find|suggest|recommend)\s+(?:(?:me|us)\s+)?(?:a\s+|some\s+)?(?:nearby\s+)?(?:place|activity|restaurant|cafe|coffee|food|museum|attraction|thing|something|anything)\b|\b(?:places?|activities|restaurants?|cafes?|coffee|food|museums?|attractions?)\s+(?:nearby|near\s+(?:me|us)|around\s+(?:me|here)|in\s+(?:my|the)\s+area)\b|מה\s+(?:(?:אפשר|כדאי|יש)\s+)?לעשות|מה\s+יש\s+בסביבה|משהו\s+לעשות|לאן\s+(?:אפשר|כדאי|נלך|ללכת)|זמן\s+פנוי|(?:מצא|מצאי|תמצא|תמצאי|הצע|הציעי|תציע|המלץ|המלצי|תמליץ)\s+(?:לי\s+|לנו\s+)?(?:מקום|פעילות|מסעדה|בית\s+קפה|קפה|אוכל|מוזיאון|אטרקציה|בילוי)|(?:מקומות?|פעילויות?|מסעדות?|(?:בית|בתי)\s+קפה|אוכל|מוזיאונים?|אטרקציות?|בילוי)\s+(?:לידי|לידינו|בסביבה|בסביבתי|סביבי|קרוב\s+אלי|קרוב\s+אליי|קרוב\s+אלינו|באזור\s+שלי))/i.test(text);
   var preferenceRequest=/(?:\b(?:want|wanna|need|looking\s+for|find|show|suggest|recommend|get|grab|feel\s+like)\b|רוצה|רוצים|רוצות|מחפש|מחפשת|מחפשים|מחפשות|בא\s+לי|מתחשק|יש\s+לי\s+חשק|תמצא|תמצאי|תציע|תמליץ|המלץ|המלצי)/i.test(text);
-  discovery=discovery||Boolean(preference&&preferenceRequest);
+  var routeStops=requestedMiniRouteStops(text),routeRequest=routeStops>0&&/(?:\b(?:find|show|suggest|recommend|give|build|make|want|need|looking\s+for)\b|(?:תן|תני|מצא|מצאי|תמצא|תמצאי|הצע|הציעי|תציע|בנה|בני|רוצה|מחפש|מחפשת)\s*(?:לי|לנו)?)/i.test(text);
+  if(routeStops&&!routeRequest)routeStops=0;
+  discovery=discovery||Boolean(preference&&preferenceRequest)||routeRequest;
   if(!nearby||!discovery)return null;
-  return Object.freeze({userInvoked:true,availableMinutes:parseNearbyDuration(text),mood:preference?preference.key:'',categories:preference?preference.categories.slice():[],source:'mate'})
+  return Object.freeze({userInvoked:true,availableMinutes:parseNearbyDuration(text),mood:preference?preference.key:'',categories:preference?preference.categories.slice():[],miniRoute:routeStops>0,routeStops:routeStops,source:'mate'})
+}
+function requestedMiniRouteStops(value){
+  var text=String(value||'').toLowerCase().replace(/[–—]/g,'-').replace(/\s+/g,' ').trim();
+  var route=/(?:\bmini[- ]?route\b|\bshort\s+(?:walking\s+)?route\b|\b(?:2|3|two|three)\s*(?:-|or|to)?\s*(?:3|three)?\s+(?:nearby\s+)?(?:places?|stops?)\b|\b(?:places?|stops?)\s+(?:in\s+)?(?:a\s+)?(?:row|sequence)\b|מסלול\s+קצר|(?:2|3)\s*-\s*3\s+מקומות?|שני(?:ים)?\s*-\s*שלושה\s+מקומות?|(?:2|3|שני(?:ים)?|שתי|שלוש(?:ה)?)\s+(?:מקומות?|תחנות?)|מקומות?\s+ברצף)/i.test(text);
+  if(!route)return 0;
+  var twoOnly=/(?:\b(?:2|two)\s+(?:nearby\s+)?(?:places?|stops?)\b|(?:שני(?:ים)?|שתי)\s+(?:מקומות?|תחנות?))/i.test(text)&&!/(?:\b(?:3|three)\b|שלוש(?:ה)?)/i.test(text);
+  return twoOnly?2:3
+}
+function buildMiniRoute(places,request){
+  request=request||{};var available=Number(request.availableMinutes),target=Math.min(3,Math.max(2,Math.round(Number(request.routeStops||3)))),origin={lat:Number(request.lat),lon:Number(request.lon)};
+  if(!Number.isFinite(available)||available<60||!coordinates(origin))return null;
+  var pool=(Array.isArray(places)?places:[]).filter(function(place){return coordinates(place)}).slice(0,6),next=request.nextFixedActivity&&request.nextFixedActivity.record;
+  function evaluate(sequence){var previous=origin,legs=[],travel=0;for(var i=0;i<sequence.length;i+=1){var leg=estimateTravelMinutes(previous,sequence[i]);if(!leg)return null;legs.push(leg.minutes);travel+=leg.minutes;previous=sequence[i]}var onward=next?estimateTravelMinutes(previous,next):null,onwardMinutes=onward?Number(onward.minutes||0):0,visitBudget=available-travel-onwardMinutes,visit=Math.min(45,Math.floor((visitBudget/sequence.length)/5)*5);if(visit<30)return null;var total=travel+onwardMinutes+visit*sequence.length;return{sequence:sequence.slice(),legs:legs,onwardMinutes:onwardMinutes,visitMinutes:visit,totalTravelMinutes:travel+onwardMinutes,totalEstimatedMinutes:total,score:travel+onwardMinutes}}
+  function bestFor(count){var best=null,used=new Array(pool.length).fill(false),sequence=[];function walk(){if(sequence.length===count){var candidate=evaluate(sequence);if(candidate&&(!best||candidate.score<best.score||candidate.score===best.score&&candidate.totalEstimatedMinutes<best.totalEstimatedMinutes))best=candidate;return}for(var i=0;i<pool.length;i+=1){if(used[i])continue;used[i]=true;sequence.push(pool[i]);walk();sequence.pop();used[i]=false}}walk();return best}
+  for(var count=target;count>=2;count-=1){var best=bestFor(count);if(!best)continue;return Object.freeze({stops:Object.freeze(best.sequence.map(function(place,index){return Object.freeze({place:place,travelMinutes:best.legs[index],visitMinutes:best.visitMinutes})})),onwardMinutes:best.onwardMinutes,totalTravelMinutes:best.totalTravelMinutes,totalVisitMinutes:best.visitMinutes*count,totalEstimatedMinutes:best.totalEstimatedMinutes,availableMinutes:available,requestedStops:target})}
+  return null
 }
 function buildNearbyRequest(options){
   options=options||{};var position=options.position||{},lat=Number(position.lat),lon=Number(position.lon);
   if(!Number.isFinite(lat)||!Number.isFinite(lon))return null;
-  var now=options.now instanceof Date?options.now:new Date(options.now||Date.now()),trip=options.trip||null;
+  var now=options.now instanceof Date?options.now:new Date(options.now||Date.now()),trip=options.trip||null,miniRoute=Boolean(options.miniRoute),routeStops=miniRoute?Math.min(3,Math.max(2,Math.round(Number(options.routeStops||3)))):0;
   var untilFixed=availableMinutesUntilNextFixed(trip,now,options.bufferMinutes),available=Number.isFinite(Number(options.availableMinutes))?Number(options.availableMinutes):untilFixed;
   if(untilFixed!==null&&Number.isFinite(Number(untilFixed))&&Number.isFinite(Number(available)))available=Math.min(Number(available),Number(untilFixed));
   return Object.freeze({
@@ -265,6 +284,8 @@ function buildNearbyRequest(options){
     availableMinutes:available,
     mood:String(options.mood||'').trim(),
     categories:Array.isArray(options.categories)?options.categories.slice():[],
+    miniRoute:miniRoute,
+    routeStops:routeStops,
     nextFixedActivity:nextFixedActivity(trip,now),
     note:'Context only. This helper never requests geolocation, starts timers, or sends notifications.'
   })
@@ -287,7 +308,9 @@ window.TravelMateTripContext=Object.freeze({
   clampNearbyDuration:clampNearbyDuration,
   parseNearbyDuration:parseNearbyDuration,
   nearbyPreferencePreset:nearbyPreferencePreset,
+  requestedMiniRouteStops:requestedMiniRouteStops,
   parseMateNearbyIntent:parseMateNearbyIntent,
-  buildNearbyRequest:buildNearbyRequest
+  buildNearbyRequest:buildNearbyRequest,
+  buildMiniRoute:buildMiniRoute
 })
 })();
