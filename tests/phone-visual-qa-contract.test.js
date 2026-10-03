@@ -18,3 +18,12 @@ test('visual QA patch owns the four phone regressions', () => {
   assert.match(css, /#modal-weather-live \.modal-close[\s\S]*position:static/);
   assert.match(css, /button,a\[href\],\[role="button"\][\s\S]*inline-grid/);
 });
+
+test('phone overlay shells stay genuinely translucent and flatten nested light layers', () => {
+  const css = read('assets/phone-visual-qa.css');
+  assert.match(css, /#modal-destination \.destination-modal[\s\S]*rgba\(224,238,242,\.54\)/);
+  assert.match(css, /#modal-destination \.destination-modal :is\(input,select\)[\s\S]*rgba\(238,246,248,\.52\)/);
+  assert.match(css, /#modal-weather-live \.weather-live-modal[\s\S]*rgba\(218,234,239,\.54\)/);
+  assert.match(css, /#modal-weather-live :is\(\.weather-insight,\.weather-live-grid,\.weather-live-day\)[\s\S]*background:transparent/);
+  assert.match(css, /#modal-weather-live \.weather-live-day\.today[\s\S]*rgba\(169,220,231,\.10\)/);
+});
