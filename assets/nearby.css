@@ -492,6 +492,13 @@ body.tm-new-design[data-trip-view="places"] main.content #places .nearby-control
 }
 .nearby-status:empty{display:none}
 
+/* Contextual Nearby: a compact, user-invoked shortcut within Places. */
+.contextual-nearby{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--tm-card-border);border-radius:14px;background:var(--tm-card-bg-nested)}
+.contextual-nearby>div{display:grid;gap:3px}.contextual-nearby strong{color:var(--tm-card-heading);font-size:14px}.contextual-nearby small{color:var(--tm-card-secondary);font-size:12px}
+.contextual-nearby label{display:grid;gap:3px;color:var(--tm-card-secondary);font-size:11px;font-weight:800}.contextual-nearby input{width:76px;min-height:38px;padding-inline:8px;border:1px solid var(--tm-card-control-border,var(--line));border-radius:9px;background:var(--tm-card-control);color:var(--tm-card-control-text);font:inherit}
+.contextual-nearby button{min-height:42px;padding:7px 12px;border:0;border-radius:11px;background:var(--tm-action-primary);color:var(--tm-text-on-action);font:inherit;font-weight:850;cursor:pointer}.contextual-nearby__reason{margin:8px 0 0;color:var(--tm-card-link);font-size:12px;font-weight:750;line-height:1.45}
+@media(max-width:760px){.contextual-nearby{grid-template-columns:1fr}.contextual-nearby button{width:100%}.contextual-nearby label{justify-self:start}}
+
 @media(max-width:1000px){
   #places .saved-places-shelf{
     position:sticky;

@@ -3,6 +3,11 @@
 ## Product principle
 TravelMate should help the traveler make decisions without turning the trip into a task manager. Time is context, not authority. The user decides when an activity starts, ends, is skipped, or is replaced.
 
+## Implementation status — TravelMate 2.5.0
+
+Contextual Nearby V1 is implemented in Places. It is user-invoked, calculates the free-time window against the next fixed commitment, asks for GPS consent only after activation, reuses the existing Nearby pipeline, bounds suggestions to six time-feasible places, and keeps Navigate / Save / Add to today as explicit user actions. Opening hours are not claimed unless independently verified.
+
+Remaining future work in this family: optional mood/category shortcuts, Mate invoking the same contextual contract, and opt-in fixed-event reminders.
 ## Timing model (future additive fields)
 No schema migration is required for the current Plan UX pass. When this model is implemented, add nullable fields so old trips keep working:
 
