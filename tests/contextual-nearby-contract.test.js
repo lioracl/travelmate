@@ -20,7 +20,19 @@ test('Contextual Nearby is explicit, consent-gated and has no passive GPS loop',
   assert.match(app,/availableMinutesUntilNextFixed\(trip,now,30\)/);assert.match(app,/data-contextual-window/);
   assert.match(nearby,/panel\.addEventListener\('travelmate:contextual-nearby'/);assert.match(nearby,/requestGpsConsent\(panel\)/);
   assert.match(nearby,/helper\.buildNearbyRequest/);assert.doesNotMatch(nearby,/setInterval\([^\n]*getCurrentPosition/);
-});test('Contextual results are time-feasible, bounded and keep explicit save/add actions',()=>{
+});
+test('Contextual mood shortcuts reuse Places categories and remain explicit',()=>{
+  const app=read('assets/app.js'),nearby=read('assets/nearby.js'),css=read('assets/nearby.css'),assistant=read('assets/ai-assistant.js');
+  assert.match(app,/data-contextual-mood=\"quiet\"/);assert.match(app,/role=\"group\" aria-label=\"מה מתחשק עכשיו\?\"/);assert.match(app,/nearbyPreferencePreset\(contextualMood\)/);
+  assert.match(app,/categories:preset\?preset\.categories:\[\]/);
+  assert.match(nearby,/categories=contextualRequest&&Array\.isArray\(contextualRequest\.categories\)\?normalizeCategoryKeys/);
+  assert.match(nearby,/freeTerm=contextualRequest\?'':placeNameSearchInput\.value\.trim\(\)/);
+  assert.match(nearby,/kosher=contextualRequest\?false:/);assert.match(nearby,/radius=contextualRequest\?contextualRadius:selectedRadius/);
+  assert.doesNotMatch(nearby,/if\(requestedCategories\)\{selectedCategoryKeys=requestedCategories/);assert.match(nearby,/mood:detail\.mood\|\|''/);
+  assert.match(assistant,/categories: Array\.isArray\(action\.intent\.categories\)/);
+  assert.doesNotMatch(assistant,/navigator\.geolocation|getCurrentPosition\s*\(/);assert.match(css,/contextual-nearby__moods button\{min-height:44px/);
+});
+test('Contextual results are time-feasible, bounded and keep explicit save/add actions',()=>{
   const app=read('assets/app.js'),nearby=read('assets/nearby.js');
   assert.match(nearby,/estimateTravelMinutes\(origin,place\)/);assert.match(nearby,/estimateTravelMinutes\(place,next\)/);
   assert.match(nearby,/usable<30/);assert.match(nearby,/slice\(0,6\)/);assert.match(nearby,/contextualSuggestedTime/);

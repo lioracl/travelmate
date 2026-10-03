@@ -3,11 +3,11 @@
 ## Product principle
 TravelMate should help the traveler make decisions without turning the trip into a task manager. Time is context, not authority. The user decides when an activity starts, ends, is skipped, or is replaced.
 
-## Implementation status — TravelMate 2.6.0
+## Implementation status — TravelMate 2.7.0
 
 Contextual Nearby V1 is implemented in Places and Mate. It is user-invoked, calculates the free-time window against the next fixed commitment, asks for GPS consent only after activation, reuses the existing Nearby pipeline, bounds suggestions to six time-feasible places, and keeps Navigate / Save / Add to today as explicit user actions. Mate recognizes explicit nearby/free-time requests locally and does not send GPS coordinates to Gemini. Opening hours are not claimed unless independently verified.
 
-Remaining future work in this family: optional mood/category shortcuts, optional mini-routes only on request, and opt-in fixed-event reminders.
+Mood/category shortcuts and Mate integration are now implemented on the same contextual contract. Remaining future work in this family: optional mini-routes only on request, opt-in fixed-event reminders, richer routing data, and more reliable live opening-hours signals.
 ## Timing model (future additive fields)
 No schema migration is required for the current Plan UX pass. When this model is implemented, add nullable fields so old trips keep working:
 
@@ -78,6 +78,8 @@ Examples:
 - "I have a booking at 18:00 — what can I do before it?"
 
 Mate now calls the same contextual-nearby contract rather than inventing a separate recommendation path. Requests without a duration derive the window from the next fixed commitment; when no such commitment exists, the existing editable window is shown. Meta, translation, writing, and negated prompts stay on the normal Mate/Gemini path.
+
+Six shared intent presets are available in Places and understood by Mate: food, coffee, quiet, culture, view/scenic, and shopping. Each preset maps to existing Places category keys; it changes only the search scope and explanatory context, never GPS consent, persistence, or scheduling behavior.
 
 ## Technical seam created in this branch
 `assets/trip-context.js` is a side-effect-free helper layer. It:

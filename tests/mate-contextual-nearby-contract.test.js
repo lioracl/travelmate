@@ -27,6 +27,17 @@ test('Mate recognizes explicit nearby free-time intent and common durations',()=
   assert.equal(helper.parseMateNearbyIntent('Recommend a nearby restaurant').availableMinutes,null);
 });
 
+test('Mate and Places share contextual mood presets',()=>{
+  const helper=tripContext();
+  const quiet=helper.parseMateNearbyIntent('יש לי שעה פנויה ורוצה משהו שקט לידי');
+  assert.equal(quiet.mood,'quiet');assert.deepEqual(Array.from(quiet.categories),['parks','museums']);
+  const coffee=helper.parseMateNearbyIntent('I have 45 minutes and want coffee near me');
+  assert.equal(coffee.mood,'coffee');assert.deepEqual(Array.from(coffee.categories),['cafes']);
+  assert.deepEqual(Array.from(helper.nearbyPreferencePreset('culture').categories),['museums','historic']);
+  assert.deepEqual(Array.from(helper.nearbyPreferencePreset('נוף').categories),['viewpoints']);
+  assert.deepEqual(Array.from(helper.nearbyPreferencePreset('קניות').categories),['malls','markets','clothing']);
+});
+
 test('Mate does not hijack unrelated AI prompts',()=>{
   const helper=tripContext();
   assert.equal(helper.parseMateNearbyIntent('תסביר לי איך לחסוך בתקציב'),null);
@@ -36,6 +47,20 @@ test('Mate does not hijack unrelated AI prompts',()=>{
   assert.equal(helper.parseMateNearbyIntent('Show me how the nearby feature works'),null);
   assert.equal(helper.parseMateNearbyIntent('Recommend how I can find nearby places in Google Maps'),null);
   assert.equal(helper.parseMateNearbyIntent('Find the word nearby in my itinerary'),null);
+  assert.equal(helper.parseMateNearbyIntent("I don't want coffee near me"),null);
+  assert.equal(helper.parseMateNearbyIntent('I am not looking for a cafe near me'),null);
+  assert.equal(helper.parseMateNearbyIntent("Is 'coffee near me' good wording?"),null);
+  assert.equal(helper.parseMateNearbyIntent('אני לא רוצה קפה לידי'),null);
+  assert.equal(helper.parseMateNearbyIntent('זה ניסוח טוב: קפה לידי?'),null);
+  assert.equal(helper.parseMateNearbyIntent("How should I phrase 'coffee near me'?"),null);
+  assert.equal(helper.parseMateNearbyIntent("Is 'coffee near me' a good prompt?"),null);
+  assert.equal(helper.parseMateNearbyIntent('I would rather not get coffee near me'),null);
+  assert.equal(helper.parseMateNearbyIntent('No coffee near me, please'),null);
+  assert.equal(helper.parseMateNearbyIntent('לא בא לי קפה לידי'),null);
+  assert.equal(helper.parseMateNearbyIntent('אין לי חשק לקפה לידי'),null);
+  assert.equal(helper.parseMateNearbyIntent('I do not feel like coffee near me'),null);
+  assert.equal(helper.parseMateNearbyIntent("I don't feel like coffee near me"),null);
+  assert.equal(helper.parseMateNearbyIntent('לא מתחשק לי קפה לידי'),null);
   assert.equal(helper.parseMateNearbyIntent("Translate 'what can I do near me?' into Hebrew"),null);
   assert.equal(helper.parseMateNearbyIntent('Write a poem about something to do nearby.'),null);
   assert.equal(helper.parseMateNearbyIntent('Do not recommend a restaurant near me.'),null);

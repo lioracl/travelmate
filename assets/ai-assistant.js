@@ -504,7 +504,7 @@
     if (loaded === false) throw new Error('NEARBY_NOT_READY');
     navigation.open('places');
     var panel = await waitForNearbyPanel();
-    var detail = { trip: action.trip, now: new Date(), bufferMinutes: 30, source: 'mate' };
+    var detail = { trip: action.trip, now: new Date(), bufferMinutes: 30, source: 'mate', mood: action.intent.mood || '', categories: Array.isArray(action.intent.categories) ? action.intent.categories.slice() : [] };
     if (Number.isFinite(action.intent.availableMinutes)) detail.availableMinutes = action.intent.availableMinutes;
     panel.dispatchEvent(new CustomEvent('travelmate:contextual-nearby', { detail: detail }));
   }

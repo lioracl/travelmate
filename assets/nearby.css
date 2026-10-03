@@ -531,3 +531,11 @@ body.tm-new-design[data-trip-view="places"] main.content #places .nearby-control
     padding:8px 3px 3px
   }
 }
+
+/* Contextual Nearby mood shortcuts share the existing Places category pipeline. */
+.contextual-nearby__moods{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;padding-top:2px}
+.contextual-nearby .contextual-nearby__moods button{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:5px 10px;border:1px solid var(--tm-card-control-border,var(--line));border-radius:999px;background:var(--tm-card-control);color:var(--tm-card-secondary);font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.contextual-nearby .contextual-nearby__moods button.active{border-color:var(--tm-card-border-hover);background:var(--tm-card-control-selected);color:var(--tm-card-link);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tm-brand-primary) 18%,transparent)}
+.contextual-nearby .contextual-nearby__moods button:focus-visible{outline:3px solid color-mix(in srgb,var(--tm-brand-primary) 24%,transparent);outline-offset:2px}
+@media(max-width:760px){.contextual-nearby__moods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.contextual-nearby .contextual-nearby__moods button{width:100%;min-width:0}}
+@media(max-width:360px){.contextual-nearby__moods{grid-template-columns:repeat(2,minmax(0,1fr))}}
