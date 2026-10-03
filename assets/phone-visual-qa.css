@@ -28,7 +28,8 @@ html body.home-page #modal-destination .destination-modal{
   background:color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(234,243,245,.94));
   border-color:rgba(77,122,132,.30);
   box-shadow:0 24px 64px rgba(4,31,37,.26);
-}html body.home-page #modal-destination .destination-modal :is(input,select){
+}
+html body.home-page #modal-destination .destination-modal :is(input,select){
   background:rgba(250,252,252,.90);
   border-color:rgba(77,122,132,.32);
 }
@@ -59,11 +60,12 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .con
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
   border-color:rgba(235,252,248,.50);
-}html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget:hover{
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget:hover{
   background:rgba(169,220,231,.08);
 }
 
-/* Full forecast: translucent neutral sheet and a close button locked to the header. */
+/* Full forecast: near-opaque app sheet over a strongly blurred live page. */
 html body.tm-new-design #modal-weather-live.modal-backdrop{
   background:rgba(5,24,29,.36);
   -webkit-backdrop-filter:blur(18px) saturate(.84);
@@ -95,7 +97,8 @@ html body.tm-new-design #modal-weather-live .modal-close{
   flex:0 0 44px;
   margin:0;
   align-self:flex-start;
-}html body.tm-new-design #modal-weather-live .weather-live-grid{
+}
+html body.tm-new-design #modal-weather-live .weather-live-grid{
   background:rgba(169,220,231,.04);
   border-radius:18px;
 }
@@ -106,7 +109,7 @@ html[data-theme="dark"] body.tm-new-design #modal-weather-live.modal-backdrop{
   background:rgba(2,13,18,.72);
 }
 html[data-theme="dark"] body.tm-new-design #modal-weather-live .weather-live-modal,
-html[data-theme="dark"] body.tm-new-design #modal-weather-live .weather-live-modal>headers
+html[data-theme="dark"] body.tm-new-design #modal-weather-live .weather-live-modal>header{
   --tm-weather-surface:rgba(16,35,43,.94);
   background:rgba(16,35,43,.94);
   border-color:rgba(169,220,231,.22);
