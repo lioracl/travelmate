@@ -1,0 +1,130 @@
+/* TravelMate phone visual QA patch: phone surfaces + icon/text rhythm. */
+
+/* Shared Font Awesome label contract. It normalizes glyph boxes without changing
+   the layout model of the surrounding control. */
+html body :is(button,a[href],[role="button"]) > :is(i.fa-solid,i.fa-regular,i.fa-brands,i.fa){
+  display:inline-grid;
+  place-items:center;
+  inline-size:1.12em;
+  min-inline-size:1.12em;
+  block-size:1.12em;
+  margin:0;
+  line-height:1;
+  vertical-align:middle;
+  flex:0 0 1.12em;
+}
+html body :is(button,a[href],[role="button"]) > :is(i.fa-solid,i.fa-regular,i.fa-brands,i.fa) + :is(span,strong,small){
+  vertical-align:middle;
+}
+
+/* New Trip: keep destination context visible instead of replacing it with white. */
+html body.home-page #modal-destination.modal-backdrop{
+  background:rgba(7,31,34,.46);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+html body.home-page #modal-destination .destination-modal{
+  --tm-overlay-surface:rgba(220,235,241,.88);
+  background:color-mix(in srgb,var(--tm-brand-primary,#147D92) 8%,rgba(235,243,246,.90));
+  border-color:rgba(77,122,132,.30);
+  box-shadow:0 24px 64px rgba(4,31,37,.26);
+}html body.home-page #modal-destination .destination-modal :is(input,select){
+  background:rgba(238,246,248,.78);
+  border-color:rgba(77,122,132,.32);
+}
+html body.home-page #modal-destination .destination-modal .modal-close{
+  background:rgba(220,235,241,.76);
+  border-color:rgba(77,122,132,.34);
+}
+html[data-theme="dark"] body.home-page #modal-destination.modal-backdrop{
+  background:rgba(2,13,18,.72);
+}
+html[data-theme="dark"] body.home-page #modal-destination .destination-modal{
+  --tm-overlay-surface:rgba(16,35,43,.92);
+  background:rgba(16,35,43,.92);
+  border-color:rgba(169,220,231,.22);
+}
+@media(max-width:640px){
+  html body.home-page #modal-destination.modal-backdrop{padding:10px;align-items:center}
+  html body.home-page #modal-destination .destination-modal{
+    width:100%;
+    max-height:calc(100dvh - 20px);
+    border-radius:24px;
+  }
+}
+
+/* Overview weather card: transparent photo surface, not milky glass. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget{
+  background:rgba(169,220,231,.05);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  border-color:rgba(235,252,248,.50);
+}html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget:hover{
+  background:rgba(169,220,231,.08);
+}
+
+/* Full forecast: translucent neutral sheet and a close button locked to the header. */
+html body.tm-new-design #modal-weather-live.modal-backdrop{
+  background:rgba(5,24,29,.48);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+html body.tm-new-design #modal-weather-live .weather-live-modal{
+  --tm-weather-surface:rgba(220,235,241,.90);
+  background:color-mix(in srgb,var(--tm-brand-primary,#147D92) 7%,rgba(235,243,246,.90));
+  border-color:rgba(77,122,132,.30);
+  box-shadow:0 24px 64px rgba(4,31,37,.28);
+}
+html body.tm-new-design #modal-weather-live .weather-live-modal>header{
+  display:flex;
+  flex-flow:row nowrap;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  padding:18px 20px;
+  background:rgba(220,235,241,.90);
+  border-bottom-color:rgba(77,122,132,.24);
+}
+html body.tm-new-design #modal-weather-live .weather-live-header-copy{
+  min-width:0;
+  flex:1 1 auto;
+}
+html body.tm-new-design #modal-weather-live .modal-close{
+  position:static;
+  inset:auto;
+  flex:0 0 44px;
+  margin:0;
+  align-self:flex-start;
+}html body.tm-new-design #modal-weather-live .weather-live-grid{
+  background:rgba(169,220,231,.10);
+  border-radius:18px;
+}
+html body.tm-new-design #modal-weather-live .weather-live-day{
+  background:transparent;
+}
+html[data-theme="dark"] body.tm-new-design #modal-weather-live.modal-backdrop{
+  background:rgba(2,13,18,.72);
+}
+html[data-theme="dark"] body.tm-new-design #modal-weather-live .weather-live-modal,
+html[data-theme="dark"] body.tm-new-design #modal-weather-live .weather-live-modal>header{
+  --tm-weather-surface:rgba(16,35,43,.94);
+  background:rgba(16,35,43,.94);
+  border-color:rgba(169,220,231,.22);
+}
+@media(max-width:650px){
+  html body.tm-new-design #modal-weather-live.modal-backdrop{padding:8px}
+  html body.tm-new-design #modal-weather-live .weather-live-modal{
+    width:100%;
+    max-height:calc(100dvh - 16px);
+    border-radius:24px;
+  }
+  html body.tm-new-design #modal-weather-live .weather-live-modal>header{
+    padding:16px;
+  }
+  html body.tm-new-design #modal-weather-live .modal-close{
+    width:44px;
+    min-width:44px;
+    height:44px;
+    min-height:44px;
+  }
+}
