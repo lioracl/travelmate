@@ -46,12 +46,12 @@ test('all subtle accent combinations keep strong text contrast',()=>{
   }
 });
 
-test('settings and account expose the same six palette choices',()=>{
+test('Settings owns all six palette choices and Account remains focused',()=>{
   const security=read('assets/security-center.js');
   const home=read('assets/home.js');
   for(const key of Object.keys(palettes)){
     assert.match(security,new RegExp('data-accent-choice="'+key+'"'));
-    assert.match(home,new RegExp('data-accent-choice="'+key+'"'));
+    assert.doesNotMatch(home,new RegExp('data-accent-choice="'+key+'"'));
   }
 });
 

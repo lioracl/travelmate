@@ -613,3 +613,7 @@ body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item.tm-plan-travel-ris
     box-sizing:border-box
   }
 }
+/* Phone QA: action labels wrap without shrinking newer planner controls. */
+@media(max-width:430px){
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolbar-actions button{white-space:normal;overflow-wrap:break-word;flex-wrap:wrap}
+}

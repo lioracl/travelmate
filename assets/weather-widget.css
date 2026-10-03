@@ -405,4 +405,5 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-
   background:currentColor;
   clip-path:polygon(0 0,50% 60%,100% 0,100% 40%,50% 100%,0 40%)
 }
-body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-widget[aria-expanded="true"] .weather-top-action i::before{transform:rotate(180deg)}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-widget[aria-expanded="true"] .weather-top-action i::before{transform:rotate(180deg)}/* Long condition text wraps inside the existing transparent Weather summary. */
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-copy small{white-space:normal;overflow-wrap:break-word;word-break:normal}

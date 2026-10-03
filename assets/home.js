@@ -29,6 +29,9 @@
   var addButton = list && list.querySelector('.add-destination');
   var cloud = window.TravelMateCloud;
   var currentSession = null;
+  var sessionGeneration = 0;
+  var authSubscriptionPending = false;
+  var authSubscribed = false;
   var passwordChangeMode = false;
   var renderedTrips = new Map();
   var staticActivityKey = 'travelmate-static-trip-activity';
@@ -516,7 +519,7 @@
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-labelledby', 'cloud-account-title');
-    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message role="status" aria-live="polite" data-message-state="info">התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><div class="cloud-auth-secondary" aria-label="אפשרויות התחברות נוספות"><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></div></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><form class="cloud-profile-form" data-cloud-profile-form><label class="cloud-auth-field"><span>שם תצוגה</span><span class="cloud-auth-input"><i class="fa-regular fa-user" aria-hidden="true"></i><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></span></label><button type="submit" class="secondary" data-cloud-profile-save><i class="fa-solid fa-user-check"></i> שמירת שם</button></form><fieldset class="account-accent-picker"><legend>ערכת צבע</legend><div role="group" aria-label="בחירת ערכת צבע"><button type="button" data-accent-choice="ocean" aria-label="אוקיינוס"><i></i><span>אוקיינוס</span></button><button type="button" data-accent-choice="emerald" aria-label="אמרלד"><i></i><span>אמרלד</span></button><button type="button" data-accent-choice="teal" aria-label="טורקיז"><i></i><span>טורקיז</span></button><button type="button" data-accent-choice="sunset" aria-label="שקיעה"><i></i><span>שקיעה</span></button><button type="button" data-accent-choice="plum" aria-label="שזיף"><i></i><span>שזיף</span></button><button type="button" data-accent-choice="pink" aria-label="ורוד"><i></i><span>ורוד</span></button></div></fieldset><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
+    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message role="status" aria-live="polite" data-message-state="info">התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><div class="cloud-auth-secondary" aria-label="אפשרויות התחברות נוספות"><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></div></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><form class="cloud-profile-form" data-cloud-profile-form><label class="cloud-auth-field"><span>שם תצוגה</span><span class="cloud-auth-input"><i class="fa-regular fa-user" aria-hidden="true"></i><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></span></label><button type="submit" class="secondary" data-cloud-profile-save><i class="fa-solid fa-user-check"></i> שמירת שם</button></form><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
     panel.classList.add('cloud-account-split');
     panel.insertAdjacentHTML('afterbegin', '<button class="cloud-account-close" type="button" data-cloud-account-close aria-label="סגירת חלון ההתחברות"><i class="fa-solid fa-xmark"></i></button>');
     backdrop.appendChild(panel);
@@ -673,12 +676,20 @@
     action.innerHTML = 'לטיולים שלי <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
   }
 
+  function hydrateCachedTrips() {
+    var trips = cloud && cloud.getCachedTrips ? cloud.getCachedTrips() : [];
+    document.body.classList.toggle('has-cached-trips', trips.length > 0);
+    renderTrips(trips);
+  }
+
   function setSession(session) {
+    sessionGeneration += 1;
     currentSession = session;
     var user = session && session.user;
     var profile = personalizedUser(user);
     document.body.classList.toggle('is-authenticated', Boolean(session));
     renderPersonalization(session);
+    hydrateCachedTrips();
     renderAdaptiveHome(Array.from(renderedTrips.values()));
     window.dispatchEvent(new CustomEvent('travelmate:home-auth', { detail: { authenticated: Boolean(session) } }));
     if (passwordChangeMode && session) return;
@@ -711,7 +722,7 @@
       synchronize();
     }
     else {
-      renderTrips(cloud ? cloud.getLocalTrips() : []);
+      hydrateCachedTrips();
       setMessage('התחברו כדי לשמור את כל הטיולים בענן הפרטי.');
     }
   }
@@ -736,12 +747,17 @@
 
   async function synchronize() {
     if (!cloud || !currentSession) return;
+    hydrateCachedTrips();
+    var generation = sessionGeneration;
+    var owner = currentSession.user.id;
     setMessage('מסנכרן/ת את הטיולים…');
     try {
       var trips = await cloud.syncLocalTrips();
+      if (generation !== sessionGeneration || !currentSession || currentSession.user.id !== owner) return;
       renderTrips(trips);
       setMessage('הכול מסונכרן · ' + trips.length + ' טיולים זמינים בכל המכשירים');
     } catch (error) {
+      if (generation !== sessionGeneration || !currentSession || currentSession.user.id !== owner) return;
       console.error('TravelMate trip sync failed', error);
       var missingTable = /travel_trips|schema cache|does not exist/i.test(String(error && error.message || ''));
       setMessage(missingTable ? 'טבלת סנכרון הטיולים עדיין לא הופעלה ב־Supabase.' : 'הסנכרון נכשל זמנית. הטיולים נשארו שמורים במכשיר.', true);
@@ -915,13 +931,32 @@
     setMessage('חיבור הענן אינו זמין כרגע. הטיולים נשמרים במכשיר בלבד.', true);
     return;
   }
-  cloud.getSession().then(setSession).catch(function () { setMessage('לא ניתן להתחבר לענן כרגע.', true); });
-  cloud.onAuthChange(function (event, session) {
-    if (event === 'PASSWORD_RECOVERY') {
-      showPasswordForm(session, true);
-      return;
-    }
-    setSession(session);
+  function restoreSession() {
+    hydrateCachedTrips();
+    var generation = sessionGeneration;
+    cloud.getSession().then(function (session) {
+      if (generation === sessionGeneration) setSession(session);
+    }).catch(function () {
+      if (generation !== sessionGeneration) return;
+      hydrateCachedTrips();
+      setMessage('חיבור הענן אינו זמין כרגע. הטיולים השמורים זמינים במכשיר.', true);
+    });
+    if (authSubscribed || authSubscriptionPending) return;
+    authSubscriptionPending = true;
+    cloud.onAuthChange(function (event, session) {
+      if (event === 'PASSWORD_RECOVERY') { showPasswordForm(session, true); return; }
+      setSession(session);
+    }).then(function () { authSubscribed = true; }).catch(function () {
+      // Reconnection can load the SDK and subscribe again.
+    }).finally(function () { authSubscriptionPending = false; });
+  }
+  restoreSession();
+  window.addEventListener('online', restoreSession);
+  window.addEventListener('travelmate:local-trips-updated', hydrateCachedTrips);
+  window.addEventListener('storage', function (event) {
+    var change = cloud.cacheChangeType(event.key);
+    if (change === 'account') setSession(null);
+    else if (change === 'trips') hydrateCachedTrips();
   });
   window.addEventListener('travelmate:user-profile-ready', function () {
     if (!currentSession) return;

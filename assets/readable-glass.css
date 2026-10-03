@@ -952,7 +952,7 @@ html body.home-page :is(.trip-archive,.home-about){
   opacity:1
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#documents):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
+html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#documents):not(#plan):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
 html body.tm-new-design main.content>.trip-home-actions,
 html body.tm-new-design main.content :is(
   .expense-workspace,.transport-card,.travel-service-card,

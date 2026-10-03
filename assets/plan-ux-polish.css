@@ -495,4 +495,16 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
   body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links .saved-calendar-link{
     grid-column:1/-1
   }
+}/* Phone QA: the full activity title remains readable in the narrow timeline. */
+@media(max-width:430px){
+  body.tm-new-design[data-trip-view="plan"] #plan .activity-copy>strong,
+  body.tm-new-design[data-trip-view="plan"] #plan .saved-place-content>h3{display:block;overflow:visible;-webkit-line-clamp:unset;overflow-wrap:break-word;word-break:normal}
+}
+/* Keep the final expanded activity actions scrollable above Mate and system safe areas. */
+@media(max-width:700px){
+  body.tm-new-design[data-trip-view="plan"] #plan{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+}
+/* Mate occupies the inline-end edge: keep timeline actions outside its hit area at any scroll position. */
+@media(max-width:700px){
+  body.tm-new-design[data-trip-view="plan"] main.content #plan :is(.activity-buttons,.saved-place-actions){padding-inline-end:48px}
 }

@@ -352,12 +352,29 @@
     });
   }
 
+  // Read the canonical account snapshot without activating another account or Auth.
+  function getCachedTrips() {
+    var owner = activeUserId();
+    if (!owner) return [];
+    var backup = readTripList(USER_STORAGE_PREFIX + owner);
+    var authorized = new Set(backup.map(function (trip) { return tripIdentity(trip, owner); }));
+    var active = getLocalTrips().filter(function (trip) {
+      return String(trip.ownerId || '') === owner || authorized.has(tripIdentity(trip, owner));
+    });
+    return mergeActiveTripsWithBackup(active, backup, owner);
+  }
+
   async function getSession() {
+    var expectedOwner = activeUserId();
     var client = await getClient();
     var result = await client.auth.getSession();
     if (result.error) throw result.error;
     var session = result.data.session;
-    activateUserStorage(session && session.user ? session.user.id : null);
+    var sessionOwner = session && session.user ? String(session.user.id) : '';
+    if (activeUserId() !== expectedOwner && sessionOwner !== activeUserId()) throw authContextError();
+    if (session || typeof navigator === 'undefined' || navigator.onLine !== false) {
+      activateUserStorage(sessionOwner);
+    }
     return session;
   }
 
@@ -1201,7 +1218,9 @@
     var client = await getClient();
     return client.auth.onAuthStateChange(function (event, session) {
       setTimeout(function () {
-        activateUserStorage(session && session.user ? session.user.id : null);
+        if (session || event === 'SIGNED_OUT' || typeof navigator === 'undefined' || navigator.onLine !== false) {
+          activateUserStorage(session && session.user ? session.user.id : null);
+        }
         callback(event, session);
       }, 0);
     });
@@ -1223,6 +1242,12 @@
     getSession: getSession,
     getPrivateStorageSession: getPrivateStorageSession,
     getLocalTrips: getLocalTrips,
+    getCachedTrips: getCachedTrips,
+    cacheChangeType: function (key) {
+      if (key === ACTIVE_USER_KEY) return 'account';
+      if (key === STORAGE_KEY || key === USER_STORAGE_PREFIX + activeUserId()) return 'trips';
+      return '';
+    },
     setLocalTrips: setLocalTrips,
     upsertLocalTrip: upsertLocalTrip,
     removeLocalTrip: removeLocalTrip,
