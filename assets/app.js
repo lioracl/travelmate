@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261003-5'}catch(error){return'20261003-5'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261003-6'}catch(error){return'20261003-6'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
@@ -11,7 +11,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   var features={
     overview:{styles:['weather-widget.css','trip-intelligence.css'],scripts:['weather-widget.js']},
     intelligence:{styles:[],scripts:['learned-preferences.js','trip-intelligence.js']},
-    assistant:{styles:['smart-hub.css'],scripts:['ai-assistant.js','smart-hub.js']},
+    assistant:{styles:['smart-hub.css'],scripts:['trip-context.js','ai-assistant.js','smart-hub.js']},
     account:{styles:['security-center.css','admin-center.css'],scripts:['learned-preferences.js','security-center.js','admin-center.js']},
     places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['trip-context.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
     plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','plan-ux-polish.css','free-time-finder.css'],scripts:['trip-context.js','auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js','plan-ux-polish.js','free-time-finder.js']},

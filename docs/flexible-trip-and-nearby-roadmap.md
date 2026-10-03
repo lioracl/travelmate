@@ -3,11 +3,11 @@
 ## Product principle
 TravelMate should help the traveler make decisions without turning the trip into a task manager. Time is context, not authority. The user decides when an activity starts, ends, is skipped, or is replaced.
 
-## Implementation status — TravelMate 2.5.0
+## Implementation status — TravelMate 2.6.0
 
-Contextual Nearby V1 is implemented in Places. It is user-invoked, calculates the free-time window against the next fixed commitment, asks for GPS consent only after activation, reuses the existing Nearby pipeline, bounds suggestions to six time-feasible places, and keeps Navigate / Save / Add to today as explicit user actions. Opening hours are not claimed unless independently verified.
+Contextual Nearby V1 is implemented in Places and Mate. It is user-invoked, calculates the free-time window against the next fixed commitment, asks for GPS consent only after activation, reuses the existing Nearby pipeline, bounds suggestions to six time-feasible places, and keeps Navigate / Save / Add to today as explicit user actions. Mate recognizes explicit nearby/free-time requests locally and does not send GPS coordinates to Gemini. Opening hours are not claimed unless independently verified.
 
-Remaining future work in this family: optional mood/category shortcuts, Mate invoking the same contextual contract, and opt-in fixed-event reminders.
+Remaining future work in this family: optional mood/category shortcuts, optional mini-routes only on request, and opt-in fixed-event reminders.
 ## Timing model (future additive fields)
 No schema migration is required for the current Plan UX pass. When this model is implemented, add nullable fields so old trips keep working:
 
@@ -77,7 +77,7 @@ Examples:
 - "Find something quiet within 15 minutes."
 - "I have a booking at 18:00 — what can I do before it?"
 
-Mate should call the same contextual-nearby contract rather than inventing a separate recommendation path.
+Mate now calls the same contextual-nearby contract rather than inventing a separate recommendation path. Requests without a duration derive the window from the next fixed commitment; when no such commitment exists, the existing editable window is shown. Meta, translation, writing, and negated prompts stay on the normal Mate/Gemini path.
 
 ## Technical seam created in this branch
 `assets/trip-context.js` is a side-effect-free helper layer. It:
@@ -95,5 +95,5 @@ It does **not** request geolocation, create timers, send notifications, or mutat
 3. Transition-time suggestions.
 4. Opt-in fixed-event reminders.
 5. Travel-time conflict warnings.
-6. Contextual Nearby Suggestions in Places and Mate.
+6. Contextual Nearby Suggestions in Places and Mate — implemented in 2.6.0; next: optional mood/category shortcuts.
 7. Day-mode controls and per-activity Flexible / Window / Fixed editing.

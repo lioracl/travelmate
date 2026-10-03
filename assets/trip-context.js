@@ -189,11 +189,51 @@ function availableMinutesUntilNextFixed(trip,now,bufferMinutes){
   var current=moment.getHours()*60+moment.getMinutes();
   return Math.max(0,next.start-current-Number(bufferMinutes||30))
 }
+function clampNearbyDuration(value){
+  var duration=Number(value);
+  if(!Number.isFinite(duration))return null;
+  return Math.min(360,Math.max(0,Math.round(duration)))
+}
+function durationNumber(value){
+  var numbers={one:1,two:2,three:3,four:4,five:5,six:6,'אחת':1,'אחד':1,'שתי':2,'שני':2,'שלוש':3,'שלושה':3,'ארבע':4,'ארבעה':4,'חמש':5,'חמישה':5,'שש':6,'שישה':6};
+  var normalized=String(value||'').toLowerCase();
+  return Object.prototype.hasOwnProperty.call(numbers,normalized)?numbers[normalized]:Number(normalized)
+}
+function parseNearbyDuration(value){
+  var text=String(value||'').toLowerCase().replace(/[–—]/g,'-').replace(/\s+/g,' ').trim(),match,amount;
+  if(!text)return null;
+  if(/(?:half\s+(?:an?\s+)?hour|חצי\s+שעה)/.test(text))return 30;
+  if(/(?:an?|one)\s+hour\s+and\s+(?:a\s+)?half/.test(text)||/שעה\s+וחצי/.test(text))return 90;
+  if(/שעתיים\s+וחצי/.test(text))return 150;
+  if(/שעה\s+ורבע/.test(text))return 75;
+  match=text.match(/(\d+(?:[.,]\d+)?|one|two|three|four|five|six)\s*(?:and\s+(?:a\s+)?half\s*)?(?:hours?|hrs?|h)\b/);
+  if(match){amount=durationNumber(match[1].replace(',','.'))+(/and\s+(?:a\s+)?half/.test(match[0])?.5:0);return clampNearbyDuration(amount*60)}
+  match=text.match(/(\d+(?:[.,]\d+)?|one|two|three|four|five|six)\s*(?:minutes?|mins?|min|m)\b/);
+  if(match)return clampNearbyDuration(durationNumber(match[1].replace(',','.')));
+  if(/(?:^|\s)(?:(?:an?|one)\s+hour|(?:the\s+)?next\s+hour)(?:\s|$)/.test(text)||/(?:^|\s)שעה(?:\s|$)|בשעה\s+הקרובה/.test(text))return 60;
+  if(/שעתיים/.test(text))return 120;
+  match=text.match(/(\d+(?:[.,]\d+)?|אחת|אחד|שתי|שני|שלוש|שלושה|ארבע|ארבעה|חמש|חמישה|שש|שישה)\s*(?:שעה|שעות)(?:\s+וחצי)?/);
+  if(match){amount=durationNumber(match[1].replace(',','.'))+(/וחצי/.test(match[0])?.5:0);return clampNearbyDuration(amount*60)}
+  match=text.match(/(\d+(?:[.,]\d+)?|אחת|אחד|שתי|שני|שלוש|שלושה|ארבע|ארבעה|חמש|חמישה|שש|שישה)\s*(?:דקה|דקות)/);
+  if(match)return clampNearbyDuration(durationNumber(match[1].replace(',','.')));
+  return null
+}
+function parseMateNearbyIntent(value){
+  var text=String(value||'').toLowerCase().replace(/[׳״]/g,"'").replace(/\s+/g,' ').trim();
+  if(!text)return null;
+  var metaOrNegated=/(?:\b(?:do\s+not|don't|dont|never)\s+(?:find|show|suggest|recommend)\b|\b(?:translate|rewrite|summari[sz]e|explain|define)\b|\bwrite\s+(?:(?:a|an|the)\s+)?(?:poem|story|sentence|prompt|message)\b|\bfind\s+the\s+(?:word|phrase)\b|אל\s+(?:תציע|תמליץ|תמצא|תמצאי)|בלי\s+(?:להציע|להמליץ|למצוא)|תרג(?:ם|מי)|תסביר|הסבר|נסח|נסחי|כתוב\s+(?:שיר|סיפור|משפט|פרומפט)|כתבי\s+(?:שיר|סיפור|משפט|פרומפט)|מצא\s+את\s+(?:המילה|הביטוי))/i.test(text);
+  if(metaOrNegated)return null;
+  var nearby=/(?:\bnearby\b|\bnear\s+(?:me|us)\b|\bclose\s+by\b|\baround\s+(?:me|here)\b|\bin\s+(?:my|the)\s+area\b|לידי|לידינו|בסביבה|בסביבתי|סביבי|קרוב\s+אלי|קרוב\s+אליי|קרוב\s+אלינו|באזור\s+שלי)/i.test(text);
+  var discovery=/(?:\b(?:something|anything|things?)\s+to\s+do\b|\bwhat\s+(?:can|could|should)\s+(?:i|we)\s+do\b|\bwhere\s+(?:can|could|should)\s+(?:i|we)\s+go\b|\b(?:free|spare)\s+time\b|\b(?:find|suggest|recommend)\s+(?:(?:me|us)\s+)?(?:a\s+|some\s+)?(?:nearby\s+)?(?:place|activity|restaurant|cafe|coffee|food|museum|attraction|thing|something|anything)\b|\b(?:places?|activities|restaurants?|cafes?|coffee|food|museums?|attractions?)\s+(?:nearby|near\s+(?:me|us)|around\s+(?:me|here)|in\s+(?:my|the)\s+area)\b|מה\s+(?:(?:אפשר|כדאי|יש)\s+)?לעשות|מה\s+יש\s+בסביבה|משהו\s+לעשות|לאן\s+(?:אפשר|כדאי|נלך|ללכת)|זמן\s+פנוי|(?:מצא|מצאי|תמצא|תמצאי|הצע|הציעי|תציע|המלץ|המלצי|תמליץ)\s+(?:לי\s+|לנו\s+)?(?:מקום|פעילות|מסעדה|בית\s+קפה|קפה|אוכל|מוזיאון|אטרקציה|בילוי)|(?:מקומות?|פעילויות?|מסעדות?|(?:בית|בתי)\s+קפה|אוכל|מוזיאונים?|אטרקציות?|בילוי)\s+(?:לידי|לידינו|בסביבה|בסביבתי|סביבי|קרוב\s+אלי|קרוב\s+אליי|קרוב\s+אלינו|באזור\s+שלי))/i.test(text);
+  if(!nearby||!discovery)return null;
+  return Object.freeze({userInvoked:true,availableMinutes:parseNearbyDuration(text),source:'mate'})
+}
 function buildNearbyRequest(options){
   options=options||{};var position=options.position||{},lat=Number(position.lat),lon=Number(position.lon);
   if(!Number.isFinite(lat)||!Number.isFinite(lon))return null;
   var now=options.now instanceof Date?options.now:new Date(options.now||Date.now()),trip=options.trip||null;
-  var available=Number.isFinite(Number(options.availableMinutes))?Number(options.availableMinutes):availableMinutesUntilNextFixed(trip,now,options.bufferMinutes);
+  var untilFixed=availableMinutesUntilNextFixed(trip,now,options.bufferMinutes),available=Number.isFinite(Number(options.availableMinutes))?Number(options.availableMinutes):untilFixed;
+  if(untilFixed!==null&&Number.isFinite(Number(untilFixed))&&Number.isFinite(Number(available)))available=Math.min(Number(available),Number(untilFixed));
   return Object.freeze({
     userInvoked:true,
     lat:lat,
@@ -221,6 +261,9 @@ window.TravelMateTripContext=Object.freeze({
   freeTimeWindowsForDate:freeTimeWindowsForDate,
   nextFixedActivity:nextFixedActivity,
   availableMinutesUntilNextFixed:availableMinutesUntilNextFixed,
+  clampNearbyDuration:clampNearbyDuration,
+  parseNearbyDuration:parseNearbyDuration,
+  parseMateNearbyIntent:parseMateNearbyIntent,
   buildNearbyRequest:buildNearbyRequest
 })
 })();

@@ -474,11 +474,60 @@
     });
   }
 
+  function contextualNearbyIntent(content) {
+    var helper = window.TravelMateTripContext;
+    var tripId = currentTripId();
+    var trip = tripId && readTrips().find(function (item) { return String(item.id) === String(tripId); });
+    if (!trip || !helper || typeof helper.parseMateNearbyIntent !== 'function') return null;
+    var intent = helper.parseMateNearbyIntent(content);
+    return intent ? { intent: intent, trip: trip } : null;
+  }
+
+  function waitForNearbyPanel() {
+    return new Promise(function (resolve, reject) {
+      var deadline = Date.now() + 6000;
+      function check() {
+        var panel = document.querySelector('#places [data-nearby-places]');
+        if (panel && panel.dataset.nearbyInitialized === 'true' && window.TravelMateNearby) { resolve(panel); return; }
+        if (Date.now() >= deadline) { reject(new Error('NEARBY_NOT_READY')); return; }
+        setTimeout(check, 30);
+      }
+      check();
+    });
+  }
+
+  async function openContextualNearby(action) {
+    var features = window.TravelMateFeatures;
+    var navigation = window.TravelMateNavigation;
+    if (!features || typeof features.load !== 'function' || !navigation || typeof navigation.open !== 'function') throw new Error('NEARBY_NOT_READY');
+    var loaded = await features.load('places');
+    if (loaded === false) throw new Error('NEARBY_NOT_READY');
+    navigation.open('places');
+    var panel = await waitForNearbyPanel();
+    var detail = { trip: action.trip, now: new Date(), bufferMinutes: 30, source: 'mate' };
+    if (Number.isFinite(action.intent.availableMinutes)) detail.availableMinutes = action.intent.availableMinutes;
+    panel.dispatchEvent(new CustomEvent('travelmate:contextual-nearby', { detail: detail }));
+  }
+
   async function sendMessage(forcedText) {
     if (state.busy) return;
     var content = trimText(forcedText || ui.input.value, 4000); if (!content) return;
     setOpen(true); ui.input.value = ''; autoGrow();
     state.messages.push({ role: 'user', content: content }); state.messages = state.messages.slice(-16); persistMessages(); addMessage('user', content);
+    var nearbyAction = contextualNearbyIntent(content);
+    if (nearbyAction) {
+      var confirmation = 'פותח את Places לחיפוש קרוב. המיקום יתבקש רק דרך מסך ההסכמה הקיים, ושום מקום לא יישמר או יתווסף לתוכנית אוטומטית.';
+      state.messages.push({ role: 'assistant', content: confirmation }); state.messages = state.messages.slice(-16); persistMessages(); addMessage('assistant', confirmation);
+      setBusy(true); setStatus('פותח את Places…');
+      try {
+        await openContextualNearby(nearbyAction);
+        setStatus('החיפוש עבר ל־Places');
+      } catch (error) {
+        addMessage('assistant', 'לא הצלחתי לפתוח את החיפוש הקרוב כרגע. אפשר להמשיך לשאול אותי כרגיל או לפתוח את Places ידנית.');
+        setStatus('חיפוש Places אינו זמין כרגע');
+      } finally { setBusy(false); if (state.open) ui.input.focus(); }
+      return;
+    }
     setBusy(true); setStatus('חושב על התשובה…'); var typing = typingRow();
     try {
       var session = await getSession();
