@@ -67,15 +67,14 @@ function formatDate(value){
   try{return new Intl.DateTimeFormat('he-IL',{weekday:'long',day:'numeric',month:'long'}).format(new Date(value+'T12:00:00'))}
   catch(error){return value}
 }
+function movementModeFacts(movement){var labels={walk:'\u05d4\u05dc\u05d9\u05db\u05d4',bike:'\u05d0\u05d5\u05e4\u05e0\u05d9\u05d9\u05dd',drive:'\u05e8\u05db\u05d1',taxi:'\u05de\u05d5\u05e0\u05d9\u05ea',transit:'\u05ea\u05d7\u05d1\u05d5\u05e8\u05d4 \u05e6\u05d9\u05d1\u05d5\u05e8\u05d9\u05ea',metro:'\u05de\u05d8\u05e8\u05d5',rail:'\u05e8\u05db\u05d1\u05ea'},icons={walk:'fa-person-walking',bike:'fa-bicycle',drive:'fa-car',taxi:'fa-taxi',transit:'fa-bus-simple',metro:'fa-train-subway',rail:'fa-train'};return Object.keys(labels).map(function(mode){var item=movement&&movement.byMode&&movement.byMode[mode];return item&&item.segments?{mode:mode,label:labels[mode],icon:icons[mode],segments:item.segments,distanceKm:Number(item.distanceKm||0),travelMinutes:Number(item.travelMinutes||0),manualTimeSegments:Number(item.manualTimeSegments||0)}:null}).filter(Boolean)}
 function narrative(data){
   var lines=[];
   if(data.completed)lines.push('סומנו '+data.completed+' פעילויות ומקומות כהושלמו מתוך '+data.planned+' פריטים שתוזמנו.');
   else if(data.planned)lines.push('יש '+data.planned+' פריטים מתוכננים, אך עדיין לא סומנו פעילויות או מקומות כהושלמו.');
   if(data.memories)lines.push('נשמרו '+data.memories+' רגעים מהטיול'+(data.attachments?' עם '+data.attachments+' קבצים מצורפים.':'.'));
   if(data.expenses)lines.push('נרשמו '+data.expenses+' הוצאות'+(data.expenseLabel?' בסכום כולל של '+data.expenseLabel+'.':'.'));
-  if(data.analytics&&data.analytics.movement&&data.analytics.movement.distanceKm>0){
-    lines.push('לפי הנתונים הזמינים הוערכו '+data.analytics.movement.walkingDistanceKm+' ק״מ בהליכה ועוד '+data.analytics.movement.transportDistanceKm+' ק״מ בתחבורה; אלה חישובים משוערים המבוססים על נקודות עם קואורדינטות.');
-  }
+  if(data.analytics&&data.analytics.movement){var modeFacts=movementModeFacts(data.analytics.movement).filter(function(item){return item.distanceKm>0||item.travelMinutes>0});if(modeFacts.length){var modeText=modeFacts.map(function(item){return item.distanceKm>0?item.distanceKm+' \u05e7\u05f4\u05de '+item.label:item.travelMinutes+' \u05d3\u05e7\u05f3 '+item.label}).join(' · ');lines.push('\u05dc\u05e4\u05d9 \u05d4\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05d4\u05d6\u05de\u05d9\u05e0\u05d9\u05dd: '+modeText+'. \u05de\u05e8\u05d7\u05e7\u05d9\u05dd \u05de\u05d7\u05d5\u05e9\u05d1\u05d9\u05dd \u05dc\u05e4\u05d9 \u05e7\u05d5\u05d0\u05d5\u05e8\u05d3\u05d9\u05e0\u05d8\u05d5\u05ea; \u05d6\u05de\u05e0\u05d9 \u05de\u05e2\u05d1\u05e8 \u05e9\u05d4\u05d5\u05d6\u05e0\u05d5 \u05d9\u05d3\u05e0\u05d9\u05ea \u05e0\u05e9\u05de\u05e8\u05d9\u05dd \u05db\u05e0\u05ea\u05d5\u05df \u05de\u05d0\u05d5\u05de\u05ea'+(data.analytics.movement.explicitModeCoverage<1?' \u05d5\u05d7\u05dc\u05e7 \u05de\u05d0\u05de\u05e6\u05e2\u05d9 \u05d4\u05de\u05e2\u05d1\u05e8 \u05d4\u05d5\u05e1\u05e7\u05d5 \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9\u05ea.':'.'));}}
   if(data.savedOnly)lines.push(data.savedOnly+' מקומות נשמרו כרעיונות בלי תאריך ולכן אינם נספרים כביקורים.');
   if(!lines.length)lines.push('ככל שתסמן פעילויות כהושלמו ותשמור רגעים, ה־Replay ייבנה אוטומטית.');
   return lines.join(' ')
@@ -111,10 +110,7 @@ function render(){
     ['fa-camera','רגעים',String(data.memories)]
   ];
   if(data.expenses)statItems.push(['fa-wallet','הוצאות',data.expenseLabel||String(data.expenses)]);
-  if(data.analytics&&data.analytics.movement){
-    if(data.analytics.movement.walkingDistanceKm>0)statItems.push(['fa-person-walking','הליכה משוערת',data.analytics.movement.walkingDistanceKm+' ק״מ']);
-    if(data.analytics.movement.transportDistanceKm>0)statItems.push(['fa-route','תחבורה משוערת',data.analytics.movement.transportDistanceKm+' ק״מ']);
-    if(data.analytics.movement.travelMinutes>0)statItems.push(['fa-clock','זמן נסיעה/מעבר',Math.round(data.analytics.movement.travelMinutes/60*10)/10+' שעות']);
+  if(data.analytics&&data.analytics.movement){movementModeFacts(data.analytics.movement).forEach(function(item){if(item.distanceKm>0)statItems.push([item.icon,item.label+' · \u05de\u05e9\u05d5\u05e2\u05e8',item.distanceKm+' \u05e7\u05f4\u05de']);else if(item.travelMinutes>0)statItems.push([item.icon,item.label+(item.manualTimeSegments===item.segments?' · \u05d6\u05de\u05df \u05e9\u05d4\u05d5\u05d6\u05df':' · \u05d6\u05de\u05df \u05de\u05e9\u05d5\u05e2\u05e8'),item.travelMinutes+' \u05d3\u05e7\u05f3'])});if(data.analytics.movement.travelMinutes>0)statItems.push(['fa-clock','\u05d6\u05de\u05df \u05e0\u05e1\u05d9\u05e2\u05d4/\u05de\u05e2\u05d1\u05e8',Math.round(data.analytics.movement.travelMinutes/60*10)/10+' \u05e9\u05e2\u05d5\u05ea']);
   }
   stats.innerHTML='';
   statItems.forEach(function(item){var box=document.createElement('div');box.innerHTML='<i class="fa-solid '+item[0]+'" aria-hidden="true"></i><span><small>'+item[1]+'</small><strong>'+item[2]+'</strong></span>';stats.appendChild(box)});

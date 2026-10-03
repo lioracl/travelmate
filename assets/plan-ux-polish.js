@@ -170,7 +170,8 @@ function transitionMap(trip){
   return map
 }
 function travelModeLabel(mode){
-  return mode==='walk'?'הליכה':mode==='drive'?'נסיעה ברכב':'תחבורה'
+  var helper=context();if(helper&&typeof helper.travelModeLabel==='function')return helper.travelModeLabel(mode);
+  return mode==='walk'?'\u05d4\u05dc\u05d9\u05db\u05d4':mode==='bike'?'\u05d0\u05d5\u05e4\u05e0\u05d9\u05d9\u05dd':mode==='drive'?'\u05e8\u05db\u05d1':mode==='taxi'?'\u05de\u05d5\u05e0\u05d9\u05ea':mode==='metro'?'\u05de\u05d8\u05e8\u05d5':mode==='rail'?'\u05e8\u05db\u05d1\u05ea':'\u05ea\u05d7\u05d1\u05d5\u05e8\u05d4 \u05e6\u05d9\u05d1\u05d5\u05e8\u05d9\u05ea'
 }
 function addTransition(row,transition){
   var host=row.querySelector('.activity-copy,.saved-place-content');if(!host)return;

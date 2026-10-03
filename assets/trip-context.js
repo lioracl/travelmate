@@ -50,23 +50,27 @@ function distanceKm(first,second){
   var hav=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)*Math.sin(dLon/2);
   return 6371*2*Math.atan2(Math.sqrt(hav),Math.sqrt(Math.max(0,1-hav)))
 }
-function travelMode(record,distance){
-  var raw=String(record&&(record.travelMode||record.transportMode)||'auto').toLowerCase();
-  if(raw==='walk'||raw==='walking'||raw==='foot')return'walk';
-  if(raw==='drive'||raw==='driving'||raw==='car')return'drive';
-  if(raw==='transit'||raw==='public'||raw==='public_transport')return'transit';
-  return Number(distance)<=1.4?'walk':'transit'
+var TRAVEL_MODE_ALIASES={walk:'walk',walking:'walk',foot:'walk',bike:'bike',bicycle:'bike',cycling:'bike',drive:'drive',driving:'drive',car:'drive',rental_car:'drive',taxi:'taxi',cab:'taxi',uber:'taxi',ride_hailing:'taxi',rideshare:'taxi',transit:'transit',public:'transit',public_transport:'transit',bus:'transit',tram:'transit',metro:'metro',subway:'metro',underground:'metro',rail:'rail',train:'rail',railway:'rail'};
+var TRAVEL_MODE_LABELS={walk:'\u05d4\u05dc\u05d9\u05db\u05d4',bike:'\u05d0\u05d5\u05e4\u05e0\u05d9\u05d9\u05dd',drive:'\u05e8\u05db\u05d1',taxi:'\u05de\u05d5\u05e0\u05d9\u05ea',transit:'\u05ea\u05d7\u05d1\u05d5\u05e8\u05d4 \u05e6\u05d9\u05d1\u05d5\u05e8\u05d9\u05ea',metro:'\u05de\u05d8\u05e8\u05d5',rail:'\u05e8\u05db\u05d1\u05ea'};
+function normalizeTravelMode(value){return TRAVEL_MODE_ALIASES[String(value||'').toLowerCase()]||''}
+function travelModeInfo(record,distance){
+  var explicit=normalizeTravelMode(record&&(record.travelMode||record.transportMode));
+  if(explicit)return Object.freeze({mode:explicit,source:'explicit'});
+  var knownDistance=distance!==null&&distance!==undefined&&Number.isFinite(Number(distance));
+  return Object.freeze({mode:knownDistance&&Number(distance)<=1.4?'walk':'transit',source:'inferred'})
 }
+function travelMode(record,distance){return travelModeInfo(record,distance).mode}
+function travelModeLabel(value){var mode=normalizeTravelMode(value)||String(value||'');return TRAVEL_MODE_LABELS[mode]||'\u05ea\u05d7\u05d1\u05d5\u05e8\u05d4 \u05e6\u05d9\u05d1\u05d5\u05e8\u05d9\u05ea'}
+function travelProfile(mode){return mode==='walk'?{speed:4.5,overhead:2}:mode==='bike'?{speed:14,overhead:3}:mode==='drive'?{speed:24,overhead:5}:mode==='taxi'?{speed:22,overhead:7}:mode==='metro'?{speed:28,overhead:7}:mode==='rail'?{speed:45,overhead:10}:{speed:16,overhead:8}}
 function estimateTravelMinutes(previous,next){
   var explicit=Number(next&&(next.travelMinutesBefore||next.transitionMinutes||next.travelMinutes));
-  var distance=distanceKm(previous,next),mode=travelMode(next,distance);
+  var distance=distanceKm(previous,next),modeInfo=travelModeInfo(next,distance),mode=modeInfo.mode;
   if(Number.isFinite(explicit)&&explicit>0){
-    return Object.freeze({minutes:Math.max(1,Math.round(explicit)),mode:mode,source:'manual',distanceKm:distance})
+    return Object.freeze({minutes:Math.max(1,Math.round(explicit)),mode:mode,modeSource:modeInfo.source,source:'manual',distanceKm:distance})
   }
   if(distance===null)return null;
-  var routeDistance=Math.max(.05,distance*1.25),speed=mode==='walk'?4.5:mode==='drive'?24:16,overhead=mode==='walk'?2:mode==='drive'?5:8;
-  var estimated=Math.max(3,Math.ceil(routeDistance/speed*60+overhead));
-  return Object.freeze({minutes:estimated,mode:mode,source:'estimate',distanceKm:distance})
+  var profile=travelProfile(mode),routeDistance=Math.max(.05,distance*1.25),estimated=Math.max(3,Math.ceil(routeDistance/profile.speed*60+profile.overhead));
+  return Object.freeze({minutes:estimated,mode:mode,modeSource:modeInfo.source,source:'estimate',distanceKm:distance})
 }
 function clockTime(totalMinutes){
   if(!Number.isFinite(Number(totalMinutes))||Number(totalMinutes)<0)return'';
@@ -93,6 +97,7 @@ function transitionAssessment(previous,next,options){
     risk:gap>=0&&shortfall>0,
     overlap:gap<0,
     mode:estimate.mode,
+    modeSource:estimate.modeSource,
     source:estimate.source,
     distanceKm:estimate.distanceKm
   })
@@ -122,6 +127,7 @@ function transitionAssessmentsForDate(trip,date,options){
       latestDepartureTime:assessment.latestDepartureTime,
       risk:assessment.risk,
       mode:assessment.mode,
+      modeSource:assessment.modeSource,
       source:assessment.source,
       distanceKm:assessment.distanceKm
     })
@@ -310,6 +316,10 @@ window.TravelMateTripContext=Object.freeze({
   dayMode:dayMode,
   coordinates:coordinates,
   distanceKm:distanceKm,
+  normalizeTravelMode:normalizeTravelMode,
+  travelMode:travelMode,
+  travelModeInfo:travelModeInfo,
+  travelModeLabel:travelModeLabel,
   estimateTravelMinutes:estimateTravelMinutes,
   clockTime:clockTime,
   transitionAssessment:transitionAssessment,

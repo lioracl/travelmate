@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '2.9.0',
-    label: 'Fixed Reminders · 2.9.0',
+    version: '2.11.0',
+    label: 'Multimodal Travel Intelligence - 2.11.0',
     date: '3 באוקטובר 2026',
     highlights: [
+      'Multimodal Travel Intelligence V1: בתוכנית אפשר לבחור אופן הגעה — הליכה, אופניים, רכב, מונית, תחבורה ציבורית, מטרו או רכבת. Trip Analytics ו־Trip Replay שומרים את הפירוט לפי אמצעי מעבר, ומצב אוטומטי נשאר מסומן כהסקה ולא כעובדה.',
       'Live Routing V1: Contextual Nearby ו־Mini Route מעדיפים כעת זמן הליכה חי לפי OpenStreetMap Routing במקום הערכת קו־אווירי. הבקשה מוגבלת לעד 8 נקודות, עם timeout קצר, cache של שתי דקות ו־fallback מיידי להערכה אם השירות אינו זמין.',
       'Opening Hours V1: שעות opening_hours מ־OpenStreetMap נשמרות עם המקום ונבדקות רק בחיפוש Contextual מפורש ובזמן ההגעה המשוער. TravelMate מסנן מקום כסגור רק כאשר כלל שבועי פשוט ניתן לפענוח בביטחון; תחביר מורכב, חגים, זריחה/שקיעה, חפיפות או מידע חסר נשארים ״לא אומת״.',
       'פרטיות וביצועים: אין בקשת GPS חדשה ואין מעקב ברקע. ניתוב חי מתבצע רק אחרי הסכמת המיקום הקיימת, ומדלג אוטומטית ב־Offline, Save-Data או 2G. כשל של Routing או Opening Hours אינו חוסם את Places.',

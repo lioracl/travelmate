@@ -54,6 +54,7 @@ function segment(previous,next){
     fromId:clean(previous.record.id),
     toId:clean(next.record.id),
     mode:estimate.mode,
+    modeSource:estimate.modeSource||'inferred',
     distanceKm:number(estimate.distanceKm),
     travelMinutes:estimate.minutes,
     source:explicit!==null&&explicit>0?'manual':'estimate'
@@ -61,22 +62,28 @@ function segment(previous,next){
 }
 function summarizeSegments(segments){
   var totals={distanceKm:0,travelMinutes:0,walkingDistanceKm:0,transportDistanceKm:0,walkingMinutes:0,transportMinutes:0};
-  var distanceSegments=0,timeSegments=0,manualTimeSegments=0;
+  var modes=['walk','bike','drive','taxi','transit','metro','rail'],byMode=Object.create(null);modes.forEach(function(mode){byMode[mode]={segments:0,distanceKm:0,travelMinutes:0,manualTimeSegments:0}});
+  var distanceSegments=0,timeSegments=0,manualTimeSegments=0,explicitModeSegments=0;
   segments.forEach(function(item){
+    var bucket=byMode[item.mode]||byMode.transit;bucket.segments+=1;
+    if(item.modeSource==='explicit')explicitModeSegments+=1;
     if(number(item.distanceKm)!==null){
       totals.distanceKm+=item.distanceKm;
       if(item.mode==='walk')totals.walkingDistanceKm+=item.distanceKm;
       else totals.transportDistanceKm+=item.distanceKm;
+      bucket.distanceKm+=item.distanceKm;
       distanceSegments+=1
     }
     if(number(item.travelMinutes)!==null){
       totals.travelMinutes+=item.travelMinutes;
       if(item.mode==='walk')totals.walkingMinutes+=item.travelMinutes;
       else totals.transportMinutes+=item.travelMinutes;
+      bucket.travelMinutes+=item.travelMinutes;
       timeSegments+=1;
     }
-    if(item.source==='manual')manualTimeSegments+=1;
+    if(item.source==='manual'){manualTimeSegments+=1;bucket.manualTimeSegments+=1;}
   });
+  var frozenByMode={};modes.forEach(function(mode){var item=byMode[mode];frozenByMode[mode]=Object.freeze({segments:item.segments,distanceKm:round(item.distanceKm),travelMinutes:Math.round(item.travelMinutes),manualTimeSegments:item.manualTimeSegments})});
   return{
     distanceKm:round(totals.distanceKm),
     walkingDistanceKm:round(totals.walkingDistanceKm),
@@ -86,7 +93,9 @@ function summarizeSegments(segments){
     transportMinutes:Math.round(totals.transportMinutes),
     distanceCoverage:segments.length?round(distanceSegments/segments.length,2):0,
     timeCoverage:segments.length?round(timeSegments/segments.length,2):0,
-    manualTimeCoverage:segments.length?round(manualTimeSegments/segments.length,2):0
+    manualTimeCoverage:segments.length?round(manualTimeSegments/segments.length,2):0,
+    explicitModeCoverage:segments.length?round(explicitModeSegments/segments.length,2):0,
+    byMode:Object.freeze(frozenByMode)
   }
 }
 function build(trip){
@@ -158,7 +167,8 @@ function buildPersonalStats(trips,authenticatedUserId){
     transportDistanceKm:0,
     travelMinutes:0,
     distanceCoverage:0,
-    timeCoverage:0
+    timeCoverage:0,
+    modeBreakdown:{walk:{segments:0,distanceKm:0,travelMinutes:0},bike:{segments:0,distanceKm:0,travelMinutes:0},drive:{segments:0,distanceKm:0,travelMinutes:0},taxi:{segments:0,distanceKm:0,travelMinutes:0},transit:{segments:0,distanceKm:0,travelMinutes:0},metro:{segments:0,distanceKm:0,travelMinutes:0},rail:{segments:0,distanceKm:0,travelMinutes:0}}
   };
   var distanceCoverageWeight=0;
   var timeCoverageWeight=0;
@@ -173,6 +183,7 @@ function buildPersonalStats(trips,authenticatedUserId){
     stats.walkingDistanceKm+=result.movement.walkingDistanceKm;
     stats.transportDistanceKm+=result.movement.transportDistanceKm;
     stats.travelMinutes+=result.movement.travelMinutes;
+    Object.keys(stats.modeBreakdown).forEach(function(mode){var source=result.movement.byMode&&result.movement.byMode[mode];if(!source)return;stats.modeBreakdown[mode].segments+=source.segments;stats.modeBreakdown[mode].distanceKm+=source.distanceKm;stats.modeBreakdown[mode].travelMinutes+=source.travelMinutes});
     var possibleSegments=Number(result.coverage&&result.coverage.possibleSegments||0);
     if(possibleSegments>0){
       distanceCoverageWeight+=possibleSegments;
@@ -187,6 +198,7 @@ function buildPersonalStats(trips,authenticatedUserId){
   stats.walkingDistanceKm=round(stats.walkingDistanceKm);
   stats.transportDistanceKm=round(stats.transportDistanceKm);
   stats.travelMinutes=Math.round(stats.travelMinutes);
+  Object.keys(stats.modeBreakdown).forEach(function(mode){var item=stats.modeBreakdown[mode];item.distanceKm=round(item.distanceKm);item.travelMinutes=Math.round(item.travelMinutes);Object.freeze(item)});Object.freeze(stats.modeBreakdown);
   return Object.freeze(stats);
 }
 

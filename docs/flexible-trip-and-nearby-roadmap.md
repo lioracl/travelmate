@@ -43,7 +43,7 @@ Notifications must be opt-in and proportional to commitment.
 
 ## Transition-time intelligence
 Future phase:
-- walking / public transport / driving time between activities
+- Multimodal Travel Intelligence V1 implemented in 2.11.0: explicit/auto travel modes and mode-aware estimates for walking, cycling, public transport, train, driving and taxi; live public-transport/rail/driving providers remain future work.
 - configurable safety buffer before fixed bookings
 - detect an unrealistic sequence without blocking it
 - explain the reason: "This leaves only 8 minutes to reach the booked tour."

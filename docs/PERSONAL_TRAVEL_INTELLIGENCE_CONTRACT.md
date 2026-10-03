@@ -30,6 +30,15 @@ Examples:
 
 Observed facts may be aggregated for Trip Analytics.
 
+### Multimodal travel facts — implemented in 2.11.0
+
+- Activities may optionally store an explicit `travelMode`: `walk`, `bike`, `transit`, `train`, `drive`, or `taxi`.
+- `auto` means no factual mode was stored. TravelMate may infer a mode for an estimate, but that inference remains labeled `inferred`.
+- An explicit/manual travel duration remains authoritative even when coordinates are missing.
+- Trip Analytics may aggregate explicit/manual mode facts into a per-mode breakdown; inferred modes must not become cross-trip learning evidence.
+- V1 is mode-aware estimation only. It does not claim live public-transport, rail, taxi, or driving data. Existing Contextual Nearby live walking routing remains a separate explicit-location feature.
+- No additional GPS permission, passive location collection, background tracking, or schema migration is introduced by Multimodal V1.
+
 ### B. Declared preferences
 
 Preferences explicitly entered or confirmed by the user.
