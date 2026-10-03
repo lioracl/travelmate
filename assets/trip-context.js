@@ -261,13 +261,25 @@ function requestedMiniRouteStops(value){
   var twoOnly=/(?:\b(?:2|two)\s+(?:nearby\s+)?(?:places?|stops?)\b|(?:שני(?:ים)?|שתי)\s+(?:מקומות?|תחנות?))/i.test(text)&&!/(?:\b(?:3|three)\b|שלוש(?:ה)?)/i.test(text);
   return twoOnly?2:3
 }
-function buildMiniRoute(places,request){
+function buildMiniRoute(places,request,travelLookup){
   request=request||{};var available=Number(request.availableMinutes),target=Math.min(3,Math.max(2,Math.round(Number(request.routeStops||3)))),origin={lat:Number(request.lat),lon:Number(request.lon)};
   if(!Number.isFinite(available)||available<60||!coordinates(origin))return null;
   var pool=(Array.isArray(places)?places:[]).filter(function(place){return coordinates(place)}).slice(0,6),next=request.nextFixedActivity&&request.nextFixedActivity.record;
-  function evaluate(sequence){var previous=origin,legs=[],travel=0;for(var i=0;i<sequence.length;i+=1){var leg=estimateTravelMinutes(previous,sequence[i]);if(!leg)return null;legs.push(leg.minutes);travel+=leg.minutes;previous=sequence[i]}var onward=next?estimateTravelMinutes(previous,next):null,onwardMinutes=onward?Number(onward.minutes||0):0,visitBudget=available-travel-onwardMinutes,visit=Math.min(45,Math.floor((visitBudget/sequence.length)/5)*5);if(visit<30)return null;var total=travel+onwardMinutes+visit*sequence.length;return{sequence:sequence.slice(),legs:legs,onwardMinutes:onwardMinutes,visitMinutes:visit,totalTravelMinutes:travel+onwardMinutes,totalEstimatedMinutes:total,score:travel+onwardMinutes}}
+  function evaluate(sequence){
+    var previous=origin,legs=[],travel=0,live=true;
+    for(var i=0;i<sequence.length;i+=1){
+      var leg=typeof travelLookup==='function'?(travelLookup(previous,sequence[i])||estimateTravelMinutes(previous,sequence[i])):estimateTravelMinutes(previous,sequence[i]);
+      if(!leg)return null;if(leg.source!=='live')live=false;legs.push(leg.minutes);travel+=leg.minutes;previous=sequence[i]
+    }
+    var onward=next?(typeof travelLookup==='function'?(travelLookup(previous,next)||estimateTravelMinutes(previous,next)):estimateTravelMinutes(previous,next)):null;
+    if(onward&&onward.source!=='live')live=false;
+    var onwardMinutes=onward?Number(onward.minutes||0):0,visitBudget=available-travel-onwardMinutes,visit=Math.min(45,Math.floor((visitBudget/sequence.length)/5)*5);
+    if(visit<30)return null;
+    var total=travel+onwardMinutes+visit*sequence.length;
+    return{sequence:sequence.slice(),legs:legs,onwardMinutes:onwardMinutes,visitMinutes:visit,totalTravelMinutes:travel+onwardMinutes,totalEstimatedMinutes:total,score:travel+onwardMinutes,live:live}
+  }
   function bestFor(count){var best=null,used=new Array(pool.length).fill(false),sequence=[];function walk(){if(sequence.length===count){var candidate=evaluate(sequence);if(candidate&&(!best||candidate.score<best.score||candidate.score===best.score&&candidate.totalEstimatedMinutes<best.totalEstimatedMinutes))best=candidate;return}for(var i=0;i<pool.length;i+=1){if(used[i])continue;used[i]=true;sequence.push(pool[i]);walk();sequence.pop();used[i]=false}}walk();return best}
-  for(var count=target;count>=2;count-=1){var best=bestFor(count);if(!best)continue;return Object.freeze({stops:Object.freeze(best.sequence.map(function(place,index){return Object.freeze({place:place,travelMinutes:best.legs[index],visitMinutes:best.visitMinutes})})),onwardMinutes:best.onwardMinutes,totalTravelMinutes:best.totalTravelMinutes,totalVisitMinutes:best.visitMinutes*count,totalEstimatedMinutes:best.totalEstimatedMinutes,availableMinutes:available,requestedStops:target})}
+  for(var count=target;count>=2;count-=1){var best=bestFor(count);if(!best)continue;return Object.freeze({stops:Object.freeze(best.sequence.map(function(place,index){return Object.freeze({place:place,travelMinutes:best.legs[index],visitMinutes:best.visitMinutes})})),onwardMinutes:best.onwardMinutes,totalTravelMinutes:best.totalTravelMinutes,totalVisitMinutes:best.visitMinutes*count,totalEstimatedMinutes:best.totalEstimatedMinutes,availableMinutes:available,requestedStops:target,source:best.live?'live':'estimate'})}
   return null
 }
 function buildNearbyRequest(options){
