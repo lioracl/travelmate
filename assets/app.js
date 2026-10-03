@@ -1,10 +1,10 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261003-8'}catch(error){return'20261003-8'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261003-9'}catch(error){return'20261003-9'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
   var isHomePage=Boolean(document.body&&document.body.classList.contains('home-page'));
-  var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','ai-assistant.css'];
+  var baseStyles=['language.css','mobile-menu.css','navigation-memory.css','network-usage.css','trip-redesign.css','modal-system.css','theme.css','ai-assistant.css','fixed-reminders.css'];
   var homeBaseStyles=['language.css','network-usage.css','theme.css'];
   var finalStyle='readable-glass.css';
   var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
@@ -105,7 +105,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     ensureLazyNavigation();
     var baseReady=Promise.all(baseStyles.map(loadStyle));
     baseReady.then(createAssistantShell);
-    var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js','user-profile.js'])});
+    var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js','user-profile.js','fixed-reminders.js'])});
     var initialView=activeView();
     var featureReady=coreReady.then(function(){return loadFeature(initialView)});
     Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,initialView==='overview'?baseReady.then(loadTodayActivities):Promise.resolve(true)]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250)});

@@ -3,11 +3,11 @@
 ## Product principle
 TravelMate should help the traveler make decisions without turning the trip into a task manager. Time is context, not authority. The user decides when an activity starts, ends, is skipped, or is replaced.
 
-## Implementation status — TravelMate 2.8.0
+## Implementation status — TravelMate 2.9.0
 
 Contextual Nearby V1 is implemented in Places and Mate. It is user-invoked, calculates the free-time window against the next fixed commitment, asks for GPS consent only after activation, reuses the existing Nearby pipeline, bounds suggestions to six time-feasible places, and keeps Navigate / Save / Add to today as explicit user actions. Mate recognizes explicit nearby/free-time requests locally and does not send GPS coordinates to Gemini. Opening hours are not claimed unless independently verified.
 
-Mood/category shortcuts, Mate integration, and optional Mini Route are now implemented on the same contextual contract. Mini Route is user-invoked only, evaluates at most six nearby candidates, prefers 2–3 time-feasible stops, falls back from three to two when needed, and never saves or schedules a stop automatically. Remaining future work in this family: opt-in fixed-event reminders, richer live routing data, and more reliable live opening-hours signals.
+Mood/category shortcuts, Mate integration, and optional Mini Route are now implemented on the same contextual contract. Mini Route is user-invoked only, evaluates at most six nearby candidates, prefers 2–3 time-feasible stops, falls back from three to two when needed, and never saves or schedules a stop automatically. Fixed Event Reminders V1 is also implemented as an explicit per-event opt-in with a 45-minute default. Remaining future work in this family: reliable push delivery while the app is closed, richer live routing data, and more reliable opening-hours signals.
 ## Timing model (future additive fields)
 No schema migration is required for the current Plan UX pass. When this model is implemented, add nullable fields so old trips keep working:
 

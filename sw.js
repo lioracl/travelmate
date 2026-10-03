@@ -1,4 +1,4 @@
-const ASSET_VERSION='20261003-8';
+const ASSET_VERSION='20261003-9';
 const CACHE_SCHEMA='v266';
 const CACHE_NAME='travelmate-smart-'+CACHE_SCHEMA+'-'+ASSET_VERSION;
 const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-20\d{6}-\d+)?$/;
@@ -20,6 +20,8 @@ const CORE_PATHS=[
   './assets/trip-store.js',
   './assets/event-contracts.js',
   './assets/user-profile.js',
+  './assets/fixed-reminders.css',
+  './assets/fixed-reminders.js',
   './assets/supabase-config.js',
   './assets/mobile-menu.css',
   './assets/language.css',
@@ -42,6 +44,8 @@ const CORE=CORE_PATHS.map(path=>/\.(?:js|css|json)$/i.test(path)?path+'?v='+ASSE
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>TRAVELMATE_CACHE_PATTERN.test(key)&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting()});
+function reminderNotificationTarget(raw){try{const target=new URL(String(raw||''),self.location.origin),base=new URL('./',self.location.href);if(target.origin!==self.location.origin||!target.pathname.startsWith(base.pathname))return null;const relative=target.pathname.slice(base.pathname.length);if(!/^trip\/[^/]+\/(?:index\.html)?$/.test(relative)||!target.searchParams.get('id'))return null;target.searchParams.set('view','plan');target.hash='';return target}catch(error){return null}}
+self.addEventListener('notificationclick',event=>{event.notification.close();const target=reminderNotificationTarget(event.notification&&event.notification.data&&event.notification.data.url);if(!target)return;event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{const match=list.find(client=>{try{const current=new URL(client.url);return current.origin===target.origin&&current.pathname===target.pathname&&current.searchParams.get('id')===target.searchParams.get('id')}catch(error){return false}});if(!match)return clients.openWindow(target.href);const navigated=typeof match.navigate==='function'?match.navigate(target.href).catch(()=>match):Promise.resolve(match);return navigated.then(client=>client&&client.focus?client.focus():client)}))});
 function persistResponse(event,request,response){
   if(!event||!response||!response.ok)return;
   const copy=response.clone();
