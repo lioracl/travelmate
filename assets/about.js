@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '2.11.0',
-    label: 'Multimodal Travel Intelligence - 2.11.0',
+    version: '2.12.0',
+    label: 'Trip Summary & Movement Analytics V2 - 2.12.0',
     date: '3 באוקטובר 2026',
     highlights: [
+      'Trip Summary & Movement Analytics V2: \u05e1\u05d9\u05db\u05d5\u05dd \u05d4\u05d8\u05d9\u05d5\u05dc \u05de\u05d0\u05d7\u05d3 \u05d1\u05d9\u05e7\u05d5\u05e8\u05d9\u05dd \u05e9\u05e1\u05d5\u05de\u05e0\u05d5 \u05db\u05d4\u05d5\u05e9\u05dc\u05de\u05d5, \u05ea\u05e0\u05d5\u05e2\u05d4 \u05dc\u05e4\u05d9 \u05d9\u05d5\u05dd \u05d5\u05d0\u05de\u05e6\u05e2\u05d9 \u05de\u05e2\u05d1\u05e8, \u05d4\u05d5\u05e6\u05d0\u05d5\u05ea \u05dc\u05e4\u05d9 \u05de\u05d8\u05d1\u05e2 \u05d5\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05d5\u05de\u05e4\u05ea \u05e0\u05e7\u05d5\u05d3\u05d5\u05ea \u05d1\u05d9\u05e7\u05d5\u05e8 \u05dc\u05e4\u05d9 \u05d3\u05e8\u05d9\u05e9\u05d4. \u05db\u05dc \u05e0\u05ea\u05d5\u05df \u05de\u05e1\u05d5\u05de\u05df \u05db\u05de\u05d0\u05d5\u05de\u05ea, \u05de\u05e9\u05d5\u05e2\u05e8 \u05d0\u05d5 \u05dc\u05d0 \u05d9\u05d3\u05d5\u05e2; \u05de\u05d8\u05d1\u05e2\u05d5\u05ea \u05e9\u05d5\u05e0\u05d9\u05dd \u05d0\u05d9\u05e0\u05dd \u05de\u05d7\u05d5\u05d1\u05e8\u05d9\u05dd \u05dc\u05e1\u05db\u05d5\u05dd \u05de\u05d3\u05d5\u05de\u05d4, \u05d5\u05d4\u05de\u05e4\u05d4 \u05d0\u05d9\u05e0\u05d4 \u05de\u05d1\u05e7\u05e9\u05ea GPS \u05d7\u05d3\u05e9.',
       'Multimodal Travel Intelligence V1: בתוכנית אפשר לבחור אופן הגעה — הליכה, אופניים, רכב, מונית, תחבורה ציבורית, מטרו או רכבת. Trip Analytics ו־Trip Replay שומרים את הפירוט לפי אמצעי מעבר, ומצב אוטומטי נשאר מסומן כהסקה ולא כעובדה.',
       'Live Routing V1: Contextual Nearby ו־Mini Route מעדיפים כעת זמן הליכה חי לפי OpenStreetMap Routing במקום הערכת קו־אווירי. הבקשה מוגבלת לעד 8 נקודות, עם timeout קצר, cache של שתי דקות ו־fallback מיידי להערכה אם השירות אינו זמין.',
       'Opening Hours V1: שעות opening_hours מ־OpenStreetMap נשמרות עם המקום ונבדקות רק בחיפוש Contextual מפורש ובזמן ההגעה המשוער. TravelMate מסנן מקום כסגור רק כאשר כלל שבועי פשוט ניתן לפענוח בביטחון; תחביר מורכב, חגים, זריחה/שקיעה, חפיפות או מידע חסר נשארים ״לא אומת״.',

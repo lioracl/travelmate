@@ -53,6 +53,7 @@ function segment(previous,next){
   return Object.freeze({
     fromId:clean(previous.record.id),
     toId:clean(next.record.id),
+    date:next.date,
     mode:estimate.mode,
     modeSource:estimate.modeSource||'inferred',
     distanceKm:number(estimate.distanceKm),
@@ -98,6 +99,15 @@ function summarizeSegments(segments){
     byMode:Object.freeze(frozenByMode)
   }
 }
+function currencyCode(value){var code=clean(value).toUpperCase();return /^[A-Z]{3}$/.test(code)?code:'UNKNOWN'}
+function freezeMoneyMap(map){var copy={};Object.keys(map).sort().forEach(function(code){copy[code]=round(map[code])});return Object.freeze(copy)}
+function summarizeExpenses(items){
+  var totals={},categories=Object.create(null),days=Object.create(null),count=0;
+  (Array.isArray(items)?items:[]).forEach(function(item){var amount=number(item&&item.amount);if(amount===null||amount<0)return;var currency=currencyCode(item&&item.currency),category=clean(item&&item.category).split('/')[0].trim()||'אחר',date=localDate(item);count+=1;totals[currency]=(totals[currency]||0)+amount;var bucket=categories[category]||(categories[category]={count:0,totals:{}});bucket.count+=1;bucket.totals[currency]=(bucket.totals[currency]||0)+amount;if(date){var day=days[date]||(days[date]={count:0,totals:{}});day.count+=1;day.totals[currency]=(day.totals[currency]||0)+amount}});
+  return Object.freeze({count:count,totals:freezeMoneyMap(totals),categories:Object.freeze(Object.keys(categories).sort().map(function(name){return Object.freeze({name:name,count:categories[name].count,totals:freezeMoneyMap(categories[name].totals)})})),days:Object.freeze(Object.keys(days).sort().map(function(date){return Object.freeze({date:date,count:days[date].count,totals:freezeMoneyMap(days[date].totals)})})),status:'confirmed'})
+}
+function routePoints(records){if(!context||typeof context.coordinates!=='function')return Object.freeze([]);return Object.freeze(records.map(function(entry){var point=context.coordinates(entry.record);if(!point)return null;return Object.freeze({id:clean(entry.record.id),kind:entry.kind,date:entry.date,time:entry.time,title:clean(entry.record.title||entry.record.name)||'מקום',lat:point.lat,lon:point.lon})}).filter(Boolean))}
+function summaryDays(completedDates,groups,segments,expenses){var map=Object.create(null);completedDates.forEach(function(date){var day=groups[date];map[date]={date:date,completedVisits:day.length,activities:day.filter(function(item){return item.kind==='activity'}).length,places:day.filter(function(item){return item.kind==='place'}).length,segments:[],expenseCount:0,expenseTotals:{}}});segments.forEach(function(item){var day=map[item.date]||(map[item.date]={date:item.date,completedVisits:0,activities:0,places:0,segments:[],expenseCount:0,expenseTotals:{}});day.segments.push(item)});expenses.days.forEach(function(expenseDay){var day=map[expenseDay.date]||(map[expenseDay.date]={date:expenseDay.date,completedVisits:0,activities:0,places:0,segments:[],expenseCount:0,expenseTotals:{}});day.expenseCount=expenseDay.count;day.expenseTotals=expenseDay.totals});return Object.freeze(Object.keys(map).sort().map(function(date){var day=map[date];return Object.freeze({date:date,completedVisits:day.completedVisits,activities:day.activities,places:day.places,movement:Object.freeze(summarizeSegments(day.segments)),expenseCount:day.expenseCount,expenseTotals:Object.freeze(day.expenseTotals)})}))}
 function build(trip){
   trip=trip||{};
   var completed=completedRecords(trip),groups=groupByDate(completed),dates=Object.keys(groups).sort();
@@ -109,7 +119,7 @@ function build(trip){
       if(item)segments.push(item)
     }
   });
-  var movement=summarizeSegments(segments);
+  var movement=summarizeSegments(segments),expenses=summarizeExpenses(trip.expenses||[]),points=routePoints(completed),daily=summaryDays(dates,groups,segments,expenses);
   var planned=((trip.activities||[]).length+(trip.savedPlaces||[]).filter(function(item){return item&&item.date}).length);
   var possibleSegments=Math.max(0,completed.length-dates.length);
   var coordinatesAvailable=completed.filter(function(item){
@@ -121,6 +131,9 @@ function build(trip){
     completedPlaces:completed.filter(function(item){return item.kind==='place'}).length,
     plannedItems:planned,
     activeDays:dates.length,
+    expenses:expenses,
+    route:Object.freeze({points:points,pointCount:points.length,pointCoverage:completed.length?round(points.length/completed.length,2):0,pointStatus:points.length?'confirmed':'unknown',pathStatus:points.length>1?'estimated':'unknown'}),
+    summaryDays:daily,
     days:dates.map(function(date){
       var day=groups[date];
       return Object.freeze({
@@ -140,7 +153,8 @@ function build(trip){
     status:Object.freeze({
       visits:'confirmed',
       distance:segments.length?'estimated':'unknown',
-      travelTime:movement.manualTimeCoverage===1&&segments.length?'confirmed':segments.length?'estimated':'unknown'
+      travelTime:movement.manualTimeCoverage===1&&segments.length?'confirmed':segments.length?'estimated':'unknown',
+      expenses:'confirmed'
     })
   })
 }
@@ -206,6 +220,7 @@ window.TravelMateTripAnalytics=Object.freeze({
   build:build,
   completedRecords:completedRecords,
   summarizeSegments:summarizeSegments,
+  summarizeExpenses:summarizeExpenses,
   buildPersonalStats:buildPersonalStats
 });
 window.dispatchEvent(new CustomEvent('travelmate:trip-analytics-ready'));

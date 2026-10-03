@@ -178,6 +178,15 @@ Never label coordinate-derived estimates as measured walking distance.
 
 Trip Analytics must reuse Trip Replay and TravelMateTripContext rather than create another distance/time engine.
 
+### Trip Summary & Movement Analytics V2 -- implemented in 2.12.0
+
+- A visit is confirmed only when an activity or dated saved place has done=true. An unscheduled saved place remains an idea even if a legacy record contains a done flag.
+- Expense analytics may consume amount, currency, top-level category, and local date only. Different currencies remain separate; missing/invalid currency is unknown, never silently converted or relabeled. Receipt blobs/paths/text and private notes are outside this aggregate.
+- Daily movement is calculated only between completed records on the same local date. Coordinate-derived distance and the schematic line between visit points remain estimated; manually entered travel duration is confirmed.
+- The summary map is user-invoked and uses only stored coordinates from completed visits. It does not request geolocation, does not track location, and does not persist new route data. OpenFreeMap tiles are requested only after the user opens the map.
+- Local Replay may display the user's own saved memory text, but Mate prompt construction receives counts and factual completed-visit titles only; memory-note contents remain outside the Mate context boundary.
+
+
 ## 7. Cross-trip learning
 
 Cross-trip learning may consume only:

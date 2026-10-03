@@ -3,9 +3,11 @@
 ## Product principle
 TravelMate should help the traveler make decisions without turning the trip into a task manager. Time is context, not authority. The user decides when an activity starts, ends, is skipped, or is replaced.
 
-## Implementation status — TravelMate 2.10.0
+## Implementation status -- TravelMate 2.12.0
 
 Contextual Nearby V1 is implemented in Places and Mate. It is user-invoked, calculates the free-time window against the next fixed commitment, asks for GPS consent only after activation, reuses the existing Nearby pipeline, bounds suggestions to six time-feasible places, and keeps Navigate / Save / Add to today as explicit user actions. Mate recognizes explicit nearby/free-time requests locally and does not send GPS coordinates to Gemini. Opening hours are not claimed unless independently verified.
+
+Trip Summary & Movement Analytics V2 is implemented in 2.12.0: completed visits, per-day/per-mode movement, currency-safe expense aggregates, confidence labels, and an on-demand schematic visit map now share the existing Trip Analytics / Trip Replay contract. The summary does not create a GPS history, does not merge currencies, and does not treat saved ideas as visits.
 
 Mood/category shortcuts, Mate integration, and optional Mini Route are now implemented on the same contextual contract. Mini Route is user-invoked only, evaluates at most six nearby candidates, prefers 2–3 time-feasible stops, falls back from three to two when needed, and never saves or schedules a stop automatically. Fixed Event Reminders V1 is also implemented as an explicit per-event opt-in with a 45-minute default. Remaining future work in this family: reliable push delivery while the app is closed, richer live routing data, and more reliable opening-hours signals.
 ## Timing model (future additive fields)
