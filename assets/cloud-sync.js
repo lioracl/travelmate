@@ -1347,6 +1347,30 @@
     return result;
   }
 
+  async function scopedClientForOwner(owner) {
+    var expectedOwner=String(owner||'');
+    var mainClient=await getClient(),session=await requireAvatarSession(mainClient,expectedOwner,true);
+    var scoped=await createAvatarScopedClient(session);
+    await requireAvatarSession(mainClient,expectedOwner,true);
+    return {client:scoped,session:session,ownerId:expectedOwner};
+  }
+
+  async function updatePreferencesForOwner(owner, preferences) {
+    if(typeof navigator!=='undefined'&&navigator.onLine===false)throw new Error('PROFILE_OFFLINE');
+    var expectedOwner=String(owner||'');
+    var mainClient=await getClient(),session=await requireAvatarSession(mainClient,expectedOwner,true);
+    var scoped=await createAvatarScopedClient(session);
+    if(!scoped.auth||typeof scoped.auth.updateUser!=='function')throw new Error('PROFILE_SESSION_UNAVAILABLE');
+    if(!window.TravelMateUserProfile||typeof window.TravelMateUserProfile.normalizePreferences!=='function')throw new Error('PROFILE_CONTRACT_UNAVAILABLE');
+    var normalized=window.TravelMateUserProfile.normalizePreferences(preferences&&typeof preferences==='object'?preferences:{});
+    var result=await scoped.auth.updateUser({data:{travelmate_preferences:normalized}});
+    if(result.error)return result;
+    var user=result.data&&result.data.user;
+    if(!user||String(user.id)!==expectedOwner)throw authContextError();
+    await requireAvatarSession(mainClient,expectedOwner,true);
+    return result;
+  }
+
   function authRedirectUrl(hash) {
     var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
     var base = local ? new URL(location.pathname.replace(/^\//, ''), 'https://lioracl.github.io/travelmate/') : new URL(location.pathname, location.origin);
@@ -1465,6 +1489,8 @@
     updatePassword: updatePassword,
     updateProfile: updateProfile,
     updateProfileForOwner: updateProfileForOwner,
+    updatePreferencesForOwner: updatePreferencesForOwner,
+    scopedClientForOwner: scopedClientForOwner,
     validateAvatarFile: validateAvatarFile,
     uploadAvatar: uploadAvatar,
     removeAvatar: removeAvatar,

@@ -61,14 +61,16 @@ test('profile-change events from a stale account are ignored on both profile sur
   assert.match(security, /String\(changed\.id\) !== String\(currentSession\.user\.id\)\) return/);
 });
 
-test('Mate runtime consumes declared preferences only and leaves learned suggestions for 2.15', () => {
+test('Mate runtime keeps declared and reviewed learned preferences separate', () => {
   const app = read('assets/app.js');
   const intelligence = read('assets/trip-intelligence.js');
-  assert.doesNotMatch(app, /learned-preferences\.js/);
+  assert.match(app, /learned-preferences\.js/);
+  assert.match(app, /learned-profile\.js/);
   assert.match(intelligence, /declaredPreferences/);
-  assert.match(intelligence, /preferenceSummary\(preferences\)/);
-  assert.doesNotMatch(intelligence, /TravelMateLearnedPreferences|learnedPreferences/);
-  assert.match(intelligence, /לא כהסקה/);
+  assert.match(intelligence, /learnedPreferences/);
+  assert.match(intelligence, /confirmedForMate/);
+  assert.match(intelligence, /learnedPreferenceLines/);
+  assert.doesNotMatch(intelligence, /JSON\.stringify\(context\.learnedPreferences\)/);
 });
 
 test('390 and 430px RTL light-dark geometry remains bounded without important growth', () => {

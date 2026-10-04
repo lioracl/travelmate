@@ -297,3 +297,24 @@ test('wizard upload rejects a different active owner before creating any object'
   assert.match(result.error.message,/AUTH_CONTEXT_CHANGED/);
   assert.equal(runtime.uploaded.length,0);assert.equal(runtime.updates.length,0);
 });
+
+
+test('owner-scoped preference-only save preserves identity and can disable learning',async()=>{
+  const runtime=boot({user:{id:'A',user_metadata:{display_name:'Lior',avatar_url:'https://example.test/a.jpg'}}});
+  const preferences={pace:'relaxed',activityDensity:'light',transport:'walking',tripStyle:'nature',interests:['nature'],learningEnabled:false};
+  const result=await runtime.cloud.updatePreferencesForOwner('A',preferences);
+  assert.equal(result.error,null);
+  assert.equal(runtime.profileUpdates.length,1);
+  assert.equal(JSON.stringify(runtime.profileUpdates[0].payload.data),JSON.stringify({travelmate_preferences:preferences}));
+  assert.equal(Object.hasOwn(runtime.profileUpdates[0].payload.data,'display_name'),false);
+  assert.equal(Object.hasOwn(runtime.profileUpdates[0].payload.data,'avatar_url'),false);
+});
+
+test('preference-only save rejects account switch and offline mutation',async()=>{
+  const switched=boot({user:{id:'B',user_metadata:{}}});
+  await assert.rejects(switched.cloud.updatePreferencesForOwner('A',{learningEnabled:false}),/AUTH_CONTEXT_CHANGED/);
+  assert.equal(switched.profileUpdates.length,0);
+  const offline=boot({user:{id:'A',user_metadata:{}},online:false});
+  await assert.rejects(offline.cloud.updatePreferencesForOwner('A',{learningEnabled:false}),/PROFILE_OFFLINE/);
+  assert.equal(offline.profileUpdates.length,0);
+});

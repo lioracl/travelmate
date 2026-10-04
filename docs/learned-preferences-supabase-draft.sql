@@ -1,3 +1,4 @@
+-- HISTORICAL DESIGN DRAFT ONLY. Superseded by supabase/migrations/20261004180528_learned_travel_preferences.sql for TravelMate 2.15.0. Do not apply this file.
 -- DRAFT ONLY — DO NOT APPLY DIRECTLY.
 -- Personal Travel Intelligence persistence for V2.
 -- Apply only after Profile Center review UX and RLS tests are complete.

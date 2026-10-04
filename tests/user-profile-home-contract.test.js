@@ -103,7 +103,8 @@ test('Home exposes Smart Profile from the existing account/profile owner', () =>
   assert.match(home, /window\.TravelMateUserProfile/);
   assert.match(home, /renderAdaptiveHome/);
   assert.match(app, /user-profile\.js/);
-  assert.doesNotMatch(app, /learned-preferences\.js/);
+  assert.match(app, /learned-preferences\.js/);
+  assert.match(app, /learned-profile\.js/);
   assert.match(app, /account:\{styles:\['profile-wizard\.css'/);
   assert.match(sw, /\.\/assets\/user-profile\.js/);
   assert.match(settings, /data-security-profile/);

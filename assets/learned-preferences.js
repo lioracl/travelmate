@@ -17,10 +17,7 @@ var SOURCE_SCOPES=Object.freeze({
 
 var ALLOWED_EVENT_KINDS=Object.freeze([
   'completed_activity',
-  'completed_place',
-  'saved_place',
-  'expense_aggregate',
-  'declared_preference'
+  'completed_place'
 ]);
 
 var FORBIDDEN_EVENT_KINDS=Object.freeze([

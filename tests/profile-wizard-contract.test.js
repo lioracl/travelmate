@@ -86,16 +86,16 @@ test('wizard focus, touch, reduced-motion and 390/430 geometry remain bounded',(
   assert.doesNotMatch(css,/!important/);
 });
 
-test('2.14.0 assets and cache versions are synchronized',()=>{
+test('2.15.0 assets and cache versions are synchronized',()=>{
   const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8'),about=fs.readFileSync('assets/about.js','utf8');
   const version=sw.match(/const ASSET_VERSION='([^']+)'/)[1];
   assert.match(html,new RegExp('profile-wizard\\.js\\?v='+version));
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.equal(version,'20261004-16');
-  assert.match(about,/version: '2\.14\.0'/);
-  assert.match(about,/Smart Profile & Personalization - 2\.14\.0/);
+  assert.equal(version,'20261004-17');
+  assert.match(about,/version: '2\.15\.0'/);
+  assert.match(about,/Learned Preferences - 2\.15\.0/);
 });
 
 test('style step re-enables Next after asynchronous avatar rendering',()=>{

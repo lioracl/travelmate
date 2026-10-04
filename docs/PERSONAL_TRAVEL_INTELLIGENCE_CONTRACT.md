@@ -127,7 +127,7 @@ Use two explicit namespaces:
 - no confidence score required
 - small values may live in the existing authenticated user's `user_metadata` rather than a new profile table
 - must never be used for authorization or security decisions
-- in 2.14.0, `learningEnabled` is explicit opt-in: missing metadata normalizes to `false`, and only an explicitly stored `true` enables future learning eligibility
+- from 2.14.0 onward, `learningEnabled` is explicit opt-in: missing metadata normalizes to `false`, and only an explicitly stored `true` enables learning computation, persistence and export
 
 `learnedPreferences`
 - system-generated suggestion
@@ -138,7 +138,7 @@ Use two explicit namespaces:
 - deletable
 - should not be stored in `user_metadata` once provenance, evidence, cross-trip querying, review history, or deletion dependencies are required
 
-TravelMate 2.14.0 ships declared personalization only. It does not persist learned candidates or export them to Mate. Any future learned suggestion remains a separate, reviewable class and requires explicit confirmation before use.
+TravelMate 2.15.0 adds learned interests as a separate, reviewable class in `public.learned_travel_preferences`. Learning is limited to completed structured activities/places across at least two ended trips owned by the authenticated user. A learned item affects Mate only after explicit confirmation, while `learningEnabled` remains true, and while its evidence is still active. Evidence stores only bounded opaque trip/event identifiers and event kind; raw names, private text, coordinates and GPS are excluded.
 
 A trip-local preference must remain trip-local unless the user explicitly promotes it.
 
@@ -202,9 +202,11 @@ Trip Analytics must reuse Trip Replay and TravelMateTripContext rather than crea
 ## 7. Cross-trip learning
 
 Cross-trip learning may consume only:
-- confirmed trip facts
-- explicit declared preferences
-- allowed non-sensitive behavioral signals
+- `done=true` structured activities or scheduled places from trips that ended before the current local day
+- at least two distinct trips owned by the authenticated user
+- stable record IDs and controlled category values required to derive a non-sensitive interest
+
+For 2.15, declared preferences are not evidence for a learned inference; they remain a separate direct user-owned namespace.
 
 It must not consume private documents or sensitive/private text.
 
@@ -238,4 +240,4 @@ Before adding a new Supabase table:
 6. add contract tests;
 7. verify against the existing Cloud Sync and Trip Store boundaries.
 
-Until these are proven necessary, keep the foundation contract-only.
+For 2.15.0 this gate is satisfied: durable provenance, review state, cross-device suppression/correction, deletion dependencies and concurrency require a dedicated learned-intelligence table. The table must never duplicate identity or declared-profile ownership.

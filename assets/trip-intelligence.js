@@ -20,6 +20,7 @@
   var declaredPreferences = window.TravelMateUserProfile && window.TravelMateUserProfile.normalizePreferences
     ? window.TravelMateUserProfile.normalizePreferences(null)
     : { pace: '', activityDensity: '', transport: '', tripStyle: '', interests: [] };
+  var learnedPreferences = [];
 
   function setDeclaredPreferences(value) {
     if (window.TravelMateUserProfile && window.TravelMateUserProfile.normalizePreferences) {
@@ -45,6 +46,27 @@
     var helper = window.TravelMateUserProfile;
     if (!helper || typeof helper.preferenceSummary !== 'function') return [];
     return helper.preferenceSummary(preferences).items.map(function (item) { return item.label + ': ' + item.valueLabel; });
+  }
+
+  function learnedPreferenceLines(value) {
+    var helper = window.TravelMateUserProfile;
+    var labels = helper && helper.preferenceLabels && helper.preferenceLabels.interests || {};
+    return (Array.isArray(value) ? value : []).filter(function (item) { return item && item.preferenceKey === 'interests' && item.reviewState === 'confirmed'; }).map(function (item) { return labels[item.value] || ''; }).filter(Boolean).slice(0, 6);
+  }
+
+  async function refreshLearnedPreferences() {
+    learnedPreferences = [];
+    var cloud = window.TravelMateCloud, service = window.TravelMateLearnedProfile, helper = window.TravelMateUserProfile;
+    if (!cloud || !service || typeof cloud.getSession !== 'function' || typeof service.confirmedForMate !== 'function') return learnedPreferences;
+    try {
+      var session = await cloud.getSession(), user = session && session.user;
+      if (!user || !helper || typeof helper.fromUser !== 'function') return learnedPreferences;
+      var profile = helper.fromUser(user);
+      if (!profile.preferences || profile.preferences.learningEnabled !== true) return learnedPreferences;
+      if (typeof service.sync === 'function') await service.sync();
+      learnedPreferences = await service.confirmedForMate(String(user.id), true);
+    } catch (error) { learnedPreferences = []; }
+    return learnedPreferences;
   }
 
   function contextKey(context) { return context.contextMode + ':' + (context.tripId || context.sessionId || 'general'); }
@@ -107,6 +129,7 @@
           ? window.TravelMateUserProfile.normalizePreferences(input.declaredPreferences)
           : input.declaredPreferences)
         : declaredPreferences,
+      learnedPreferences: Array.isArray(input.learnedPreferences) ? input.learnedPreferences.slice(0, 6) : learnedPreferences.slice(0, 6),
       itineraryContext: normalizeItinerary(input.itineraryContext || input.activities),
       savedPlacesContext: normalizePlaces(input.savedPlacesContext || input.savedPlaces),
       lodgingContext: normalizeLodging(input.lodgingContext),
@@ -114,7 +137,7 @@
     };
   }
   function fingerprint(context) {
-    return JSON.stringify([context.contextMode, context.tripId, context.destination, context.country, context.startDate, context.endDate, context.durationDays, context.budget, context.currency, context.tripType, context.preferences, context.declaredPreferences, context.itineraryContext, context.savedPlacesContext, context.lodgingContext, context.transportContext]);
+    return JSON.stringify([context.contextMode, context.tripId, context.destination, context.country, context.startDate, context.endDate, context.durationDays, context.budget, context.currency, context.tripType, context.preferences, context.declaredPreferences, context.learnedPreferences, context.itineraryContext, context.savedPlacesContext, context.lodgingContext, context.transportContext]);
   }
   function monthLabel(date) {
     if (!date) return '';
@@ -157,6 +180,7 @@
         context.startDate && context.endDate ? 'תאריכים: ' + context.startDate + ' עד ' + context.endDate + '; ' + context.durationDays + ' ימים.' : '',
         context.budget ? 'תקציב משוער: ' + context.budget + ' ' + context.currency + '.' : '',
         declaredPreferenceLines(context.declaredPreferences).length ? 'העדפות אישיות שהמשתמש הצהיר עליהן: ' + declaredPreferenceLines(context.declaredPreferences).join('; ') + '.' : '',
+        learnedPreferenceLines(context.learnedPreferences).length ? 'העדפות נלמדות שאישרת במפורש: ' + learnedPreferenceLines(context.learnedPreferences).join(', ') + '.' : '',
         context.itineraryContext.length ? 'מסלול מתוכנן ומאומת: ' + JSON.stringify(context.itineraryContext) : 'אין מסלול מובנה זמין לבדיקה.',
         context.savedPlacesContext.length ? 'מקומות שכבר נשמרו: ' + JSON.stringify(context.savedPlacesContext) : '',
         context.lodgingContext ? 'לינה קיימת: ' + JSON.stringify(context.lodgingContext) : '',
@@ -174,7 +198,8 @@
       context.budget ? 'תקציב משוער: ' + context.budget + ' ' + context.currency + '.' : '',
       context.preferences.length ? 'העדפות שהוגדרו לטיול הזה: ' + context.preferences.join(', ') + '.' : '',
       declaredPreferenceLines(context.declaredPreferences).length ? 'העדפות אישיות שהמשתמש הצהיר עליהן: ' + declaredPreferenceLines(context.declaredPreferences).join('; ') + '.' : '',
-      'התייחס להעדפות האישיות כהעדפות מוצהרות של המשתמש, לא כהסקה. אל תדרוס אותן באמצעות ניחוש התנהגותי.',
+      learnedPreferenceLines(context.learnedPreferences).length ? 'העדפות נלמדות שאישרת במפורש: ' + learnedPreferenceLines(context.learnedPreferences).join(', ') + '.' : '',
+      'התייחס להעדפות המוצהרות כבחירה ישירה של המשתמש. העדפות נלמדות הן רק פריטים שהמשתמש אישר; במקרה של סתירה, ההעדפה המוצהרת גוברת. אל תשתמש בהן כדי לשנות מסלול, לתזמן, לדרג או לבצע פעולה בלי בקשה מפורשת.',
       'התמקד בהתאמת היעד, 4–6 דברים שלא כדאי לפספס, אזורי לינה, אוכל ובילוי, התניידות, קצב מומלץ, טיפ לעונה וטיפ אישי אחד של Mate.',
       'אל תטען שיש מסלול קיים. אל תמציא מחירים, שעות פתיחה, סגירות, אירועים או מצב תחבורה בזמן אמת. השתמש בכותרות קצרות ורשימות.'
     ].filter(Boolean).join('\n');
@@ -241,7 +266,11 @@
     if (state.busy || !state.context) return;
     var navo = window.TravelMateNavo;
     if (!navo || !navo.request) { ui.content.innerHTML = '<p class="navo-intelligence-error">Mate עדיין נטען. נסה שוב בעוד רגע.</p>'; return; }
-    var activeState = state; var activeContext = state.context; var contextFingerprint = fingerprint(activeContext); var requestId = ++activeState.requestId;
+    var activeState = state;
+    var currentLearned = typeof refreshLearnedPreferences === 'function' ? await refreshLearnedPreferences() : (activeState.context && activeState.context.learnedPreferences || []);
+    if (state !== activeState || !activeState.context) return;
+    activeState.context.learnedPreferences = currentLearned.slice(0, 6);
+    var activeContext = activeState.context; var contextFingerprint = fingerprint(activeContext); var requestId = ++activeState.requestId;
     activeState.busy = true; activeState.stale = false; activeState.pendingSave = false;
     ui.stale.hidden = true; ui.content.innerHTML = '<div class="navo-intelligence-loading"><i class="fa-solid fa-spinner fa-spin"></i><p>Mate מכין המלצות שמתאימות לטיול שלך…</p></div>';
     try {
@@ -456,7 +485,10 @@
     window.TravelMateCloud.onAuthChange(function (event, session) {
       var profile = window.TravelMateUserProfile;
       setDeclaredPreferences(profile && profile.fromUser ? profile.fromUser(session && session.user).preferences : null);
+      learnedPreferences = [];
+      if (session && session.user) refreshLearnedPreferences();
     }).catch(function () {});
   }
-  window.TravelMateTripIntelligence = { MODE: MODE, normalizeContext: normalizeContext, promptFor: promptFor, renderAnswer: renderAnswer, sanitizeRecommendationBody: sanitizeRecommendationBody, recommendationFor: recommendationFor, open: openSheet, attachPendingToTrip: attachPendingToTrip, declaredPreferenceLines: declaredPreferenceLines };
+  window.addEventListener('travelmate:learned-profile-change', function () { learnedPreferences = []; Object.keys(states).forEach(function (key) { var item = states[key]; if (item && item.recommendation) { item.stale = true; item.status = 'stale'; } }); });
+  window.TravelMateTripIntelligence = { MODE: MODE, normalizeContext: normalizeContext, promptFor: promptFor, renderAnswer: renderAnswer, sanitizeRecommendationBody: sanitizeRecommendationBody, recommendationFor: recommendationFor, open: openSheet, attachPendingToTrip: attachPendingToTrip, declaredPreferenceLines: declaredPreferenceLines, learnedPreferenceLines: learnedPreferenceLines, refreshLearnedPreferences: refreshLearnedPreferences };
 })();

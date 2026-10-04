@@ -87,14 +87,15 @@ test('user profile exposes a small normalized declared-preference contract', () 
 });
 
 
-test('Mate context consumes declared preferences without converting them into learned inference', () => {
+test('Mate context keeps declared preferences distinct from confirmed learned preferences', () => {
   const source = fs.readFileSync('assets/trip-intelligence.js', 'utf8');
-
   assert.match(source, /declaredPreferences/);
   assert.match(source, /declaredPreferenceLines/);
-  assert.match(source, /העדפות אישיות שהמשתמש הצהיר עליהן/);
-  assert.match(source, /התייחס להעדפות האישיות כהעדפות מוצהרות של המשתמש, לא כהסקה/);
+  assert.match(source, /learnedPreferences/);
+  assert.match(source, /learnedPreferenceLines/);
+  assert.match(source, /confirmedForMate/);
   assert.match(source, /context\.declaredPreferences/);
+  assert.match(source, /context\.learnedPreferences/);
   assert.doesNotMatch(source, /learnedPreferences\s*=\s*declaredPreferences/);
 });
 

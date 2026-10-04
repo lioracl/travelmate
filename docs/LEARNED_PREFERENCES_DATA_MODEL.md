@@ -1,146 +1,56 @@
-# Learned Preferences — Data Model Proposal
+# TravelMate Learned Preferences — 2.15
 
-Status: Design only — NOT applied to Supabase
-Target phase: TravelMate Personal Travel Intelligence
+## Status
+Implemented for 2.15.0. This document supersedes the earlier two-table design draft. Declared preferences remain in the existing Supabase Auth user metadata; only learned, reviewed intelligence gets a dedicated table.
 
-## Why a dedicated store is needed
+## Scope
+2.15 learns only non-sensitive **interest** patterns from structured records that the user marked `done=true` in at least two trips that:
+- belong to the authenticated user;
+- have ended before the current local day;
+- are not deleted or pending deletion.
 
-Declared preferences are small, user-controlled values and are already stored in Supabase Auth `user_metadata`.
+For saved/place records, the record must also be scheduled/dated. Shared or foreign trips, ownerless trips, future/current trips, unscheduled ideas, documents, receipts, vault content, credentials, private notes/messages, raw GPS, coordinates and transport inference are not learning sources.
 
-Learned preferences are different. They require durable:
-- provenance/evidence references
-- confidence
-- review state
-- correction/rejection/deletion state
-- cross-trip querying
-- dependency handling when a source trip is deleted
+## Persistence
+`public.learned_travel_preferences` stores one row per stable owner/candidate key.
 
-Those requirements are the implementation gate for moving learned intelligence out of Auth metadata.
+Core fields:
+- `user_id` — authenticated owner.
+- `candidate_key` — stable `cross-trip:interests:<suggested-value>` identity.
+- `preference_key` — fixed to `interests` in 2.15.
+- `suggested_value` — original inferred value and immutable provenance.
+- `value` — current value; a user correction changes this while preserving `suggested_value`.
+- `confidence` — bounded 0..1.
+- `review_state` — `suggested`, `confirmed`, or `rejected`.
+- `source_scope` — fixed to `cross_trip`.
+- `evidence` — at most 12 opaque structured references containing **only** `sourceTripId`, `eventKind`, `eventRef`.
+- `evidence_active` — whether current evidence still satisfies the two-completed-owned-trips gate.
+- `revision` — server-managed optimistic-concurrency token.
+- server-managed timestamps.
 
-## Proposed tables
+The database validates exact evidence keys/types, allowed event kinds, bounded IDs, at least two distinct trip IDs when active, and verifies that each active source trip is an owned, non-deleted trip whose end date is before today.
 
-### `public.travel_learned_preferences`
+## Security
+The table uses forced RLS. Authenticated clients receive **SELECT only** through owner + restrictive MFA policies; direct INSERT/UPDATE/DELETE is revoked. All mutations go through owner-bound `SECURITY DEFINER` RPCs with hardened search paths, explicit MFA checks, authoritative Auth consent checks where learning is created/confirmed, revision CAS, and server-side validation of every evidence record against the current owned trip payload. A trigger still protects immutable provenance fields, legal review-state transitions, server timestamps and revisions.
 
-One row represents one learned hypothesis for one user.
+## Review semantics
+- **Confirm**: `suggested → confirmed`.
+- **Correct**: preserve `suggested_value`, change `value`, and confirm.
+- **Reject**: durable suppression. Regeneration never overwrites a rejected row.
+- **Delete one**: physical deletion. If learning remains enabled and the same eligible pattern still exists, it may be learned again on the next refresh; the UI states this explicitly.
+- **Delete all**: first set `learningEnabled=false` in Auth metadata, then call the owner-bound delete-all RPC. Learning/sync RPCs lock the Auth user row while checking consent, so a concurrent learning write cannot bypass a committed disable. If cleanup fails, learning remains disabled and the UI reports incomplete cleanup.
 
-Columns:
+Generated evidence refreshes do not overwrite confirmed/rejected review decisions. If evidence for a confirmed row disappears, it becomes `evidence_active=false`; it remains visible as previously approved but is no longer exported to Mate.
 
-- `id uuid primary key default gen_random_uuid()`
-- `user_id uuid not null references auth.users(id) on delete cascade`
-- `preference_key text not null`
-- `value jsonb not null`
-- `confidence numeric(4,3) not null check (confidence >= 0 and confidence <= 1)`
-- `status text not null check (status in ('suggested','confirmed','rejected','deleted'))`
-- `source_scope text not null check (source_scope in ('trip','cross_trip'))`
-- `created_at timestamptz not null default now()`
-- `updated_at timestamptz not null default now()`
-- `reviewed_at timestamptz`
-- `last_evidence_at timestamptz`
+## Mate boundary
+Mate receives only the final allowed interest value through `travelmate_confirmed_learned_preferences()`. The RPC rechecks authoritative Auth consent and validates every evidence reference against the current trip payload (record exists, is completed, is scheduled where required, category still supports the inferred interest). Export occurs only when all are true:
+- the active authenticated owner matches;
+- `learningEnabled === true`;
+- `review_state === 'confirmed'`;
+- `evidence_active === true`;
+- the value belongs to the fixed 2.15 interest vocabulary.
 
-The table must never be used for authorization, RLS decisions, or security policy.
+Mate never receives evidence IDs, confidence, rejected rows, source names, private text or GPS. Declared preferences and learned preferences remain separate in prompt construction; declared user choices win if they conflict. Learned preferences may shape recommendations but cannot automatically schedule, rank, book, navigate or perform actions.
 
-### `public.travel_learned_preference_evidence`
-
-Evidence is kept separately so source deletion can be handled explicitly instead of leaving opaque references inside one JSON document.
-
-Columns:
-
-- `id uuid primary key default gen_random_uuid()`
-- `user_id uuid not null references auth.users(id) on delete cascade`
-- `learned_preference_id uuid not null references public.travel_learned_preferences(id) on delete cascade`
-- `source_trip_id text`
-- `event_kind text not null`
-- `event_ref text`
-- `observed_at timestamptz`
-- `weight numeric(4,3) check (weight >= 0 and weight <= 1)`
-- `created_at timestamptz not null default now()`
-
-When `source_trip_id` is present, it should reference the existing composite trip identity:
-
-`(user_id, source_trip_id) -> travel_trips(user_id, id)`
-
-with `ON DELETE CASCADE` for evidence rows.
-
-This lets trip deletion remove dependent evidence without touching the learned-preference row itself. The application can then recompute confidence or mark the inference stale.
-
-## RLS model
-
-Both tables are private user-owned data.
-
-For every table:
-
-- enable RLS
-- revoke access from `anon`
-- grant required CRUD only to `authenticated`
-- SELECT/UPDATE/DELETE use `(select auth.uid()) = user_id`
-- INSERT uses `with check ((select auth.uid()) = user_id)`
-- never permit a client to assign another user's `user_id`
-
-The evidence table must additionally ensure that `learned_preference_id` belongs to the same `user_id`. This should be enforced by a database constraint/design rather than relying only on client validation.
-
-## Review state rules
-
-Allowed transitions:
-
-- suggested -> confirmed
-- suggested -> rejected
-- suggested -> deleted
-- confirmed -> rejected
-- confirmed -> deleted
-- rejected -> deleted
-
-A rejected or deleted inference is never sent to Mate.
-
-A rejected inference must remain represented long enough to prevent the same hypothesis from being immediately regenerated without new, materially different evidence.
-
-## Evidence rules
-
-Permitted evidence:
-- completed itinerary/place facts
-- saved places
-- explicit user-created trip memories
-- bounded expense aggregates
-- declared preferences, only as corroborating context
-- other non-sensitive trip facts already owned by TravelMate
-
-Forbidden evidence:
-- document contents
-- receipt text
-- vault contents
-- credentials
-- medical/private notes
-- private collaboration messages
-- passive/raw GPS history
-
-## Confidence
-
-Confidence is a system signal, not a user-facing score that pretends to be certainty.
-
-Suggested interpretation:
-- 0.00–0.39: weak candidate; normally do not surface
-- 0.40–0.69: candidate for review
-- 0.70–1.00: strong candidate, still not automatically authoritative
-
-The UI should prefer human language such as "Mate noticed..." rather than displaying a raw percentage.
-
-## Deletion behavior
-
-1. Delete a source trip -> dependent evidence rows are removed.
-2. Learned preferences remain until the intelligence layer reevaluates them.
-3. Reevaluation may reduce confidence or mark the inference stale.
-4. Delete learned preference -> retain a tombstone/rejection signal if needed to prevent immediate regeneration.
-5. "Delete all learned preferences" removes or tombstones all learned rows according to the final product policy.
-
-## Migration gate
-
-Before this proposal becomes a migration:
-
-1. implement and test the review state machine;
-2. implement the context boundary that excludes forbidden sources;
-3. add pgTAP RLS tests for both tables;
-4. add source-trip deletion tests;
-5. verify the composite trip foreign key against the current `travel_trips` schema;
-6. test rollback on a Supabase development branch;
-7. only then apply the migration to production.
-
-No production schema change is part of the current PR.
+## Offline and account switching
+There is no offline learned-data queue and no learned-data copy in the general trip cache. Offline learned personalization fails closed to declared preferences only. Every cloud mutation captures and rechecks the authenticated owner; UI refresh generations discard stale account responses and clear old-account content on account changes.
