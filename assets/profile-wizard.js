@@ -5,14 +5,13 @@ var OUTPUT_SIZE=512;
 var SOURCE_MAX_BYTES=20*1024*1024;
 var UPLOAD_MAX_BYTES=2*1024*1024;
 var STYLE_DEFINITIONS=Object.freeze([
-  Object.freeze({id:'natural',label:'טבעי',filter:'none'}),
-  Object.freeze({id:'warm',label:'חמים',filter:'saturate(1.12) sepia(.16) contrast(1.04)'}),
-  Object.freeze({id:'ocean',label:'ים',filter:'saturate(1.08) hue-rotate(10deg) contrast(1.06)'}),
-  Object.freeze({id:'mono',label:'שחור־לבן',filter:'grayscale(1) contrast(1.12)'})
+  Object.freeze({id:'illustrated',label:'איור רך',description:'איור דיגיטלי נקי עם צבעים רכים וקווי פנים עדינים',mode:'illustrated'}),
+  Object.freeze({id:'sketch',label:'סקיצה',description:'מראה מצויר בעיפרון עם הצללה עדינה וקווי מתאר',mode:'sketch'}),
+  Object.freeze({id:'poster',label:'פוסטר מסע',description:'איור צבעוני עם משטחי צבע ברורים וקווי מתאר מודגשים',mode:'poster'})
 ]);
 var ACCEPTED_TYPES=Object.freeze(['image/jpeg','image/png','image/webp']);
 var modal=null,opener=null,ownerId='',user=null,decodedImage=null;
-var styleResults=[],selectedStyle='natural',step=1,busy=false,drawFrame=0,sourceGeneration=0;
+var styleResults=[],selectedStyle='illustrated',step=1,busy=false,drawFrame=0,sourceGeneration=0;
 var previousBodyOverflow='',wizardGeneration=0,closeTimer=0,inertSiblings=[];
 function currentWizard(generation){return modal&&!modal.hidden&&generation===wizardGeneration}
 function staleWork(){return new Error('PROFILE_STALE_WORK')}
@@ -121,6 +120,36 @@ async function boundedBlob(canvas){
   throw new Error('AVATAR_NORMALIZED_TOO_LARGE')
 }
 function fileFromBlob(blob,style){var extension=blob.type==='image/webp'?'webp':'jpg';return new File([blob],'travelmate-'+style+'.'+extension,{type:blob.type,lastModified:Date.now()})}
+function clampByte(value){return Math.max(0,Math.min(255,Math.round(value)))}
+function quantizeByte(value,step){return clampByte(Math.round(value/step)*step)}
+function buildLuminance(data){
+  var result=new Uint16Array(data.length/4);
+  for(var index=0,pixel=0;index<data.length;index+=4,pixel+=1)result[pixel]=Math.round(data[index]*.299+data[index+1]*.587+data[index+2]*.114);
+  return result
+}
+function localEdge(luminance,index,width){
+  return Math.abs(luminance[index-1]-luminance[index+1])+Math.abs(luminance[index-width]-luminance[index+width])
+}
+function renderIllustratedStyle(base,target,mode){
+  var context=target.getContext('2d',{willReadFrequently:true}),sourceContext=base.getContext('2d',{willReadFrequently:true});
+  context.save();context.clearRect(0,0,OUTPUT_SIZE,OUTPUT_SIZE);
+  if(mode==='sketch'){context.fillStyle='#f7f2e8';context.fillRect(0,0,OUTPUT_SIZE,OUTPUT_SIZE);context.globalAlpha=.2;context.filter='grayscale(1) contrast(1.08)';context.drawImage(base,0,0)}
+  else{context.filter=mode==='poster'?'saturate(1.34) contrast(1.12)':'blur(1.15px) saturate(1.08) contrast(1.05)';context.drawImage(base,0,0)}
+  context.restore();
+  var source=sourceContext.getImageData(0,0,OUTPUT_SIZE,OUTPUT_SIZE),luminance=buildLuminance(source.data),image=context.getImageData(0,0,OUTPUT_SIZE,OUTPUT_SIZE),pixels=image.data;
+  for(var pixel=0,offset=0;pixel<luminance.length;pixel+=1,offset+=4){
+    if(mode==='sketch'){var shade=clampByte(248-(255-luminance[pixel])*.16);pixels[offset]=clampByte(shade+4);pixels[offset+1]=clampByte(shade+2);pixels[offset+2]=shade;pixels[offset+3]=255}
+    else{var step=mode==='poster'?58:36;pixels[offset]=quantizeByte(pixels[offset],step);pixels[offset+1]=quantizeByte(pixels[offset+1],step);pixels[offset+2]=quantizeByte(pixels[offset+2],step);pixels[offset+3]=255}
+  }
+  for(var y=1;y<OUTPUT_SIZE-1;y+=1){
+    for(var x=1;x<OUTPUT_SIZE-1;x+=1){
+      var point=y*OUTPUT_SIZE+x,edge=localEdge(luminance,point,OUTPUT_SIZE),position=point*4;
+      if(mode==='sketch'){var pencil=clampByte(Math.max(0,edge-14)*1.75);pixels[position]=clampByte(pixels[position]-pencil);pixels[position+1]=clampByte(pixels[position+1]-pencil);pixels[position+2]=clampByte(pixels[position+2]-pencil)}
+      else{var threshold=mode==='poster'?24:30;if(edge>threshold){var ink=Math.min(mode==='poster'?.62:.46,(edge-threshold)/150),factor=1-ink;pixels[position]=clampByte(pixels[position]*factor);pixels[position+1]=clampByte(pixels[position+1]*factor);pixels[position+2]=clampByte(pixels[position+2]*factor)}}
+    }
+  }
+  context.putImageData(image,0,0)
+}
 async function prepareStyles(){
   var generation=sourceGeneration,wizard=wizardGeneration,pending=[];
   clearResults();var base=document.createElement('canvas');base.width=OUTPUT_SIZE;base.height=OUTPUT_SIZE;drawCrop(base,'none');
@@ -129,10 +158,10 @@ async function prepareStyles(){
       if(generation!==sourceGeneration||!currentWizard(wizard))throw staleWork();
       var definition=STYLE_DEFINITIONS[index],canvas=document.createElement('canvas');canvas.width=OUTPUT_SIZE;canvas.height=OUTPUT_SIZE;
       try{
-        var context=canvas.getContext('2d');context.filter=definition.filter;context.drawImage(base,0,0);context.filter='none';
+        renderIllustratedStyle(base,canvas,definition.mode);
         var blob=await boundedBlob(canvas);
         if(generation!==sourceGeneration||!currentWizard(wizard))throw staleWork();
-        pending.push({id:definition.id,label:definition.label,blob:blob,url:URL.createObjectURL(blob)})
+        pending.push({id:definition.id,label:definition.label,description:definition.description,blob:blob,url:URL.createObjectURL(blob)})
       }finally{canvas.width=0;canvas.height=0}
     }
     styleResults=pending;pending=[]
@@ -148,7 +177,7 @@ function preferencesMarkup(current){
   return'<div class="profile-wizard-preferences">'+preferenceField('pace','קצב טיול',current.pace)+preferenceField('activityDensity','צפיפות פעילויות',current.activityDensity)+preferenceField('transport','דרך התניידות',current.transport)+preferenceField('tripStyle','סגנון טיול',current.tripStyle)+'<fieldset class="profile-wizard-interests"><legend>תחומי עניין (עד 6)</legend><div>'+options.interests.map(function(value){return'<label><input type="checkbox" name="interests" value="'+value+'"'+(current.interests.indexOf(value)>=0?' checked':'')+'><span>'+labels[value]+'</span></label>'}).join('')+'</div></fieldset><label class="profile-wizard-learning"><input type="checkbox" name="learningEnabled"'+(current.learningEnabled?' checked':'')+'><span><strong>הצטרפות להתאמה עתידית</strong><small>כבוי כברירת מחדל. אם תבחרו להצטרף, הצעות נלמדות עתידיות יוצגו בנפרד וידרשו אישור; מסמכים, הערות פרטיות ו־GPS לא ישמשו ללמידה.</small></span></label></div>'
 }
 function buildModal(){
-  var wrapper=document.createElement('div');wrapper.className='profile-wizard-backdrop';wrapper.hidden=true;wrapper.innerHTML='<section class="profile-wizard" role="dialog" aria-modal="true" aria-labelledby="profile-wizard-title"><header><div><small data-profile-step-label>שלב 1 מתוך 3</small><h2 id="profile-wizard-title" tabindex="-1">עריכת הפרופיל</h2></div><button type="button" class="profile-wizard-close" data-profile-wizard-close aria-label="סגירת עריכת הפרופיל">×</button></header><ol class="profile-wizard-progress" aria-label="התקדמות"><li aria-current="step">תמונה</li><li>סגנון</li><li>העדפות</li></ol><form data-profile-wizard-form><section data-profile-step="1"><p class="profile-wizard-privacy">העיבוד והחיתוך מתבצעים במכשיר. רק התמונה המעובדת נשלחת; לאחר שמירה האווטר זמין באמצעות כתובת ציבורית. אפשר גם להמשיך בלי לשנות תמונה.</p><div class="profile-crop-shell"><canvas width="512" height="512" data-profile-crop aria-label="תצוגה מקדימה של חיתוך התמונה"></canvas><div data-profile-empty>אפשר לבחור תמונה חדשה או להמשיך בלי לשנות את התמונה הנוכחית</div></div><div class="profile-source-actions"><label class="profile-source-button"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>צילום תמונה</span><input type="file" data-profile-camera accept="image/jpeg,image/png,image/webp" capture="user"></label><label class="profile-source-button"><i class="fa-regular fa-images" aria-hidden="true"></i><span>בחירה מהגלריה</span><input type="file" data-profile-gallery accept="image/jpeg,image/png,image/webp"></label></div><div class="profile-crop-controls" hidden data-profile-crop-controls><label><span>זום</span><input type="range" min="1" max="3" step="0.01" value="1" data-profile-zoom></label><label><span>מיקום אופקי</span><input type="range" min="-100" max="100" step="1" value="0" data-profile-x></label><label><span>מיקום אנכי</span><input type="range" min="-100" max="100" step="1" value="0" data-profile-y></label></div></section><section data-profile-step="2" hidden><fieldset class="profile-style-fieldset"><legend>בחירת תמונה לפרופיל</legend><div class="profile-style-grid" data-profile-styles></div></fieldset></section><section data-profile-step="3" hidden><div class="profile-final-avatar"><img data-profile-selected-preview alt="האווטר שנבחר"><span data-profile-final-initials aria-hidden="true"></span></div><label class="profile-wizard-field profile-wizard-name"><span>שם לתצוגה</span><input type="text" name="displayName" maxlength="80" autocomplete="nickname"></label><div data-profile-preference-fields></div></section><p class="profile-wizard-status" data-profile-wizard-status role="status" aria-live="polite"></p><footer><button type="button" class="secondary" data-profile-back hidden>חזרה</button><button type="button" data-profile-next disabled>המשך</button><button type="submit" data-profile-save hidden>שמירת הפרופיל</button></footer></form></section>';
+  var wrapper=document.createElement('div');wrapper.className='profile-wizard-backdrop';wrapper.hidden=true;wrapper.innerHTML='<section class="profile-wizard" role="dialog" aria-modal="true" aria-labelledby="profile-wizard-title"><header><div><small data-profile-step-label>שלב 1 מתוך 3</small><h2 id="profile-wizard-title" tabindex="-1">עריכת הפרופיל</h2></div><button type="button" class="profile-wizard-close" data-profile-wizard-close aria-label="סגירת עריכת הפרופיל">×</button></header><ol class="profile-wizard-progress" aria-label="התקדמות"><li aria-current="step">תמונה</li><li>איור</li><li>העדפות</li></ol><form data-profile-wizard-form><section data-profile-step="1"><p class="profile-wizard-privacy">החיתוך ושלושת האיורים נוצרים במכשיר. תמונת המקור אינה נשלחת; רק האווטר שתבחרו נשמר, ולאחר השמירה הוא זמין באמצעות כתובת ציבורית. אפשר גם להמשיך בלי לשנות תמונה.</p><div class="profile-crop-shell"><canvas width="512" height="512" data-profile-crop aria-label="תצוגה מקדימה של חיתוך התמונה"></canvas><div data-profile-empty>אפשר לבחור תמונה חדשה או להמשיך בלי לשנות את התמונה הנוכחית</div></div><div class="profile-source-actions"><label class="profile-source-button"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>צילום תמונה</span><input type="file" data-profile-camera accept="image/jpeg,image/png,image/webp" capture="user"></label><label class="profile-source-button"><i class="fa-regular fa-images" aria-hidden="true"></i><span>בחירה מהגלריה</span><input type="file" data-profile-gallery accept="image/jpeg,image/png,image/webp"></label></div><div class="profile-crop-controls" hidden data-profile-crop-controls><label><span>זום</span><input type="range" min="1" max="3" step="0.01" value="1" data-profile-zoom></label><label><span>מיקום אופקי</span><input type="range" min="-100" max="100" step="1" value="0" data-profile-x></label><label><span>מיקום אנכי</span><input type="range" min="-100" max="100" step="1" value="0" data-profile-y></label></div></section><section data-profile-step="2" hidden><fieldset class="profile-style-fieldset"><legend>בחרו אווטר מאויר שנוצר מהתמונה שלכם</legend><div class="profile-style-grid" data-profile-styles></div></fieldset></section><section data-profile-step="3" hidden><div class="profile-final-avatar"><img data-profile-selected-preview alt="האווטר שנבחר"><span data-profile-final-initials aria-hidden="true"></span></div><label class="profile-wizard-field profile-wizard-name"><span>שם לתצוגה</span><input type="text" name="displayName" maxlength="80" autocomplete="nickname"></label><div data-profile-preference-fields></div></section><p class="profile-wizard-status" data-profile-wizard-status role="status" aria-live="polite"></p><footer><button type="button" class="secondary" data-profile-back hidden>חזרה</button><button type="button" data-profile-next disabled>המשך</button><button type="submit" data-profile-save hidden>שמירת הפרופיל</button></footer></form></section>';
   wrapper.querySelector('#profile-wizard-title').setAttribute('tabindex','-1');
   wrapper.addEventListener('keydown',function(event){if(event.key==='Escape'||event.key==='Tab'){onKeydown(event);event.stopPropagation()}});
   document.body.appendChild(wrapper);return wrapper
@@ -161,8 +190,8 @@ function setStep(next){
   setStatus('');var heading=el('#profile-wizard-title');if(heading)heading.focus({preventScroll:true})
 }
 function renderStyles(){
-  if(!styleResults.some(function(item){return item.id===selectedStyle}))selectedStyle='natural';
-  el('[data-profile-styles]').innerHTML=styleResults.map(function(item,index){return'<label class="profile-style-card"><input type="radio" name="avatarStyle" value="'+item.id+'"'+(item.id===selectedStyle?' checked':'')+'><img src="'+item.url+'" alt=""><span>'+item.label+'</span></label>'}).join('');
+  if(!styleResults.some(function(item){return item.id===selectedStyle}))selectedStyle='illustrated';
+  el('[data-profile-styles]').innerHTML=styleResults.map(function(item){return'<label class="profile-style-card"><input type="radio" name="avatarStyle" value="'+item.id+'"'+(item.id===selectedStyle?' checked':'')+'><img src="'+item.url+'" alt="תצוגה מקדימה: '+item.label+'"><strong>'+item.label+'</strong><small>'+item.description+'</small></label>'}).join('');
   var chosen=styleResults.find(function(item){return item.id===selectedStyle})||styleResults[0],initials=el('[data-profile-final-initials]');if(initials){initials.hidden=true;initials.textContent=''}if(chosen)el('[data-profile-selected-preview]').src=chosen.url
 }
 function renderExistingStyle(){
@@ -179,7 +208,7 @@ async function handleFile(file){
   if(!file||busy)return;var generation=++sourceGeneration;setStatus('בודק ומעבד את התמונה…');el('[data-profile-next]').disabled=true;
   try{
     await validateSource(file);if(generation!==sourceGeneration)return;releaseImage();clearResults();var decoded=await decodeSource(file);if(generation!==sourceGeneration){if(decoded&&typeof decoded.close==='function')decoded.close();return}decodedImage=decoded;
-    if(!imageWidth()||!imageHeight())throw new Error('SOURCE_DECODE');selectedStyle='natural';
+    if(!imageWidth()||!imageHeight())throw new Error('SOURCE_DECODE');selectedStyle='illustrated';
     ['[data-profile-zoom]','[data-profile-x]','[data-profile-y]'].forEach(function(selector){el(selector).value=selector.indexOf('zoom')>=0?'1':'0'});
     el('[data-profile-empty]').hidden=true;el('[data-profile-crop-controls]').hidden=false;scheduleCropDraw();el('[data-profile-next]').disabled=false;setStatus('התמונה מוכנה. אפשר לכוון זום ומיקום לפני ההמשך.')
   }catch(error){if(generation!==sourceGeneration)return;releaseImage();clearResults();el('[data-profile-crop]').getContext('2d').clearRect(0,0,OUTPUT_SIZE,OUTPUT_SIZE);el('[data-profile-empty]').hidden=false;el('[data-profile-crop-controls]').hidden=true;el('[data-profile-next]').disabled=!ownerId;var message=/SOURCE_SIZE/.test(String(error.message))?'אפשר לבחור תמונת JPG, PNG או WebP עד 20MB.':'לא הצלחנו לקרוא את התמונה. ודאו שזה קובץ JPG, PNG או WebP תקין.';setStatus(message,true)}
@@ -220,7 +249,7 @@ async function openWizard(button){
   previousBodyOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
   el('[data-profile-wizard-close]').disabled=false;el('[data-profile-wizard-close]').focus();
   try{
-    var session=await window.TravelMateCloud.getSession();if(!currentWizard(generation))return;if(!session||!session.user)throw new Error('AUTH_REQUIRED');ownerId=String(session.user.id);user=session.user;selectedStyle='natural';renderPreferences();setStep(1)
+    var session=await window.TravelMateCloud.getSession();if(!currentWizard(generation))return;if(!session||!session.user)throw new Error('AUTH_REQUIRED');ownerId=String(session.user.id);user=session.user;selectedStyle='illustrated';renderPreferences();setStep(1)
   }catch(error){if(currentWizard(generation))setStatus('יש להתחבר לחשבון כדי לערוך את הפרופיל.',true)}
   finally{if(currentWizard(generation)){busy=false;if(user)setMutationDisabled(false)}}
 }
@@ -249,7 +278,7 @@ document.addEventListener('click',async function(event){
   if(!modal||modal.hidden||busy||!ownerId)return;
   if(event.target.closest('[data-profile-back]')){setStep(Math.max(1,step-1));return}
   if(!event.target.closest('[data-profile-next]'))return;
-  if(step===1){if(!decodedImage){renderExistingStyle();setStep(2);return}var generation=wizardGeneration;busy=true;setMutationDisabled(true);setStatus('מכין ארבעה סגנונות מקומיים…');try{await prepareStyles();if(currentWizard(generation)){renderStyles();setStep(2)}}catch(error){if(currentWizard(generation))setStatus(errorMessage(error),true)}finally{if(currentWizard(generation)){busy=false;setMutationDisabled(false)}}}
+  if(step===1){if(!decodedImage){renderExistingStyle();setStep(2);return}var generation=wizardGeneration;busy=true;setMutationDisabled(true);setStatus('מכין שלושה אווטרים מאוירים במכשיר…');try{await prepareStyles();if(currentWizard(generation)){renderStyles();setStep(2)}}catch(error){if(currentWizard(generation))setStatus(errorMessage(error),true)}finally{if(currentWizard(generation)){busy=false;setMutationDisabled(false)}}}
   else if(step===2){setStep(3)}
 });
 window.addEventListener('online',updateOnlineState);window.addEventListener('offline',updateOnlineState);

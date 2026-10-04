@@ -31,14 +31,17 @@ test('camera and gallery are explicit separate inputs and only camera requests c
   assert.doesNotMatch(gallery,/capture=/);
 });
 
-test('exactly four deterministic local styles are shown in an accessible 2x2 radio grid',()=>{
+test('exactly three deterministic local illustrated avatars are shown in an accessible radio grid',()=>{
   const styleBlock=(source.match(/var STYLE_DEFINITIONS[\s\S]*?\n\]\);/)||[''])[0];
-  assert.equal((styleBlock.match(/Object\.freeze\(\{id:/g)||[]).length,4);
-  assert.deepEqual([...styleBlock.matchAll(/id:'([^']+)'/g)].map(item=>item[1]),['natural','warm','ocean','mono']);
+  assert.equal((styleBlock.match(/Object\.freeze\(\{id:/g)||[]).length,3);
+  assert.deepEqual([...styleBlock.matchAll(/id:'([^']+)'/g)].map(item=>item[1]),['illustrated','sketch','poster']);
+  assert.match(source,/renderIllustratedStyle/);
+  assert.match(source,/getImageData/);
+  assert.match(source,/localEdge/);
   assert.match(source,/type="radio" name="avatarStyle"/);
   assert.match(source,/selectedStyle=event\.target\.value/);
   assert.match(source,/uploadAvatar\(fileFromBlob\(chosen\.blob,chosen\.id\),\{style:chosen\.id,normalized:true,ownerId:saveOwner\}\)/);
-  assert.match(css,/\.profile-style-grid\{[^}]*grid-template-columns:repeat\(2/);
+  assert.match(css,/\.profile-style-grid\{[^}]*grid-template-columns:repeat\(3/);
   assert.doesNotMatch(source,/https?:\/\/|fetch\(|XMLHttpRequest/);
 });
 
@@ -86,16 +89,16 @@ test('wizard focus, touch, reduced-motion and 390/430 geometry remain bounded',(
   assert.doesNotMatch(css,/!important/);
 });
 
-test('2.15.0 assets and cache versions are synchronized',()=>{
+test('2.15.1 assets and cache versions are synchronized',()=>{
   const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8'),about=fs.readFileSync('assets/about.js','utf8');
   const version=sw.match(/const ASSET_VERSION='([^']+)'/)[1];
   assert.match(html,new RegExp('profile-wizard\\.js\\?v='+version));
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.equal(version,'20261004-17');
-  assert.match(about,/version: '2\.15\.0'/);
-  assert.match(about,/Learned Preferences - 2\.15\.0/);
+  assert.equal(version,'20261004-18');
+  assert.match(about,/version: '2\.15\.1'/);
+  assert.match(about,/Illustrated Avatars - 2\.15\.1/);
 });
 
 test('style step re-enables Next after asynchronous avatar rendering',()=>{
