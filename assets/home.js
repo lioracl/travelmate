@@ -1065,7 +1065,10 @@
   });
   window.addEventListener('travelmate:profile-change', function (event) {
     if (!currentSession) return;
-    if (event.detail && event.detail.user) currentSession.user = event.detail.user;
+    if (event.detail && event.detail.user) {
+      if (String(event.detail.user.id) !== String(currentSession.user.id)) return;
+      currentSession.user = event.detail.user;
+    }
     renderPersonalization(currentSession);
     renderAdaptiveHome(Array.from(renderedTrips.values()));
   });

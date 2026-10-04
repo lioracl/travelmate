@@ -1234,7 +1234,7 @@
     var check=validateAvatarFile(file);if(!check.ok)return {data:null,error:new Error(check.error)};
     if(Number(file.size)>AVATAR_STORED_MAX_BYTES)return {data:null,error:new Error('AVATAR_NORMALIZED_TOO_LARGE')};
     if(!(await validateAvatarSignature(file,check.mime)))return {data:null,error:new Error('AVATAR_CONTENT_INVALID')};
-    var mainClient=await getClient(),initial;try{initial=await requireAvatarSession(mainClient)}catch(error){return {data:null,error:error}}
+    var mainClient=await getClient(),initial;try{initial=await requireAvatarSession(mainClient,avatarOptions&&avatarOptions.ownerId,true)}catch(error){return {data:null,error:error}}
     var owner=String(initial.user.id);
     return queueAvatarOperation(owner,async function(){
       var liveSession;try{liveSession=await requireAvatarSession(mainClient,owner,true)}catch(error){return {data:null,error:error}}
@@ -1337,8 +1337,9 @@
     if(!scoped.auth||typeof scoped.auth.updateUser!=='function')throw new Error('PROFILE_SESSION_UNAVAILABLE');
     var normalizedName=String(displayName||'').trim().replace(/\s+/g,' ').slice(0,80);
     if(!window.TravelMateUserProfile||typeof window.TravelMateUserProfile.normalizePreferences!=='function')throw new Error('PROFILE_CONTRACT_UNAVAILABLE');
-    var normalized=window.TravelMateUserProfile.normalizePreferences(preferences);
-    var result=await scoped.auth.updateUser({data:{display_name:normalizedName,travelmate_preferences:normalized}});
+    var patch={display_name:normalizedName};
+    if(preferences&&typeof preferences==='object')patch.travelmate_preferences=window.TravelMateUserProfile.normalizePreferences(preferences);
+    var result=await scoped.auth.updateUser({data:patch});
     if(result.error)return result;
     var user=result.data&&result.data.user;
     if(!user||String(user.id)!==String(owner))throw authContextError();

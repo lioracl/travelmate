@@ -20,7 +20,7 @@ test('source bytes and browser decode are both validated with orientation-safe d
   assert.match(source,/image\/jpeg[\s\S]*bytes\[0\]===255/);
   assert.match(source,/image\/png[\s\S]*137,80,78,71,13,10,26,10/);
   assert.match(source,/image\/webp[\s\S]*RIFF[\s\S]*WEBP/);
-  assert.match(source,/createImageBitmap\(file,\{imageOrientation:'from-image'\}\)/);
+  assert.match(source,/options=\{imageOrientation:'from-image'\}/);
   assert.match(source,/image\.onerror/);
 });
 
@@ -37,7 +37,7 @@ test('exactly four deterministic local styles are shown in an accessible 2x2 rad
   assert.deepEqual([...styleBlock.matchAll(/id:'([^']+)'/g)].map(item=>item[1]),['natural','warm','ocean','mono']);
   assert.match(source,/type="radio" name="avatarStyle"/);
   assert.match(source,/selectedStyle=event\.target\.value/);
-  assert.match(source,/uploadAvatar\(fileFromBlob\(chosen\.blob,chosen\.id\),\{style:chosen\.id,normalized:true\}\)/);
+  assert.match(source,/uploadAvatar\(fileFromBlob\(chosen\.blob,chosen\.id\),\{style:chosen\.id,normalized:true,ownerId:saveOwner\}\)/);
   assert.match(css,/\.profile-style-grid\{[^}]*grid-template-columns:repeat\(2/);
   assert.doesNotMatch(source,/https?:\/\/|fetch\(|XMLHttpRequest/);
 });
@@ -53,14 +53,14 @@ test('review writes only explicit canonical preferences and preserves Auth displ
   assert.match(source,/tripStyle:/);
   assert.match(source,/interests:interests/);
   assert.match(source,/learningEnabled:/);
-  assert.match(source,/displayName=String\(metadata\.display_name\|\|''\)/);
-  assert.match(source,/updateProfileForOwner\(ownerId,displayName,collectPreferences\(\)\)/);
+  assert.match(source,/name="displayName" maxlength="80"/);
+  assert.match(source,/updateProfileForOwner\(saveOwner,displayName,preferences\)/);
   assert.doesNotMatch(source,/infer|guess|prediction/i);
 });
 
 test('offline, account-switch, decode-race and cleanup safeguards are explicit',()=>{
   assert.match(source,/navigator\.onLine===false/);
-  assert.match(source,/String\(session\.user\.id\)===ownerId/);
+  assert.match(source,/String\(session\.user\.id\)===expectedOwner/);
   assert.match(source,/AUTH_CONTEXT_CHANGED/);
   assert.match(source,/sourceGeneration/);
   assert.match(source,/generation!==sourceGeneration/);
@@ -99,4 +99,12 @@ test('2.13.1 assets and cache versions are synchronized',()=>{
 
 test('style step re-enables Next after asynchronous avatar rendering',()=>{
   assert.match(source,/if\(step===1\)el\('\[data-profile-next\]'\)\.disabled=!decodedImage;else if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=false/);
+});
+
+test('wizard rejects filename/type mismatches and enforces the exact 20MB source boundary',()=>{
+  const vm=require('node:vm'),window={};vm.runInNewContext(source,{window});const check=window.TravelMateProfileWizard.sourceFileCheck;
+  assert.equal(check({name:'photo.JPG',type:'image/jpeg',size:20*1024*1024}).ok,true);
+  assert.equal(check({name:'photo.jpg',type:'image/jpeg',size:20*1024*1024+1}).ok,false);
+  assert.equal(check({name:'photo.png',type:'image/jpeg',size:1000}).ok,false);
+  assert.equal(check({name:'photo.svg',type:'image/svg+xml',size:1000}).ok,false);
 });

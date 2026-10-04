@@ -271,3 +271,15 @@ test('failed compensation after a successor avatar does not delete the successor
   assert.equal(result.stale,true);
   assert.equal(runtime.removed.includes('A/11111111-2222-4333-8444-555555555555.png'),false);
 });
+
+test('owner-scoped name-only save preserves canonical preferences',async()=>{
+  const runtime=boot({user:{id:'A',user_metadata:{travelmate_preferences:{pace:'relaxed'}}}});
+  await runtime.cloud.updateProfileForOwner('A','Alice');
+  assert.equal(Object.hasOwn(runtime.profileUpdates[0].payload.data,'travelmate_preferences'),false);
+});
+test('wizard upload rejects a different active owner before creating any object',async()=>{
+  const runtime=boot({user:{id:'B',user_metadata:{}}});
+  const result=await runtime.cloud.uploadAvatar(imageFile('me.png','image/png'),{ownerId:'A'});
+  assert.match(result.error.message,/AUTH_CONTEXT_CHANGED/);
+  assert.equal(runtime.uploaded.length,0);assert.equal(runtime.updates.length,0);
+});
