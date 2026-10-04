@@ -128,120 +128,15 @@ html[data-theme="dark"] .security-center-launcher{color:#f7fafa;-webkit-text-fil
   color:transparent;
   text-indent:-9999px
 }
-.security-profile form{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  align-items:end;
-  gap:10px
-}
-.security-profile form[hidden]{display:none}
-.security-profile label{
-  min-width:0;
-  display:grid;
-  gap:6px;
-  color:var(--tm-family-text);
-  font-weight:750
-}
-.security-profile input{
-  width:100%;
-  min-height:44px;
-  box-sizing:border-box;
-  padding:0 12px;
-  border:1px solid rgba(34,112,86,.24);
-  border-radius:12px;
-  background:var(--tm-family-control);
-  color:var(--tm-family-text);
-  font:inherit
-}
-.security-profile form button{
-  min-height:44px;
-  padding:0 14px;
-  border:1px solid var(--tm-brand-primary,#147D92);
-  border-radius:12px;
-  background:var(--tm-brand-primary,#147D92);
-  color:var(--tm-text-on-brand,#fff);
-  font:inherit;
-  font-weight:800
-}
 .security-profile>p{
   margin:0;
   font-size:.82rem;
   line-height:1.45
 }
-@media(max-width:680px){
-  .security-profile form{grid-template-columns:1fr}
-  .security-profile form button{width:100%}
-}
-
-
-/* Declared travel preferences — Profile Center */
-.security-profile-preferences{
-  display:grid;
-  gap:12px;
-  margin-top:12px;
-  padding-top:14px;
-  border-top:1px solid var(--tm-surface-border);
-}
-.security-profile-pref-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:10px;
-}
-.security-profile-pref-grid label{
-  display:grid;
-  gap:6px;
-  min-width:0;
-  color:var(--tm-family-text);
-  font-weight:750;
-}
-.security-profile-pref-grid select{
-  width:100%;
-  min-height:42px;
-  box-sizing:border-box;
-  padding:0 10px;
-  border:1px solid rgba(34,112,86,.24);
-  border-radius:11px;
-  background:var(--tm-family-control);
-  color:var(--tm-family-text);
-  font:inherit;
-}
-.security-profile-interests{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:8px;
-  margin:0;
-  padding:0;
-  border:0;
-}
-.security-profile-interests legend{
-  grid-column:1/-1;
-  padding:0;
-  color:var(--tm-family-text);
-  font-size:.86rem;
-  font-weight:800;
-}
-.security-profile-interests label{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  min-width:0;
-  padding:8px 9px;
-  border:1px solid var(--tm-surface-border);
-  border-radius:10px;
-  background:var(--tm-surface-control);
-  color:var(--tm-card-control-text);
-  font-size:.82rem;
-  font-weight:700;
-}
-.security-profile-interests input{
-  margin:0;
-  accent-color:var(--tm-brand-primary);
-}
-.security-profile-preferences-note{
-  color:var(--tm-family-muted);
-  line-height:1.45;
-}
-@media(max-width:680px){
-  .security-profile-pref-grid{grid-template-columns:1fr}
-  .security-profile-interests{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
+/* 2.14 Security Center delegates profile editing to the canonical wizard. */
+.security-declared-summary{display:grid;gap:10px;min-width:0;padding-top:12px;border-top:1px solid var(--tm-surface-border)}
+.security-declared-summary>div:first-child{display:grid;gap:2px}.security-declared-summary>div:first-child small{color:var(--tm-family-muted);font-size:.76rem;font-weight:800}.security-declared-summary>div:first-child strong{color:var(--tm-family-text)}
+.security-declared-items{display:flex;flex-wrap:wrap;gap:7px;min-width:0}.security-declared-items span{min-width:0;padding:7px 9px;border:1px solid var(--tm-surface-border);border-radius:999px;background:var(--tm-surface-control);color:var(--tm-card-control-text);font-size:.78rem;font-weight:750;overflow-wrap:anywhere}
+.security-declared-summary>p{margin:0;color:var(--tm-family-muted);font-size:.8rem;line-height:1.45}.security-declared-summary [data-security-learning-state].is-enabled{color:var(--tm-brand-primary-dark,#155b48);font-weight:800}
+.security-declared-summary>button{width:100%;min-height:44px;padding:0 14px;border:1px solid var(--tm-brand-primary,#147D92);border-radius:12px;background:var(--tm-brand-primary,#147D92);color:var(--tm-text-on-brand,#fff);font:inherit;font-weight:800}
+.security-declared-summary .security-declared-privacy{color:var(--tm-family-muted);font-size:.76rem;line-height:1.5}

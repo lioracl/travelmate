@@ -27,6 +27,7 @@
     button.type = 'button';
     button.className = 'security-center-launcher';
     button.dataset.securityOpen = '';
+    button.dataset.lazyAccount = '';
     button.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i><span class="security-launcher-label">הגדרות</span>';
     button.setAttribute('aria-label', 'פתיחת הגדרות');
     var sidebar = document.querySelector(document.body.classList.contains('home-page') ? '.home-sidebar' : '.sidebar');
@@ -44,7 +45,7 @@
     backdrop.innerHTML = '<div class="security-center" role="dialog" aria-modal="true" aria-labelledby="security-title">' +
       '<header><div><small>התאמה אישית, אבטחה וניהול המכשיר</small><h2 id="security-title">הגדרות</h2></div><button type="button" data-security-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header>' +
       '<p class="security-message" data-security-message></p>' +
-      '<section class="security-profile" data-security-profile><div class="security-profile-head"><span class="security-profile-avatar" data-security-profile-avatar aria-hidden="true"></span><div><small>הפרופיל שלך</small><strong data-security-profile-name>TravelMate</strong><span data-security-profile-email></span></div></div><form data-security-profile-form><label><span>שם תצוגה</span><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></label><div class="security-profile-preferences" data-security-profile-preferences><div class="security-profile-pref-grid"><label><span>קצב טיול</span><select name="pace"><option value="">לא הוגדר</option><option value="relaxed">נינוח</option><option value="balanced">מאוזן</option><option value="active">אינטנסיבי</option></select></label><label><span>צפיפות תוכנית</span><select name="activityDensity"><option value="">לא הוגדר</option><option value="light">קלילה</option><option value="balanced">מאוזנת</option><option value="dense">מלאה</option></select></label><label><span>תחבורה מועדפת</span><select name="transport"><option value="">לא הוגדר</option><option value="walking">הליכה</option><option value="transit">תחבורה ציבורית</option><option value="mixed">שילוב</option><option value="car">רכב</option></select></label><label><span>סגנון טיול</span><select name="tripStyle"><option value="">לא הוגדר</option><option value="city">עירוני</option><option value="culture">תרבות והיסטוריה</option><option value="nature">טבע</option><option value="food">אוכל</option><option value="relaxation">מנוחה</option><option value="mixed">מעורב</option></select></label></div><fieldset class="security-profile-interests"><legend>תחומי עניין</legend><label><input type="checkbox" data-profile-interest value="culture"><span>תרבות</span></label><label><input type="checkbox" data-profile-interest value="food"><span>אוכל</span></label><label><input type="checkbox" data-profile-interest value="nature"><span>טבע</span></label><label><input type="checkbox" data-profile-interest value="history"><span>היסטוריה</span></label><label><input type="checkbox" data-profile-interest value="shopping"><span>קניות</span></label><label><input type="checkbox" data-profile-interest value="nightlife"><span>חיי לילה</span></label><label><input type="checkbox" data-profile-interest value="photography"><span>צילום</span></label><label><input type="checkbox" data-profile-interest value="relaxation"><span>מנוחה</span></label></fieldset><label class="security-profile-learning"><input type="checkbox" name="learningEnabled"><span>לאפשר ל־Mate ללמוד העדפות מהטיולים שלי</span></label><small class="security-profile-preferences-note">ההעדפות שהגדרת הן שלך. למידה אישית תשתמש רק בעובדות טיול מותרות ותישאר נפרדת מהמסמכים, הכספת ומידע פרטי.</small></div><button type="submit"><i class="fa-solid fa-user-check"></i> שמירת פרופיל והעדפות</button></form><p data-security-profile-note></p></section>' +
+      '<section class="security-profile" data-security-profile><div class="security-profile-head"><span class="security-profile-avatar" data-security-profile-avatar aria-hidden="true"></span><div><small>הפרופיל שלך</small><strong data-security-profile-name>TravelMate</strong><span data-security-profile-email></span></div></div><section class="security-declared-summary" data-security-declared-summary><div><small>מה שסיפרת ל־TravelMate</small><strong>העדפות נסיעה מוצהרות</strong></div><p data-security-profile-completion></p><div class="security-declared-items" data-security-declared-items></div><p data-security-declared-empty hidden>עדיין לא הוגדרו העדפות נסיעה.</p><p data-security-learning-state></p><button type="button" data-profile-wizard-open><i class="fa-solid fa-pen" aria-hidden="true"></i> עריכת פרופיל</button><small class="security-declared-privacy">העריכה מתבצעת רק באשף הפרופיל. הצעות ש־Mate ילמד בעתיד יוצגו בנפרד וידרשו אישור; מסמכים, הערות פרטיות ו־GPS אינם מקור ללמידה.</small></section><p data-security-profile-note></p></section>' +
       '<section class="security-preferences"><h3>העדפות האפליקציה</h3><div class="settings-list">' +
       '<div class="settings-row"><i class="fa-solid fa-language" aria-hidden="true"></i><span><strong>שפת האפליקציה</strong><small>בחר את שפת הממשק בכל המכשיר הזה</small></span><div class="settings-options" role="group" aria-label="שפת האפליקציה"><button type="button" data-language-choice="he">עברית</button><button type="button" data-language-choice="en">English</button></div></div>' +
       '<div class="settings-row"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span><strong>תצוגת האפליקציה</strong><small>בחר מצב בהיר או כהה</small></span><div class="settings-options" role="group" aria-label="תצוגת האפליקציה"><button type="button" data-theme-choice="light"><i class="fa-regular fa-sun"></i> בהיר</button><button type="button" data-theme-choice="dark"><i class="fa-regular fa-moon"></i> כהה</button></div></div>' +
@@ -215,59 +216,31 @@
     var name = host.querySelector('[data-security-profile-name]');
     var email = host.querySelector('[data-security-profile-email]');
     var note = host.querySelector('[data-security-profile-note]');
-    var form = host.querySelector('[data-security-profile-form]');
+    var items = host.querySelector('[data-security-declared-items]');
+    var empty = host.querySelector('[data-security-declared-empty]');
+    var completion = host.querySelector('[data-security-profile-completion]');
+    var learning = host.querySelector('[data-security-learning-state]');
     host.classList.toggle('is-signed-out', !user);
     name.textContent = user ? (profile.name || 'הפרופיל שלי') : 'פרופיל אישי';
     email.textContent = user ? String(user.email || '') : 'יש להתחבר כדי לשמור שם תצוגה בין מכשירים.';
     avatar.textContent = user && !profile.avatarUrl ? profile.initials : '';
     avatar.classList.toggle('has-image', Boolean(user && profile.avatarUrl));
     avatar.style.backgroundImage = user && profile.avatarUrl ? 'url("' + profile.avatarUrl.replace(/"/g, '%22') + '")' : '';
-    form.hidden = !user;
-    if (user) {
-      form.elements.displayName.value = profile.name || '';
-      var preferences = profile.preferences || {};
-      form.elements.pace.value = preferences.pace || '';
-      form.elements.activityDensity.value = preferences.activityDensity || '';
-      form.elements.transport.value = preferences.transport || '';
-      form.elements.tripStyle.value = preferences.tripStyle || '';
-      var interests = Array.isArray(preferences.interests) ? preferences.interests : [];
-      form.querySelectorAll('[data-profile-interest]').forEach(function (input) {
-        input.checked = interests.indexOf(input.value) >= 0;
-      });
-      if (form.elements.learningEnabled) form.elements.learningEnabled.checked = preferences.learningEnabled !== false;
-    }
-    note.textContent = user ? 'השם וההעדפות נשמרים בחשבון שלך ומשמשים להתאמה אישית עתידית.' : 'העדפות תצוגה נשמרות במכשיר גם בלי חשבון.';
-  }
-
-  async function saveProfile(event) {
-    event.preventDefault();
-    if (!currentSession || !currentSession.user || !cloud || typeof cloud.updateProfile !== 'function') return;
-    var form = event.currentTarget;
-    var button = form.querySelector('button[type="submit"]');
-    var displayName = String(form.elements.displayName.value || '').trim().replace(/\s+/g, ' ').slice(0, 80);
-    var preferences = {
-      pace: String(form.elements.pace.value || ''),
-      activityDensity: String(form.elements.activityDensity.value || ''),
-      transport: String(form.elements.transport.value || ''),
-      tripStyle: String(form.elements.tripStyle.value || ''),
-      interests: [].slice.call(form.querySelectorAll('[data-profile-interest]:checked')).map(function (input) { return input.value; }),
-      learningEnabled: form.elements.learningEnabled ? form.elements.learningEnabled.checked : true
-    };
-    button.disabled = true;
-    message('שומר את הפרופיל וההעדפות…');
-    try {
-      var result = await cloud.updateProfile(displayName, preferences);
-      if (result.error) throw result.error;
-      if (result.data && result.data.user) currentSession.user = result.data.user;
-      renderProfile();
-      window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } }));
-      message(displayName || preferences.pace || preferences.activityDensity || preferences.transport || preferences.tripStyle || preferences.interests.length ? 'הפרופיל וההעדפות נשמרו.' : 'הפרופיל אופס.');
-    } catch (error) {
-      console.error('TravelMate profile update failed', error);
-      message('לא הצלחנו לשמור את הפרופיל כרגע.', true);
-    } finally {
-      button.disabled = false;
-    }
+    var helper = window.TravelMateUserProfile;
+    var summary = helper && helper.preferenceSummary ? helper.preferenceSummary(profile.preferences) : { items: [], isEmpty: true, learningEnabled: false };
+    items.replaceChildren();
+    completion.textContent = user ? summary.completionLabel || '' : '';
+    summary.items.forEach(function (item) {
+      var row = document.createElement('span');
+      row.textContent = item.label + ': ' + item.valueLabel;
+      items.appendChild(row);
+    });
+    empty.hidden = !user || !summary.isEmpty;
+    learning.hidden = !user;
+    learning.classList.toggle('is-enabled', summary.learningEnabled === true);
+    learning.textContent = summary.learningEnabled === true ? 'התאמה עתידית: הצטרפת במפורש' : 'התאמה עתידית: כבויה עד להצטרפות מפורשת';
+    host.querySelector('[data-profile-wizard-open]').hidden = !user;
+    note.textContent = user ? 'הפרופיל וההעדפות נשמרים בחשבון Auth הקיים שלך.' : 'יש להתחבר כדי לנהל את הפרופיל וההעדפות.';
   }
 
   async function renderMfa() {
@@ -338,6 +311,7 @@
   async function refresh() {
     cloud = window.TravelMateCloud || cloud;
     try { currentSession = cloud ? await cloud.getSession() : null; } catch (error) { currentSession = null; }
+    renderProfile();
     var host = document.querySelector('[data-security-status]');
     if (host) host.innerHTML = currentSession && currentSession.user
       ? '<i class="fa-solid fa-circle-check"></i><div><strong>החשבון מחובר ומוצפן בתעבורה</strong><small>' + escapeHtml(currentSession.user.email) + (currentSession.user.email_confirmed_at ? ' · כתובת מאומתת' : ' · כתובת טרם אומתה') + '</small></div>'
@@ -350,10 +324,9 @@
     createButton();
     createDialog();
     createMfaGate();
-    var profileForm = document.querySelector('[data-security-profile-form]');
-    if (profileForm) profileForm.addEventListener('submit', saveProfile);
     document.addEventListener('click', function (event) {
       if (event.target.closest('[data-security-open]')) openDialog();
+      if (event.target.closest('[data-security-profile] [data-profile-wizard-open]')) closeDialog();
       if (event.target.closest('[data-security-close]') || event.target.matches('[data-security-dialog]')) closeDialog();
       var languageChoice = event.target.closest('[data-language-choice]');
       if (languageChoice && window.TravelMateLanguage) {
@@ -376,6 +349,12 @@
       }
     });
     document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeDialog(); else trapDialogFocus(event); });
+    window.addEventListener('travelmate:profile-change', function (event) {
+      var changed = event.detail && event.detail.user;
+      if (!currentSession || !currentSession.user || !changed || String(changed.id) !== String(currentSession.user.id)) return;
+      currentSession.user = changed;
+      renderProfile();
+    });
     document.querySelector('[data-security-signout]').onclick = async function () { await cloud.signOut('local'); location.reload(); };
     document.querySelector('[data-security-signout-all]').onclick = async function () {
       if (!window.confirm('לנתק את החשבון מכל המכשירים המחוברים?')) return;

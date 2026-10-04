@@ -42,20 +42,9 @@
 
   function declaredPreferenceLines(value) {
     var preferences = value || declaredPreferences;
-    var pace = { relaxed: 'קצב נינוח', balanced: 'קצב מאוזן', active: 'קצב אינטנסיבי' };
-    var density = { light: 'תוכנית קלילה', balanced: 'תוכנית מאוזנת', dense: 'תוכנית מלאה' };
-    var transport = { walking: 'הליכה', transit: 'תחבורה ציבורית', mixed: 'שילוב תחבורה', car: 'רכב' };
-    var style = { city: 'טיול עירוני', culture: 'תרבות והיסטוריה', nature: 'טבע', food: 'אוכל', relaxation: 'מנוחה', mixed: 'סגנון מעורב' };
-    var interest = { culture: 'תרבות', food: 'אוכל', nature: 'טבע', history: 'היסטוריה', shopping: 'קניות', nightlife: 'חיי לילה', photography: 'צילום', relaxation: 'מנוחה' };
-    var lines = [];
-    if (pace[preferences.pace]) lines.push(pace[preferences.pace]);
-    if (density[preferences.activityDensity]) lines.push(density[preferences.activityDensity]);
-    if (transport[preferences.transport]) lines.push('תחבורה מועדפת: ' + transport[preferences.transport]);
-    if (style[preferences.tripStyle]) lines.push(style[preferences.tripStyle]);
-    if (Array.isArray(preferences.interests) && preferences.interests.length) {
-      lines.push('תחומי עניין: ' + preferences.interests.map(function (item) { return interest[item] || item; }).join(', '));
-    }
-    return lines;
+    var helper = window.TravelMateUserProfile;
+    if (!helper || typeof helper.preferenceSummary !== 'function') return [];
+    return helper.preferenceSummary(preferences).items.map(function (item) { return item.label + ': ' + item.valueLabel; });
   }
 
   function contextKey(context) { return context.contextMode + ':' + (context.tripId || context.sessionId || 'general'); }

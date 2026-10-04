@@ -210,11 +210,25 @@ test('avatar implementation coordinates tabs and uses exact broken-image generat
 });
 
 test('display-name-only profile save preserves existing travel preferences',async()=>{
-  const runtime=boot({user:{id:'A',user_metadata:{travelmate_preferences:{pace:'relaxed'}}},allowProfileUpdate:true});
+  const original={pace:'relaxed',learningEnabled:true};
+  const runtime=boot({user:{id:'A',user_metadata:{travelmate_preferences:original}},allowProfileUpdate:true});
   const result=await runtime.cloud.updateProfile('Lior');
   assert.equal(result.error,null);
   assert.equal(runtime.profileUpdates.length,1);
   assert.equal(Object.prototype.hasOwnProperty.call(runtime.profileUpdates[0].data,'travelmate_preferences'),false);
+  assert.deepEqual(original,{pace:'relaxed',learningEnabled:true});
+});
+
+test('legacy profile save persists only explicit learning consent',async()=>{
+  const enabled=boot({user:{id:'A',user_metadata:{}},allowProfileUpdate:true});
+  await enabled.cloud.updateProfile('Lior',{learningEnabled:true});
+  assert.equal(enabled.profileUpdates[0].data.travelmate_preferences.learningEnabled,true);
+  const disabled=boot({user:{id:'A',user_metadata:{}},allowProfileUpdate:true});
+  await disabled.cloud.updateProfile('Lior',{learningEnabled:false});
+  assert.equal(disabled.profileUpdates[0].data.travelmate_preferences.learningEnabled,false);
+  const missing=boot({user:{id:'A',user_metadata:{}},allowProfileUpdate:true});
+  await missing.cloud.updateProfile('Lior',{pace:'balanced'});
+  assert.equal(missing.profileUpdates[0].data.travelmate_preferences.learningEnabled,false);
 });
 
 test('owner-scoped profile save writes declared preferences only to the captured account',async()=>{

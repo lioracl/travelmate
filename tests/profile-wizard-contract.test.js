@@ -86,19 +86,27 @@ test('wizard focus, touch, reduced-motion and 390/430 geometry remain bounded',(
   assert.doesNotMatch(css,/!important/);
 });
 
-test('2.13.1 assets and cache versions are synchronized',()=>{
+test('2.14.0 assets and cache versions are synchronized',()=>{
   const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8'),about=fs.readFileSync('assets/about.js','utf8');
   const version=sw.match(/const ASSET_VERSION='([^']+)'/)[1];
   assert.match(html,new RegExp('profile-wizard\\.js\\?v='+version));
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.match(about,/version: '2\.13\.1'/);
-  assert.match(about,/Profile Wizard - 2\.13\.1/);
+  assert.equal(version,'20261004-16');
+  assert.match(about,/version: '2\.14\.0'/);
+  assert.match(about,/Smart Profile & Personalization - 2\.14\.0/);
 });
 
 test('style step re-enables Next after asynchronous avatar rendering',()=>{
-  assert.match(source,/if\(step===1\)el\('\[data-profile-next\]'\)\.disabled=!decodedImage;else if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=false/);
+  assert.match(source,/if\(step===1\)el\('\[data-profile-next\]'\)\.disabled=!ownerId;else if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=false/);
+});
+
+test('wizard remains the canonical editor without forcing an avatar replacement',()=>{
+  assert.match(source,/if\(!decodedImage\)\{renderExistingStyle\(\);setStep\(2\);return\}/);
+  assert.match(source,/if\(chosen\)\{[\s\S]*uploadAvatar/);
+  assert.match(source,/updateProfileForOwner\(saveOwner,displayName,preferences\)/);
+  assert.match(source,/כבוי כברירת מחדל/);
 });
 
 test('wizard rejects filename/type mismatches and enforces the exact 20MB source boundary',()=>{

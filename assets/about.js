@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '2.13.1',
-    label: 'Profile Wizard - 2.13.1',
+    version: '2.14.0',
+    label: 'Smart Profile & Personalization - 2.14.0',
     date: '4 באוקטובר 2026',
     highlights: [
+      'Smart Profile & Personalization 2.14.0: מרכז הפרופיל מציג את הזהות הקיימת מ־Supabase Auth, ברכה לפי שעה וסיכום ברור של העדפות הנסיעה שהמשתמש הצהיר עליהן. כל העריכה מתבצעת באשף הפרופיל הקנוני; התאמה עתידית כבויה כברירת מחדל ודורשת הצטרפות מפורשת, והצעות נלמדות עתידיות יוצגו בנפרד וידרשו אישור.',
       'Profile Wizard 2.13.1: תהליך נגיש בן שלושה שלבים לצילום או בחירת תמונה, חיתוך מקומי, ארבעה סגנונות פרטיים לבחירה ואישור העדפות נסיעה מוצהרות לפני שמירה.',
       "Profile & Avatar 2.13.0: אפשר לבחור, להחליף ולהסיר תמונת פרופיל מתוך החשבון. האווטר נשמר בפרופיל Supabase Auth הקיים, עם fallback לראשי תיבות, bucket ייעודי ונפרד למסמכים, והגנת בעלות לפי משתמש. JPG, PNG ו־WebP נתמכים עד 2MB; שינוי תמונה דורש חיבור לרשת והתמונה נגישה באמצעות כתובת ציבורית כפי שמוסבר בממשק.",
       'Trip Summary & Movement Analytics V2: \u05e1\u05d9\u05db\u05d5\u05dd \u05d4\u05d8\u05d9\u05d5\u05dc \u05de\u05d0\u05d7\u05d3 \u05d1\u05d9\u05e7\u05d5\u05e8\u05d9\u05dd \u05e9\u05e1\u05d5\u05de\u05e0\u05d5 \u05db\u05d4\u05d5\u05e9\u05dc\u05de\u05d5, \u05ea\u05e0\u05d5\u05e2\u05d4 \u05dc\u05e4\u05d9 \u05d9\u05d5\u05dd \u05d5\u05d0\u05de\u05e6\u05e2\u05d9 \u05de\u05e2\u05d1\u05e8, \u05d4\u05d5\u05e6\u05d0\u05d5\u05ea \u05dc\u05e4\u05d9 \u05de\u05d8\u05d1\u05e2 \u05d5\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05d5\u05de\u05e4\u05ea \u05e0\u05e7\u05d5\u05d3\u05d5\u05ea \u05d1\u05d9\u05e7\u05d5\u05e8 \u05dc\u05e4\u05d9 \u05d3\u05e8\u05d9\u05e9\u05d4. \u05db\u05dc \u05e0\u05ea\u05d5\u05df \u05de\u05e1\u05d5\u05de\u05df \u05db\u05de\u05d0\u05d5\u05de\u05ea, \u05de\u05e9\u05d5\u05e2\u05e8 \u05d0\u05d5 \u05dc\u05d0 \u05d9\u05d3\u05d5\u05e2; \u05de\u05d8\u05d1\u05e2\u05d5\u05ea \u05e9\u05d5\u05e0\u05d9\u05dd \u05d0\u05d9\u05e0\u05dd \u05de\u05d7\u05d5\u05d1\u05e8\u05d9\u05dd \u05dc\u05e1\u05db\u05d5\u05dd \u05de\u05d3\u05d5\u05de\u05d4, \u05d5\u05d4\u05de\u05e4\u05d4 \u05d0\u05d9\u05e0\u05d4 \u05de\u05d1\u05e7\u05e9\u05ea GPS \u05d7\u05d3\u05e9.',

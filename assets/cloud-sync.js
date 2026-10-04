@@ -1321,10 +1321,10 @@
       transport: one('transport'),
       tripStyle: one('tripStyle'),
       interests: interests,
-      learningEnabled: input.learningEnabled !== false
+      learningEnabled: input.learningEnabled === true
     };
     var hasPreference = normalizedPreferences.pace || normalizedPreferences.activityDensity ||
-      normalizedPreferences.transport || normalizedPreferences.tripStyle || interests.length || input.learningEnabled === false;
+      normalizedPreferences.transport || normalizedPreferences.tripStyle || interests.length || typeof input.learningEnabled === 'boolean';
     var metadataPatch = { display_name: normalizedName };
     if (hasPreferencesArgument) metadataPatch.travelmate_preferences = hasPreference ? normalizedPreferences : null;
     return client.auth.updateUser({ data: metadataPatch });

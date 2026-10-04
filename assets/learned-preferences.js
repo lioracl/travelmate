@@ -153,7 +153,7 @@ function removeEvidence(candidate,predicate){
 
 function canPersonalize(candidate,learningEnabled){
   var current=normalizeCandidate(candidate);
-  return learningEnabled!==false && current.reviewState===REVIEW_STATES.CONFIRMED;
+  return learningEnabled===true && current.reviewState===REVIEW_STATES.CONFIRMED;
 }
 
 function evidenceOwnedBy(evidence,authenticatedUserId){

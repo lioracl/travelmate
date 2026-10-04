@@ -195,11 +195,12 @@ test('Personalization reuses authenticated Supabase user identity', () => {
   assert.match(cloud, /var metadataPatch = \{ display_name: normalizedName \}/);
   assert.match(cloud, /if \(hasPreferencesArgument\) metadataPatch\.travelmate_preferences = hasPreference \? normalizedPreferences : null/);
   assert.match(cloud, /client\.auth\.updateUser\(\{ data: metadataPatch \}\)/);
-  assert.match(cloud, /learningEnabled: input\.learningEnabled !== false/);
+  assert.match(cloud, /learningEnabled: input\.learningEnabled === true/);
   assert.match(home, /user\.user_metadata/);
   assert.match(home, /metadata\.display_name \|\| metadata\.full_name \|\| metadata\.name/);
-  assert.match(home, /data-cloud-profile-form/);
-  assert.match(home, /cloud\.updateProfile\(displayName\)/);
+  assert.match(home, /data-smart-profile/);
+  assert.match(home, /data-profile-wizard-open/);
+  assert.match(home, /legacyProfileForm\.remove\(\)/);
   assert.match(home, /renderPersonalization\(currentSession\)/);
   assert.match(home, /data-account-label/);
   assert.match(home, /data-user-avatar/);

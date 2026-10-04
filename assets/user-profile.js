@@ -19,6 +19,16 @@ var preferenceOptions=Object.freeze({
   tripStyle:Object.freeze(['city','culture','nature','food','relaxation','mixed']),
   interests:Object.freeze(['culture','food','nature','history','shopping','nightlife','photography','relaxation'])
 });
+var preferenceLabels=Object.freeze({
+  pace:Object.freeze({relaxed:'נינוח',balanced:'מאוזן',active:'פעיל'}),
+  activityDensity:Object.freeze({light:'מעט פעילויות',balanced:'קצב מאוזן',dense:'יום מלא'}),
+  transport:Object.freeze({walking:'הליכה',transit:'תחבורה ציבורית',mixed:'משולב',car:'רכב'}),
+  tripStyle:Object.freeze({city:'עיר',culture:'תרבות',nature:'טבע',food:'אוכל',relaxation:'מנוחה',mixed:'משולב'}),
+  interests:Object.freeze({culture:'תרבות',food:'אוכל',nature:'טבע',history:'היסטוריה',shopping:'קניות',nightlife:'חיי לילה',photography:'צילום',relaxation:'מנוחה'})
+});
+var preferenceFieldLabels=Object.freeze({
+  pace:'קצב טיול',activityDensity:'צפיפות פעילויות',transport:'דרך התניידות',tripStyle:'סגנון טיול',interests:'תחומי עניין'
+});
 function normalizePreferences(value){
   var source=value&&typeof value==='object'?value:{};
   function one(key){
@@ -34,7 +44,26 @@ function normalizePreferences(value){
     transport:one('transport'),
     tripStyle:one('tripStyle'),
     interests:Object.freeze(interests),
-    learningEnabled:source.learningEnabled!==false
+    learningEnabled:source.learningEnabled===true
+  })
+}
+function preferenceSummary(value){
+  var preferences=normalizePreferences(value),items=[];
+  ['pace','activityDensity','transport','tripStyle'].forEach(function(key){
+    if(!preferences[key])return;
+    items.push(Object.freeze({key:key,label:preferenceFieldLabels[key],value:preferences[key],valueLabel:preferenceLabels[key][preferences[key]]}))
+  });
+  if(preferences.interests.length){
+    items.push(Object.freeze({key:'interests',label:preferenceFieldLabels.interests,value:preferences.interests.join(','),valueLabel:preferences.interests.map(function(item){return preferenceLabels.interests[item]}).join(' · ')}))
+  }
+  return Object.freeze({
+    items:Object.freeze(items),
+    configuredCount:items.length,
+    totalGroups:5,
+    isEmpty:items.length===0,
+    isComplete:items.length===5,
+    completionLabel:items.length===5?'כל קבוצות ההעדפה הוגדרו':items.length?'הוגדרו '+items.length+' מתוך 5 קבוצות העדפה':'עדיין לא הוגדרו העדפות נסיעה',
+    learningEnabled:preferences.learningEnabled
   })
 }
 function greetingAt(value){
@@ -120,7 +149,10 @@ function selectHomeContext(trips,now){
 window.TravelMateUserProfile=Object.freeze({
   fromUser:fromUser,
   preferenceOptions:preferenceOptions,
+  preferenceLabels:preferenceLabels,
+  preferenceFieldLabels:preferenceFieldLabels,
   normalizePreferences:normalizePreferences,
+  preferenceSummary:preferenceSummary,
   greetingAt:greetingAt,
   localDateKey:localDateKey,
   selectHomeContext:selectHomeContext

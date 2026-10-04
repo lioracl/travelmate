@@ -16,3 +16,8 @@
 @media(prefers-reduced-motion:reduce){.profile-wizard *{scroll-behavior:auto;transition:none;animation:none}}
 
 .profile-wizard-name{margin-bottom:18px}.profile-wizard input[type="text"]:focus-visible{outline:3px solid var(--tm-brand-primary,#176b52);outline-offset:2px}
+
+/* 2.14 preference-only editing and explicit personalization consent */
+.profile-style-keep{grid-column:1/-1;justify-items:center}.profile-style-keep [data-profile-current-avatar]{display:grid;place-items:center;width:min(230px,62vw);aspect-ratio:1;border-radius:14px;background:color-mix(in srgb,var(--tm-brand-primary,#176b52) 18%,var(--surface,#fff));background-position:center;background-size:cover;color:var(--text,#17352d);font-size:42px}.profile-style-keep [data-profile-current-avatar].has-image{color:transparent}
+.profile-final-avatar{display:grid;place-items:center;background:color-mix(in srgb,var(--tm-brand-primary,#176b52) 14%,var(--surface,#fff));overflow:hidden}.profile-final-avatar img{grid-area:1/1}.profile-final-avatar img:not([src]){display:none}.profile-final-avatar [data-profile-final-initials]{grid-area:1/1;font-size:36px;font-weight:850}.profile-final-avatar [data-profile-final-initials][hidden]{display:none}
+.profile-wizard-learning{padding:10px;border:1px solid var(--line,#cdd9d5);border-radius:14px;background:color-mix(in srgb,var(--tm-brand-primary,#176b52) 7%,transparent)}.profile-wizard-learning>span{display:grid;gap:3px}.profile-wizard-learning small{color:var(--muted,#60736d);font-weight:500;line-height:1.45}

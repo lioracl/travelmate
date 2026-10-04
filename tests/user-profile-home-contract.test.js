@@ -40,7 +40,7 @@ test('Profile Lite derives display name, initials, avatar and time-aware greetin
   assert.equal(profile.initials, 'לא');
   assert.equal(profile.greeting, 'בוקר טוב');
   assert.equal(profile.avatarUrl, 'https://example.test/avatar.jpg');
-  assert.equal(profile.preferences.learningEnabled, true);
+  assert.equal(profile.preferences.learningEnabled, false);
 });
 
 test('Profile Lite falls back to the email name and blocks unsafe avatar protocols', () => {
@@ -86,7 +86,7 @@ test('Adaptive Home selects current, upcoming and recent trips deterministically
   assert.equal(recent.daysAgo, 3);
 });
 
-test('Home exposes one profile summary and reuses the existing account/profile owner', () => {
+test('Home exposes Smart Profile from the existing account/profile owner', () => {
   const html = read('index.html');
   const home = read('assets/home.js');
   const app = read('assets/app.js');
@@ -102,13 +102,19 @@ test('Home exposes one profile summary and reuses the existing account/profile o
   assert.match(html, /data-user-avatar/);
   assert.match(home, /window\.TravelMateUserProfile/);
   assert.match(home, /renderAdaptiveHome/);
-  assert.match(home, /data-cloud-profile-form/);
   assert.match(app, /user-profile\.js/);
-  assert.match(app, /learned-preferences\.js/);
+  assert.doesNotMatch(app, /learned-preferences\.js/);
+  assert.match(app, /account:\{styles:\['profile-wizard\.css'/);
   assert.match(sw, /\.\/assets\/user-profile\.js/);
   assert.match(settings, /data-security-profile/);
-  assert.match(settings, /data-security-profile-form/);
-  assert.match(settings, /cloud\.updateProfile\(displayName,\s*preferences\)/);
+  assert.match(home, /data-smart-profile/);
+  assert.match(home, /data-smart-profile-greeting/);
+  assert.match(home, /data-smart-profile-preferences/);
+  assert.match(home, /helper\.preferenceSummary\(profile\.preferences\)/);
+  assert.match(home, /legacyProfileForm\.remove\(\)/);
+  assert.match(settings, /data-security-declared-summary/);
+  assert.doesNotMatch(settings, /data-security-profile-form/);
+  assert.doesNotMatch(settings, /addEventListener\('submit',\s*saveProfile\)/);
   assert.match(settings, /travelmate:profile-change/);
 
   const featureCss = css.slice(css.indexOf('/* 2.1 Profile Lite + Adaptive Home'));

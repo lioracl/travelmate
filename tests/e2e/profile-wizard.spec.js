@@ -48,16 +48,16 @@ for(const width of [390,430])for(const theme of ['light','dark'])test(`wizard re
   expect(await page.evaluate(()=>calls)).toEqual([expect.objectContaining({kind:'avatar',owner:'A',style:'warm',dimensions:[512,512],size:expect.any(Number)}),expect.objectContaining({kind:'profile',owner:'A',name:'שם חדש',preferences:expect.objectContaining({pace:'active',learningEnabled:false})})]);
   expect(await page.evaluate(()=>activeUrls.size)).toBe(0);await expect(page.locator('[data-profile-wizard-open]')).toBeFocused();
 });
-test('invalid extension and invalid image decode cannot advance',async({page})=>{
-  await fixture(page);await open(page);const file=await picture(page);await page.locator('[data-profile-gallery]').setInputFiles({...file,name:'spoof.png'});await expect(page.locator('[data-profile-wizard-status]')).toHaveAttribute('role','alert');await expect(page.locator('[data-profile-next]')).toBeDisabled();
-  await page.locator('[data-profile-gallery]').setInputFiles({name:'broken.jpg',mimeType:'image/jpeg',buffer:Buffer.from([255,216,255,0])});await expect(page.locator('[data-profile-next]')).toBeDisabled();expect(await page.evaluate(()=>activeUrls.size)).toBe(0);
+test('invalid images cannot upload but never block preference-only editing',async({page})=>{
+  await fixture(page);await open(page);const file=await picture(page);await page.locator('[data-profile-gallery]').setInputFiles({...file,name:'spoof.png'});await expect(page.locator('[data-profile-wizard-status]')).toHaveAttribute('role','alert');await expect(page.locator('[data-profile-next]')).toBeEnabled();
+  await page.locator('[data-profile-gallery]').setInputFiles({name:'broken.jpg',mimeType:'image/jpeg',buffer:Buffer.from([255,216,255,0])});await expect(page.locator('[data-profile-wizard-status]')).toHaveAttribute('role','alert');await expect(page.locator('[data-profile-next]')).toBeEnabled();await page.locator('[data-profile-next]').click();await expect(page.locator('[name="avatarStyle"][value="keep"]')).toBeChecked();expect(await page.evaluate(()=>activeUrls.size)).toBe(0);
 });
 test('logout during asynchronous style generation releases URLs and cannot repaint a new session',async({page})=>{
   await fixture(page);await open(page);await page.locator('[data-profile-gallery]').setInputFiles(await picture(page));await expect(page.locator('[data-profile-next]')).toBeEnabled();
   await page.evaluate(()=>{const original=HTMLCanvasElement.prototype.toBlob;HTMLCanvasElement.prototype.toBlob=function(cb,...args){original.call(this,blob=>window.finishBlob=()=>cb(blob),...args)}});
   await page.locator('[data-profile-next]').click();await page.waitForFunction(()=>window.finishBlob);
   await page.evaluate(()=>dispatchEvent(new CustomEvent('travelmate:home-auth',{detail:{authenticated:false}})));await expect(page.locator('.profile-wizard-backdrop')).toBeHidden();await page.evaluate(()=>finishBlob());
-  await open(page);await expect(page.locator('[data-profile-styles]')).toBeEmpty();await expect(page.locator('[data-profile-next]')).toBeDisabled();expect(await page.evaluate(()=>activeUrls.size)).toBe(0);
+  await open(page);await expect(page.locator('[data-profile-styles] [name="avatarStyle"]')).toHaveCount(1);await expect(page.locator('[name="avatarStyle"][value="keep"]')).toBeChecked();await expect(page.locator('[data-profile-next]')).toBeEnabled();expect(await page.evaluate(()=>activeUrls.size)).toBe(0);
 });
 test('account switch during upload never publishes a stale profile or updates successor preferences',async({page})=>{
   await fixture(page);await open(page);await styles(page,await picture(page));await page.locator('[data-profile-next]').click();await page.evaluate(()=>window.avatarWait=true);await page.locator('[data-profile-save]').click();await page.waitForFunction(()=>window.finishAvatar);
@@ -74,4 +74,13 @@ test('Image fallback retains a bounded orientation-correct crop',async({page})=>
 });
 test('partial preference failure preserves saved avatar and reports uncertainty',async({page})=>{
   await fixture(page);await open(page);await styles(page,await picture(page));await page.locator('[data-profile-next]').click();await page.evaluate(()=>TravelMateCloud.updateProfileForOwner=async()=>({error:new Error('PROFILE_NETWORK_FAILURE')}));await page.locator('[data-profile-save]').click();await expect(page.locator('[data-profile-wizard-status]')).toContainText('התמונה נשמרה');await expect(page.locator('[data-profile-wizard-status]')).toHaveAttribute('role','alert');await expect(page.locator('.profile-wizard-backdrop')).toBeVisible();expect(await page.evaluate(()=>profileEvents)).toEqual(['A']);await page.keyboard.press('Escape');expect(await page.evaluate(()=>activeUrls.size)).toBe(0);
+});
+
+test('preference-only edit keeps the current avatar and writes no avatar object',async({page})=>{
+  await page.setViewportSize({width:390,height:844});await fixture(page,'dark');await open(page);
+  await expect(page.locator('[data-profile-next]')).toBeEnabled();await page.locator('[data-profile-next]').click();
+  await expect(page.locator('[name="avatarStyle"][value="keep"]')).toBeChecked();await page.locator('[data-profile-next]').click();
+  await page.locator('[name="displayName"]').fill('שם מעודכן');await page.locator('[name="transport"]').selectOption('transit');await page.locator('[name="learningEnabled"]').check();
+  await page.locator('[data-profile-save]').click();await expect(page.locator('.profile-wizard-backdrop')).toBeHidden();
+  expect(await page.evaluate(()=>calls)).toEqual([expect.objectContaining({kind:'profile',owner:'A',name:'שם מעודכן',preferences:expect.objectContaining({transport:'transit',learningEnabled:true})})]);
 });

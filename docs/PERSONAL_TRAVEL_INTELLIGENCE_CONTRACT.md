@@ -127,6 +127,7 @@ Use two explicit namespaces:
 - no confidence score required
 - small values may live in the existing authenticated user's `user_metadata` rather than a new profile table
 - must never be used for authorization or security decisions
+- in 2.14.0, `learningEnabled` is explicit opt-in: missing metadata normalizes to `false`, and only an explicitly stored `true` enables future learning eligibility
 
 `learnedPreferences`
 - system-generated suggestion
@@ -136,6 +137,8 @@ Use two explicit namespaces:
 - correctable
 - deletable
 - should not be stored in `user_metadata` once provenance, evidence, cross-trip querying, review history, or deletion dependencies are required
+
+TravelMate 2.14.0 ships declared personalization only. It does not persist learned candidates or export them to Mate. Any future learned suggestion remains a separate, reviewable class and requires explicit confirmation before use.
 
 A trip-local preference must remain trip-local unless the user explicitly promotes it.
 
