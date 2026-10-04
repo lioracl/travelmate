@@ -13,11 +13,11 @@ function safeAvatarUrl(value){
   }catch(error){return''}
 }
 var preferenceOptions=Object.freeze({
-  pace:['relaxed','balanced','active'],
-  activityDensity:['light','balanced','dense'],
-  transport:['walking','transit','mixed','car'],
-  tripStyle:['city','culture','nature','food','relaxation','mixed'],
-  interests:['culture','food','nature','history','shopping','nightlife','photography','relaxation']
+  pace:Object.freeze(['relaxed','balanced','active']),
+  activityDensity:Object.freeze(['light','balanced','dense']),
+  transport:Object.freeze(['walking','transit','mixed','car']),
+  tripStyle:Object.freeze(['city','culture','nature','food','relaxation','mixed']),
+  interests:Object.freeze(['culture','food','nature','history','shopping','nightlife','photography','relaxation'])
 });
 function normalizePreferences(value){
   var source=value&&typeof value==='object'?value:{};
@@ -119,6 +119,7 @@ function selectHomeContext(trips,now){
 
 window.TravelMateUserProfile=Object.freeze({
   fromUser:fromUser,
+  preferenceOptions:preferenceOptions,
   normalizePreferences:normalizePreferences,
   greetingAt:greetingAt,
   localDateKey:localDateKey,

@@ -1120,7 +1120,8 @@
   }
 
   var AVATAR_BUCKET = 'profile-avatars';
-  var AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+  var AVATAR_SOURCE_MAX_BYTES = 20 * 1024 * 1024;
+  var AVATAR_STORED_MAX_BYTES = 2 * 1024 * 1024;
   var AVATAR_TYPES = Object.freeze({ 'image/jpeg': ['jpg','jpeg'], 'image/png': ['png'], 'image/webp': ['webp'] });
   var avatarOperationChains = new Map();
 
@@ -1130,7 +1131,7 @@
     var name = String(file.name || '');
     var ext = (name.split('.').pop() || '').toLowerCase();
     if (!AVATAR_TYPES[mime] || AVATAR_TYPES[mime].indexOf(ext) < 0) return { ok: false, error: 'אפשר להעלות JPG, PNG או WebP בלבד.' };
-    if (!Number(file.size) || Number(file.size) > AVATAR_MAX_BYTES) return { ok: false, error: 'גודל התמונה חייב להיות עד 2MB.' };
+    if (!Number(file.size) || Number(file.size) > AVATAR_SOURCE_MAX_BYTES) return { ok: false, error: 'גודל תמונת המקור חייב להיות עד 20MB.' };
     return { ok: true, mime: mime, ext: mime === 'image/jpeg' ? 'jpg' : ext };
   }
   async function validateAvatarSignature(file, mime) {
@@ -1228,17 +1229,21 @@
       return {state:'superseded',user:current,error:error};
     } catch(readError){return {state:'unknown',user:null,error:error,readError:readError};}
   }
-  async function uploadAvatar(file) {
+  async function uploadAvatar(file, avatarOptions) {
     if(typeof navigator!=='undefined'&&navigator.onLine===false)return {data:null,error:new Error('AVATAR_OFFLINE')};
     var check=validateAvatarFile(file);if(!check.ok)return {data:null,error:new Error(check.error)};
+    if(Number(file.size)>AVATAR_STORED_MAX_BYTES)return {data:null,error:new Error('AVATAR_NORMALIZED_TOO_LARGE')};
     if(!(await validateAvatarSignature(file,check.mime)))return {data:null,error:new Error('AVATAR_CONTENT_INVALID')};
     var mainClient=await getClient(),initial;try{initial=await requireAvatarSession(mainClient)}catch(error){return {data:null,error:error}}
     var owner=String(initial.user.id);
     return queueAvatarOperation(owner,async function(){
       var liveSession;try{liveSession=await requireAvatarSession(mainClient,owner,true)}catch(error){return {data:null,error:error}}
       var previous=avatarSnapshot(liveSession.user),scoped;try{scoped=await createAvatarScopedClient(liveSession)}catch(error){return {data:null,error:error}}
-      var oldPath=ownedAvatarPath(previous.avatarPath,owner),objectPath=owner+'/'+avatarObjectName(check.ext);
-      var uploaded=await scoped.storage.from(AVATAR_BUCKET).upload(objectPath,file,{cacheControl:'31536000',contentType:check.mime,upsert:false});
+      var style=String(avatarOptions&&avatarOptions.style||'').replace(/[^a-z0-9-]/g,'').slice(0,24);
+      var oldPath=ownedAvatarPath(previous.avatarPath,owner),objectPath=owner+'/'+(style?style+'-':'')+avatarObjectName(check.ext);
+      var uploadOptions={cacheControl:'31536000',contentType:check.mime,upsert:false};
+      if(style)uploadOptions.metadata={travelmateAvatarStyle:style};
+      var uploaded=await scoped.storage.from(AVATAR_BUCKET).upload(objectPath,file,uploadOptions);
       if(uploaded.error)return {data:null,error:uploaded.error};
       var publicResult=scoped.storage.from(AVATAR_BUCKET).getPublicUrl(objectPath),publicUrl=publicResult&&publicResult.data&&publicResult.data.publicUrl;
       if(!publicUrl){var urlRollback=await removeAvatarObject(scoped,objectPath);return {data:null,error:new Error('AVATAR_URL_FAILED'),rollbackError:urlRollback}}
@@ -1323,6 +1328,22 @@
     var metadataPatch = { display_name: normalizedName };
     if (hasPreferencesArgument) metadataPatch.travelmate_preferences = hasPreference ? normalizedPreferences : null;
     return client.auth.updateUser({ data: metadataPatch });
+  }
+
+  async function updateProfileForOwner(owner, displayName, preferences) {
+    if(typeof navigator!=='undefined'&&navigator.onLine===false)throw new Error('PROFILE_OFFLINE');
+    var mainClient=await getClient(),session=await requireAvatarSession(mainClient,String(owner||''),true);
+    var scoped=await createAvatarScopedClient(session);
+    if(!scoped.auth||typeof scoped.auth.updateUser!=='function')throw new Error('PROFILE_SESSION_UNAVAILABLE');
+    var normalizedName=String(displayName||'').trim().replace(/\s+/g,' ').slice(0,80);
+    if(!window.TravelMateUserProfile||typeof window.TravelMateUserProfile.normalizePreferences!=='function')throw new Error('PROFILE_CONTRACT_UNAVAILABLE');
+    var normalized=window.TravelMateUserProfile.normalizePreferences(preferences);
+    var result=await scoped.auth.updateUser({data:{display_name:normalizedName,travelmate_preferences:normalized}});
+    if(result.error)return result;
+    var user=result.data&&result.data.user;
+    if(!user||String(user.id)!==String(owner))throw authContextError();
+    await requireAvatarSession(mainClient,String(owner),true);
+    return result;
   }
 
   function authRedirectUrl(hash) {
@@ -1442,6 +1463,7 @@
     resetPassword: resetPassword,
     updatePassword: updatePassword,
     updateProfile: updateProfile,
+    updateProfileForOwner: updateProfileForOwner,
     validateAvatarFile: validateAvatarFile,
     uploadAvatar: uploadAvatar,
     removeAvatar: removeAvatar,

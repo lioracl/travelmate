@@ -8,7 +8,7 @@ function imageFile(name,type,size=1200){
   const bytes=type==='image/png'?[0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]:type==='image/webp'?[0x52,0x49,0x46,0x46,0,0,0,0,0x57,0x45,0x42,0x50]:[0xff,0xd8,0xff,0xe0];
   return {name,type,size,arrayBuffer:async()=>Uint8Array.from(bytes).buffer};
 }
-function boot({user,updateError=null,rpcErrorAfterCommit=null,uploadError=null,online=true,afterUpload=null,afterScopedUpdate=null,afterCas=null,removeErrors=[],decodeOk=true,allowProfileUpdate=false}={}){
+function boot({user,updateError=null,rpcErrorAfterCommit=null,uploadError=null,online=true,afterUpload=null,afterScopedUpdate=null,afterScopedProfileUpdate=null,afterCas=null,removeErrors=[],decodeOk=true,allowProfileUpdate=false}={}){
   const removed=[],uploaded=[],updates=[],profileUpdates=[];let sessionUser=user,removeIndex=0;
   const storageApi={from:bucket=>({
     upload:async(path,file,options)=>{uploaded.push({bucket,path,file,options});if(uploadError)return {data:null,error:uploadError};if(afterUpload)afterUpload({path,setUser:value=>{sessionUser=value}});return {data:{path},error:null}},
@@ -24,7 +24,8 @@ function boot({user,updateError=null,rpcErrorAfterCommit=null,uploadError=null,o
     let scopedUser={...session.user,user_metadata:{...(session.user.user_metadata||{})}};
     return {auth:{
       getSession:async()=>({data:{session:{user:scopedUser,access_token:session.access_token,refresh_token:session.refresh_token}},error:null}),
-      getUser:async()=>({data:{user:scopedUser},error:null})
+      getUser:async()=>({data:{user:scopedUser},error:null}),
+      updateUser:async payload=>{profileUpdates.push({owner:scopedUser.id,payload});scopedUser={...scopedUser,user_metadata:{...(scopedUser.user_metadata||{}),...((payload&&payload.data)||{})}};if(sessionUser&&String(sessionUser.id)===String(scopedUser.id))sessionUser=scopedUser;if(afterScopedProfileUpdate)afterScopedProfileUpdate({setUser:value=>{sessionUser=value}});return {data:{user:scopedUser},error:null}}
     },storage:storageApi,rpc:async(name,payload)=>{
       updates.push({owner:scopedUser.id,name,payload});if(afterScopedUpdate)afterScopedUpdate({setUser:value=>{sessionUser=value}});if(updateError)return {data:null,error:updateError};
       const meta=scopedUser.user_metadata||{};
@@ -36,7 +37,7 @@ function boot({user,updateError=null,rpcErrorAfterCommit=null,uploadError=null,o
       return {data:true,error:null};
     }};
   }
-  const window={__travelMateSupabaseClient:mainClient,__travelMateAvatarClientFactory:async session=>scopedFactory(session),__travelMateAvatarDecode:async()=>decodeOk,crypto:{randomUUID:()=> '11111111-2222-4333-8444-555555555555'},dispatchEvent(){},addEventListener(){}};
+  const window={__travelMateSupabaseClient:mainClient,__travelMateAvatarClientFactory:async session=>scopedFactory(session),__travelMateAvatarDecode:async()=>decodeOk,TravelMateUserProfile:{normalizePreferences:value=>value},crypto:{randomUUID:()=> '11111111-2222-4333-8444-555555555555'},dispatchEvent(){},addEventListener(){}};
   const localStorage={getItem(){return null},setItem(){},removeItem(){}};
   vm.runInNewContext(fs.readFileSync('assets/cloud-sync.js','utf8'),{window,localStorage,document:{},navigator:{onLine:online},setTimeout,clearTimeout,CustomEvent:function(){},console,Math,Date,Error});
   return {cloud:window.TravelMateCloud,uploaded,removed,updates,profileUpdates,setUser:value=>{sessionUser=value}};
@@ -72,14 +73,15 @@ test('profile explicit avatar removal suppresses provider fallback',()=>{
   assert.equal(profile.avatarRemoved,true);
 });
 
-test('avatar validation accepts only matching JPG PNG WebP up to 2MB',()=>{
+test('avatar source validation accepts matching JPG PNG WebP through 20MB and rejects larger sources',()=>{
   const {cloud}=boot({user:{id:'A',user_metadata:{}}});
   assert.equal(cloud.validateAvatarFile({name:'me.jpg',type:'image/jpeg',size:100}).ok,true);
   assert.equal(cloud.validateAvatarFile({name:'me.png',type:'image/png',size:100}).ok,true);
   assert.equal(cloud.validateAvatarFile({name:'me.webp',type:'image/webp',size:100}).ok,true);
   assert.equal(cloud.validateAvatarFile({name:'me.svg',type:'image/svg+xml',size:100}).ok,false);
   assert.equal(cloud.validateAvatarFile({name:'me.jpg',type:'image/png',size:100}).ok,false);
-  assert.equal(cloud.validateAvatarFile({name:'me.jpg',type:'image/jpeg',size:2097153}).ok,false);
+  assert.equal(cloud.validateAvatarFile({name:'large.jpg',type:'image/jpeg',size:20*1024*1024}).ok,true);
+  assert.equal(cloud.validateAvatarFile({name:'too-large.jpg',type:'image/jpeg',size:20*1024*1024+1}).ok,false);
 });
 
 test('avatar upload uses immutable owner path and deletes previous owned object after metadata succeeds',async()=>{
@@ -172,9 +174,12 @@ test('avatar upload rejects a decodability failure even with a valid file signat
   assert.equal(runtime.uploaded.length,0);
 });
 
-test('avatar accepts an exact 2MB image and rejects storage upload failure without metadata mutation',async()=>{
+test('avatar accepts an exact 2MB stored image and blocks a larger unnormalized upload',async()=>{
   const runtime=boot({user:{id:'A',user_metadata:{}},uploadError:new Error('UPLOAD_FAILED')});
   assert.equal(runtime.cloud.validateAvatarFile({name:'max.jpg',type:'image/jpeg',size:2097152}).ok,true);
+  const oversized=await runtime.cloud.uploadAvatar(imageFile('source.jpg','image/jpeg',2097153));
+  assert.match(String(oversized.error&&oversized.error.message),/AVATAR_NORMALIZED_TOO_LARGE/);
+  assert.equal(runtime.uploaded.length,0);
   const result=await runtime.cloud.uploadAvatar(imageFile('me.jpg','image/jpeg',100));
   assert.match(String(result.error&&result.error.message),/UPLOAD_FAILED/);
   assert.equal(runtime.updates.length,0);
@@ -210,6 +215,31 @@ test('display-name-only profile save preserves existing travel preferences',asyn
   assert.equal(result.error,null);
   assert.equal(runtime.profileUpdates.length,1);
   assert.equal(Object.prototype.hasOwnProperty.call(runtime.profileUpdates[0].data,'travelmate_preferences'),false);
+});
+
+test('owner-scoped profile save writes declared preferences only to the captured account',async()=>{
+  const runtime=boot({user:{id:'A',user_metadata:{display_name:'Lior'}}});
+  const preferences={pace:'relaxed',activityDensity:'light',transport:'walking',tripStyle:'nature',interests:['nature'],learningEnabled:false};
+  const result=await runtime.cloud.updateProfileForOwner('A','Lior',preferences);
+  assert.equal(result.error,null);
+  assert.equal(runtime.profileUpdates.length,1);
+  assert.equal(runtime.profileUpdates[0].owner,'A');
+  assert.deepEqual(runtime.profileUpdates[0].payload.data.travelmate_preferences,preferences);
+});
+
+test('owner-scoped profile save detects an account switch without mutating the successor',async()=>{
+  const userA={id:'A',user_metadata:{display_name:'A'}},userB={id:'B',user_metadata:{display_name:'B'}};
+  const runtime=boot({user:userA,afterScopedProfileUpdate:({setUser})=>setUser(userB)});
+  await assert.rejects(runtime.cloud.updateProfileForOwner('A','Alice',{pace:'active'}),/AUTH_CONTEXT_CHANGED/);
+  assert.equal(runtime.profileUpdates.length,1);
+  assert.equal(runtime.profileUpdates[0].owner,'A');
+  assert.equal(userB.user_metadata.display_name,'B');
+});
+
+test('owner-scoped profile save refuses offline mutation without queueing',async()=>{
+  const runtime=boot({user:{id:'A',user_metadata:{}},online:false});
+  await assert.rejects(runtime.cloud.updateProfileForOwner('A','Alice',{pace:'active'}),/PROFILE_OFFLINE/);
+  assert.equal(runtime.profileUpdates.length,0);
 });
 
 test('superseded avatar upload cleans only the older predecessor and leaves successor-restorable object intact',async()=>{
