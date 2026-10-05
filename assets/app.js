@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261005-01'}catch(error){return'20261005-01'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261005-02'}catch(error){return'20261005-02'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
@@ -96,6 +96,32 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     }
     orb.addEventListener('click',activate,true);document.body.appendChild(orb)
   }
+  var tripAvatarRenderGeneration=0;
+  function paintTripMenuAvatar(user){
+    if(isHomePage)return;
+    var button=document.querySelector('[data-mobile-menu]');if(!button)return;
+    var helper=window.TravelMateUserProfile,profile=helper&&typeof helper.fromUser==='function'?helper.fromUser(user):null;
+    var avatarUrl=user&&profile&&profile.avatarUrl?profile.avatarUrl:'';
+    button.classList.toggle('has-profile-avatar',Boolean(avatarUrl));
+    button.style.setProperty('--tm-trip-avatar-image',avatarUrl?'url("'+avatarUrl.replace(/"/g,'%22')+'")':'none');
+    var generation=String(++tripAvatarRenderGeneration);button.dataset.avatarGeneration=generation;button.dataset.avatarUrl=avatarUrl;
+    button.setAttribute('aria-label',user&&profile&&profile.name?'פתיחת תפריט — '+profile.name:'פתיחת תפריט');
+    if(avatarUrl&&typeof window.Image==='function'){var expected=avatarUrl,probe=new window.Image();probe.onerror=function(){if(button.dataset.avatarGeneration===generation&&button.dataset.avatarUrl===expected){button.classList.remove('has-profile-avatar');button.style.setProperty('--tm-trip-avatar-image','none');button.dataset.avatarUrl='';button.setAttribute('aria-label','פתיחת תפריט')}};probe.src=expected}
+  }
+  function refreshTripMenuAvatar(user){
+    if(isHomePage)return;
+    if(user){paintTripMenuAvatar(user);return}
+    var cloud=window.TravelMateCloud;if(!cloud||typeof cloud.getSession!=='function'){paintTripMenuAvatar(null);return}
+    cloud.getSession().then(function(session){paintTripMenuAvatar(session&&session.user)}).catch(function(){paintTripMenuAvatar(null)})
+  }
+  function wireTripMenuAvatar(){
+    if(isHomePage)return;
+    var run=function(){setTimeout(function(){refreshTripMenuAvatar()},0)};
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
+    window.addEventListener('travelmate:profile-change',function(event){paintTripMenuAvatar(event.detail&&event.detail.user)});
+    window.addEventListener('pageshow',function(){refreshTripMenuAvatar()});
+    if(window.TravelMateCloud&&typeof window.TravelMateCloud.onAuthChange==='function')window.TravelMateCloud.onAuthChange(function(event,session){paintTripMenuAvatar(session&&session.user)}).catch(function(){})
+  }
   function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
   if(isHomePage){
     var homeBaseReady=Promise.all(homeBaseStyles.map(loadStyle));
@@ -106,6 +132,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     var baseReady=Promise.all(baseStyles.map(loadStyle));
     baseReady.then(createAssistantShell);
     var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js','user-profile.js','fixed-reminders.js'])});
+    coreReady.then(function(){wireTripMenuAvatar()});
     var initialView=activeView();
     var featureReady=coreReady.then(function(){return loadFeature(initialView)});
     Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,initialView==='overview'?baseReady.then(loadTodayActivities):Promise.resolve(true)]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250)});

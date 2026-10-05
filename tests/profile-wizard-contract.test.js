@@ -92,7 +92,7 @@ test('2.16.0 assets and cache versions are synchronized',()=>{
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.equal(version,'20261005-01');
+  assert.equal(version,'20261005-02');
   assert.match(about,/version: '2\.16\.0'/);
   assert.match(about,/Personal Profile - 2\.16\.0/);
 });

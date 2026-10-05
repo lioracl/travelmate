@@ -326,3 +326,17 @@ test('onboarding stores only an approved avatar-style key in existing Auth metad
   await runtime.cloud.updateProfileForOwner('A','Alice',undefined,{avatarStyle:'untrusted-style'});
   assert.equal(Object.hasOwn(runtime.profileUpdates[1].payload.data,'travelmate_avatar_style'),false);
 });
+
+test('saved avatar is framed fully on Home and reused in the existing trip mobile menu slot',()=>{
+  const app=fs.readFileSync('assets/app.js','utf8');
+  const homeCss=fs.readFileSync('assets/home-organizer.css','utf8');
+  const glass=fs.readFileSync('assets/readable-glass.css','utf8');
+  assert.match(app,/function paintTripMenuAvatar/);
+  assert.match(app,/TravelMateUserProfile/);
+  assert.match(app,/--tm-trip-avatar-image/);
+  assert.match(app,/travelmate:profile-change/);
+  assert.match(app,/\[data-mobile-menu\]/);
+  assert.match(homeCss,/\.home-page \.home-profile-avatar\.has-image[\s\S]*background-size:78%/);
+  assert.match(glass,/\.mobile-menu-button\.has-profile-avatar[\s\S]*background-image:var\(--tm-trip-avatar-image\)[\s\S]*background-size:78%/);
+  assert.match(glass,/\.mobile-menu-button\.has-profile-avatar::after[\s\S]*content:'☰'/);
+});

@@ -2750,3 +2750,43 @@ html body.tm-new-design main.content select option{
   background:#f7fffb;
   color:#123f32
 }
+
+/* Trip profile avatar reuses the existing mobile menu slot; no extra header control. */
+@media(max-width:1000px){
+  html body:not(.home-page) .mobile-header .mobile-menu-button.has-profile-avatar{
+    position:relative;
+    border-radius:50%;
+    background-color:var(--tm-card-control,var(--tm-action-secondary));
+    background-image:var(--tm-trip-avatar-image);
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:78%;
+    overflow:visible
+  }
+  html body:not(.home-page) .mobile-header .mobile-menu-button.has-profile-avatar:hover,
+  html body:not(.home-page).mobile-menu-open .mobile-header .mobile-menu-button.has-profile-avatar{
+    background-image:var(--tm-trip-avatar-image);
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:78%
+  }
+  html body:not(.home-page) .mobile-header .mobile-menu-button.has-profile-avatar>i{opacity:0}
+  html body:not(.home-page) .mobile-header .mobile-menu-button.has-profile-avatar::after{
+    content:'☰';
+    position:absolute;
+    inset-inline-end:-4px;
+    bottom:-4px;
+    width:18px;
+    height:18px;
+    display:grid;
+    place-items:center;
+    border:2px solid var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
+    border-radius:50%;
+    background:var(--tm-brand-primary,#147D92);
+    color:var(--tm-text-on-brand,#fff);
+    -webkit-text-fill-color:currentColor;
+    font-size:9px;
+    font-weight:900;
+    line-height:1
+  }
+}
