@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261005-02'}catch(error){return'20261005-02'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261005-03'}catch(error){return'20261005-03'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
@@ -96,31 +96,41 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     }
     orb.addEventListener('click',activate,true);document.body.appendChild(orb)
   }
-  var tripAvatarRenderGeneration=0;
-  function paintTripMenuAvatar(user){
-    if(isHomePage)return;
-    var button=document.querySelector('[data-mobile-menu]');if(!button)return;
-    var helper=window.TravelMateUserProfile,profile=helper&&typeof helper.fromUser==='function'?helper.fromUser(user):null;
-    var avatarUrl=user&&profile&&profile.avatarUrl?profile.avatarUrl:'';
-    button.classList.toggle('has-profile-avatar',Boolean(avatarUrl));
-    button.style.setProperty('--tm-trip-avatar-image',avatarUrl?'url("'+avatarUrl.replace(/"/g,'%22')+'")':'none');
-    var generation=String(++tripAvatarRenderGeneration);button.dataset.avatarGeneration=generation;button.dataset.avatarUrl=avatarUrl;
-    button.setAttribute('aria-label',user&&profile&&profile.name?'פתיחת תפריט — '+profile.name:'פתיחת תפריט');
-    if(avatarUrl&&typeof window.Image==='function'){var expected=avatarUrl,probe=new window.Image();probe.onerror=function(){if(button.dataset.avatarGeneration===generation&&button.dataset.avatarUrl===expected){button.classList.remove('has-profile-avatar');button.style.setProperty('--tm-trip-avatar-image','none');button.dataset.avatarUrl='';button.setAttribute('aria-label','פתיחת תפריט')}};probe.src=expected}
+  var tripProfileRenderGeneration=0;
+  function ensureTripProfileChrome(){
+    if(isHomePage)return {floating:null,sidebar:null};
+    var header=document.querySelector('.mobile-header'),sidebar=document.querySelector('.workspace>.sidebar');
+    var floating=document.querySelector('[data-trip-profile-avatar]');
+    if(!floating&&header){floating=document.createElement('button');floating.type='button';floating.className='trip-profile-avatar-button';floating.dataset.tripProfileAvatar='';floating.dataset.securityOpen='';floating.dataset.lazyAccount='';floating.setAttribute('aria-label','פתיחת הפרופיל וההגדרות האישיות');floating.innerHTML='<span data-trip-profile-avatar-image aria-hidden="true"></span>';header.insertAdjacentElement('afterend',floating)}
+    var profileButton=document.querySelector('[data-trip-sidebar-profile]');
+    if(!profileButton&&sidebar){profileButton=document.createElement('button');profileButton.type='button';profileButton.className='trip-sidebar-profile';profileButton.dataset.tripSidebarProfile='';profileButton.dataset.securityOpen='';profileButton.dataset.lazyAccount='';profileButton.setAttribute('aria-label','פתיחת הפרופיל וההגדרות האישיות');profileButton.innerHTML='<span class="trip-sidebar-profile-avatar" data-trip-sidebar-avatar aria-hidden="true"></span><span class="trip-sidebar-profile-copy"><small>הפרופיל שלי</small><strong data-trip-sidebar-profile-name>TravelMate</strong></span><i class="fa-solid fa-chevron-left" aria-hidden="true"></i>';var logo=sidebar.querySelector(':scope > .logo');if(logo)logo.insertAdjacentElement('afterend',profileButton);else sidebar.prepend(profileButton)}
+    return {floating:floating,sidebar:profileButton}
   }
-  function refreshTripMenuAvatar(user){
+  function paintTripProfile(user){
     if(isHomePage)return;
-    if(user){paintTripMenuAvatar(user);return}
-    var cloud=window.TravelMateCloud;if(!cloud||typeof cloud.getSession!=='function'){paintTripMenuAvatar(null);return}
-    cloud.getSession().then(function(session){paintTripMenuAvatar(session&&session.user)}).catch(function(){paintTripMenuAvatar(null)})
+    var chrome=ensureTripProfileChrome(),helper=window.TravelMateUserProfile,profile=helper&&typeof helper.fromUser==='function'?helper.fromUser(user):null;
+    var avatarUrl=user&&profile&&profile.avatarUrl?profile.avatarUrl:'',initials=user&&profile?profile.initials||'':'';
+    [chrome.floating&&chrome.floating.querySelector('[data-trip-profile-avatar-image]'),chrome.sidebar&&chrome.sidebar.querySelector('[data-trip-sidebar-avatar]')].filter(Boolean).forEach(function(avatar){avatar.textContent=avatarUrl?'':initials;avatar.classList.toggle('has-image',Boolean(avatarUrl));avatar.style.backgroundImage=avatarUrl?'url("'+avatarUrl.replace(/"/g,'%22')+'")':'';avatar.dataset.avatarUrl=avatarUrl});
+    if(chrome.floating)chrome.floating.hidden=!user;
+    if(chrome.sidebar){chrome.sidebar.hidden=!user;var name=chrome.sidebar.querySelector('[data-trip-sidebar-profile-name]');if(name)name.textContent=profile&&profile.name?profile.name:'הפרופיל שלי'}
+    var generation=String(++tripProfileRenderGeneration);
+    [chrome.floating,chrome.sidebar].filter(Boolean).forEach(function(node){node.dataset.avatarGeneration=generation});
+    if(avatarUrl&&typeof window.Image==='function'){var expected=avatarUrl,probe=new window.Image();probe.onerror=function(){[chrome.floating&&chrome.floating.querySelector('[data-trip-profile-avatar-image]'),chrome.sidebar&&chrome.sidebar.querySelector('[data-trip-sidebar-avatar]')].filter(Boolean).forEach(function(avatar){var host=avatar.closest('[data-trip-profile-avatar],[data-trip-sidebar-profile]');if(host&&host.dataset.avatarGeneration===generation&&avatar.dataset.avatarUrl===expected){avatar.classList.remove('has-image');avatar.style.backgroundImage='';avatar.textContent=initials;avatar.dataset.avatarUrl=''}})};probe.src=expected}
   }
-  function wireTripMenuAvatar(){
+  function refreshTripProfile(user){
     if(isHomePage)return;
-    var run=function(){setTimeout(function(){refreshTripMenuAvatar()},0)};
+    if(user){paintTripProfile(user);return}
+    var cloud=window.TravelMateCloud;if(!cloud||typeof cloud.getSession!=='function'){paintTripProfile(null);return}
+    cloud.getSession().then(function(session){paintTripProfile(session&&session.user)}).catch(function(){paintTripProfile(null)})
+  }
+  function wireTripProfile(){
+    if(isHomePage)return;
+    ensureTripProfileChrome();
+    var run=function(){setTimeout(function(){refreshTripProfile()},0)};
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
-    window.addEventListener('travelmate:profile-change',function(event){paintTripMenuAvatar(event.detail&&event.detail.user)});
-    window.addEventListener('pageshow',function(){refreshTripMenuAvatar()});
-    if(window.TravelMateCloud&&typeof window.TravelMateCloud.onAuthChange==='function')window.TravelMateCloud.onAuthChange(function(event,session){paintTripMenuAvatar(session&&session.user)}).catch(function(){})
+    window.addEventListener('travelmate:profile-change',function(event){paintTripProfile(event.detail&&event.detail.user)});
+    window.addEventListener('pageshow',function(){refreshTripProfile()});
+    if(window.TravelMateCloud&&typeof window.TravelMateCloud.onAuthChange==='function')window.TravelMateCloud.onAuthChange(function(event,session){paintTripProfile(session&&session.user)}).catch(function(){})
   }
   function activeView(){var view=document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview';return view==='car-rental'?'transport':view}
   if(isHomePage){
@@ -132,7 +142,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     var baseReady=Promise.all(baseStyles.map(loadStyle));
     baseReady.then(createAssistantShell);
     var coreReady=baseReady.then(function(){return loadSequence(['language.js','navigation-memory.js','trip-redesign.js','theme.js','user-profile.js','fixed-reminders.js'])});
-    coreReady.then(function(){wireTripMenuAvatar()});
+    coreReady.then(function(){wireTripProfile()});
     var initialView=activeView();
     var featureReady=coreReady.then(function(){return loadFeature(initialView)});
     Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,initialView==='overview'?baseReady.then(loadTodayActivities):Promise.resolve(true)]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250)});
@@ -215,7 +225,7 @@ document.addEventListener('dragover',function(event){var list=event.target.close
 document.addEventListener('keydown',function(event){trapGenericModalFocus(event);if(event.key==='Escape'){var weatherModal=document.getElementById('modal-weather-live');if(!(weatherModal&&weatherModal.classList.contains('open')))closeModal();closeMobileMenu()}});
 
 function closeMobileMenu(){document.body.classList.remove('mobile-menu-open');var button=document.querySelector('[data-mobile-menu]');if(button){button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','פתיחת תפריט');var icon=button.querySelector('i');if(icon)icon.className='fa-solid fa-bars'}}
-document.addEventListener('click',function(event){var menuButton=event.target.closest('[data-mobile-menu]');if(menuButton){var opening=!document.body.classList.contains('mobile-menu-open');document.body.classList.toggle('mobile-menu-open',opening);menuButton.setAttribute('aria-expanded',String(opening));menuButton.setAttribute('aria-label',opening?'סגירת תפריט':'פתיחת תפריט');var icon=menuButton.querySelector('i');if(icon)icon.className=opening?'fa-solid fa-xmark':'fa-solid fa-bars';return}if(event.target.closest('.sidebar nav a,.trip-sidebar-more-menu a,.trip-sidebar-more-menu button')||event.target.matches('.mobile-menu-shade'))closeMobileMenu()});
+document.addEventListener('click',function(event){var menuButton=event.target.closest('[data-mobile-menu]');if(menuButton){var opening=!document.body.classList.contains('mobile-menu-open');document.body.classList.toggle('mobile-menu-open',opening);menuButton.setAttribute('aria-expanded',String(opening));menuButton.setAttribute('aria-label',opening?'סגירת תפריט':'פתיחת תפריט');var icon=menuButton.querySelector('i');if(icon)icon.className=opening?'fa-solid fa-xmark':'fa-solid fa-bars';return}if(event.target.closest('.sidebar nav a,.trip-sidebar-more-menu a,.trip-sidebar-more-menu button,.trip-sidebar-profile')||event.target.matches('.mobile-menu-shade'))closeMobileMenu()});
 document.addEventListener('click',function(event){if(!event.target.closest('[data-vault-pick]')||event.target.closest('[data-document-vault]'))return;var fileInput=document.querySelector('[data-vault-form] input[type="file"]');if(fileInput)fileInput.click()});
 window.addEventListener('resize',function(){if(window.innerWidth>1000)closeMobileMenu()});
 document.addEventListener('click',function(event){var skip=event.target.closest('.tm-skip-link[href="#main-content"]');if(!skip)return;var main=document.getElementById('main-content');if(!main)return;requestAnimationFrame(function(){main.focus({preventScroll:true})})});

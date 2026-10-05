@@ -822,11 +822,6 @@ html[data-theme="dark"] body.home-page #modal-destination .destination-modal{
   color:transparent;
   text-indent:-9999px
 }
-.home-page .home-profile-avatar.has-image{
-  background-size:78%;
-  background-repeat:no-repeat;
-  background-color:var(--tm-card-surface,var(--surface,#fff))
-}
 .home-page.is-authenticated .home-personal-copy{min-width:0}
 .home-page.is-authenticated .home-personal-copy small{
   display:block;

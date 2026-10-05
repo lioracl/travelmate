@@ -22,7 +22,7 @@
   }
 
   function createButton() {
-    if (document.querySelector('[data-security-open]')) return;
+    if (document.querySelector('.security-center-launcher[data-security-open]')) return;
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'security-center-launcher';

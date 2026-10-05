@@ -327,16 +327,20 @@ test('onboarding stores only an approved avatar-style key in existing Auth metad
   assert.equal(Object.hasOwn(runtime.profileUpdates[1].payload.data,'travelmate_avatar_style'),false);
 });
 
-test('saved avatar is framed fully on Home and reused in the existing trip mobile menu slot',()=>{
+test('saved avatar keeps Home crop, sits below trip header, and leads to personal settings from the drawer',()=>{
   const app=fs.readFileSync('assets/app.js','utf8');
   const homeCss=fs.readFileSync('assets/home-organizer.css','utf8');
+  const tripCss=fs.readFileSync('assets/trip-redesign.css','utf8');
   const glass=fs.readFileSync('assets/readable-glass.css','utf8');
-  assert.match(app,/function paintTripMenuAvatar/);
-  assert.match(app,/TravelMateUserProfile/);
-  assert.match(app,/--tm-trip-avatar-image/);
+  assert.match(app,/function paintTripProfile/);
+  assert.match(app,/data-trip-profile-avatar/);
+  assert.match(app,/data-trip-sidebar-profile/);
+  assert.match(app,/dataset\.securityOpen/);
   assert.match(app,/travelmate:profile-change/);
-  assert.match(app,/\[data-mobile-menu\]/);
-  assert.match(homeCss,/\.home-page \.home-profile-avatar\.has-image[\s\S]*background-size:78%/);
-  assert.match(glass,/\.mobile-menu-button\.has-profile-avatar[\s\S]*background-image:var\(--tm-trip-avatar-image\)[\s\S]*background-size:78%/);
-  assert.match(glass,/\.mobile-menu-button\.has-profile-avatar::after[\s\S]*content:'☰'/);
+  assert.match(app,/\.trip-sidebar-profile/);
+  assert.doesNotMatch(app,/paintTripMenuAvatar|has-profile-avatar|--tm-trip-avatar-image/);
+  assert.doesNotMatch(homeCss,/\.home-page \.home-profile-avatar\.has-image[\s\S]*background-size:78%/);
+  assert.match(tripCss,/Trip profile placement[\s\S]*\.trip-profile-avatar-button[\s\S]*\.trip-sidebar-profile/);
+  assert.match(glass,/Trip profile chrome[\s\S]*\.trip-profile-avatar-button[\s\S]*\.trip-sidebar-profile/);
+  assert.doesNotMatch(glass,/\.mobile-menu-button\.has-profile-avatar/);
 });
