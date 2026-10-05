@@ -86,16 +86,16 @@ test('wizard focus, touch, reduced-motion and 390/430 geometry remain bounded',(
   assert.doesNotMatch(css,/!important/);
 });
 
-test('2.18.0 assets and cache versions are synchronized',()=>{
+test('current app assets and cache versions are synchronized',()=>{
   const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8'),about=fs.readFileSync('assets/about.js','utf8');
   const version=sw.match(/const ASSET_VERSION='([^']+)'/)[1];
   assert.match(html,new RegExp('profile-wizard\\.js\\?v='+version));
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.equal(version,'20261005-07');
-  assert.match(about,/version: '2[.]18[.]0'/);
-  assert.match(about,/Smart Trip Mode - 2[.]18[.]0/);
+  assert.equal(version,'20261006-01');
+  assert.match(about,/version: '2[.]19[.]0'/);
+  assert.match(about,/Today Experience - 2[.]19[.]0/);
 });
 
 test('wizard keeps normal next-state logic while direct interests mode bypasses navigation',()=>{
