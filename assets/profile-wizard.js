@@ -2,6 +2,7 @@
 'use strict';
 
 var OUTPUT_SIZE=512;
+var GENERATION_SOURCE_SIZE=511;
 var SOURCE_MAX_BYTES=20*1024*1024;
 var UPLOAD_MAX_BYTES=2*1024*1024;
 var STYLE_DEFINITIONS=Object.freeze([
@@ -105,12 +106,12 @@ function imageHeight(){return decodedImage&&(decodedImage.height||decodedImage.n
 function cropValues(){return{zoom:Number(el('[data-profile-zoom]').value),x:Number(el('[data-profile-x]').value),y:Number(el('[data-profile-y]').value)}}
 function drawCrop(target,filter){
   if(!decodedImage)return;
-  var context=target.getContext('2d'),values=cropValues(),width=imageWidth(),height=imageHeight();
-  var scale=Math.max(OUTPUT_SIZE/width,OUTPUT_SIZE/height)*values.zoom;
+  var context=target.getContext('2d'),values=cropValues(),width=imageWidth(),height=imageHeight(),targetWidth=target.width||OUTPUT_SIZE,targetHeight=target.height||OUTPUT_SIZE;
+  var scale=Math.max(targetWidth/width,targetHeight/height)*values.zoom;
   var drawnWidth=width*scale,drawnHeight=height*scale;
-  var x=(OUTPUT_SIZE-drawnWidth)/2+(values.x/100)*Math.max(0,drawnWidth-OUTPUT_SIZE)/2;
-  var y=(OUTPUT_SIZE-drawnHeight)/2+(values.y/100)*Math.max(0,drawnHeight-OUTPUT_SIZE)/2;
-  context.save();context.clearRect(0,0,OUTPUT_SIZE,OUTPUT_SIZE);context.filter=filter||'none';
+  var x=(targetWidth-drawnWidth)/2+(values.x/100)*Math.max(0,drawnWidth-targetWidth)/2;
+  var y=(targetHeight-drawnHeight)/2+(values.y/100)*Math.max(0,drawnHeight-targetHeight)/2;
+  context.save();context.clearRect(0,0,targetWidth,targetHeight);context.filter=filter||'none';
   context.drawImage(decodedImage,x,y,drawnWidth,drawnHeight);context.restore()
 }
 function scheduleCropDraw(){if(drawFrame)cancelAnimationFrame(drawFrame);drawFrame=requestAnimationFrame(function(){drawFrame=0;var canvas=el('[data-profile-crop]');if(canvas)drawCrop(canvas,'none')})}
@@ -174,7 +175,7 @@ function retryStyles(id){
 async function prepareStyles(){
   if(styleResults.length){renderStyles();setStep(2);return}
   if(!decodedImage)throw new Error('SOURCE_DECODE');
-  var generation=sourceGeneration,wizard=wizardGeneration,base=document.createElement('canvas');base.width=OUTPUT_SIZE;base.height=OUTPUT_SIZE;drawCrop(base,'none');
+  var generation=sourceGeneration,wizard=wizardGeneration,base=document.createElement('canvas');base.width=GENERATION_SOURCE_SIZE;base.height=GENERATION_SOURCE_SIZE;drawCrop(base,'none');
   try{
     var photo=await boundedBlob(base);
     if(generation!==sourceGeneration||!currentWizard(wizard))throw staleWork();
@@ -222,7 +223,7 @@ function renderStyles(){
   el('[data-profile-final-initials]').hidden=true;if(chosen)preview.src=chosen.url;else preview.removeAttribute('src');
   if(step===2)el('[data-profile-next]').disabled=!chosen;
   var ready=styleResults.filter(function(item){return item.status==='ready'}).length,failed=styleResults.filter(function(item){return item.status==='failed'}).length;
-  el('[data-profile-generation-summary]').textContent=navigator.onLine===false?generationMessage(new Error('OFFLINE')):failed===6?'יצירת כל האווטרים נכשלה. נסו שוב כשיש חיבור לרשת.':ready+' מתוך 6 אווטרים מוכנים. אפשר לבחור אווטר מוכן ולהמשיך.';
+  el('[data-profile-generation-summary]').textContent=navigator.onLine===false?generationMessage(new Error('OFFLINE')):failed===6?'יצירת כל האווטרים נכשלה. אפשר לנסות שוב; אם המכסה היומית נוצלה, נסו מחר.':ready+' מתוך 6 אווטרים מוכנים. אפשר לבחור אווטר מוכן ולהמשיך.';
   el('[data-profile-retry-all]').hidden=failed!==6;el('[data-profile-retry-all]').disabled=navigator.onLine===false;
 }
 function renderPreferences(){
