@@ -1,4 +1,4 @@
-const ASSET_VERSION='20261005-06';
+const ASSET_VERSION='20261005-07';
 const CACHE_SCHEMA='v266';
 const CACHE_NAME='travelmate-smart-'+CACHE_SCHEMA+'-'+ASSET_VERSION;
 const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-20\d{6}-\d+)?$/;
