@@ -965,7 +965,7 @@ html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#get
 /* Trip profile placement — avatar stays separate from the mobile menu control. */
 .trip-profile-avatar-button{display:none}
 body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile{font:inherit;cursor:pointer}
-body:not(.home-page) :is(.trip-profile-avatar-button [data-trip-profile-avatar-image],.trip-sidebar-profile-avatar){display:grid;place-items:center;background-position:center;background-size:cover;background-repeat:no-repeat;font-weight:800;overflow:hidden}
+body:not(.home-page) :is(.trip-profile-avatar-button [data-trip-profile-avatar-image],.trip-sidebar-profile-avatar){display:grid;place-items:center;background-position:center;background-size:contain;background-repeat:no-repeat;font-weight:800;overflow:hidden}
 @media(max-width:1000px){
   body:not(.home-page) .trip-profile-avatar-button{width:56px;height:56px;margin:0 0 10px auto;padding:3px;display:grid;place-items:center;border-radius:50%;position:relative;z-index:10}
   body:not(.home-page) .trip-profile-avatar-button>[data-trip-profile-avatar-image]{width:48px;height:48px;border-radius:50%}

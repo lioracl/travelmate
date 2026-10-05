@@ -1371,7 +1371,7 @@
     var normalizedName=String(displayName||'').trim().replace(/\s+/g,' ').slice(0,80);
     if(!window.TravelMateUserProfile||typeof window.TravelMateUserProfile.normalizePreferences!=='function')throw new Error('PROFILE_CONTRACT_UNAVAILABLE');
     var patch={display_name:normalizedName};
-    if(onboarding&&['classic','tokyo-neon','japanese-calm','beach-journey','manga-action','cinematic'].indexOf(onboarding.avatarStyle)>=0)patch.travelmate_avatar_style=onboarding.avatarStyle;
+    if(onboarding&&Object.prototype.hasOwnProperty.call(onboarding,'avatarStyle')){if(['classic','tokyo-neon','japanese-calm','beach-journey','manga-action','cinematic'].indexOf(onboarding.avatarStyle)>=0)patch.travelmate_avatar_style=onboarding.avatarStyle;else if(onboarding.avatarStyle===null||onboarding.avatarStyle==='')patch.travelmate_avatar_style=null;}
     if(preferences&&typeof preferences==='object')patch.travelmate_preferences=window.TravelMateUserProfile.normalizePreferences(preferences);
     var result=await scoped.auth.updateUser({data:patch});
     if(result.error)return result;

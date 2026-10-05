@@ -46,10 +46,12 @@ test('Home and Security expose summaries and delegate editing to one wizard cont
   const security = read('assets/security-center.js');
   assert.match(home, /data-smart-profile-completion/);
   assert.match(home, /data-profile-wizard-open/);
+  assert.match(home, /data-profile-interests-open/);
   assert.match(home, /legacyProfileForm\.remove\(\)/);
   assert.doesNotMatch(home, /profileForm\.addEventListener\('submit'/);
   assert.match(security, /data-security-declared-summary/);
   assert.match(security, /data-profile-wizard-open/);
+  assert.match(security, /data-profile-interests-open/);
   assert.doesNotMatch(security, /data-security-profile-form|name="pace"|name="learningEnabled"/);
   assert.doesNotMatch(security, /cloud\.updateProfile\(/);
 });

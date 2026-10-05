@@ -45,7 +45,7 @@
     backdrop.innerHTML = '<div class="security-center" role="dialog" aria-modal="true" aria-labelledby="security-title">' +
       '<header><div><small>התאמה אישית, אבטחה וניהול המכשיר</small><h2 id="security-title">הגדרות</h2></div><button type="button" data-security-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header>' +
       '<p class="security-message" data-security-message></p>' +
-      '<section class="security-profile" data-security-profile><div class="security-profile-head"><span class="security-profile-avatar" data-security-profile-avatar aria-hidden="true"></span><div><small>הפרופיל שלך</small><strong data-security-profile-name>TravelMate</strong><span data-security-profile-email></span></div></div><section class="security-declared-summary" data-security-declared-summary><div><small>מה שסיפרת ל־TravelMate</small><strong>העדפות נסיעה מוצהרות</strong></div><p data-security-profile-completion></p><div class="security-declared-items" data-security-declared-items></div><p data-security-declared-empty hidden>עדיין לא הוגדרו העדפות נסיעה.</p><p data-security-learning-state></p><button type="button" data-profile-wizard-open><i class="fa-solid fa-pen" aria-hidden="true"></i> עריכת פרופיל</button><small class="security-declared-privacy">העריכה מתבצעת רק באשף הפרופיל. הצעות ש־Mate ילמד בעתיד יוצגו בנפרד וידרשו אישור; מסמכים, הערות פרטיות ו־GPS אינם מקור ללמידה.</small></section><p data-security-profile-note></p></section>' +
+      '<section class="security-profile" data-security-profile><div class="security-profile-head"><span class="security-profile-avatar" data-security-profile-avatar aria-hidden="true"></span><div><small>הפרופיל שלך</small><strong data-security-profile-name>TravelMate</strong><span data-security-profile-email></span></div></div><section class="security-declared-summary" data-security-declared-summary><div><small>מה שסיפרת ל־TravelMate</small><strong>העדפות נסיעה מוצהרות</strong></div><p data-security-profile-completion></p><div class="security-declared-items" data-security-declared-items></div><p data-security-declared-empty hidden>עדיין לא הוגדרו העדפות נסיעה.</p><p data-security-learning-state></p><div class="security-profile-edit-actions"><button type="button" data-profile-wizard-open><i class="fa-solid fa-image" aria-hidden="true"></i> תמונה ואווטר</button><button type="button" data-profile-interests-open><i class="fa-solid fa-heart" aria-hidden="true"></i> תחומי עניין</button></div><small class="security-declared-privacy">העריכה מתבצעת רק באשף הפרופיל. הצעות ש־Mate ילמד בעתיד יוצגו בנפרד וידרשו אישור; מסמכים, הערות פרטיות ו־GPS אינם מקור ללמידה.</small></section><p data-security-profile-note></p></section>' +
       '<section class="security-preferences"><h3>העדפות האפליקציה</h3><div class="settings-list">' +
       '<div class="settings-row"><i class="fa-solid fa-language" aria-hidden="true"></i><span><strong>שפת האפליקציה</strong><small>בחר את שפת הממשק בכל המכשיר הזה</small></span><div class="settings-options" role="group" aria-label="שפת האפליקציה"><button type="button" data-language-choice="he">עברית</button><button type="button" data-language-choice="en">English</button></div></div>' +
       '<div class="settings-row"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span><strong>תצוגת האפליקציה</strong><small>בחר מצב בהיר או כהה</small></span><div class="settings-options" role="group" aria-label="תצוגת האפליקציה"><button type="button" data-theme-choice="light"><i class="fa-regular fa-sun"></i> בהיר</button><button type="button" data-theme-choice="dark"><i class="fa-regular fa-moon"></i> כהה</button></div></div>' +
@@ -239,7 +239,7 @@
     learning.hidden = !user;
     learning.classList.toggle('is-enabled', summary.learningEnabled === true);
     learning.textContent = summary.learningEnabled === true ? 'התאמה עתידית: הצטרפת במפורש' : 'התאמה עתידית: כבויה עד להצטרפות מפורשת';
-    host.querySelector('[data-profile-wizard-open]').hidden = !user;
+    host.querySelectorAll('[data-profile-wizard-open],[data-profile-interests-open]').forEach(function(button){button.hidden=!user});
     note.textContent = user ? 'הפרופיל וההעדפות נשמרים בחשבון Auth הקיים שלך.' : 'יש להתחבר כדי לנהל את הפרופיל וההעדפות.';
   }
 
@@ -326,7 +326,7 @@
     createMfaGate();
     document.addEventListener('click', function (event) {
       if (event.target.closest('[data-security-open]')) openDialog();
-      if (event.target.closest('[data-security-profile] [data-profile-wizard-open]')) closeDialog();
+      if (event.target.closest('[data-security-profile] [data-profile-wizard-open],[data-security-profile] [data-profile-interests-open]')) closeDialog();
       if (event.target.closest('[data-security-close]') || event.target.matches('[data-security-dialog]')) closeDialog();
       var languageChoice = event.target.closest('[data-language-choice]');
       if (languageChoice && window.TravelMateLanguage) {

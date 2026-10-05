@@ -523,7 +523,7 @@
     var smartProfile = panel.querySelector('[data-cloud-avatar-editor]');
     smartProfile.classList.add('cloud-smart-profile');
     smartProfile.dataset.smartProfile = '';
-    smartProfile.innerHTML = '<div class="cloud-smart-profile-head"><span class="cloud-avatar-preview" data-cloud-avatar-preview data-user-avatar hidden aria-hidden="true"></span><div><small data-smart-profile-greeting></small><strong id="cloud-avatar-title" data-smart-profile-name>הפרופיל שלי</strong><span data-smart-profile-email></span></div></div><section class="cloud-declared-preferences" aria-labelledby="cloud-declared-title"><div><small>מה שסיפרת ל־TravelMate</small><h3 id="cloud-declared-title">העדפות הנסיעה המוצהרות שלך</h3></div><p data-smart-profile-completion></p><div class="cloud-preference-chips" data-smart-profile-preferences></div><p data-smart-profile-empty hidden>עדיין לא הוגדרו העדפות נסיעה.</p><p class="cloud-learning-state" data-smart-profile-learning></p></section><section class="cloud-learned-profile" data-learned-profile-host aria-label="העדפות נלמדות"><p class="cloud-learned-loading">העדפות נלמדות נטענות לאחר פתיחת החשבון.</p></section><p class="cloud-profile-privacy"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>ההעדפות בשליטתך. Mate מקבל העדפות מוצהרות, ורק העדפות נלמדות שאישרת במפורש כשהלמידה פעילה. מסמכים, הערות פרטיות, הודעות פרטיות ו־GPS אינם משמשים ללמידה.</span></p><div class="cloud-avatar-actions"><button type="button" class="secondary cloud-profile-edit" data-profile-wizard-open><i class="fa-solid fa-pen" aria-hidden="true"></i> עריכת פרופיל</button><button type="button" class="secondary" data-cloud-avatar-remove>הסרת תמונה</button><label class="cloud-avatar-pick cloud-avatar-legacy" hidden>בחירת תמונה<input type="file" data-cloud-avatar-input accept="image/jpeg,image/png,image/webp"></label><button type="button" data-cloud-avatar-upload hidden disabled>שמירת תמונה</button></div><small class="cloud-avatar-status" data-cloud-avatar-status role="status" aria-live="polite"></small>';
+    smartProfile.innerHTML = '<div class="cloud-smart-profile-head"><span class="cloud-avatar-preview" data-cloud-avatar-preview data-user-avatar hidden aria-hidden="true"></span><div><small data-smart-profile-greeting></small><strong id="cloud-avatar-title" data-smart-profile-name>הפרופיל שלי</strong><span data-smart-profile-email></span></div></div><section class="cloud-declared-preferences" aria-labelledby="cloud-declared-title"><div><small>מה שסיפרת ל־TravelMate</small><h3 id="cloud-declared-title">העדפות הנסיעה המוצהרות שלך</h3></div><p data-smart-profile-completion></p><div class="cloud-preference-chips" data-smart-profile-preferences></div><p data-smart-profile-empty hidden>עדיין לא הוגדרו העדפות נסיעה.</p><p class="cloud-learning-state" data-smart-profile-learning></p></section><section class="cloud-learned-profile" data-learned-profile-host aria-label="העדפות נלמדות"><p class="cloud-learned-loading">העדפות נלמדות נטענות לאחר פתיחת החשבון.</p></section><p class="cloud-profile-privacy"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>ההעדפות בשליטתך. Mate מקבל העדפות מוצהרות, ורק העדפות נלמדות שאישרת במפורש כשהלמידה פעילה. מסמכים, הערות פרטיות, הודעות פרטיות ו־GPS אינם משמשים ללמידה.</span></p><div class="cloud-avatar-actions"><button type="button" class="secondary cloud-profile-edit" data-profile-wizard-open><i class="fa-solid fa-image" aria-hidden="true"></i> תמונה ואווטר</button><button type="button" class="secondary cloud-profile-interests" data-profile-interests-open><i class="fa-solid fa-heart" aria-hidden="true"></i> תחומי עניין</button><button type="button" class="secondary" data-cloud-avatar-remove>הסרת תמונה</button><label class="cloud-avatar-pick cloud-avatar-legacy" hidden>בחירת תמונה<input type="file" data-cloud-avatar-input accept="image/jpeg,image/png,image/webp"></label><button type="button" data-cloud-avatar-upload hidden disabled>שמירת תמונה</button></div><small class="cloud-avatar-status" data-cloud-avatar-status role="status" aria-live="polite"></small>';
     var legacyProfileForm = panel.querySelector('[data-cloud-profile-form]');
     if (legacyProfileForm) legacyProfileForm.remove();
     panel.classList.add('cloud-account-split');
@@ -713,27 +713,27 @@
     if (!kicker || !copy || !action) return;
     var trip = context.trip;
     if (context.type === 'current' && trip) {
-      kicker.textContent = 'הטיול שלך עכשיו';
+      kicker.textContent = 'הפרופיל שלי';
       copy.textContent = 'הטיול ל־' + trip.city + ' מתקיים עכשיו' + (context.daysRemaining ? ' · נשארו ' + context.daysRemaining + ' ימים' : ' · זה היום האחרון') + '.';
       action.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
       action.innerHTML = 'חזרה לטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
       return;
     }
     if (context.type === 'upcoming' && trip) {
-      kicker.textContent = 'הטיול הבא';
+      kicker.textContent = 'הפרופיל שלי';
       copy.textContent = 'הטיול ל־' + trip.city + ' מתחיל ' + (context.daysUntil === 1 ? 'מחר' : 'בעוד ' + context.daysUntil + ' ימים') + '.';
       action.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
       action.innerHTML = 'להמשך התכנון <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
       return;
     }
     if (context.type === 'recent' && trip) {
-      kicker.textContent = 'חזרת מהטיול';
+      kicker.textContent = 'הפרופיל שלי';
       copy.textContent = 'הטיול האחרון ל־' + trip.city + ' הסתיים ' + (context.daysAgo === 1 ? 'אתמול' : 'לפני ' + context.daysAgo + ' ימים') + '. אפשר להשלים זיכרונות ופרטים שנשארו.';
       action.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
       action.innerHTML = 'פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
       return;
     }
-    kicker.textContent = 'היעד הבא מתחיל כאן';
+    kicker.textContent = 'הפרופיל שלי';
     copy.textContent = 'אין כרגע טיול אישי פעיל. אפשר לבחור יעד חדש ולהתחיל לתכנן.';
     action.href = '#active-trips';
     action.innerHTML = 'לטיולים שלי <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';

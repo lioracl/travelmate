@@ -18,6 +18,7 @@ var INTEREST_CARDS=Object.freeze([{id:'food',icon:'🍜'},{id:'nature',icon:'�
 var ACCEPTED_TYPES=Object.freeze(['image/jpeg','image/png','image/webp']);
 var modal=null,opener=null,ownerId='',user=null,decodedImage=null;
 var styleResults=[],selectedStyle='',step=1,busy=false,drawFrame=0,sourceGeneration=0;
+var wizardMode='full',profileImageKind='',profilePhotoBlob=null,profilePhotoUrl='';
 var onboarding={photo:null,avatarStyle:'',interestTags:[]};
 var previousBodyOverflow='',wizardGeneration=0,closeTimer=0,inertSiblings=[];
 function currentWizard(generation){return modal&&!modal.hidden&&generation===wizardGeneration}
@@ -35,9 +36,11 @@ function errorMessage(error){
   return'לא הצלחנו לשמור את הפרופיל. נסו שוב.';
 }
 function revoke(url){if(url&&window.URL&&window.URL.revokeObjectURL)window.URL.revokeObjectURL(url)}
+function clearPhotoChoice(){if(profilePhotoUrl)revoke(profilePhotoUrl);profilePhotoUrl='';profilePhotoBlob=null;if(profileImageKind==='photo')profileImageKind=''}
+function syncPhotoActions(){all('[data-profile-use-photo]').forEach(function(button){button.disabled=busy||(!decodedImage&&!onboarding.photo)})}
 function releaseImage(){if(decodedImage&&typeof decodedImage.close==='function')decodedImage.close();if(decodedImage&&decodedImage.tagName==='CANVAS'){decodedImage.width=0;decodedImage.height=0}decodedImage=null}
 function clearResults(){styleEpoch+=1;generationControllers.forEach(function(controller){controller.abort()});generationControllers.clear();selectedStyle='';onboarding.avatarStyle='';styleResults.forEach(function(item){if(!item.isPlaceholder)revoke(item.url)});styleResults=[];var grid=el('[data-profile-styles]');if(grid)grid.replaceChildren();var preview=el('[data-profile-selected-preview]');if(preview)preview.removeAttribute('src')}
-function resetFiles(){sourceGeneration+=1;var existing=el('[data-profile-existing-photo]');if(existing){existing.onload=null;existing.onerror=null;existing.removeAttribute('src');existing.hidden=true}onboarding.photo=null;onboarding.avatarStyle='';if(drawFrame){cancelAnimationFrame(drawFrame);drawFrame=0}releaseImage();clearResults();all('input[type="file"]').forEach(function(input){input.value=''});var canvas=el('[data-profile-crop]');if(canvas){var context=canvas.getContext('2d');context.clearRect(0,0,canvas.width,canvas.height)}var preview=el('[data-profile-selected-preview]');if(preview)preview.removeAttribute('src');var empty=el('[data-profile-empty]'),controls=el('[data-profile-crop-controls]');if(empty)empty.hidden=false;if(controls)controls.hidden=true}
+function resetFiles(){sourceGeneration+=1;clearPhotoChoice();profileImageKind='';var zoom=el('[data-profile-zoom]'),x=el('[data-profile-x]'),y=el('[data-profile-y]');if(zoom)zoom.value='1';if(x)x.value='0';if(y)y.value='0';var existing=el('[data-profile-existing-photo]');if(existing){existing.onload=null;existing.onerror=null;existing.removeAttribute('src');existing.hidden=true}onboarding.photo=null;onboarding.avatarStyle='';if(drawFrame){cancelAnimationFrame(drawFrame);drawFrame=0}releaseImage();clearResults();all('input[type="file"]').forEach(function(input){input.value=''});var canvas=el('[data-profile-crop]');if(canvas){var context=canvas.getContext('2d');context.clearRect(0,0,canvas.width,canvas.height)}var preview=el('[data-profile-selected-preview]');if(preview)preview.removeAttribute('src');var empty=el('[data-profile-empty]'),controls=el('[data-profile-crop-controls]');if(empty)empty.hidden=false;if(controls)controls.hidden=true}
 function signatureMatches(bytes,type){
   if(type==='image/jpeg')return bytes.length>=3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
   if(type==='image/png')return bytes.length>=8&&[137,80,78,71,13,10,26,10].every(function(value,index){return bytes[index]===value});
@@ -127,6 +130,21 @@ async function boundedBlob(canvas){
   throw new Error('AVATAR_NORMALIZED_TOO_LARGE')
 }
 function fileFromBlob(blob,style){var extension=blob.type==='image/webp'?'webp':'jpg';return new File([blob],'travelmate-'+style+'.'+extension,{type:blob.type,lastModified:Date.now()})}
+async function normalizedCurrentPhoto(){
+  if(!decodedImage)throw new Error('SOURCE_DECODE');
+  var canvas=document.createElement('canvas');canvas.width=OUTPUT_SIZE;canvas.height=OUTPUT_SIZE;drawCrop(canvas,'none');
+  try{return await boundedBlob(canvas)}finally{canvas.width=0;canvas.height=0}
+}
+async function useRealPhoto(){
+  if(busy||(!decodedImage&&!onboarding.photo))return;
+  var generation=wizardGeneration,source=sourceGeneration;busy=true;setMutationDisabled(true);setStatus('מכין את התמונה האמיתית לפרופיל…');
+  try{
+    var blob=await normalizedCurrentPhoto();if(!currentWizard(generation)||source!==sourceGeneration)throw staleWork();
+    clearResults();clearPhotoChoice();profilePhotoBlob=blob;profilePhotoUrl=URL.createObjectURL(blob);profileImageKind='photo';selectedStyle='';onboarding.avatarStyle='';
+    var preview=el('[data-profile-selected-preview]');preview.src=profilePhotoUrl;el('[data-profile-final-initials]').hidden=true;el('.profile-final-avatar').hidden=false;setStep(3);setStatus('התמונה האמיתית נבחרה. אפשר להשלים את תחומי העניין ולשמור.')
+  }catch(error){if(currentWizard(generation))setStatus(errorMessage(error),true)}
+  finally{if(currentWizard(generation)){busy=false;setMutationDisabled(false)}}
+}
 // Every selectable preview is a real generated image. No source-photo or static fallback.
 async function avatarStylePreview(definition,photo,expectedOwner,signal){
   var blob=await window.TravelMateCloud.generateAvatarForOwner(expectedOwner,definition.id,photo,signal);
@@ -173,6 +191,7 @@ function retryStyles(id){
   styleResults.forEach(function(item){if(item.status==='failed'&&(!id||item.id===id)){item.status='pending';item.message=''}});renderStyles();pumpStyles();
 }
 async function prepareStyles(){
+  clearPhotoChoice();profileImageKind='';
   if(styleResults.length){renderStyles();setStep(2);return}
   if(!decodedImage)throw new Error('SOURCE_DECODE');
   var generation=sourceGeneration,wizard=wizardGeneration,base=document.createElement('canvas');base.width=GENERATION_SOURCE_SIZE;base.height=GENERATION_SOURCE_SIZE;drawCrop(base,'none');
@@ -194,17 +213,18 @@ function preferencesMarkup(current){
   return cards+'<details class="profile-extra-details"><summary>פרטי פרופיל נוספים</summary><div class="profile-wizard-preferences">'+preferenceField('pace','קצב טיול',current.pace)+preferenceField('activityDensity','צפיפות פעילויות',current.activityDensity)+preferenceField('transport','דרך התניידות',current.transport)+preferenceField('tripStyle','סגנון טיול',current.tripStyle)+'<label class="profile-wizard-learning"><input type="checkbox" name="learningEnabled"'+(current.learningEnabled?' checked':'')+'><span><strong>הצטרפות להתאמה עתידית</strong><small>כבוי כברירת מחדל. הצעות נלמדות דורשות אישור; מסמכים, הערות פרטיות ו־GPS לא ישמשו ללמידה.</small></span></label></div></details>'
 }
 function buildModal(){
-  var wrapper=document.createElement('div');wrapper.className='profile-wizard-backdrop';wrapper.hidden=true;wrapper.innerHTML='<section class="profile-wizard" role="dialog" aria-modal="true" aria-labelledby="profile-wizard-title"><header><div><small data-profile-step-label>שלב 1 מתוך 3</small><h2 id="profile-wizard-title" tabindex="-1">יצירת פרופיל אישי</h2></div><button type="button" class="profile-wizard-close" data-profile-wizard-close aria-label="סגירת יצירת הפרופיל">×</button></header><ol class="profile-wizard-progress" aria-label="התקדמות"><li aria-current="step"><span>1</span> הוספת תמונה</li><li><span>2</span> בחירת אווטר</li><li><span>3</span> תחומי עניין</li></ol><form data-profile-wizard-form><section data-profile-step="1"><h3>הוספת תמונה</h3><p class="profile-step-subtitle">אפשר להעלות תמונה מהגלריה או לצלם עכשיו</p><p class="profile-wizard-privacy">העיבוד והחיתוך מתבצעים במכשיר. ליצירת אווטרים התמונה החתוכה נשלחת לשירות AI; לאחר שמירה האווטר זמין באמצעות כתובת ציבורית.</p><div class="profile-crop-shell"><img data-profile-existing-photo hidden alt="תמונת הפרופיל הנוכחית"><canvas width="512" height="512" data-profile-crop aria-label="תצוגה מקדימה של חיתוך התמונה"></canvas><div data-profile-empty>בחרו תמונה מהגלריה או צלמו עכשיו</div></div><div class="profile-source-actions"><label class="profile-source-button"><i class="fa-regular fa-images" aria-hidden="true"></i><span>בחירה מהגלריה</span><input type="file" data-profile-gallery accept="image/jpeg,image/png,image/webp"></label><label class="profile-source-button"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>צילום תמונה</span><input type="file" data-profile-camera accept="image/jpeg,image/png,image/webp" capture="user"></label></div><div class="profile-crop-controls" hidden data-profile-crop-controls><label><span>זום</span><input type="range" min="1" max="3" step="0.01" value="1" data-profile-zoom></label><label><span>מיקום אופקי</span><input type="range" min="-100" max="100" step="1" value="0" data-profile-x></label><label><span>מיקום אנכי</span><input type="range" min="-100" max="100" step="1" value="0" data-profile-y></label></div></section><section data-profile-step="2" hidden><h3>בחירת אווטר</h3><p class="profile-step-subtitle">בחר את הסגנון שהכי מתאים לך</p><p class="profile-wizard-privacy">התמונה החתוכה נשלחת לשירות AI ליצירת שישה אווטרים אישיים. רק האווטר שנבחר יישמר בסיום.</p><fieldset class="profile-style-fieldset"><legend class="sr-only">בחירת סגנון אווטר</legend><div class="profile-style-grid" data-profile-styles></div></fieldset><p data-profile-generation-summary role="status" aria-live="polite"></p><button type="button" data-profile-retry-all hidden>נסה שוב</button></section><section data-profile-step="3" hidden><h3>תחומי עניין</h3><p class="profile-step-subtitle">בחר את מה שמעניין אותך כדי שנוכל להתאים המלצות</p><div class="profile-final-avatar" hidden><img data-profile-selected-preview alt="האווטר שנבחר"><span data-profile-final-initials aria-hidden="true"></span></div><label class="profile-wizard-field profile-wizard-name" hidden><span>שם לתצוגה</span><input type="text" name="displayName" maxlength="80" autocomplete="nickname"></label><div data-profile-preference-fields></div></section><p class="profile-wizard-status" data-profile-wizard-status role="status" aria-live="polite"></p><footer><button type="button" class="secondary" data-profile-back hidden>חזרה</button><button type="button" data-profile-next disabled>המשך</button><button type="submit" data-profile-save hidden>סיום</button><p class="profile-finish-helper" data-profile-finish-helper hidden>אפשר לשנות אחר כך</p></footer></form></section>';
+  var wrapper=document.createElement('div');wrapper.className='profile-wizard-backdrop';wrapper.hidden=true;wrapper.innerHTML='<section class="profile-wizard" role="dialog" aria-modal="true" aria-labelledby="profile-wizard-title"><header><div><small data-profile-step-label>שלב 1 מתוך 3</small><h2 id="profile-wizard-title" tabindex="-1">יצירת פרופיל אישי</h2></div><button type="button" class="profile-wizard-close" data-profile-wizard-close aria-label="סגירת יצירת הפרופיל">×</button></header><ol class="profile-wizard-progress" aria-label="התקדמות"><li aria-current="step"><span>1</span> הוספת תמונה</li><li><span>2</span> בחירת אווטר</li><li><span>3</span> תחומי עניין</li></ol><form data-profile-wizard-form><section data-profile-step="1"><h3>הוספת תמונה</h3><p class="profile-step-subtitle">אפשר להעלות תמונה מהגלריה או לצלם עכשיו</p><p class="profile-wizard-privacy">העיבוד והחיתוך מתבצעים במכשיר. רק אם בוחרים ליצור אווטרים, התמונה החתוכה נשלחת לשירות AI. לאחר שמירה תמונת הפרופיל שנבחרה זמינה באמצעות כתובת ציבורית.</p><div class="profile-crop-shell"><img data-profile-existing-photo hidden alt="תמונת הפרופיל הנוכחית"><canvas width="512" height="512" data-profile-crop aria-label="תצוגה מקדימה של חיתוך התמונה"></canvas><div data-profile-empty>בחרו תמונה מהגלריה או צלמו עכשיו</div></div><div class="profile-source-actions"><label class="profile-source-button"><i class="fa-regular fa-images" aria-hidden="true"></i><span>בחירה מהגלריה</span><input type="file" data-profile-gallery accept="image/jpeg,image/png,image/webp"></label><label class="profile-source-button"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>צילום תמונה</span><input type="file" data-profile-camera accept="image/jpeg,image/png,image/webp" capture="user"></label></div><div class="profile-crop-controls" hidden data-profile-crop-controls><label><span>זום</span><input type="range" min="1" max="3" step="0.01" value="1" data-profile-zoom></label><label><span>מיקום אופקי</span><input type="range" min="-100" max="100" step="1" value="0" data-profile-x></label><label><span>מיקום אנכי</span><input type="range" min="-100" max="100" step="1" value="0" data-profile-y></label></div><button type="button" class="profile-use-photo" data-profile-use-photo>השתמש בתמונה האמיתית בלי ליצור אווטר</button><small class="profile-use-photo-note">בחירה זו לא מפעילה AI ולא משתמשת במכסת יצירת האווטרים.</small></section><section data-profile-step="2" hidden><h3>בחירת אווטר</h3><p class="profile-step-subtitle">בחר את הסגנון שהכי מתאים לך</p><p class="profile-wizard-privacy">התמונה החתוכה נשלחת לשירות AI ליצירת שישה אווטרים אישיים. רק האווטר שנבחר יישמר בסיום.</p><fieldset class="profile-style-fieldset"><legend class="sr-only">בחירת סגנון אווטר</legend><div class="profile-style-grid" data-profile-styles></div></fieldset><button type="button" class="profile-use-photo secondary" data-profile-use-photo>העדפה לתמונה האמיתית במקום באווטר</button><p data-profile-generation-summary role="status" aria-live="polite"></p><button type="button" data-profile-retry-all hidden>נסה שוב</button></section><section data-profile-step="3" hidden><h3>תחומי עניין</h3><p class="profile-step-subtitle">בחר את מה שמעניין אותך כדי שנוכל להתאים המלצות</p><div class="profile-final-avatar" hidden><img data-profile-selected-preview alt="האווטר שנבחר"><span data-profile-final-initials aria-hidden="true"></span></div><label class="profile-wizard-field profile-wizard-name" hidden><span>שם לתצוגה</span><input type="text" name="displayName" maxlength="80" autocomplete="nickname"></label><div data-profile-preference-fields></div></section><p class="profile-wizard-status" data-profile-wizard-status role="status" aria-live="polite"></p><footer><button type="button" class="secondary" data-profile-back hidden>חזרה</button><button type="button" data-profile-next disabled>המשך</button><button type="submit" data-profile-save hidden>סיום</button><p class="profile-finish-helper" data-profile-finish-helper hidden>אפשר לשנות אחר כך</p></footer></form></section>';
   wrapper.querySelector('#profile-wizard-title').setAttribute('tabindex','-1');
   wrapper.addEventListener('keydown',function(event){if(event.key==='Escape'||event.key==='Tab'){onKeydown(event);event.stopPropagation()}});
   document.body.appendChild(wrapper);return wrapper
 }
 function setStep(next){
-  step=next;modal.dataset.profileScene=String(step);all('[data-profile-step]').forEach(function(section){section.hidden=Number(section.dataset.profileStep)!==step});
-  all('.profile-wizard-progress li').forEach(function(item,index){if(index+1===step)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');item.dataset.complete=index+1<step?'true':'false'});
-  el('[data-profile-step-label]').textContent='שלב '+step+' מתוך 3';el('[data-profile-back]').hidden=step===1;el('[data-profile-next]').hidden=step===3;el('[data-profile-save]').hidden=step!==3;el('[data-profile-finish-helper]').hidden=step!==3;
-  if(step===1)el('[data-profile-next]').disabled=!decodedImage&&!onboarding.photo;else if(step===2)el('[data-profile-next]').disabled=!selectedResult();
-  setStatus('');var heading=el('#profile-wizard-title');if(heading)heading.focus({preventScroll:true})
+  step=next;var direct=wizardMode==='interests';modal.dataset.profileScene=String(step);modal.dataset.profileMode=wizardMode;all('[data-profile-step]').forEach(function(section){section.hidden=Number(section.dataset.profileStep)!==step});
+  var progress=el('.profile-wizard-progress');if(progress)progress.hidden=direct;all('.profile-wizard-progress li').forEach(function(item,index){if(index+1===step)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');item.dataset.complete=index+1<step?'true':'false'});
+  var heading=el('#profile-wizard-title');if(heading)heading.textContent=direct?'תחומי עניין':'יצירת פרופיל אישי';el('[data-profile-step-label]').textContent=direct?'עריכה ישירה':'שלב '+step+' מתוך 3';
+  el('[data-profile-back]').hidden=direct||step===1;el('[data-profile-next]').hidden=direct||step===3;el('[data-profile-save]').hidden=step!==3;el('[data-profile-save]').textContent=direct?'שמירת תחומי עניין':'סיום';el('[data-profile-finish-helper]').hidden=step!==3;el('[data-profile-finish-helper]').textContent=direct?'אפשר לשנות את תחומי העניין בכל עת':'אפשר לשנות אחר כך';
+  if(step===1){el('[data-profile-next]').textContent='יצירת אווטרים';el('[data-profile-next]').disabled=!decodedImage&&!onboarding.photo}else if(step===2){el('[data-profile-next]').textContent='המשך';el('[data-profile-next]').disabled=!selectedResult()}
+  var details=el('.profile-extra-details');if(details)details.hidden=direct;var finalAvatar=el('.profile-final-avatar');if(direct&&finalAvatar)finalAvatar.hidden=true;syncPhotoActions();setStatus('');if(heading)heading.focus({preventScroll:true})
 }
 function renderStyles(){
   var grid=el('[data-profile-styles]');if(!grid)return;
@@ -228,64 +248,68 @@ function renderStyles(){
 }
 function renderPreferences(){
   var profile=window.TravelMateUserProfile.fromUser(user),preferences=Object.assign({},profile.preferences);
-  el('[name="displayName"]').value=profile.name;el('[data-profile-preference-fields]').innerHTML=preferencesMarkup(preferences);var details=el('.profile-extra-details');details.insertBefore(el('[name="displayName"]').closest('label'),details.querySelector('.profile-wizard-preferences'));el('[name="displayName"]').closest('label').hidden=false;onboarding.interestTags=preferences.interests.slice()
+  el('[name="displayName"]').value=profile.name;el('[data-profile-preference-fields]').innerHTML=preferencesMarkup(preferences);var details=el('.profile-extra-details'),nameField=el('[name="displayName"]').closest('label');details.insertBefore(nameField,details.querySelector('.profile-wizard-preferences'));nameField.hidden=wizardMode==='interests';details.hidden=wizardMode==='interests';onboarding.interestTags=preferences.interests.slice()
 }
 function showExistingPhoto(generation){
   var profile=window.TravelMateUserProfile.fromUser(user);if(!profile.avatarUrl)return;
   var image=el('[data-profile-existing-photo]'),source=sourceGeneration;
-  image.crossOrigin='anonymous';image.onload=function(){if(!currentWizard(generation)||source!==sourceGeneration)return;decodedImage=image;onboarding.photo={url:profile.avatarUrl,existing:true};image.hidden=false;el('[data-profile-empty]').hidden=true;el('[data-profile-next]').disabled=false};
+  image.crossOrigin='anonymous';image.onload=function(){if(!currentWizard(generation)||source!==sourceGeneration)return;decodedImage=image;onboarding.photo={url:profile.avatarUrl,existing:true};image.hidden=false;el('[data-profile-empty]').hidden=true;el('[data-profile-next]').disabled=false;syncPhotoActions()};
   image.onerror=function(){if(currentWizard(generation)&&source===sourceGeneration){image.hidden=true;image.removeAttribute('src');onboarding.photo=null;el('[data-profile-next]').disabled=true}};image.src=profile.avatarUrl
 }
 async function handleFile(file){
-  if(!file||busy)return;var generation=++sourceGeneration;clearResults();onboarding.photo=null;setStatus('בודק ומעבד את התמונה…');el('[data-profile-next]').disabled=true;
+  if(!file||busy)return;var generation=++sourceGeneration;clearResults();clearPhotoChoice();profileImageKind='';onboarding.photo=null;setStatus('בודק ומעבד את התמונה…');el('[data-profile-next]').disabled=true;
   try{
     await validateSource(file);if(generation!==sourceGeneration)return;releaseImage();clearResults();var decoded=await decodeSource(file);if(generation!==sourceGeneration){if(decoded&&typeof decoded.close==='function')decoded.close();return}decodedImage=decoded;
     if(!imageWidth()||!imageHeight())throw new Error('SOURCE_DECODE');selectedStyle='';onboarding.avatarStyle='';onboarding.photo=null;
     ['[data-profile-zoom]','[data-profile-x]','[data-profile-y]'].forEach(function(selector){el(selector).value=selector.indexOf('zoom')>=0?'1':'0'});
-    el('[data-profile-existing-photo]').hidden=true;el('[data-profile-empty]').hidden=true;el('[data-profile-crop-controls]').hidden=false;scheduleCropDraw();el('[data-profile-next]').disabled=false;setStatus('התמונה מוכנה. אפשר לכוון זום ומיקום לפני ההמשך.')
+    el('[data-profile-existing-photo]').hidden=true;el('[data-profile-empty]').hidden=true;el('[data-profile-crop-controls]').hidden=false;scheduleCropDraw();el('[data-profile-next]').disabled=false;syncPhotoActions();setStatus('התמונה מוכנה. אפשר לכוון זום ומיקום, להשתמש בתמונה האמיתית או ליצור אווטרים.')
   }catch(error){if(generation!==sourceGeneration)return;releaseImage();clearResults();el('[data-profile-crop]').getContext('2d').clearRect(0,0,OUTPUT_SIZE,OUTPUT_SIZE);el('[data-profile-empty]').hidden=false;el('[data-profile-crop-controls]').hidden=true;el('[data-profile-next]').disabled=true;var message=/SOURCE_SIZE/.test(String(error.message))?'אפשר לבחור תמונת JPG, PNG או WebP עד 20MB.':'לא הצלחנו לקרוא את התמונה. ודאו שזה קובץ JPG, PNG או WebP תקין.';setStatus(message,true)}
 }
 function collectPreferences(){
   var interests=all('input[name="interests"]:checked').map(function(input){return input.value});onboarding.interestTags=interests.slice();
   return window.TravelMateUserProfile.normalizePreferences({pace:el('[name="pace"]').value,activityDensity:el('[name="activityDensity"]').value,transport:el('[name="transport"]').value,tripStyle:el('[name="tripStyle"]').value,interests:interests,learningEnabled:el('[name="learningEnabled"]').checked})
 }
-function setMutationDisabled(disabled){all('button,input,select').forEach(function(control){control.disabled=disabled});el('[data-profile-save]').setAttribute('aria-busy',disabled?'true':'false');if(!disabled){el('[data-profile-next]').disabled=step===1?(!decodedImage&&!onboarding.photo):!selectedResult();all('[name="avatarStyle"]').forEach(function(input){input.disabled=!styleResults.some(function(item){return item.id===input.value&&item.status==='ready'})});updateOnlineState()}}
+function setMutationDisabled(disabled){all('button,input,select').forEach(function(control){control.disabled=disabled});el('[data-profile-save]').setAttribute('aria-busy',disabled?'true':'false');if(!disabled){if(wizardMode!=='interests')el('[data-profile-next]').disabled=step===1?(!decodedImage&&!onboarding.photo):!selectedResult();all('[name="avatarStyle"]').forEach(function(input){input.disabled=!styleResults.some(function(item){return item.id===input.value&&item.status==='ready'})});syncPhotoActions();updateOnlineState()}}
 async function stillCurrentOwner(expectedOwner){var session=await window.TravelMateCloud.getSession();return session&&session.user&&String(session.user.id)===expectedOwner?session:null}
 async function saveProfileSafely(event){
   event.preventDefault();
   if(busy)return;
   if(navigator.onLine===false){setStatus('כדי לשמור שינויים בפרופיל יש להתחבר לרשת. השינויים לא יישמרו בתור.',true);return}
-  var chosen=selectedResult();if(step!==3||!chosen||!onboarding.photo)return;
+  if(step!==3)return;
   var generation=wizardGeneration,saveOwner=ownerId,displayName=el('[name="displayName"]').value,preferences=collectPreferences();
-  busy=true;var avatarSaved=false;setMutationDisabled(true);setStatus('שומר את הפרופיל בחשבון…');
+  busy=true;var avatarSaved=false;setMutationDisabled(true);setStatus(wizardMode==='interests'?'שומר את תחומי העניין…':'שומר את הפרופיל בחשבון…');
   try{
     var session=await stillCurrentOwner(saveOwner);if(!currentWizard(generation)||!session)throw new Error('AUTH_CONTEXT_CHANGED');
-    if(chosen&&chosen.blob&&chosen.isPlaceholder===false){
-      var avatarResult=await window.TravelMateCloud.uploadAvatar(fileFromBlob(chosen.blob,chosen.id),{style:chosen.id,normalized:true,ownerId:saveOwner});
-      if(avatarResult.error)throw avatarResult.error;
-      avatarSaved=true;
-      session=await stillCurrentOwner(saveOwner);if(!currentWizard(generation)||!session||!avatarResult.data||!avatarResult.data.user||String(avatarResult.data.user.id)!==saveOwner)throw new Error('AUTH_CONTEXT_CHANGED');
-      user=avatarResult.data.user;window.dispatchEvent(new CustomEvent('travelmate:profile-change',{detail:{user:user}}));
+    if(wizardMode==='interests'){
+      var preferenceResult=await window.TravelMateCloud.updatePreferencesForOwner(saveOwner,preferences);if(preferenceResult&&preferenceResult.error)throw preferenceResult.error;
+      session=await stillCurrentOwner(saveOwner);if(!currentWizard(generation)||!session)throw new Error('AUTH_CONTEXT_CHANGED');user=preferenceResult.data&&preferenceResult.data.user||user;window.dispatchEvent(new CustomEvent('travelmate:profile-change',{detail:{user:user}}));setStatus('תחומי העניין נשמרו.');closeTimer=setTimeout(function(){if(currentWizard(generation))closeWizard()},450);return
     }
-    var profileResult=await window.TravelMateCloud.updateProfileForOwner(saveOwner,displayName,preferences,{avatarStyle:onboarding.avatarStyle});
+    var chosen=selectedResult(),imageBlob=profileImageKind==='photo'?profilePhotoBlob:(chosen&&chosen.blob);if(!imageBlob){setStatus('בחרו תמונה אמיתית או אווטר לפני השמירה.',true);return}
+    var imageStyle=profileImageKind==='photo'?'photo':chosen.id;
+    var avatarResult=await window.TravelMateCloud.uploadAvatar(fileFromBlob(imageBlob,imageStyle),{style:profileImageKind==='photo'?null:chosen.id,normalized:true,ownerId:saveOwner});
+    if(avatarResult.error)throw avatarResult.error;avatarSaved=true;
+    session=await stillCurrentOwner(saveOwner);if(!currentWizard(generation)||!session||!avatarResult.data||!avatarResult.data.user||String(avatarResult.data.user.id)!==saveOwner)throw new Error('AUTH_CONTEXT_CHANGED');
+    user=avatarResult.data.user;window.dispatchEvent(new CustomEvent('travelmate:profile-change',{detail:{user:user}}));
+    var profileResult=await window.TravelMateCloud.updateProfileForOwner(saveOwner,displayName,preferences,{avatarStyle:profileImageKind==='photo'?null:onboarding.avatarStyle});
     if(profileResult&&profileResult.error)throw profileResult.error;
     session=await stillCurrentOwner(saveOwner);if(!currentWizard(generation)||!session)throw new Error('AUTH_CONTEXT_CHANGED');
-    user=profileResult.data&&profileResult.data.user||user;window.dispatchEvent(new CustomEvent('travelmate:profile-change',{detail:{user:user}}));setStatus('הפרופיל נשמר בהצלחה.');closeTimer=setTimeout(function(){if(currentWizard(generation))closeWizard()},450)
+    user=profileResult.data&&profileResult.data.user||user;window.dispatchEvent(new CustomEvent('travelmate:profile-change',{detail:{user:user}}));setStatus(profileImageKind==='photo'?'התמונה האמיתית נשמרה בפרופיל.':'הפרופיל נשמר בהצלחה.');closeTimer=setTimeout(function(){if(currentWizard(generation))closeWizard()},450)
   }catch(error){if(currentWizard(generation))setStatus(avatarSaved?'התמונה נשמרה בחשבון המקורי. שמירת ההעדפות לא הושלמה בוודאות; התחברו שוב ובדקו.':errorMessage(error),true)}
   finally{if(currentWizard(generation)){busy=false;setMutationDisabled(false)}}
 }
-async function openWizard(button){
+async function openWizard(button,mode){
   if(modal&&!modal.hidden)return;
-  if(!modal)modal=buildModal();var generation=++wizardGeneration;opener=button;ownerId='';user=null;busy=true;resetFiles();onboarding={photo:null,avatarStyle:'',interestTags:[]};setMutationDisabled(true);setStatus('טוען את הפרופיל…');modal.hidden=false;var nameField=el('[name="displayName"]').closest('label');nameField.hidden=true;el('[data-profile-step="3"]').insertBefore(nameField,el('[data-profile-preference-fields]'));el('[name="displayName"]').value='';el('[data-profile-preference-fields]').replaceChildren();setStep(1);setStatus('טוען את הפרופיל…');
+  wizardMode=mode==='interests'?'interests':'full';
+  if(!modal)modal=buildModal();var generation=++wizardGeneration;opener=button;ownerId='';user=null;busy=true;resetFiles();onboarding={photo:null,avatarStyle:'',interestTags:[]};modal.hidden=false;setMutationDisabled(true);setStatus('טוען את הפרופיל…');var nameField=el('[name="displayName"]').closest('label');nameField.hidden=true;el('[data-profile-step="3"]').insertBefore(nameField,el('[data-profile-preference-fields]'));el('[name="displayName"]').value='';el('[data-profile-preference-fields]').replaceChildren();setStep(wizardMode==='interests'?3:1);setStatus('טוען את הפרופיל…');
   inertSiblings=Array.prototype.slice.call(document.body.children).filter(function(node){return node!==modal}).map(function(node){var state={node:node,inert:node.inert};node.inert=true;return state});
   previousBodyOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
   el('[data-profile-wizard-close]').disabled=false;el('[data-profile-wizard-close]').focus();
   try{
-    var session=await window.TravelMateCloud.getSession();if(!currentWizard(generation))return;if(!session||!session.user)throw new Error('AUTH_REQUIRED');ownerId=String(session.user.id);user=session.user;selectedStyle='';renderPreferences();setStep(1);showExistingPhoto(generation)
+    var session=await window.TravelMateCloud.getSession();if(!currentWizard(generation))return;if(!session||!session.user)throw new Error('AUTH_REQUIRED');ownerId=String(session.user.id);user=session.user;selectedStyle='';renderPreferences();setStep(wizardMode==='interests'?3:1);if(wizardMode!=='interests')showExistingPhoto(generation)
   }catch(error){if(currentWizard(generation))setStatus('יש להתחבר לחשבון כדי לערוך את הפרופיל.',true)}
   finally{if(currentWizard(generation)){busy=false;if(user)setMutationDisabled(false)}}
 }
-function closeWizard(force){if(!modal||modal.hidden||(busy&&force!==true&&ownerId))return;wizardGeneration+=1;if(closeTimer){clearTimeout(closeTimer);closeTimer=0}busy=false;modal.hidden=true;document.body.style.overflow=previousBodyOverflow;inertSiblings.forEach(function(state){state.node.inert=state.inert});inertSiblings=[];resetFiles();onboarding.interestTags=[];var nameField=el('[name="displayName"]').closest('label');nameField.hidden=true;el('[data-profile-step="3"]').insertBefore(nameField,el('[data-profile-preference-fields]'));el('[name="displayName"]').value='';el('[data-profile-preference-fields]').replaceChildren();ownerId='';user=null;if(opener&&document.contains(opener))opener.focus();opener=null}
+function closeWizard(force){if(!modal||modal.hidden||(busy&&force!==true&&ownerId))return;wizardGeneration+=1;if(closeTimer){clearTimeout(closeTimer);closeTimer=0}busy=false;modal.hidden=true;document.body.style.overflow=previousBodyOverflow;inertSiblings.forEach(function(state){state.node.inert=state.inert});inertSiblings=[];resetFiles();onboarding.interestTags=[];var nameField=el('[name="displayName"]').closest('label');nameField.hidden=true;el('[data-profile-step="3"]').insertBefore(nameField,el('[data-profile-preference-fields]'));el('[name="displayName"]').value='';el('[data-profile-preference-fields]').replaceChildren();ownerId='';user=null;wizardMode='full';if(opener&&document.contains(opener))opener.focus();opener=null}
 function updateOnlineState(){if(!modal||modal.hidden)return;var offline=navigator.onLine===false;el('[data-profile-save]').disabled=busy||offline||!ownerId;if(offline){generationControllers.forEach(function(controller){controller.abort()});styleResults.forEach(function(item){if(item.status==='pending'){item.status='failed';item.message=generationMessage(new Error('OFFLINE'))}});if(styleResults.length)renderStyles();setStatus(step===2?generationMessage(new Error('OFFLINE')):'כדי לשמור שינויים בפרופיל יש להתחבר לרשת. השינויים לא יישמרו בתור.',false)}else if(styleResults.length)renderStyles()}
 function focusable(){return all('button:not([disabled]):not([hidden]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])').filter(function(node){return!node.closest('[hidden]')&&node.getClientRects().length>0})}
 function onKeydown(event){
@@ -295,24 +319,25 @@ function onKeydown(event){
 window.TravelMateProfileWizard=Object.freeze({OUTPUT_SIZE:OUTPUT_SIZE,AVATAR_SIZE:OUTPUT_SIZE,SOURCE_MAX_BYTES:SOURCE_MAX_BYTES,UPLOAD_MAX_BYTES:UPLOAD_MAX_BYTES,STORED_MAX_BYTES:UPLOAD_MAX_BYTES,styles:STYLE_DEFINITIONS,sourceFileCheck:sourceFileCheck,validImageBytes:validImageBytes,boundedBlob:boundedBlob});
 if(typeof document==='undefined')return;
 document.addEventListener('click',function(event){
-  var open=event.target.closest&&event.target.closest('[data-profile-wizard-open]');if(open){event.preventDefault();if(window.TravelMateCloud&&window.TravelMateUserProfile)openWizard(open);return}
+  var interestsOpen=event.target.closest&&event.target.closest('[data-profile-interests-open]'),open=event.target.closest&&event.target.closest('[data-profile-wizard-open]');if(interestsOpen||open){event.preventDefault();if(window.TravelMateCloud&&window.TravelMateUserProfile)openWizard(interestsOpen||open,interestsOpen?'interests':'full');return}
   if(!modal||modal.hidden)return;if(event.target===modal||event.target.closest('[data-profile-wizard-close]')){event.preventDefault();closeWizard()}
 });
 document.addEventListener('change',function(event){
   if(!modal||modal.hidden)return;if(event.target.matches('[data-profile-camera],[data-profile-gallery]')){handleFile(event.target.files&&event.target.files[0]);return}
   if(event.target.name==='interests')onboarding.interestTags=all('input[name="interests"]:checked').map(function(input){return input.value});
-  if(event.target.name==='avatarStyle'){if(!styleResults.some(function(item){return item.id===event.target.value&&item.status==='ready'&&item.blob&&!item.isPlaceholder}))return;selectedStyle=event.target.value;onboarding.avatarStyle=selectedStyle;el('[data-profile-next]').disabled=false;var chosen=styleResults.find(function(item){return item.id===selectedStyle});if(chosen)el('[data-profile-selected-preview]').src=chosen.url;el('.profile-final-avatar').hidden=false}
+  if(event.target.name==='avatarStyle'){if(!styleResults.some(function(item){return item.id===event.target.value&&item.status==='ready'&&item.blob&&!item.isPlaceholder}))return;clearPhotoChoice();profileImageKind='avatar';selectedStyle=event.target.value;onboarding.avatarStyle=selectedStyle;el('[data-profile-next]').disabled=false;var chosen=styleResults.find(function(item){return item.id===selectedStyle});if(chosen)el('[data-profile-selected-preview]').src=chosen.url;el('.profile-final-avatar').hidden=false}
 });
-document.addEventListener('input',function(event){if(modal&&!modal.hidden&&!busy&&event.target.matches('[data-profile-zoom],[data-profile-x],[data-profile-y]')){sourceGeneration+=1;clearResults();onboarding.photo=null;scheduleCropDraw()}});
+document.addEventListener('input',function(event){if(modal&&!modal.hidden&&!busy&&event.target.matches('[data-profile-zoom],[data-profile-x],[data-profile-y]')){sourceGeneration+=1;clearResults();clearPhotoChoice();profileImageKind='';onboarding.photo=null;scheduleCropDraw();syncPhotoActions()}});
 document.addEventListener('keydown',onKeydown);
 document.addEventListener('submit',function(event){if(modal&&!modal.hidden&&event.target.matches('[data-profile-wizard-form]'))saveProfileSafely(event)});
 document.addEventListener('click',async function(event){
   if(!modal||modal.hidden||busy||!ownerId)return;
   var retry=event.target.closest('[data-profile-retry]');if(retry){retryStyles(retry.dataset.profileRetry);return}if(event.target.closest('[data-profile-retry-all]')){retryStyles();return}
-  if(event.target.closest('[data-profile-back]')){setStep(Math.max(1,step-1));return}
+  if(event.target.closest('[data-profile-use-photo]')){await useRealPhoto();return}
+  if(event.target.closest('[data-profile-back]')){if(step===3&&profileImageKind==='photo'){clearPhotoChoice();setStep(1)}else setStep(Math.max(1,step-1));return}
   if(!event.target.closest('[data-profile-next]'))return;
   if(step===1){if(!decodedImage&&!onboarding.photo)return;var generation=wizardGeneration;busy=true;setMutationDisabled(true);setStatus('מכין את התמונה ואת אפשרויות האווטר…');try{await prepareStyles();if(currentWizard(generation)){renderStyles();setStep(2)}}catch(error){if(currentWizard(generation))setStatus(errorMessage(error),true)}finally{if(currentWizard(generation)){busy=false;setMutationDisabled(false)}}}
-  else if(step===2&&selectedResult()){setStep(3)}
+  else if(step===2&&selectedResult()){profileImageKind='avatar';setStep(3)}
 });
 window.addEventListener('online',updateOnlineState);window.addEventListener('offline',updateOnlineState);
 window.addEventListener('travelmate:home-auth',async function(event){

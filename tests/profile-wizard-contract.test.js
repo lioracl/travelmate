@@ -41,8 +41,9 @@ test('six illustrated avatar styles are explicit choices rather than photo filte
   assert.match(css,/grid-template-columns:repeat\(2,minmax/);
 });
 
-test('step two re-enables its next action after local style generation',()=>{
-  assert.match(source,/else if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=!selectedResult\(\)/);
+test('step two re-enables its next action after generated style selection',()=>{
+  assert.match(source,/else if\(step===2\).*selectedResult\(\)/);
+  assert.match(source,/if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=!chosen/);
 });
 
 test('review writes only explicit canonical preferences and preserves Auth display identity',()=>{
@@ -92,13 +93,15 @@ test('2.16.0 assets and cache versions are synchronized',()=>{
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.equal(version,'20261005-03');
+  assert.equal(version,'20261005-04');
   assert.match(about,/version: '2\.16\.0'/);
   assert.match(about,/Personal Profile - 2\.16\.0/);
 });
 
-test('style step re-enables Next after asynchronous avatar rendering',()=>{
-  assert.match(source,/if\(step===1\)el\('\[data-profile-next\]'\)\.disabled=!decodedImage&&!onboarding.photo;else if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=!selectedResult\(\)/);
+test('wizard keeps normal next-state logic while direct interests mode bypasses navigation',()=>{
+  assert.match(source,/wizardMode!=='interests'/);
+  assert.match(source,/step===1\?\(!decodedImage&&!onboarding.photo\):!selectedResult\(\)/);
+  assert.match(source,/wizardMode==='interests'\?3:1/);
 });
 
 test('three-step onboarding collects approved interests without enabling learning',()=>{
@@ -108,6 +111,20 @@ test('three-step onboarding collects approved interests without enabling learnin
   assert.match(source,/onboarding=\{photo:null,avatarStyle:'',interestTags:\[\]\}/);
   assert.match(source,/כבוי כברירת מחדל/);assert.match(source,/>סיום<\/button>/);
   assert.doesNotMatch(source,/length>6|renderExistingStyle/);
+});
+
+test('real photo can be saved without AI and direct interests editing skips photo/avatar steps',()=>{
+  assert.match(source,/data-profile-use-photo/);
+  assert.match(source,/השתמש בתמונה האמיתית בלי ליצור אווטר/);
+  assert.match(source,/profileImageKind==='photo'/);
+  assert.match(source,/normalizedCurrentPhoto/);
+  assert.match(source,/updatePreferencesForOwner\(saveOwner,preferences\)/);
+  assert.match(source,/data-profile-interests-open/);
+  assert.match(source,/wizardMode=mode==='interests'\?'interests':'full'/);
+  assert.match(source,/progress\.hidden=direct/);
+  assert.match(css,/profile-use-photo/);
+  assert.match(css,/data-profile-mode="interests"/);
+  assert.match(css,/object-fit:contain/);
 });
 
 test('wizard rejects filename/type mismatches and enforces the exact 20MB source boundary',()=>{
