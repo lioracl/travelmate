@@ -1248,7 +1248,12 @@
     try {
       var response=await fetch(config.url.replace(/\/$/,'')+'/functions/v1/avatar-generator',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,'Content-Type':'application/json'},body:JSON.stringify({style:style,mimeType:photo.type,imageData:imageData}),signal:controller.signal,cache:'no-store'});
       imageData=null;
-      if(!response.ok){if(response.body)await response.body.cancel();var failure=new Error(response.status===429?'AVATAR_GENERATION_LIMIT':response.status===401?'AUTH_REQUIRED':response.status===503?'AVATAR_GENERATION_NOT_CONFIGURED':'AVATAR_GENERATION_FAILED');failure.status=response.status;throw failure;}
+      if(!response.ok){
+        var errorCode='';
+        try{var errorPayload=await response.json();errorCode=String(errorPayload&&errorPayload.error||'')}catch(error){if(response.body)await response.body.cancel().catch(function(){})}
+        var mappedError=errorCode==='GENERATION_DAILY_LIMIT'?'AVATAR_GENERATION_DAILY_LIMIT':errorCode==='GENERATION_BUSY'?'AVATAR_GENERATION_BUSY':errorCode==='PROVIDER_LIMIT'?'AVATAR_PROVIDER_LIMIT':errorCode==='GENERATION_NOT_CONFIGURED'?'AVATAR_GENERATION_NOT_CONFIGURED':'';
+        var failure=new Error(mappedError||(response.status===429?'AVATAR_GENERATION_LIMIT':response.status===401?'AUTH_REQUIRED':response.status===503?'AVATAR_GENERATION_NOT_CONFIGURED':'AVATAR_GENERATION_FAILED'));failure.status=response.status;throw failure;
+      }
       var reader=response.body.getReader(),chunks=[],size=0;
       try{while(true){var part=await reader.read();if(part.done)break;size+=part.value.length;if(size>4*1024*1024+65536)throw new Error('INVALID_GENERATED_IMAGE');chunks.push(part.value)}}
       catch(error){await reader.cancel().catch(function(){});throw error}finally{reader.releaseLock()}

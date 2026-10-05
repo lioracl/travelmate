@@ -164,7 +164,10 @@ function selectedResult(){return styleResults.find(function(item){return item.id
 function generationMessage(error){
   var value=String(error&&error.message||'');
   if(/OFFLINE/.test(value))return'יצירת אווטרים דורשת חיבור לרשת. התחברו ונסו שוב.';
-  if(/LIMIT/.test(value))return'הגענו למגבלת יצירה. המתינו לפחות 30 שניות; אם המכסה היומית נוצלה, נסו מחר.';
+  if(/DAILY_LIMIT/.test(value))return'המכסה היומית ליצירת אווטרים נוצלה. אפשר להשתמש בתמונה האמיתית או לנסות שוב מחר.';
+  if(/BUSY/.test(value))return'כבר מתבצעת יצירת אווטרים בחשבון. המתינו רגע ונסו שוב.';
+  if(/PROVIDER_LIMIT/.test(value))return'שירות יצירת האווטרים עמוס כרגע. המתינו מעט ונסו שוב.';
+  if(/LIMIT/.test(value))return'לא ניתן להתחיל יצירה נוספת כרגע. נסו שוב בעוד רגע.';
   if(/AUTH/.test(value))return'יש להתחבר שוב לחשבון כדי ליצור אווטר.';
   if(/NOT_CONFIGURED/.test(value))return'שירות יצירת האווטרים עדיין אינו זמין. נסו שוב מאוחר יותר.';
   return'לא הצלחנו ליצור את האווטר. אפשר לנסות שוב.';

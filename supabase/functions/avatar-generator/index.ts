@@ -73,7 +73,7 @@ Deno.serve(async (req: Request) => {
     const user=await boundedJson(auth,128*1024);if(!user?.id||user.is_anonymous===true)return reply(origin,401,{error:'AUTH_REQUIRED'});owner=user.id;
     const usage=await fetch(url+'/rest/v1/rpc/claim_avatar_generation',{method:'POST',headers:rpcHeaders,body:JSON.stringify({p_owner:owner,p_style:input.style}),signal:controller.signal});
     if(!usage.ok){await usage.body?.cancel();return reply(origin,503,{error:'USAGE_GUARD_UNAVAILABLE'});}
-    const lease=await boundedJson(usage,4096);if(!lease.allowed)return reply(origin,429,{error:'GENERATION_LIMIT',retryAfter:30});
+    const lease=await boundedJson(usage,4096);if(!lease.allowed){const reason=String(lease&&lease.reason||'');return reply(origin,429,{error:reason==='daily_limit'?'GENERATION_DAILY_LIMIT':reason==='busy'?'GENERATION_BUSY':'GENERATION_LIMIT'});}
     if(typeof lease.claim_id!=='string')return reply(origin,503,{error:'USAGE_GUARD_UNAVAILABLE'});claim=lease.claim_id;
     const form=new FormData();
     form.append('prompt',identity+styles[input.style]);form.append('width','512');form.append('height','512');form.append('input_image_0',binaryBlob(input.imageData,input.mimeType),'source');
