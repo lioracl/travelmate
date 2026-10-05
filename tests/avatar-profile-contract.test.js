@@ -318,3 +318,11 @@ test('preference-only save rejects account switch and offline mutation',async()=
   await assert.rejects(offline.cloud.updatePreferencesForOwner('A',{learningEnabled:false}),/PROFILE_OFFLINE/);
   assert.equal(offline.profileUpdates.length,0);
 });
+
+test('onboarding stores only an approved avatar-style key in existing Auth metadata',async()=>{
+  const runtime=boot({user:{id:'A',user_metadata:{}}});
+  await runtime.cloud.updateProfileForOwner('A','Alice',{interests:['beaches','technology']},{avatarStyle:'beach-journey'});
+  assert.equal(runtime.profileUpdates[0].payload.data.travelmate_avatar_style,'beach-journey');
+  await runtime.cloud.updateProfileForOwner('A','Alice',undefined,{avatarStyle:'untrusted-style'});
+  assert.equal(Object.hasOwn(runtime.profileUpdates[1].payload.data,'travelmate_avatar_style'),false);
+});

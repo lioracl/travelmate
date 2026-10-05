@@ -25,14 +25,14 @@ test('learning consent is explicit opt-in and preserves explicit true and false'
   assert.equal(api.normalizePreferences({ learningEnabled: 'true' }).learningEnabled, false);
 });
 
-test('canonical labels and completion summary cap unique interests at six', () => {
+test('canonical labels and completion summary retain all unique approved interests', () => {
   const api = profileApi();
   const preferences = api.normalizePreferences({
     pace: 'relaxed', activityDensity: 'dense', transport: 'transit', tripStyle: 'culture',
     interests: ['culture', 'food', 'nature', 'history', 'shopping', 'nightlife', 'photography', 'culture']
   });
   const summary = api.preferenceSummary(preferences);
-  assert.deepEqual(Array.from(preferences.interests), ['culture', 'food', 'nature', 'history', 'shopping', 'nightlife']);
+  assert.deepEqual(Array.from(preferences.interests), ['culture', 'food', 'nature', 'history', 'shopping', 'nightlife', 'photography']);
   assert.equal(api.preferenceLabels.transport.transit, 'תחבורה ציבורית');
   assert.equal(summary.configuredCount, 5);
   assert.equal(summary.totalGroups, 5);

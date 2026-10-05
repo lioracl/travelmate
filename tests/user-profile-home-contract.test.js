@@ -125,3 +125,10 @@ test('Home exposes Smart Profile from the existing account/profile owner', () =>
   assert.ok(profileSettingsCss.length > 0);
   assert.doesNotMatch(profileSettingsCss, /!important/);
 });
+
+test('approved onboarding interests all survive canonical normalization and summary',()=>{
+  const vm=require('node:vm');const box={window:{dispatchEvent(){}},CustomEvent:function(){},location:{href:'https://example.invalid/'},URL,Date};vm.runInNewContext(fs.readFileSync('assets/user-profile.js','utf8'),box);
+  const keys=['food','nature','beaches','culture','history','museums','shopping','nightlife','families','hiking','photography','technology'];
+  const normalized=box.window.TravelMateUserProfile.normalizePreferences({interests:keys});assert.deepEqual(Array.from(normalized.interests),keys);assert.equal(normalized.learningEnabled,false);
+  for(const key of keys)assert.ok(box.window.TravelMateUserProfile.preferenceLabels.interests[key]);
+});

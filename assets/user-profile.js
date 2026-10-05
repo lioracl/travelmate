@@ -17,14 +17,14 @@ var preferenceOptions=Object.freeze({
   activityDensity:Object.freeze(['light','balanced','dense']),
   transport:Object.freeze(['walking','transit','mixed','car']),
   tripStyle:Object.freeze(['city','culture','nature','food','relaxation','mixed']),
-  interests:Object.freeze(['culture','food','nature','history','shopping','nightlife','photography','relaxation'])
+  interests:Object.freeze(['culture','food','nature','history','shopping','nightlife','photography','relaxation','beaches','museums','families','hiking','technology'])
 });
 var preferenceLabels=Object.freeze({
   pace:Object.freeze({relaxed:'נינוח',balanced:'מאוזן',active:'פעיל'}),
   activityDensity:Object.freeze({light:'מעט פעילויות',balanced:'קצב מאוזן',dense:'יום מלא'}),
   transport:Object.freeze({walking:'הליכה',transit:'תחבורה ציבורית',mixed:'משולב',car:'רכב'}),
   tripStyle:Object.freeze({city:'עיר',culture:'תרבות',nature:'טבע',food:'אוכל',relaxation:'מנוחה',mixed:'משולב'}),
-  interests:Object.freeze({culture:'תרבות',food:'אוכל',nature:'טבע',history:'היסטוריה',shopping:'קניות',nightlife:'חיי לילה',photography:'צילום',relaxation:'מנוחה'})
+  interests:Object.freeze({culture:'תרבות',food:'אוכל',nature:'טבע',history:'היסטוריה',shopping:'קניות',nightlife:'חיי לילה',photography:'צילום',relaxation:'מנוחה',beaches:'חופים',museums:'מוזיאונים',families:'משפחות',hiking:'טיולים רגליים',technology:'טכנולוגיה'})
 });
 var preferenceFieldLabels=Object.freeze({
   pace:'קצב טיול',activityDensity:'צפיפות פעילויות',transport:'דרך התניידות',tripStyle:'סגנון טיול',interests:'תחומי עניין'
@@ -37,7 +37,7 @@ function normalizePreferences(value){
   }
   var interests=Array.isArray(source.interests)?source.interests.map(clean).filter(function(item,index,list){
     return preferenceOptions.interests.indexOf(item)>=0&&list.indexOf(item)===index;
-  }).slice(0,6):[];
+  }).slice(0,preferenceOptions.interests.length):[];
   return Object.freeze({
     pace:one('pace'),
     activityDensity:one('activityDensity'),

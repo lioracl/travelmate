@@ -31,22 +31,18 @@ test('camera and gallery are explicit separate inputs and only camera requests c
   assert.doesNotMatch(gallery,/capture=/);
 });
 
-test('exactly three deterministic local illustrated avatars are shown in an accessible radio grid',()=>{
-  const styleBlock=(source.match(/var STYLE_DEFINITIONS[\s\S]*?\n\]\);/)||[''])[0];
-  assert.equal((styleBlock.match(/Object\.freeze\(\{id:/g)||[]).length,3);
-  assert.deepEqual([...styleBlock.matchAll(/id:'([^']+)'/g)].map(item=>item[1]),['illustrated','sketch','poster']);
-  assert.match(source,/renderIllustratedStyle/);
-  assert.match(source,/getImageData/);
-  assert.match(source,/localEdge/);
-  assert.match(source,/type="radio" name="avatarStyle"/);
-  assert.match(source,/selectedStyle=event\.target\.value/);
-  assert.match(source,/uploadAvatar\(fileFromBlob\(chosen\.blob,chosen\.id\),\{style:chosen\.id,normalized:true,ownerId:saveOwner\}\)/);
-  assert.match(css,/\.profile-style-grid\{[^}]*grid-template-columns:repeat\(3/);
-  assert.doesNotMatch(source,/https?:\/\/|fetch\(|XMLHttpRequest/);
+test('six illustrated avatar styles are explicit choices rather than photo filters',()=>{
+  const styles=(source.match(/var STYLE_DEFINITIONS[\s\S]*?\n\]\);/)||[''])[0];
+  assert.deepEqual([...styles.matchAll(/id:'([^']+)'/g)].map(m=>m[1]),['classic','tokyo-neon','japanese-calm','beach-journey','manga-action','cinematic']);
+  for(const style of ['classic','tokyo-neon','japanese-calm','beach-journey','manga-action','cinematic'])assert.ok(fs.existsSync('assets/profile-avatar-previews/'+style+'.svg'));
+  assert.doesNotMatch(styles,/filter|saturate|sepia|grayscale/);
+  assert.match(source,/isPlaceholder:false/);assert.match(source,/type="radio" name="avatarStyle"/);
+  assert.match(source,/selectedStyle=event.target.value/);assert.match(source,/onboarding.avatarStyle=selectedStyle/);
+  assert.match(css,/grid-template-columns:repeat\(2,minmax/);
 });
 
 test('step two re-enables its next action after local style generation',()=>{
-  assert.match(source,/else if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=false/);
+  assert.match(source,/else if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=!selectedResult\(\)/);
 });
 
 test('review writes only explicit canonical preferences and preserves Auth display identity',()=>{
@@ -57,7 +53,7 @@ test('review writes only explicit canonical preferences and preserves Auth displ
   assert.match(source,/interests:interests/);
   assert.match(source,/learningEnabled:/);
   assert.match(source,/name="displayName" maxlength="80"/);
-  assert.match(source,/updateProfileForOwner\(saveOwner,displayName,preferences\)/);
+  assert.match(source,/updateProfileForOwner\(saveOwner,displayName,preferences,/);
   assert.doesNotMatch(source,/infer|guess|prediction/i);
 });
 
@@ -69,7 +65,7 @@ test('offline, account-switch, decode-race and cleanup safeguards are explicit',
   assert.match(source,/generation!==sourceGeneration/);
   assert.match(source,/typeof decoded\.close==='function'/);
   assert.match(source,/revokeObjectURL/);
-  assert.match(source,/canvas\.width=0;canvas\.height=0/);
+  assert.match(source,/base\.width=0;base\.height=0/);
   assert.match(source,/avatarSaved\?'התמונה נשמרה/);
   assert.doesNotMatch(source,/localStorage|indexedDB|queue/i);
 });
@@ -89,27 +85,29 @@ test('wizard focus, touch, reduced-motion and 390/430 geometry remain bounded',(
   assert.doesNotMatch(css,/!important/);
 });
 
-test('2.15.1 assets and cache versions are synchronized',()=>{
+test('2.16.0 assets and cache versions are synchronized',()=>{
   const html=fs.readFileSync('index.html','utf8'),sw=fs.readFileSync('sw.js','utf8'),about=fs.readFileSync('assets/about.js','utf8');
   const version=sw.match(/const ASSET_VERSION='([^']+)'/)[1];
   assert.match(html,new RegExp('profile-wizard\\.js\\?v='+version));
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.equal(version,'20261004-18');
-  assert.match(about,/version: '2\.15\.1'/);
-  assert.match(about,/Illustrated Avatars - 2\.15\.1/);
+  assert.equal(version,'20261004-19');
+  assert.match(about,/version: '2\.16\.0'/);
+  assert.match(about,/Personal Profile - 2\.16\.0/);
 });
 
 test('style step re-enables Next after asynchronous avatar rendering',()=>{
-  assert.match(source,/if\(step===1\)el\('\[data-profile-next\]'\)\.disabled=!ownerId;else if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=false/);
+  assert.match(source,/if\(step===1\)el\('\[data-profile-next\]'\)\.disabled=!decodedImage&&!onboarding.photo;else if\(step===2\)el\('\[data-profile-next\]'\)\.disabled=!selectedResult\(\)/);
 });
 
-test('wizard remains the canonical editor without forcing an avatar replacement',()=>{
-  assert.match(source,/if\(!decodedImage\)\{renderExistingStyle\(\);setStep\(2\);return\}/);
-  assert.match(source,/if\(chosen\)\{[\s\S]*uploadAvatar/);
-  assert.match(source,/updateProfileForOwner\(saveOwner,displayName,preferences\)/);
-  assert.match(source,/כבוי כברירת מחדל/);
+test('three-step onboarding collects approved interests without enabling learning',()=>{
+  for(const text of ['יצירת פרופיל אישי','הוספת תמונה','בחירת אווטר','תחומי עניין','אפשר לשנות אחר כך'])assert.ok(source.includes(text));
+  for(const key of ['food','nature','beaches','culture','history','museums','shopping','nightlife','families','hiking','photography','technology'])assert.ok(source.includes("id:'"+key+"'"));
+  assert.match(source,/onboarding.interestTags=interests.slice\(\)/);
+  assert.match(source,/onboarding=\{photo:null,avatarStyle:'',interestTags:\[\]\}/);
+  assert.match(source,/כבוי כברירת מחדל/);assert.match(source,/>סיום<\/button>/);
+  assert.doesNotMatch(source,/length>6|renderExistingStyle/);
 });
 
 test('wizard rejects filename/type mismatches and enforces the exact 20MB source boundary',()=>{

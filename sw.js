@@ -1,4 +1,4 @@
-const ASSET_VERSION='20261004-18';
+const ASSET_VERSION='20261004-19';
 const CACHE_SCHEMA='v266';
 const CACHE_NAME='travelmate-smart-'+CACHE_SCHEMA+'-'+ASSET_VERSION;
 const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-20\d{6}-\d+)?$/;
@@ -14,6 +14,12 @@ const CORE_PATHS=[
   './assets/home.js',
   './assets/profile-wizard.js',
   './assets/profile-wizard.css',
+  './assets/profile-avatar-previews/classic.svg',
+  './assets/profile-avatar-previews/tokyo-neon.svg',
+  './assets/profile-avatar-previews/japanese-calm.svg',
+  './assets/profile-avatar-previews/beach-journey.svg',
+  './assets/profile-avatar-previews/manga-action.svg',
+  './assets/profile-avatar-previews/cinematic.svg',
   './assets/destination-images.js',
   './assets/home-organizer.css',
   './assets/custom-trip.js',

@@ -1166,7 +1166,7 @@
     current.finally(function(){if(avatarOperationChains.get(owner)===current)avatarOperationChains.delete(owner)}).catch(function(){});
     return current;
   }
-  async function requireAvatarSession(client, owner, fresh) { var result=await client.auth.getSession(); if(result.error)throw result.error; var session=result.data&&result.data.session; var user=session&&session.user; if(!user)throw new Error('AUTH_REQUIRED'); if(fresh&&client.auth.getUser){var current=await client.auth.getUser();if(current.error)throw current.error;if(current.data&&current.data.user)user=current.data.user;session=Object.assign({},session,{user:user});} if(owner&&String(user.id)!==String(owner))throw authContextError(); return session; }
+  async function requireAvatarSession(client, owner, fresh) { var result=await client.auth.getSession(); if(result.error)throw result.error; var session=result.data&&result.data.session; var user=session&&session.user; if(!user)throw new Error('AUTH_REQUIRED'); if(fresh&&client.auth.getUser){var current=await client.auth.getUser();if(current.error)throw current.error;if(current.data&&current.data.user){if(String(current.data.user.id)!==String(user.id))throw authContextError();user=current.data.user;}session=Object.assign({},session,{user:user});} if(owner&&String(user.id)!==String(owner))throw authContextError(); return session; }
   async function createAvatarScopedClient(session) {
     if (!session || !session.user) throw new Error('AUTH_REQUIRED');
     if (typeof window.__travelMateAvatarClientFactory === 'function') return window.__travelMateAvatarClientFactory(session);
@@ -1229,6 +1229,39 @@
       return {state:'superseded',user:current,error:error};
     } catch(readError){return {state:'unknown',user:null,error:error,readError:readError};}
   }
+  // Sends only the local normalized photo to the authenticated image function.
+  // Captured bearer session belongs to owner; never use a mutable shared client for this request.
+  async function generateAvatarForOwner(owner, style, photo, signal) {
+    if(!owner)throw new Error('AUTH_REQUIRED');
+    if(signal&&signal.aborted)throw new DOMException('Cancelled','AbortError');
+    if(navigator.onLine===false)throw new Error('AVATAR_GENERATION_OFFLINE');
+    if(!['classic','tokyo-neon','japanese-calm','beach-journey','manga-action','cinematic'].includes(style))throw new Error('UNKNOWN_STYLE');
+    if(!photo||!['image/jpeg','image/png','image/webp'].includes(photo.type)||!photo.size||photo.size>2*1024*1024)throw new Error('INVALID_IMAGE');
+    var client=await getClient(),session=await requireAvatarSession(client,String(owner),true),config=window.TRAVELMATE_SUPABASE;
+    if(!config||!config.url||!config.publishableKey||!session.access_token)throw new Error('AVATAR_GENERATION_NOT_CONFIGURED');
+    var bytes=new Uint8Array(await photo.arrayBuffer()),pieces=[];
+    for(var offset=0;offset<bytes.length;offset+=8192)pieces.push(String.fromCharCode.apply(null,bytes.subarray(offset,offset+8192)));
+    var imageData=btoa(pieces.join(''));pieces=[];bytes=null;
+    await requireAvatarSession(client,String(owner),true);
+    var controller=new AbortController(),abort=function(){controller.abort()},timer=setTimeout(abort,105000);
+    if(signal){if(signal.aborted)controller.abort();else signal.addEventListener('abort',abort,{once:true})}
+    try {
+      var response=await fetch(config.url.replace(/\/$/,'')+'/functions/v1/avatar-generator',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,'Content-Type':'application/json'},body:JSON.stringify({style:style,mimeType:photo.type,imageData:imageData}),signal:controller.signal,cache:'no-store'});
+      imageData=null;
+      if(!response.ok){if(response.body)await response.body.cancel();var failure=new Error(response.status===429?'AVATAR_GENERATION_LIMIT':response.status===401?'AUTH_REQUIRED':response.status===503?'AVATAR_GENERATION_NOT_CONFIGURED':'AVATAR_GENERATION_FAILED');failure.status=response.status;throw failure;}
+      var reader=response.body.getReader(),chunks=[],size=0;
+      try{while(true){var part=await reader.read();if(part.done)break;size+=part.value.length;if(size>4*1024*1024+65536)throw new Error('INVALID_GENERATED_IMAGE');chunks.push(part.value)}}
+      catch(error){await reader.cancel().catch(function(){});throw error}finally{reader.releaseLock()}
+      var bodyBytes=new Uint8Array(size),position=0;chunks.forEach(function(chunk){bodyBytes.set(chunk,position);position+=chunk.length});
+      var result=JSON.parse(new TextDecoder().decode(bodyBytes));chunks=[];bodyBytes=null;
+      await requireAvatarSession(client,String(owner),true);if(controller.signal.aborted)throw new DOMException('Cancelled','AbortError');
+      if(!['image/jpeg','image/png','image/webp'].includes(result.mimeType)||typeof result.imageData!=='string'||result.imageData.length>4*1024*1024||result.imageData.length%4!==0||!/^[A-Za-z0-9+/]+={0,2}$/.test(result.imageData))throw new Error('INVALID_GENERATED_IMAGE');
+      var raw=atob(result.imageData),imageBytes=Uint8Array.from(raw,function(c){return c.charCodeAt(0)});
+      if(!imageBytes.length||imageBytes.length>3*1024*1024)throw new Error('INVALID_GENERATED_IMAGE');
+      return new Blob([imageBytes],{type:result.mimeType});
+    } finally {clearTimeout(timer);imageData=null;if(signal)signal.removeEventListener('abort',abort)}
+  }
+
   async function uploadAvatar(file, avatarOptions) {
     if(typeof navigator!=='undefined'&&navigator.onLine===false)return {data:null,error:new Error('AVATAR_OFFLINE')};
     var check=validateAvatarFile(file);if(!check.ok)return {data:null,error:new Error(check.error)};
@@ -1307,14 +1340,14 @@
       activityDensity: ['light', 'balanced', 'dense'],
       transport: ['walking', 'transit', 'mixed', 'car'],
       tripStyle: ['city', 'culture', 'nature', 'food', 'relaxation', 'mixed'],
-      interests: ['culture', 'food', 'nature', 'history', 'shopping', 'nightlife', 'photography', 'relaxation']
+      interests: window.TravelMateUserProfile&&window.TravelMateUserProfile.preferenceOptions?window.TravelMateUserProfile.preferenceOptions.interests:['culture', 'food', 'nature', 'history', 'shopping', 'nightlife', 'photography', 'relaxation']
     };
     function one(key) {
       return allowed[key].indexOf(String(input[key] || '')) >= 0 ? String(input[key]) : '';
     }
     var interests = Array.isArray(input.interests) ? input.interests.filter(function (item, index, list) {
       return allowed.interests.indexOf(String(item)) >= 0 && list.indexOf(item) === index;
-    }).slice(0, 6) : [];
+    }).slice(0, allowed.interests.length) : [];
     var normalizedPreferences = {
       pace: one('pace'),
       activityDensity: one('activityDensity'),
@@ -1330,7 +1363,7 @@
     return client.auth.updateUser({ data: metadataPatch });
   }
 
-  async function updateProfileForOwner(owner, displayName, preferences) {
+  async function updateProfileForOwner(owner, displayName, preferences, onboarding) {
     if(typeof navigator!=='undefined'&&navigator.onLine===false)throw new Error('PROFILE_OFFLINE');
     var mainClient=await getClient(),session=await requireAvatarSession(mainClient,String(owner||''),true);
     var scoped=await createAvatarScopedClient(session);
@@ -1338,6 +1371,7 @@
     var normalizedName=String(displayName||'').trim().replace(/\s+/g,' ').slice(0,80);
     if(!window.TravelMateUserProfile||typeof window.TravelMateUserProfile.normalizePreferences!=='function')throw new Error('PROFILE_CONTRACT_UNAVAILABLE');
     var patch={display_name:normalizedName};
+    if(onboarding&&['classic','tokyo-neon','japanese-calm','beach-journey','manga-action','cinematic'].indexOf(onboarding.avatarStyle)>=0)patch.travelmate_avatar_style=onboarding.avatarStyle;
     if(preferences&&typeof preferences==='object')patch.travelmate_preferences=window.TravelMateUserProfile.normalizePreferences(preferences);
     var result=await scoped.auth.updateUser({data:patch});
     if(result.error)return result;
@@ -1492,6 +1526,7 @@
     updatePreferencesForOwner: updatePreferencesForOwner,
     scopedClientForOwner: scopedClientForOwner,
     validateAvatarFile: validateAvatarFile,
+    generateAvatarForOwner: generateAvatarForOwner,
     uploadAvatar: uploadAvatar,
     removeAvatar: removeAvatar,
     authRedirectUrl: authRedirectUrl,
