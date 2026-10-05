@@ -65,7 +65,7 @@ Deno.serve(async (req: Request) => {
   if(!validImage(input.imageData,input.mimeType,SOURCE_BYTES,SOURCE_MAX_DIMENSION))return reply(origin,400,{error:'INVALID_IMAGE'});
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),90000);
   const disconnect=()=>controller.abort();req.signal.addEventListener('abort',disconnect,{once:true});if(req.signal.aborted)controller.abort();
-  let owner='',claim='';
+  let owner='',claim='',generationSucceeded=false;
   const rpcHeaders={apikey:service,Authorization:'Bearer '+service,'Content-Type':'application/json'};
   try {
     const auth=await fetch(url+'/auth/v1/user',{headers:{apikey:anon,Authorization:authorization},signal:controller.signal});
@@ -83,10 +83,11 @@ Deno.serve(async (req: Request) => {
     const body=await boundedJson(result,Math.ceil(OUTPUT_BYTES/3)*4+128*1024);
     const image=body&&body.success===true&&body.result&&typeof body.result.image==='string'?body.result.image:null,mime=detectImageMime(image);
     if(!image||!mime||!validImage(image,mime,OUTPUT_BYTES,OUTPUT_MAX_DIMENSION))return reply(origin,502,{error:'INVALID_GENERATED_IMAGE'});
+    generationSucceeded=true;
     return reply(origin,200,{mimeType:mime,imageData:image});
   } catch { return reply(origin,controller.signal.aborted?504:502,{error:controller.signal.aborted?'GENERATION_TIMEOUT':'GENERATION_UNAVAILABLE'}); }
   finally {
     clearTimeout(timer);req.signal.removeEventListener('abort',disconnect);
-    if(claim){try{const release=await fetch(url+'/rest/v1/rpc/release_avatar_generation',{method:'POST',headers:rpcHeaders,body:JSON.stringify({p_owner:owner,p_style:input.style,p_claim:claim}),signal:AbortSignal.timeout(5000)});await release.body?.cancel();}catch{/* Lease expires safely; never log payloads. */}}
+    if(claim){try{const release=await fetch(url+'/rest/v1/rpc/finalize_avatar_generation',{method:'POST',headers:rpcHeaders,body:JSON.stringify({p_owner:owner,p_style:input.style,p_claim:claim,p_success:generationSucceeded}),signal:AbortSignal.timeout(5000)});await release.body?.cancel();}catch{/* Lease expires safely; optimistic charge remains fail-closed. Never log payloads. */}}
   }
 });
