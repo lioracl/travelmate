@@ -65,7 +65,7 @@ Deno.serve(async (req: Request) => {
     if(!usage.ok){await usage.body?.cancel();return reply(origin,503,{error:'USAGE_GUARD_UNAVAILABLE'});}
     const lease=await boundedJson(usage,4096);if(!lease.allowed)return reply(origin,429,{error:'GENERATION_LIMIT',retryAfter:30});
     if(typeof lease.claim_id!=='string')return reply(origin,503,{error:'USAGE_GUARD_UNAVAILABLE'});claim=lease.claim_id;
-    const result=await fetch('https://generativelanguage.googleapis.com/v1beta/interactions',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},signal:controller.signal,body:JSON.stringify({model:MODEL,store:false,input:[{type:'text',text:identity+styles[input.style]},{type:'image',mime_type:input.mimeType,data:input.imageData}],response_format:{type:'image',mime_type:'image/jpeg',aspect_ratio:'1:1',image_size:'0.5K',delivery:'inline'}})});
+    const result=await fetch('https://generativelanguage.googleapis.com/v1beta/interactions',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},signal:controller.signal,body:JSON.stringify({model:MODEL,store:false,input:[{type:'text',text:identity+styles[input.style]},{type:'image',mime_type:input.mimeType,data:input.imageData}],response_format:{type:'image',mime_type:'image/jpeg',aspect_ratio:'1:1',image_size:'512',delivery:'inline'}})});
     if(!result.ok){await result.body?.cancel();return reply(origin,result.status===429?429:502,{error:result.status===429?'PROVIDER_BUSY':'GENERATION_FAILED'});}
     const body=await boundedJson(result,Math.ceil(OUTPUT_BYTES/3)*4+128*1024);
     const images=(body.steps||[]).filter((step: any)=>step.type==='model_output').flatMap((step: any)=>step.content||[]).filter((item: any)=>item.type==='image');
