@@ -547,3 +547,18 @@ body.tm-new-design[data-trip-view="places"] main.content #places .nearby-control
 .contextual-mini-route ol{display:grid;gap:7px;margin:0;padding:0;list-style:none}.contextual-mini-route li{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:9px}.contextual-mini-route li>b{display:grid;place-items:center;width:28px;height:28px;border-radius:999px;background:var(--tm-card-control-selected);color:var(--tm-card-link)}
 .contextual-mini-route li>span{display:grid;gap:2px}.contextual-mini-route small,.contextual-mini-route p{font-size:12px;line-height:1.45}.contextual-mini-route p{margin:0}.contextual-mini-route.is-empty>div{display:flex;align-items:flex-start;gap:9px}.contextual-mini-route.is-empty span{display:grid;gap:3px}
 @media(max-width:760px){.contextual-nearby .contextual-nearby__route-toggle{width:100%;justify-self:stretch}.contextual-mini-route header{align-items:flex-start;flex-direction:column}.contextual-mini-route{padding:11px}}
+/* Personalized Suggestions V1: explicit profile interests only, no automatic search or GPS. */
+.nearby-personalized{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--tm-card-border,var(--line));border-radius:14px;background:var(--tm-card-bg-compact);color:var(--tm-card-text)}
+.nearby-personalized[hidden]{display:none}
+.nearby-personalized-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.nearby-personalized-head>span{display:inline-flex;align-items:center;gap:7px;color:var(--tm-card-heading);font-weight:900}
+.nearby-personalized-head>span i{color:var(--tm-card-link)}
+.nearby-personalized-head small{min-width:0;color:var(--tm-card-muted,var(--muted));font-size:11px;line-height:1.4;text-align:end}
+.nearby-personalized-head button{min-height:34px;padding:5px 9px;border:1px solid var(--tm-card-control-border,var(--line));border-radius:999px;background:var(--tm-card-control);color:var(--tm-card-link);font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.nearby-personalized-chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.nearby-personalized-chips button{min-width:0;min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 9px;border:1px solid var(--tm-card-control-border,var(--line));border-radius:12px;background:var(--tm-card-control);color:var(--tm-card-secondary);font:inherit;font-size:12px;font-weight:850;line-height:1.25;cursor:pointer}
+.nearby-personalized-chips button.active{border-color:var(--tm-card-border-hover);background:var(--tm-card-control-selected);color:var(--tm-card-control-text)}
+.nearby-personalized-chips button[data-selected]::after{content:'✓';font-weight:950}
+.nearby-personal-fit{display:inline-flex;align-items:center;gap:5px;width:max-content;max-width:100%;padding:4px 8px;border:1px solid var(--tm-card-control-border,var(--line));border-radius:999px;background:var(--tm-card-control-selected);color:var(--tm-card-link);font-size:11px;font-weight:800;line-height:1.35}
+.nearby-personal-fit i{font-size:10px}
+@media(max-width:760px){.nearby-personalized-head{align-items:flex-start;flex-direction:column}.nearby-personalized-head small{text-align:start}.nearby-personalized-chips{grid-template-columns:repeat(2,minmax(0,1fr))}.nearby-personalized-chips button{min-height:46px;justify-content:flex-start;text-align:start}}
