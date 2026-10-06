@@ -350,3 +350,10 @@ test('profile image uses full-frame contain, sits below trip header, and exposes
   assert.match(home,/data-profile-interests-open/);
   assert.match(security,/data-profile-interests-open/);
 });
+
+
+test('Profile 2.0 owner-bound preference save preserves avatar and unrelated metadata',async()=>{
+  const user={id:'A',user_metadata:{avatar_url:'https://example.test/avatar.jpg',avatar_path:'A/avatar.jpg',learned_marker:'untouched',travelmate_preferences:{interests:['nature']}}};const {cloud,profileUpdates,uploaded,removed}=boot({user});
+  const preferences={pace:'relaxed',interests:['nature'],learningEnabled:true,profile2:{walking:'short',transport:['transit'],exclusions:['nightlife']}};
+  const result=await cloud.updatePreferencesForOwner('A',preferences);assert.equal(result.error,null);assert.deepEqual(result.data.user.user_metadata.travelmate_preferences,preferences);assert.equal(result.data.user.user_metadata.avatar_url,user.user_metadata.avatar_url);assert.equal(result.data.user.user_metadata.learned_marker,'untouched');assert.deepEqual(Object.keys(profileUpdates[0].payload.data),['travelmate_preferences']);assert.equal(uploaded.length,0);assert.equal(removed.length,0);
+});

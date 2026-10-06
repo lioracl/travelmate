@@ -125,6 +125,7 @@ async function remove(id,expectedRevision){
 async function deleteAllAndDisable(){
   if(offline())throw error('LEARNED_PROFILE_OFFLINE');
   var ctx=await scoped(),cloud=window.TravelMateCloud,helper=window.TravelMateUserProfile,profile=helper.fromUser(ctx.session.user),preferences={pace:profile.preferences.pace,activityDensity:profile.preferences.activityDensity,transport:profile.preferences.transport,tripStyle:profile.preferences.tripStyle,interests:Array.prototype.slice.call(profile.preferences.interests),learningEnabled:false};
+  if(profile.preferences.profile2)preferences.profile2=profile.preferences.profile2;
   if(!cloud||typeof cloud.updatePreferencesForOwner!=='function')throw error('LEARNED_PROFILE_PROFILE_API_UNAVAILABLE');
   var profileResult=await cloud.updatePreferencesForOwner(ctx.owner,preferences);if(profileResult&&profileResult.error)throw profileResult.error;
   var user=profileResult&&profileResult.data&&profileResult.data.user;if(!user||String(user.id)!==ctx.owner)throw error('AUTH_CONTEXT_CHANGED');

@@ -27,11 +27,11 @@
   }
   function firstInterest(personalization){var list=personalization&&Array.isArray(personalization.interests)?personalization.interests:[];return list[0]||null}
   function preferredCategory(personalization,weather){
-    var categories=personalization&&Array.isArray(personalization.categoryKeys)?personalization.categoryKeys:[];
+    var blocked=personalization&&personalization.blockedCategoryKeys||[],categories=(personalization&&Array.isArray(personalization.categoryKeys)?personalization.categoryKeys:[]).filter(function(key){return blocked.indexOf(key)<0});
     if(weather&&/^(storm|rain|wind|heat)$/.test(weather.kind)){
       var indoor=['museums','cafes','malls','markets','attractions'];
       for(var i=0;i<indoor.length;i+=1)if(categories.indexOf(indoor[i])>=0)return indoor[i];
-      return'museums'
+      return indoor.find(function(key){return blocked.indexOf(key)<0})||''
     }
     return categories[0]||''
   }
@@ -88,6 +88,8 @@
       var weatherNote=/^(storm|rain)$/.test(weather.kind)?' התחזית גשומה, אז כדאי לצאת מצויד בהתאם.':'';
       return freezeSuggestion({phase:'active',kind:'prepare-next',anchorId:String(nextFixed.record&&nextFixed.record.id||''),weatherKind:weather.kind,icon:'fa-bell',eyebrow:'Smart Trip Mode',title:'התחייבות קרובה: '+clean(nextFixed.record&&(nextFixed.record.title||nextFixed.record.name)||'הפעילות הבאה'),body:'נשארו פחות מ־45 דקות עד ההתחלה. זה זמן טוב לסיים מה שעושים ולהתכונן ליציאה.'+weatherNote,signals:signals,action:action('פתח את הפעילות בתוכנית','#plan','')})
     }
+    var prefs=personalization&&personalization.profile2||{},pace=personalization&&personalization.travelPace||'',fitService=helpers.personalized||(win&&win.TravelMatePersonalizedSuggestions),reason=fitService&&fitService.profileReason?fitService.profileReason(personalization):'';
+    if(fitService&&fitService.activeAt&&!fitService.activeAt(personalization,moment))return freezeSuggestion({phase:'active',kind:'preferred-hours',icon:'fa-moon',eyebrow:'Smart Trip Mode',title:'מחוץ לשעות הפעילות שבחרת',body:'אפשר להשאיר את הזמן פנוי. ההעדפה אינה משנה פעילויות שכבר בתוכנית.',signals:signals,profileReason:reason,action:action('בדוק את תוכנית היום','#plan','')});
     var fixedFree=context&&typeof context.availableMinutesUntilNextFixed==='function'?context.availableMinutesUntilNextFixed(trip,moment,30):null,windowFree=firstFreeWindow(context,trip,model.today,moment),freeCandidates=[];
     if(fixedFree!==null&&fixedFree!==undefined&&Number.isFinite(Number(fixedFree)))freeCandidates.push(Number(fixedFree));
     if(windowFree&&Number.isFinite(Number(windowFree.durationMinutes)))freeCandidates.push(Number(windowFree.durationMinutes));
@@ -96,9 +98,10 @@
       signals.push(signal('fa-hourglass-half',roundWindow(freeMinutes)+' פנויות'));
       if(weather.kind!=='unknown')signals.push(signal(weather.icon,weather.label));
       if(interest)signals.push(signal(interest.source==='learned'?'fa-check':'fa-heart',interest.label));
-      var constrained=/^(storm|rain|wind|heat)$/.test(weather.kind),target=category|| (constrained?'museums':'attractions');
+      var constrained=/^(storm|rain|wind|heat)$/.test(weather.kind),blocked=personalization&&personalization.blockedCategoryKeys||[],target=category||['attractions','cafes','parks'].find(function(key){return blocked.indexOf(key)<0})||'';
+      if(!target||(pace==='relaxed'&&freeMinutes<90)||(prefs.spontaneity==='planned'&&freeMinutes<60))return freezeSuggestion({phase:'active',kind:'rest-window',icon:'fa-mug-hot',eyebrow:'Smart Trip Mode',title:'אפשר להשאיר את החלון למנוחה',body:'לפי הבחירות המפורשות שלך, אין צורך להעמיס פעילות נוספת בחלון קצר.',signals:signals,profileReason:reason,action:action('פתח את תוכנית היום','#plan','')});
       var body=constrained?'מזג האוויר מצדיק בחירה נוחה יותר. '+(interest?'לפי '+interest.label+', ':'')+'אפשר לפתוח קודם '+categoryLabel(target)+' ולבחור בעצמך מקום שמתאים לחלון הזמן.':interest?'אפשר לנצל את החלון למשהו שמתאים ל־'+interest.label+'. TravelMate יפתח את '+categoryLabel(target)+' לבחירה, בלי לחפש ובלי לבקש מיקום עד שתבחר.':'אפשר לנצל את החלון למקום קטן בדרך. החיפוש יתחיל רק אם תבקש אותו במסך מקומות.';
-      return freezeSuggestion({phase:'active',kind:constrained?'weather-window':'free-window',anchorId:nextFixed&&String(nextFixed.record&&nextFixed.record.id||'')||'',weatherKind:weather.kind,icon:constrained?weather.icon:'fa-wand-magic-sparkles',eyebrow:'Smart Trip Mode',title:constrained?'יש לך '+roundWindow(freeMinutes)+' — עדיף משהו נוח למזג האוויר':'יש לך '+roundWindow(freeMinutes)+' פנויות',body:body,signals:signals,action:action(constrained?'מצא מקום מתאים':'מצא משהו שמתאים לי','#places',target)})
+      return freezeSuggestion({phase:'active',kind:constrained?'weather-window':'free-window',anchorId:nextFixed&&String(nextFixed.record&&nextFixed.record.id||'')||'',weatherKind:weather.kind,icon:constrained?weather.icon:'fa-wand-magic-sparkles',eyebrow:'Smart Trip Mode',title:constrained?'יש לך '+roundWindow(freeMinutes)+' — עדיף משהו נוח למזג האוויר':'יש לך '+roundWindow(freeMinutes)+' פנויות',body:body,profileReason:reason,signals:signals,action:action(constrained?'מצא מקום מתאים':'מצא משהו שמתאים לי','#places',target)})
     }
     var next=model.currentOrNext&&model.currentOrNext.state==='next'?model.currentOrNext:null;
     if(next){
@@ -109,8 +112,8 @@
     signals.push(signal('fa-calendar','היום פתוח'));
     if(weather.kind!=='unknown')signals.push(signal(weather.icon,weather.label));
     if(interest)signals.push(signal(interest.source==='learned'?'fa-check':'fa-heart',interest.label));
-    var fallbackCategory=category||'attractions';
-    return freezeSuggestion({phase:'active',kind:'open-day',anchorId:'',weatherKind:weather.kind,icon:'fa-compass',eyebrow:'Smart Trip Mode',title:'היום נשאר פתוח',body:interest?'אם בא לך להוסיף משהו, אפשר להתחיל מ־'+interest.label+' ולבחור בעצמך.':'אפשר להשאיר את היום גמיש או לפתוח Places ולבחור משהו קטן.',signals:signals,action:action('פתח הצעות במקומות','#places',fallbackCategory)})
+    var fallbackCategory=category||['attractions','cafes','parks'].find(function(key){return !(personalization&&personalization.blockedCategoryKeys||[]).includes(key)})||'';
+    return freezeSuggestion({phase:'active',kind:'open-day',anchorId:'',weatherKind:weather.kind,icon:'fa-compass',eyebrow:'Smart Trip Mode',title:'היום נשאר פתוח',body:interest?'אם בא לך להוסיף משהו, אפשר להתחיל מ־'+interest.label+' ולבחור בעצמך.':'אפשר להשאיר את היום גמיש או לפתוח Places ולבחור משהו קטן.',profileReason:reason,signals:signals,action:action(fallbackCategory?'פתח הצעות במקומות':'פתח את תוכנית היום',fallbackCategory?'#places':'#plan',fallbackCategory)})
   }
 
   function currentTrip(){
@@ -123,12 +126,12 @@
   function escapeHtml(value){return String(value||'').replace(/[&<>"']/g,function(character){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]})}
   function render(card,suggestion){
     if(!card||!suggestion)return;
-    card.dataset.smartTripKind=suggestion.kind;card.dataset.smartTripSignature=suggestion.signature;
+    card.dataset.profileReason=suggestion.profileReason||'';card.dataset.smartTripKind=suggestion.kind;card.dataset.smartTripSignature=suggestion.signature;
     var dismissed='';try{dismissed=win.sessionStorage.getItem('travelmate-smart-trip-dismiss:'+String(currentTrip()&&currentTrip().id||''))||''}catch(error){}
     if(dismissed===suggestion.signature){card.hidden=true;return}
     var signals=suggestion.signals.map(function(item){return'<span><i class="fa-solid '+escapeHtml(item.icon)+'" aria-hidden="true"></i>'+escapeHtml(item.label)+'</span>'}).join('');
-    card.innerHTML='<header><span class="smart-trip-mode__icon"><i class="fa-solid '+escapeHtml(suggestion.icon)+'" aria-hidden="true"></i></span><div><small>'+escapeHtml(suggestion.eyebrow)+'</small><h2 id="smart-trip-mode-title">'+escapeHtml(suggestion.title)+'</h2></div><button type="button" class="smart-trip-mode__dismiss" data-smart-trip-dismiss aria-label="הסתרת ההצעה הנוכחית">הסתר כרגע</button></header><div class="smart-trip-mode__signals" aria-label="למה ההצעה מופיעה">'+signals+'</div><p>'+escapeHtml(suggestion.body)+'</p><footer><a class="primary" href="'+escapeHtml(suggestion.action.href||'#overview')+'" data-smart-trip-action'+(suggestion.action.categoryKey?' data-smart-trip-category="'+escapeHtml(suggestion.action.categoryKey)+'"':'')+'><span>'+escapeHtml(suggestion.action.label||'פתח')+'</span><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a><small>הצעה בלבד · שום דבר לא משתנה בלי פעולה שלך</small></footer>';
-    card.hidden=false
+    card.innerHTML='<header><span class="smart-trip-mode__icon"><i class="fa-solid '+escapeHtml(suggestion.icon)+'" aria-hidden="true"></i></span><div><small>'+escapeHtml(suggestion.eyebrow)+'</small><h2 id="smart-trip-mode-title">'+escapeHtml(suggestion.title)+'</h2></div><button type="button" class="smart-trip-mode__dismiss" data-smart-trip-dismiss aria-label="הסתרת ההצעה הנוכחית">הסתר כרגע</button></header><div class="smart-trip-mode__signals" aria-label="למה ההצעה מופיעה">'+signals+'</div><p>'+escapeHtml([suggestion.body,suggestion.profileReason].filter(Boolean).join(' '))+'</p><footer><a class="primary" href="'+escapeHtml(suggestion.action.href||'#overview')+'" data-smart-trip-action'+(suggestion.action.categoryKey?' data-smart-trip-category="'+escapeHtml(suggestion.action.categoryKey)+'"':'')+'><span>'+escapeHtml(suggestion.action.label||'פתח')+'</span><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a><small>הצעה בלבד · שום דבר לא משתנה בלי פעולה שלך</small></footer>';
+    card.hidden=false;win.document.dispatchEvent(new CustomEvent('travelmate:smart-trip-updated'))
   }
   function ensureCard(){
     var overview=win.document.querySelector('#overview'),today=win.document.querySelector('[data-trip-today]'),control=win.document.querySelector('[data-overview-control-center]');if(!overview)return null;
@@ -143,9 +146,9 @@
     var generation=0,lastContext={interests:[],categoryKeys:[],isEmpty:true};
     async function refresh(loadProfile){
       var trip=currentTrip();if(!trip){card.hidden=true;return}
-      var run=++generation;
-      if(loadProfile!==false)try{lastContext=await personalization()}catch(error){lastContext={interests:[],categoryKeys:[],isEmpty:true}}
-      if(run!==generation||!card.isConnected)return;
+      var run=++generation,nextContext=lastContext;
+      if(loadProfile!==false)try{nextContext=await personalization()}catch(error){nextContext={interests:[],categoryKeys:[],isEmpty:true}}
+      if(run!==generation||!card.isConnected)return;lastContext=nextContext;
       var suggestion=buildSuggestion(trip,new Date(),lastContext,weatherSnapshot());if(suggestion)render(card,suggestion);else card.hidden=true
     }
     card.addEventListener('click',function(event){
@@ -156,6 +159,7 @@
     });
     ['travelmate:planner-rendered','travelmate:places-updated','travelmate:activities-updated'].forEach(function(name){win.document.addEventListener(name,function(){refresh(false)})});
     win.addEventListener('travelmate:weather-context-change',function(){refresh(false)});
+    win.addEventListener('travelmate:home-auth',function(){generation+=1;lastContext={interests:[],categoryKeys:[],isEmpty:true};card.hidden=true;card.dataset.profileReason='';win.document.dispatchEvent(new CustomEvent('travelmate:smart-trip-updated'));refresh(true)});
     win.addEventListener('travelmate:profile-change',function(){refresh(true)});
     win.addEventListener('travelmate:learned-profile-change',function(){refresh(true)});
     win.addEventListener('focus',function(){refresh(false)});

@@ -13,14 +13,14 @@ function safeAvatarUrl(value){
   }catch(error){return''}
 }
 var preferenceOptions=Object.freeze({
-  pace:Object.freeze(['relaxed','balanced','active']),
+  pace:Object.freeze(['relaxed','balanced','active','intensive']),
   activityDensity:Object.freeze(['light','balanced','dense']),
   transport:Object.freeze(['walking','transit','mixed','car']),
   tripStyle:Object.freeze(['city','culture','nature','food','relaxation','mixed']),
   interests:Object.freeze(['culture','food','nature','history','shopping','nightlife','photography','relaxation','beaches','museums','families','hiking','technology'])
 });
 var preferenceLabels=Object.freeze({
-  pace:Object.freeze({relaxed:'נינוח',balanced:'מאוזן',active:'פעיל'}),
+  pace:Object.freeze({relaxed:'נינוח',balanced:'מאוזן',active:'פעיל',intensive:'אינטנסיבי'}),
   activityDensity:Object.freeze({light:'מעט פעילויות',balanced:'קצב מאוזן',dense:'יום מלא'}),
   transport:Object.freeze({walking:'הליכה',transit:'תחבורה ציבורית',mixed:'משולב',car:'רכב'}),
   tripStyle:Object.freeze({city:'עיר',culture:'תרבות',nature:'טבע',food:'אוכל',relaxation:'מנוחה',mixed:'משולב'}),
@@ -29,6 +29,25 @@ var preferenceLabels=Object.freeze({
 var preferenceFieldLabels=Object.freeze({
   pace:'קצב טיול',activityDensity:'צפיפות פעילויות',transport:'דרך התניידות',tripStyle:'סגנון טיול',interests:'תחומי עניין'
 });
+// Optional explicit extension of the canonical Auth preference object, not a new store.
+var travelerGroups=Object.freeze({
+  walking:{label:'הליכה נוחה',options:{short:'קצרה',medium:'בינונית',long:'ארוכה'}},
+  transport:{label:'תחבורה מועדפת',multi:true,options:{walking:'הליכה',transit:'תחבורה ציבורית',taxi:'מונית או נסיעה שיתופית',car:'רכב שכור',bicycle:'אופניים'}},
+  activeHours:{label:'שעות פעילות מועדפות',multi:true,options:{early_morning:'מוקדם בבוקר',morning:'בוקר',afternoon:'אחר הצהריים',evening:'ערב',night:'לילה'}},
+  spending:{label:'סגנון הוצאה אישי — לא תקציב הטיול',options:{economical:'חסכוני',balanced:'מאוזן',comfortable:'נוח',premium:'פרימיום'}},
+  food:{label:'העדפות אוכל',multi:true,options:{local:'מטבח מקומי',street_food:'אוכל רחוב',vegetarian:'צמחוני',vegan:'טבעוני',cafes:'בתי קפה',fine_dining:'מסעדות גורמה'}},
+  spontaneity:{label:'גמישות התכנון',options:{planned:'מתוכנן',flexible:'גמיש',spontaneous:'ספונטני'}},
+  exclusions:{label:'לא להציע לי',multi:true,options:{nightlife:'חיי לילה',shopping:'קניות',museums:'מוזיאונים',long_walks:'הליכות ארוכות',expensive_places:'מקומות יקרים',early_mornings:'מוקדם בבוקר'}}
+});
+Object.keys(travelerGroups).forEach(function(key){Object.freeze(travelerGroups[key].options);Object.freeze(travelerGroups[key])});
+function normalizeTraveler(value){
+  var source=value&&typeof value==='object'?value:{},result={};
+  Object.keys(travelerGroups).forEach(function(key){var group=travelerGroups[key];
+    if(group.multi){result[key]=Object.freeze((Array.isArray(source[key])?source[key]:[]).map(clean).filter(function(item,index,list){return list.indexOf(item)===index&&(key==='exclusions'?/^[a-z][a-z0-9_-]{0,39}$/.test(item):Object.prototype.hasOwnProperty.call(group.options,item))}).slice(0,32));}
+    else result[key]=Object.prototype.hasOwnProperty.call(group.options,clean(source[key]))?clean(source[key]):'';
+  });return Object.freeze(result);
+}
+function travelerSummary(value){var normalized=normalizeTraveler(value);return Object.keys(travelerGroups).filter(function(key){return Array.isArray(normalized[key])?normalized[key].length:normalized[key]}).map(function(key){var group=travelerGroups[key],values=Array.isArray(normalized[key])?normalized[key]:[normalized[key]];return Object.freeze({key:'profile2.'+key,label:group.label,value:values.join(','),valueLabel:values.map(function(v){return group.options[v]||'קטגוריה נוספת שהוחרגה'}).join(' · ')})})}
 function normalizePreferences(value){
   var source=value&&typeof value==='object'?value:{};
   function one(key){
@@ -38,14 +57,16 @@ function normalizePreferences(value){
   var interests=Array.isArray(source.interests)?source.interests.map(clean).filter(function(item,index,list){
     return preferenceOptions.interests.indexOf(item)>=0&&list.indexOf(item)===index;
   }).slice(0,preferenceOptions.interests.length):[];
-  return Object.freeze({
+  var normalized={
     pace:one('pace'),
     activityDensity:one('activityDensity'),
     transport:one('transport'),
     tripStyle:one('tripStyle'),
     interests:Object.freeze(interests),
     learningEnabled:source.learningEnabled===true
-  })
+  };
+  if(Object.prototype.hasOwnProperty.call(source,'profile2'))normalized.profile2=normalizeTraveler(source.profile2);
+  return Object.freeze(normalized)
 }
 function preferenceSummary(value){
   var preferences=normalizePreferences(value),items=[];
@@ -56,13 +77,14 @@ function preferenceSummary(value){
   if(preferences.interests.length){
     items.push(Object.freeze({key:'interests',label:preferenceFieldLabels.interests,value:preferences.interests.join(','),valueLabel:preferences.interests.map(function(item){return preferenceLabels.interests[item]}).join(' · ')}))
   }
+  var combined=items.concat(travelerSummary(preferences.profile2)),groups=5+(preferences.profile2?Object.keys(travelerGroups).length:0);
   return Object.freeze({
-    items:Object.freeze(items),
-    configuredCount:items.length,
-    totalGroups:5,
-    isEmpty:items.length===0,
-    isComplete:items.length===5,
-    completionLabel:items.length===5?'כל קבוצות ההעדפה הוגדרו':items.length?'הוגדרו '+items.length+' מתוך 5 קבוצות העדפה':'עדיין לא הוגדרו העדפות נסיעה',
+    items:Object.freeze(combined),
+    configuredCount:combined.length,
+    totalGroups:groups,
+    isEmpty:combined.length===0,
+    isComplete:combined.length===groups,
+    completionLabel:combined.length===groups?'כל קבוצות ההעדפה הוגדרו':combined.length?'הוגדרו '+combined.length+' מתוך '+groups+' קבוצות העדפה':'עדיין לא הוגדרו העדפות נסיעה',
     learningEnabled:preferences.learningEnabled
   })
 }
@@ -151,6 +173,9 @@ window.TravelMateUserProfile=Object.freeze({
   preferenceOptions:preferenceOptions,
   preferenceLabels:preferenceLabels,
   preferenceFieldLabels:preferenceFieldLabels,
+  travelerGroups:travelerGroups,
+  normalizeTraveler:normalizeTraveler,
+  travelerSummary:travelerSummary,
   normalizePreferences:normalizePreferences,
   preferenceSummary:preferenceSummary,
   greetingAt:greetingAt,

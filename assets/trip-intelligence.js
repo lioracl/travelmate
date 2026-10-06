@@ -181,6 +181,7 @@
         context.budget ? 'תקציב משוער: ' + context.budget + ' ' + context.currency + '.' : '',
         declaredPreferenceLines(context.declaredPreferences).length ? 'העדפות אישיות שהמשתמש הצהיר עליהן: ' + declaredPreferenceLines(context.declaredPreferences).join('; ') + '.' : '',
         learnedPreferenceLines(context.learnedPreferences).length ? 'העדפות נלמדות שאישרת במפורש: ' + learnedPreferenceLines(context.learnedPreferences).join(', ') + '.' : '',
+        'סדר עדיפויות: החרגות מפורשות של המשתמש קודמות להעדפות המוצהרות הנוכחיות, אחריהן העדפות נלמדות שאושרו ולבסוף ברירות מחדל. אל תציע קטגוריה שהמשתמש החריג. אין לשנות מסלול או תקציב אוטומטית.',
         context.itineraryContext.length ? 'מסלול מתוכנן ומאומת: ' + JSON.stringify(context.itineraryContext) : 'אין מסלול מובנה זמין לבדיקה.',
         context.savedPlacesContext.length ? 'מקומות שכבר נשמרו: ' + JSON.stringify(context.savedPlacesContext) : '',
         context.lodgingContext ? 'לינה קיימת: ' + JSON.stringify(context.lodgingContext) : '',
@@ -199,6 +200,7 @@
       context.preferences.length ? 'העדפות שהוגדרו לטיול הזה: ' + context.preferences.join(', ') + '.' : '',
       declaredPreferenceLines(context.declaredPreferences).length ? 'העדפות אישיות שהמשתמש הצהיר עליהן: ' + declaredPreferenceLines(context.declaredPreferences).join('; ') + '.' : '',
       learnedPreferenceLines(context.learnedPreferences).length ? 'העדפות נלמדות שאישרת במפורש: ' + learnedPreferenceLines(context.learnedPreferences).join(', ') + '.' : '',
+        'סדר עדיפויות: החרגות מפורשות של המשתמש קודמות להעדפות המוצהרות הנוכחיות, אחריהן העדפות נלמדות שאושרו ולבסוף ברירות מחדל. אל תציע קטגוריה שהמשתמש החריג. אין לשנות מסלול או תקציב אוטומטית.',
       'התייחס להעדפות המוצהרות כבחירה ישירה של המשתמש. העדפות נלמדות הן רק פריטים שהמשתמש אישר; במקרה של סתירה, ההעדפה המוצהרת גוברת. אל תשתמש בהן כדי לשנות מסלול, לתזמן, לדרג או לבצע פעולה בלי בקשה מפורשת.',
       'התמקד בהתאמת היעד, 4–6 דברים שלא כדאי לפספס, אזורי לינה, אוכל ובילוי, התניידות, קצב מומלץ, טיפ לעונה וטיפ אישי אחד של Mate.',
       'אל תטען שיש מסלול קיים. אל תמציא מחירים, שעות פתיחה, סגירות, אירועים או מצב תחבורה בזמן אמת. השתמש בכותרות קצרות ורשימות.'

@@ -1341,7 +1341,7 @@
     var hasPreferencesArgument = preferences && typeof preferences === 'object';
     var input = hasPreferencesArgument ? preferences : {};
     var allowed = {
-      pace: ['relaxed', 'balanced', 'active'],
+      pace: ['relaxed', 'balanced', 'active', 'intensive'],
       activityDensity: ['light', 'balanced', 'dense'],
       transport: ['walking', 'transit', 'mixed', 'car'],
       tripStyle: ['city', 'culture', 'nature', 'food', 'relaxation', 'mixed'],
@@ -1363,6 +1363,8 @@
     };
     var hasPreference = normalizedPreferences.pace || normalizedPreferences.activityDensity ||
       normalizedPreferences.transport || normalizedPreferences.tripStyle || interests.length || typeof input.learningEnabled === 'boolean';
+    if(hasPreferencesArgument&&Object.prototype.hasOwnProperty.call(input,'profile2')&&window.TravelMateUserProfile&&window.TravelMateUserProfile.normalizeTraveler)normalizedPreferences.profile2=window.TravelMateUserProfile.normalizeTraveler(input.profile2);
+    hasPreference = hasPreference || normalizedPreferences.profile2;
     var metadataPatch = { display_name: normalizedName };
     if (hasPreferencesArgument) metadataPatch.travelmate_preferences = hasPreference ? normalizedPreferences : null;
     return client.auth.updateUser({ data: metadataPatch });
