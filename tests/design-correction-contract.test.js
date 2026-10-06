@@ -52,11 +52,16 @@ test('mobile Places and Documents use progressive compact layouts', () => {
   assert.match(docs, /document categories read as compact rows on phones/);
 });
 
-test('Mate launcher is compact on trip screens', () => {
+test('Mate launcher is compact on trip screens and does not cover mobile working views', () => {
   const theme = read('assets/theme.css');
   const ai = read('assets/ai-assistant.css');
+  const app = read('assets/app.js');
   assert.match(ai, /Phase 7 — Mate launcher and header visual authority/);
   assert.match(ai, /body\.tm-new-design \.ai-orb\{[\s\S]*width:48px;[\s\S]*min-width:48px;[\s\S]*height:48px;[\s\S]*min-height:48px;/);
   assert.doesNotMatch(theme, /html body\.tm-new-design \.ai-orb\{[\s\S]*width:48px!important/);
   assert.match(ai, /smaller mobile Mate launcher with safe-area clearance/);
+  assert.match(ai, /data-trip-view\]:not\(\[data-trip-view="overview"\]\) \.ai-orb\{display:none\}/);
+  assert.match(app, /trip-sidebar-mate/);
+  assert.match(app, /dataset\.aiSidebarOpen/);
+  assert.match(app, /requestAssistant\('sidebar'\)/);
 });

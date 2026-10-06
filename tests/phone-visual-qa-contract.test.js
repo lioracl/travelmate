@@ -51,3 +51,10 @@ test('light mobile account panel uses app material instead of the photographic d
   assert.match(css, /cloud-account-split \.cloud-account-close[\s\S]*rgba\(255,255,255,\.78\)/);
   assert.match(css, /\[data-cloud-sync-now\][\s\S]*var\(--tm-auth-action\)/);
 });
+
+test('mobile trip Back has one stable 50px target across custom-trip views', () => {
+  const css = read('assets/phone-visual-qa.css');
+  assert.match(css, /Mobile UX 2\.20\.2/);
+  assert.match(css, /mobile-header>\.mobile-trip-back\{[\s\S]*?width:50px;[\s\S]*?height:50px;[\s\S]*?place-items:center/);
+  assert.doesNotMatch(css.slice(css.indexOf('Mobile UX 2.20.2')), /!important/);
+});

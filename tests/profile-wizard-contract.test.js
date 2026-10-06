@@ -93,9 +93,9 @@ test('current app assets and cache versions are synchronized',()=>{
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.equal(version,'20261006-03');
-  assert.match(about,/version: '2[.]20[.]1'/);
-  assert.match(about,/Mobile Navigation & Weather Fix - 2[.]20[.]1/);
+  assert.equal(version,'20261006-04');
+  assert.match(about,/version: '2[.]20[.]2'/);
+  assert.match(about,/Mobile UX Consistency - 2[.]20[.]2/);
 });
 
 test('wizard keeps normal next-state logic while direct interests mode bypasses navigation',()=>{

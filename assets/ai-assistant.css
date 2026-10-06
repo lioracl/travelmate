@@ -77,3 +77,10 @@ body.tm-new-design .ai-icon-button{
   -webkit-text-fill-color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark))
 }
 body.tm-new-design .ai-orb-ring{animation:none}
+
+/* Mobile UX 2.20.2: keep Mate one tap away without covering working views. */
+.trip-sidebar-mate span{display:grid;gap:2px;min-width:0}
+.trip-sidebar-mate small{color:var(--tm-card-secondary);font-size:10px;font-weight:700;line-height:1.2}
+@media(max-width:600px){
+  body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) .ai-orb{display:none}
+}

@@ -1,5 +1,5 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261006-03'}catch(error){return'20261006-03'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261006-04'}catch(error){return'20261006-04'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
@@ -81,20 +81,24 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   function canWarmNonCritical(){var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||null;return !document.hidden&&!(connection&&connection.saveData)&&!(connection&&/^(slow-2g|2g)$/i.test(String(connection.effectiveType||'')))}
   function scheduleIdleFeature(view,delay){var run=function(){if(canWarmNonCritical())loadFeature(view)};setTimeout(function(){if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:1800});else run()},delay)}
   function createAssistantShell(){
-    if(isHomePage||document.querySelector('.ai-orb'))return;
-    var orb=document.createElement('button');
-    orb.className='ai-orb';orb.type='button';orb.dataset.aiShell='';orb.setAttribute('aria-label','פתיחת העוזר האישי');orb.setAttribute('aria-expanded','false');
-    orb.innerHTML='<span class="ai-orb-ring"></span><i class="fa-solid fa-wand-magic-sparkles"></i><span class="ai-orb-badge">AI</span>';
+    if(isHomePage)return;
+    var orb=document.querySelector('.ai-orb');
+    if(!orb){orb=document.createElement('button');orb.className='ai-orb';orb.type='button';orb.dataset.aiShell='';orb.setAttribute('aria-label','פתיחת העוזר האישי');orb.setAttribute('aria-expanded','false');orb.innerHTML='<span class="ai-orb-ring"></span><i class="fa-solid fa-wand-magic-sparkles"></i><span class="ai-orb-badge">AI</span>';document.body.appendChild(orb)}
+    var sidebarMenu=document.querySelector('.trip-sidebar-more-menu'),sidebarButton=document.querySelector('[data-ai-sidebar-open]');
+    if(!sidebarButton&&sidebarMenu){sidebarButton=document.createElement('button');sidebarButton.type='button';sidebarButton.className='trip-sidebar-mate';sidebarButton.dataset.aiSidebarOpen='';sidebarButton.innerHTML='<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Mate <small>עוזר אישי</small></span>';var smartHub=sidebarMenu.querySelector('[data-smart-hub-open]');if(smartHub)smartHub.insertAdjacentElement('beforebegin',sidebarButton);else sidebarMenu.appendChild(sidebarButton)}
+    var loading=false;
+    function requestAssistant(source){
+      if(window.__travelMateAiAssistantLoaded){window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi,{source:source});return}
+      if(loading)return;loading=true;
+      loadFeature('assistant').then(function(ready){loading=false;if(ready===false)return;window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi,{source:source})}).catch(function(){loading=false})
+    }
     function activate(event){
       if(window.__travelMateAiAssistantLoaded){orb.removeEventListener('click',activate,true);return}
       event.preventDefault();event.stopImmediatePropagation();
-      loadFeature('assistant').then(function(ready){
-        if(ready===false)return;
-        orb.removeEventListener('click',activate,true);
-        window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi,{source:'assistant-shell'});
-      })
+      requestAssistant('assistant-shell')
     }
-    orb.addEventListener('click',activate,true);document.body.appendChild(orb)
+    if(orb.dataset.aiShell!==undefined&&!orb.dataset.aiShellBound){orb.dataset.aiShellBound='1';orb.addEventListener('click',activate,true)}
+    if(sidebarButton&&!sidebarButton.dataset.aiSidebarBound){sidebarButton.dataset.aiSidebarBound='1';sidebarButton.addEventListener('click',function(event){event.preventDefault();requestAssistant('sidebar')})}
   }
   var tripProfileRenderGeneration=0;
   function ensureTripProfileChrome(){
