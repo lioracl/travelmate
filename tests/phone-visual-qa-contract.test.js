@@ -28,6 +28,22 @@ test('phone overlays obscure the live page while keeping nested rows flat', () =
   assert.match(css, /#modal-weather-live :is\(\.weather-insight,\.weather-live-grid,\.weather-live-day\)[\s\S]*background:transparent/);
 });
 
+test('phone close targets are at least 48px and weather summary stays fully transparent', () => {
+  const css = read('assets/phone-visual-qa.css');
+  assert.match(css, /Phone acceptance 2\.20\.1/);
+  assert.match(css, /\.content>\.weather-top-widget\{[\s\S]*?background:transparent;[\s\S]*?backdrop-filter:none;/);
+  assert.doesNotMatch(css.slice(css.indexOf('Phone acceptance 2.20.1')), /!important/);
+  assert.match(css, /data-directions-close[\s\S]*?inline-size:48px;[\s\S]*?block-size:48px/);
+  assert.match(css, />i\{[\s\S]*?pointer-events:none/);
+});
+
+test('directions phone sheet keeps header and footer outside its scrollable body', () => {
+  const css = read('assets/place-directions.css');
+  assert.match(css, /@media\(max-width:640px\)[\s\S]*?grid-template-rows:auto minmax\(0,1fr\) auto/);
+  assert.match(css, /\.place-directions-body\{min-height:0;overflow-y:auto;overscroll-behavior:contain\}/);
+  assert.match(css, /\.place-directions-dialog>footer\{position:relative;bottom:auto;[\s\S]*?safe-area-inset-bottom/);
+});
+
 test('light mobile account panel uses app material instead of the photographic dark split', () => {
   const css = read('assets/phone-visual-qa.css');
   assert.match(css, /cloud-account-backdrop \.cloud-account-split[\s\S]*background:#e8f1ef/);

@@ -17,7 +17,7 @@ var styleEpoch=0,generationActive=0,generationControllers=new Set();
 var INTEREST_CARDS=Object.freeze([{id:'food',icon:'🍜'},{id:'nature',icon:'🌿'},{id:'beaches',icon:'🏖️'},{id:'culture',icon:'🎭'},{id:'history',icon:'🏛️'},{id:'museums',icon:'🖼️'},{id:'shopping',icon:'🛍️'},{id:'nightlife',icon:'🌙'},{id:'families',icon:'🧑‍🧑‍🧒'},{id:'hiking',icon:'🥾'},{id:'photography',icon:'📷'},{id:'technology',icon:'💡'},{id:'relaxation',icon:'☀️'}]);
 var ACCEPTED_TYPES=Object.freeze(['image/jpeg','image/png','image/webp']);
 var modal=null,opener=null,ownerId='',user=null,decodedImage=null;
-var styleResults=[],selectedStyle='',step=1,busy=false,drawFrame=0,sourceGeneration=0;
+var styleResults=[],selectedStyle='',step=1,busy=false,saving=false,drawFrame=0,sourceGeneration=0;
 var wizardMode='full',profileImageKind='',profilePhotoBlob=null,profilePhotoUrl='';
 var onboarding={photo:null,avatarStyle:'',interestTags:[]};
 var previousBodyOverflow='',wizardGeneration=0,closeTimer=0,inertSiblings=[];
@@ -281,7 +281,7 @@ function collectPreferences(){
   Object.keys(window.TravelMateUserProfile.travelerGroups).forEach(function(key){var group=window.TravelMateUserProfile.travelerGroups[key];if(group.multi){values[key]=all('[data-traveler-field="'+key+'"]:checked').map(function(input){return input.value});if(key==='exclusions'&&modal.dataset.travelerReset!=='true')values[key]=values[key].concat(traveler.exclusions.filter(function(value){return !Object.prototype.hasOwnProperty.call(group.options,value)}));}else values[key]=el('[data-traveler-field="'+key+'"]').value});
   return window.TravelMateUserProfile.normalizePreferences({pace:el('[name="pace"]').value,activityDensity:el('[name="activityDensity"]').value,transport:el('[name="transport"]').value,tripStyle:el('[name="tripStyle"]').value,interests:interests,learningEnabled:el('[name="learningEnabled"]').checked,profile2:values})
 }
-function setMutationDisabled(disabled){all('button,input,select').forEach(function(control){control.disabled=disabled});el('[data-profile-save]').setAttribute('aria-busy',disabled?'true':'false');if(!disabled){if(wizardMode!=='interests')el('[data-profile-next]').disabled=step===1?(!decodedImage&&!onboarding.photo):!selectedResult();all('[name="avatarStyle"]').forEach(function(input){input.disabled=!styleResults.some(function(item){return item.id===input.value&&item.status==='ready'})});syncPhotoActions();updateOnlineState()}}
+function setMutationDisabled(disabled){all('button:not([data-profile-wizard-close]),input,select').forEach(function(control){control.disabled=disabled});var close=el('[data-profile-wizard-close]');if(close)close.disabled=saving;el('[data-profile-save]').setAttribute('aria-busy',disabled?'true':'false');if(!disabled){if(wizardMode!=='interests')el('[data-profile-next]').disabled=step===1?(!decodedImage&&!onboarding.photo):!selectedResult();all('[name="avatarStyle"]').forEach(function(input){input.disabled=!styleResults.some(function(item){return item.id===input.value&&item.status==='ready'})});syncPhotoActions();updateOnlineState()}}
 async function stillCurrentOwner(expectedOwner){var session=await window.TravelMateCloud.getSession();return session&&session.user&&String(session.user.id)===expectedOwner?session:null}
 async function saveProfileSafely(event){
   event.preventDefault();
@@ -289,7 +289,7 @@ async function saveProfileSafely(event){
   if(navigator.onLine===false){setStatus('כדי לשמור שינויים בפרופיל יש להתחבר לרשת. השינויים לא יישמרו בתור.',true);return}
   if(step!==3)return;
   var generation=wizardGeneration,saveOwner=ownerId,displayName=el('[name="displayName"]').value,preferences=collectPreferences();
-  busy=true;var avatarSaved=false;setMutationDisabled(true);setStatus(wizardMode==='interests'?'שומר את ההעדפות…':'שומר את הפרופיל בחשבון…');
+  busy=true;saving=true;var avatarSaved=false;setMutationDisabled(true);setStatus(wizardMode==='interests'?'שומר את ההעדפות…':'שומר את הפרופיל בחשבון…');
   try{
     var session=await stillCurrentOwner(saveOwner);if(!currentWizard(generation)||!session)throw new Error('AUTH_CONTEXT_CHANGED');
     if(wizardMode==='interests'){
@@ -307,7 +307,7 @@ async function saveProfileSafely(event){
     session=await stillCurrentOwner(saveOwner);if(!currentWizard(generation)||!session)throw new Error('AUTH_CONTEXT_CHANGED');
     user=profileResult.data&&profileResult.data.user||user;window.dispatchEvent(new CustomEvent('travelmate:profile-change',{detail:{user:user}}));setStatus(profileImageKind==='photo'?'התמונה האמיתית נשמרה בפרופיל.':'הפרופיל נשמר בהצלחה.');closeTimer=setTimeout(function(){if(currentWizard(generation))closeWizard()},450)
   }catch(error){if(currentWizard(generation))setStatus(avatarSaved?'התמונה נשמרה בחשבון המקורי. שמירת ההעדפות לא הושלמה בוודאות; התחברו שוב ובדקו.':errorMessage(error),true)}
-  finally{if(currentWizard(generation)){busy=false;setMutationDisabled(false)}}
+  finally{saving=false;if(currentWizard(generation)){busy=false;setMutationDisabled(false)}}
 }
 async function openWizard(button,mode){
   if(modal&&!modal.hidden)return;
@@ -321,7 +321,7 @@ async function openWizard(button,mode){
   }catch(error){if(currentWizard(generation))setStatus('יש להתחבר לחשבון כדי לערוך את הפרופיל.',true)}
   finally{if(currentWizard(generation)){busy=false;if(user)setMutationDisabled(false)}}
 }
-function closeWizard(force){if(!modal||modal.hidden||(busy&&force!==true&&ownerId))return;wizardGeneration+=1;if(closeTimer){clearTimeout(closeTimer);closeTimer=0}busy=false;modal.hidden=true;document.body.style.overflow=previousBodyOverflow;inertSiblings.forEach(function(state){state.node.inert=state.inert});inertSiblings=[];resetFiles();onboarding.interestTags=[];var nameField=el('[name="displayName"]').closest('label');nameField.hidden=true;el('[data-profile-step="3"]').insertBefore(nameField,el('[data-profile-preference-fields]'));el('[name="displayName"]').value='';el('[data-profile-preference-fields]').replaceChildren();ownerId='';user=null;wizardMode='full';if(opener&&document.contains(opener))opener.focus();opener=null}
+function closeWizard(force){if(!modal||modal.hidden||(saving&&force!==true))return;wizardGeneration+=1;if(closeTimer){clearTimeout(closeTimer);closeTimer=0}busy=false;modal.hidden=true;document.body.style.overflow=previousBodyOverflow;inertSiblings.forEach(function(state){state.node.inert=state.inert});inertSiblings=[];resetFiles();onboarding.interestTags=[];var nameField=el('[name="displayName"]').closest('label');nameField.hidden=true;el('[data-profile-step="3"]').insertBefore(nameField,el('[data-profile-preference-fields]'));el('[name="displayName"]').value='';el('[data-profile-preference-fields]').replaceChildren();ownerId='';user=null;wizardMode='full';if(opener&&document.contains(opener))opener.focus();opener=null}
 function updateOnlineState(){if(!modal||modal.hidden)return;var offline=navigator.onLine===false;el('[data-profile-save]').disabled=busy||offline||!ownerId;if(offline){generationControllers.forEach(function(controller){controller.abort()});styleResults.forEach(function(item){if(item.status==='pending'){item.status='failed';item.message=generationMessage(new Error('OFFLINE'))}});if(styleResults.length)renderStyles();setStatus(step===2?generationMessage(new Error('OFFLINE')):'כדי לשמור שינויים בפרופיל יש להתחבר לרשת. השינויים לא יישמרו בתור.',false)}else if(styleResults.length)renderStyles()}
 function focusable(){return all('button:not([disabled]):not([hidden]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])').filter(function(node){return!node.closest('[hidden]')&&node.getClientRects().length>0})}
 function onKeydown(event){

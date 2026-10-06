@@ -174,7 +174,7 @@
 
   function render(ui, place, data) {
     var current = data.current || {}; var daily = data.daily || {}; var details = weatherDetails(current.weather_code, current.is_day);
-    ui.summary.textContent = details.label + ' · מרגיש כמו ' + round(current.apparent_temperature) + '°'; ui.temperature.textContent = round(current.temperature_2m) + '°'; ui.icon.innerHTML = weatherSvg(details.icon) + '<small>' + round(current.temperature_2m) + '°</small>';
+    ui.summary.textContent = details.label + ' · מרגיש כמו ' + round(current.apparent_temperature) + '°'; ui.temperature.textContent = round(current.temperature_2m) + '°'; ui.icon.innerHTML = weatherSvg(details.icon);
     ui.updated.textContent = 'עודכן עכשיו · אזור זמן ' + (data.timezone_abbreviation || data.timezone || place.timezone || 'מקומי');
     var advice = adviceFor(data); var rows = (daily.time || []).map(function (date, index) {
       var day = weatherDetails(daily.weather_code[index], 1);

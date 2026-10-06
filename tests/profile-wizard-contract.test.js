@@ -93,15 +93,25 @@ test('current app assets and cache versions are synchronized',()=>{
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.equal(version,'20261006-02');
-  assert.match(about,/version: '2[.]20[.]0'/);
-  assert.match(about,/Traveler Profile 2[.]0 - 2[.]20[.]0/);
+  assert.equal(version,'20261006-03');
+  assert.match(about,/version: '2[.]20[.]1'/);
+  assert.match(about,/Mobile Navigation & Weather Fix - 2[.]20[.]1/);
 });
 
 test('wizard keeps normal next-state logic while direct interests mode bypasses navigation',()=>{
   assert.match(source,/wizardMode!=='interests'/);
   assert.match(source,/step===1\?\(!decodedImage&&!onboarding.photo\):!selectedResult\(\)/);
   assert.match(source,/wizardMode==='interests'\?3:1/);
+});
+
+test('wizard X stays usable during loading and avatar work but is protected during an actual save',()=>{
+  assert.match(source,/busy=false,saving=false/);
+  assert.match(source,/button:not\(\[data-profile-wizard-close\]\),input,select/);
+  assert.match(source,/if\(close\)close\.disabled=saving/);
+  assert.match(source,/busy=true;saving=true;var avatarSaved=false/);
+  assert.match(source,/finally\{saving=false;/);
+  assert.match(source,/\(saving&&force!==true\)/);
+  assert.doesNotMatch(source,/busy&&force!==true&&ownerId/);
 });
 
 test('three-step onboarding collects approved interests without enabling learning',()=>{

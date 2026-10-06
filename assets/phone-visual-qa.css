@@ -235,3 +235,28 @@ html:not([data-theme="dark"]) body.tm-new-design #modal-weather-live .modal-clos
     -webkit-text-fill-color:var(--tm-auth-text)
   }
 }
+
+
+/* Phone acceptance 2.20.1: Weather transparency and predictable close targets. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget{
+  background:transparent;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 4px 12px rgba(8,39,29,.08);
+}
+html body :is(.modal-close,.profile-wizard-close,.about-close,.invite-close,[data-security-close],[data-admin-close],[data-directions-close],[data-place-share-close],[data-vault-preview-close],[data-trip-map-close]){
+  inline-size:48px;
+  min-inline-size:48px;
+  block-size:48px;
+  min-block-size:48px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  line-height:1;
+  touch-action:manipulation;
+}
+html body :is(.modal-close,.profile-wizard-close,.about-close,.invite-close,[data-security-close],[data-admin-close],[data-directions-close],[data-place-share-close],[data-vault-preview-close],[data-trip-map-close])>i{
+  pointer-events:none;
+  margin:0;
+  line-height:1;
+}

@@ -51,6 +51,12 @@ test('Weather forecast rows flatten and wrap metrics without horizontal overflow
   assert.match(block, /\.weather-source\{[\s\S]*?overflow-wrap:anywhere/);
 });
 
+test('Weather compact summary shows the current temperature once', () => {
+  assert.match(js, /ui\.temperature\.textContent = round\(current\.temperature_2m\) \+ '°'/);
+  assert.match(js, /ui\.icon\.innerHTML = weatherSvg\(details\.icon\)/);
+  assert.doesNotMatch(js, /ui\.icon\.innerHTML = weatherSvg\(details\.icon\) \+ '<small>'/);
+});
+
 test('Weather modal behavior, history and accessibility contracts remain intact', () => {
   assert.match(js, /aria-haspopup/);
   assert.match(js, /aria-modal/);
