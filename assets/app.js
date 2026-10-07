@@ -1,5 +1,14 @@
 var appScript=document.currentScript;
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261006-04'}catch(error){return'20261006-04'}})();
+// Trip features retain closures over the loaded trip. Re-enter every trip
+// page after an account change so those closures use the new account state.
+if (/\/trip\//.test(location.pathname)) window.addEventListener('travelmate:account-context-changed', function (event) {
+  var trips = event.detail && event.detail.trips || [];
+  var id = new URLSearchParams(location.search).get('id');
+  var nextTrip = trips.find(function (trip) { return trip && String(trip.id) === String(id); });
+  if (!id || nextTrip) location.reload();
+  else location.replace(new URL('../../index.html', location.href).href);
+});
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261007-01'}catch(error){return'20261007-01'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};

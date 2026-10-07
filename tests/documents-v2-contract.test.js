@@ -84,7 +84,8 @@ test('Documents V2 filtering is responsive and feature-scoped', () => {
 test('Document Vault ignores stale metadata responses after session changes', () => {
   assert.match(vault, /var documentSessionEpoch = 0/);
   assert.match(vault, /var sessionEpoch = \+\+documentSessionEpoch/);
-  assert.match(vault, /renderDocuments\(sessionEpoch, currentUser\.id\)/);
+  assert.match(vault, /var sessionUserId = currentUser\.id/);
+  assert.match(vault, /isDocumentSession\(sessionUserId, sessionEpoch\)\) await renderDocuments\(sessionEpoch, sessionUserId\)/);
   assert.match(vault, /requestEpoch !== documentSessionEpoch \|\| !currentUser \|\| currentUser\.id !== requestUserId/);
   assert.match(vault, /documentSessionEpoch \+= 1;[\s\S]*clearRemoteDocumentMetadata\(\);[\s\S]*client\.auth\.signOut\(\)/);
 });
@@ -156,13 +157,15 @@ test('Document Vault accurately distinguishes encrypted file contents from prote
 
 test('Document Vault deletes metadata first and queues encrypted blob cleanup safely', () => {
   assert.match(vault, /var metadataResult = await client\.from\('travel_documents'\)\.delete\(\)\.eq\('id', record\.id\)/);
-  assert.match(vault, /var storageResult = await client\.storage\.from\(bucket\)\.remove\(\[record\.storage_path\]\)/);
+  assert.match(vault, /var result = await client\.storage\.from\(bucket\)\.remove\(\[path\]\)/);
+  const deletion = vault.slice(vault.indexOf('async function deleteDocument('), vault.indexOf('function requestDocumentUpload('));
   assert.ok(
-    vault.indexOf("var metadataResult = await client.from('travel_documents').delete().eq('id', record.id);")
-      < vault.indexOf("var storageResult = await client.storage.from(bucket).remove([record.storage_path]);"),
+    deletion.indexOf("var metadataResult = await client.from('travel_documents').delete().eq('id', record.id)") >= 0
+      && deletion.indexOf('var metadataResult = await') < deletion.indexOf('await flushPendingCleanup();'),
     'metadata must be removed before the encrypted blob'
   );
   assert.match(vault, /queuePendingCleanup\(currentUser\.id, record\.storage_path\)/);
+  assert.match(vault, /eq\('user_id', cleanupUserId\)\.eq\('storage_path', path\)\.limit\(1\)/);
   assert.match(vault, /await flushPendingCleanup\(\)/);
   assert.match(vault, /window\.addEventListener\('online', function \(\) \{ if \(currentUser\) flushPendingCleanup\(\); \}\)/);
 });

@@ -13,6 +13,8 @@
   var newTripSessionId = String(Date.now());
   var responseSequence = 0;
   var states = {};
+  var lifecycleUserId = String(localStorage.getItem('travelmate-active-user') || '');
+  var lifecycleGeneration = 0;
   function emptyState(key) { return { key: key, context: null, fingerprint: '', recommendation: null, prompt: '', responseData: null, responseId: '', requestId: 0, pendingSave: false, stale: false, busy: false, returnFocus: null, status: 'new' }; }
   var state = emptyState('NEW_TRIP:' + newTripSessionId);
   states[state.key] = state;
@@ -30,9 +32,11 @@
   }
 
   function refreshDeclaredPreferences() {
+    var generation = lifecycleGeneration;
     var service = window.TravelMateCloud;
     if (!service || typeof service.getSession !== 'function') return Promise.resolve(declaredPreferences);
     return service.getSession().then(function (session) {
+      if (generation !== lifecycleGeneration) return declaredPreferences;
       var user = session && session.user;
       var profile = window.TravelMateUserProfile;
       return setDeclaredPreferences(profile && profile.fromUser ? profile.fromUser(user).preferences : null);
@@ -492,5 +496,22 @@
     }).catch(function () {});
   }
   window.addEventListener('travelmate:learned-profile-change', function () { learnedPreferences = []; Object.keys(states).forEach(function (key) { var item = states[key]; if (item && item.recommendation) { item.stale = true; item.status = 'stale'; } }); });
+  window.addEventListener('travelmate:account-context-changed', function (event) {
+    var nextUserId = String(event.detail && event.detail.userId || '');
+    if (nextUserId === lifecycleUserId) return;
+    lifecycleUserId = nextUserId; lifecycleGeneration += 1;
+    Object.keys(states).forEach(function (key) { states[key].requestId += 1; });
+    closeSheet();
+    states = {}; existingTransientTypes = {};
+    newTripSessionId = String(Date.now()) + ':' + lifecycleGeneration;
+    state = emptyState('NEW_TRIP:' + newTripSessionId); states[state.key] = state;
+    setDeclaredPreferences(null); renderState();
+    if (ui.banner) ui.banner.hidden = true;
+  });
+  window.addEventListener('travelmate:canonical-trip-replaced', function () {
+    var id = new URLSearchParams(location.search).get('id');
+    var trip = id && canonicalTrip(id);
+    if (trip && ui.banner) { ui.banner.hidden = false; markExistingStale(existingContext(trip)); }
+  });
   window.TravelMateTripIntelligence = { MODE: MODE, normalizeContext: normalizeContext, promptFor: promptFor, renderAnswer: renderAnswer, sanitizeRecommendationBody: sanitizeRecommendationBody, recommendationFor: recommendationFor, open: openSheet, attachPendingToTrip: attachPendingToTrip, declaredPreferenceLines: declaredPreferenceLines, learnedPreferenceLines: learnedPreferenceLines, refreshLearnedPreferences: refreshLearnedPreferences };
 })();
