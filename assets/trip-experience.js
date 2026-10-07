@@ -4,12 +4,43 @@
   window.__travelMateTripExperienceLoaded = true;
 
   var cloud = window.TravelMateCloud;
+  var lifecycleGeneration = 0;
+  var experienceAvailable = true;
   var state = { trip: null, rate: null, rates: {}, ilsRates: { ILS: 1 }, rateDate: '', rateSource: '', rateSourceUrl: '', rateStale: false, fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR', secondaryCurrency: 'ILS', budgetUnlimited: false };
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
   function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch (error) { return fallback; } }
-  function writeJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) {} }
+  function writeJson(key, value) { if (!experienceAvailable) return; try { localStorage.setItem(key, JSON.stringify(value)); } catch (error) {} }
+  function experienceContext() { return { generation: lifecycleGeneration, userId: String(localStorage.getItem('travelmate-active-user') || ''), trip: state.trip }; }
+  function experienceIsCurrent(context) { return experienceAvailable && context.generation === lifecycleGeneration && context.trip === state.trip && context.userId === String(localStorage.getItem('travelmate-active-user') || ''); }
+  function assertExperienceCurrent(context) { if (!experienceIsCurrent(context)) throw new Error('AUTH_CONTEXT_CHANGED'); }
   function tripId() { return String(state.trip && state.trip.id || new URLSearchParams(location.search).get('id') || location.pathname); }
-  function storageKey(name) { return 'travelmate-experience:' + tripId() + ':' + name; }
+  function activeOwnerId() { return String(state.trip && state.trip.ownerId || localStorage.getItem('travelmate-active-user') || ''); }
+  function legacyStorageKey(name) { return 'travelmate-experience:' + tripId() + ':' + name; }
+  function storageKey(name) { var owner = activeOwnerId(); return 'travelmate-experience:' + (owner || 'guest') + ':' + tripId() + ':' + name; }
+  function legacyMatchesCanonical(name, value) {
+    var fields = { 'budget-unlimited': 'budgetUnlimited', 'secondary-currency': 'secondaryCurrency', expenses: 'expenses', 'budget-categories': 'budgetCategories', memories: 'memories', 'album-url': 'photoAlbumUrl', 'currency-fee': 'currencyFee' };
+    var field = fields[name];
+    if (!field || !state.trip || !Object.prototype.hasOwnProperty.call(state.trip, field)) return false;
+    try { return JSON.stringify(state.trip[field]) === JSON.stringify(value); } catch (error) { return false; }
+  }
+  function readExperienceJson(name, fallback) {
+    var ownedKey = storageKey(name);
+    if (localStorage.getItem(ownedKey) !== null) return readJson(ownedKey, fallback);
+    var owner = activeOwnerId();
+    var tripOwner = String(state.trip && state.trip.ownerId || '');
+    if (!owner || !tripOwner || owner !== tripOwner) return fallback;
+    var migrationKey = 'travelmate-experience-migrated:' + owner + ':' + tripId() + ':' + name;
+    if (localStorage.getItem(migrationKey) === '1') return fallback;
+    var snapshot = readJson('travelmate-trips-user:' + owner, []);
+    var canonicalTrip = Array.isArray(snapshot) ? snapshot.find(function (item) { return item && String(item.id) === tripId() && String(item.ownerId || '') === owner; }) : null;
+    if (!canonicalTrip) return fallback;
+    var legacyKey = legacyStorageKey(name);
+    if (localStorage.getItem(legacyKey) === null) return fallback;
+    var value = readJson(legacyKey, fallback);
+    if (!legacyMatchesCanonical(name, value)) return fallback;
+    try { localStorage.setItem(ownedKey, JSON.stringify(value)); localStorage.setItem(migrationKey, '1'); } catch (error) {}
+    return value;
+  }
   function localDateValue(date) { var value = date || new Date(); return value.getFullYear() + '-' + String(value.getMonth() + 1).padStart(2, '0') + '-' + String(value.getDate()).padStart(2, '0'); }
   function selectedReceiptFile(form) { return form.receiptCamera && form.receiptCamera.files[0] || form.receiptFile && form.receiptFile.files[0] || null; }
   function money(value, currency) { return new Intl.NumberFormat('he-IL', { style: 'currency', currency: currency, maximumFractionDigits: 2 }).format(Number(value || 0)); }
@@ -58,32 +89,40 @@
     return userId + '/receipts/' + encodeURIComponent(tripId()).replace(/%/g, '_') + '/' + String(expenseId) + '-' + Date.now() + '.' + extension;
   }
   function receiptDatabase() { return new Promise(function (resolve, reject) { var request = indexedDB.open('travelmate-private-receipts', 1); request.onupgradeneeded = function () { if (!request.result.objectStoreNames.contains('files')) request.result.createObjectStore('files'); }; request.onsuccess = function () { resolve(request.result); }; request.onerror = function () { reject(request.error); }; }); }
-  function receiptLocalKey(expenseId) { return tripId() + ':' + String(expenseId); }
+  function receiptLocalKey(expenseId) { return (activeOwnerId() || 'guest') + ':' + tripId() + ':' + String(expenseId); }
   async function putLocalReceipt(file, expenseId) { var key = receiptLocalKey(expenseId); var database = await receiptDatabase(); await new Promise(function (resolve, reject) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').put({ blob: file, name: file.name || ('receipt-' + expenseId), type: file.type || 'application/octet-stream', size: file.size || 0, savedAt: Date.now() }, key); transaction.oncomplete = resolve; transaction.onerror = function () { reject(transaction.error); }; }); database.close(); return key; }
   async function getLocalReceipt(key) { if (!key) return null; var database = await receiptDatabase(); var value = await new Promise(function (resolve, reject) { var request = database.transaction('files').objectStore('files').get(key); request.onsuccess = function () { resolve(request.result || null); }; request.onerror = function () { reject(request.error); }; }); database.close(); return value; }
   async function deleteLocalReceipt(key) { if (!key) return; var database = await receiptDatabase(); await new Promise(function (resolve) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = resolve; transaction.onerror = resolve; }); database.close(); }
   function waitReceiptRetry(delay) { return new Promise(function (resolve) { setTimeout(resolve, delay); }); }
   async function privateStorageAccess() {
+    var context = experienceContext(); assertExperienceCurrent(context);
     if (!cloud) throw new Error('STORAGE_CLOUD_UNAVAILABLE');
-    if (cloud.getPrivateStorageSession) return cloud.getPrivateStorageSession();
+    if (cloud.getPrivateStorageSession) { var access = await cloud.getPrivateStorageSession(); assertExperienceCurrent(context); return access; }
     var client = await cloud.getClient();
     var session = await cloud.getSession();
+    assertExperienceCurrent(context);
     if (!session || !session.user) throw new Error('STORAGE_SIGN_IN_REQUIRED');
     return { client: client, session: session };
   }
-  async function storePrivateReceipt(file, expenseId) {
+  async function storePrivateReceipt(file, expenseId, context) {
+    context = context || experienceContext(); assertExperienceCurrent(context);
     if (!file) throw new Error('RECEIPT_FILE_REQUIRED');
     var access = await privateStorageAccess();
+    assertExperienceCurrent(context);
+    if (context.userId !== String(access.session.user.id)) throw new Error('AUTH_CONTEXT_CHANGED');
     var path = receiptPath(expenseId, file.name, access.session.user.id);
     var result = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').upload(path, file, { cacheControl: '3600', upsert: false, contentType: 'application/octet-stream' });
+    assertExperienceCurrent(context);
     if (result.error) throw result.error;
     return path;
   }
-  async function storePrivateReceiptWithRetry(file, expenseId) { var error = null; for (var attempt = 0; attempt < 3; attempt += 1) { try { return await storePrivateReceipt(file, expenseId); } catch (caught) { error = caught; if (/SIGN_IN_REQUIRED|MFA_REQUIRED|CLOUD_UNAVAILABLE/.test(String(caught && (caught.code || caught.message) || ''))) throw caught; if (attempt < 2) await waitReceiptRetry(350 * (attempt + 1)); } } throw error || new Error('RECEIPT_UPLOAD_FAILED'); }
+  async function storePrivateReceiptWithRetry(file, expenseId) { var context = experienceContext(); var error = null; for (var attempt = 0; attempt < 3; attempt += 1) { assertExperienceCurrent(context); try { return await storePrivateReceipt(file, expenseId, context); } catch (caught) { error = caught; if (/AUTH_CONTEXT_CHANGED|SIGN_IN_REQUIRED|MFA_REQUIRED|CLOUD_UNAVAILABLE/.test(String(caught && (caught.code || caught.message) || ''))) throw caught; if (attempt < 2) await waitReceiptRetry(350 * (attempt + 1)); } } throw error || new Error('RECEIPT_UPLOAD_FAILED'); }
   async function receiptBlob(expense) {
-    if (expense && expense.receiptLocalKey) { var local = await getLocalReceipt(expense.receiptLocalKey); if (local && local.blob) return local.blob; }
+    var context = experienceContext(); assertExperienceCurrent(context);
+    if (expense && expense.receiptLocalKey) { var local = await getLocalReceipt(expense.receiptLocalKey); assertExperienceCurrent(context); if (local && local.blob) return local.blob; }
     if (expense && expense.receiptPath && cloud) {
       var access = await privateStorageAccess();
+      assertExperienceCurrent(context);
       var result = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').download(expense.receiptPath);
       if (result.error) throw result.error;
       return result.data;
@@ -92,40 +131,48 @@
     return null;
   }
   async function removePrivateReceipt(expense) {
+    var context = experienceContext(); assertExperienceCurrent(context);
     if (!expense) return;
-    if (expense.receiptPath && cloud) { var access = await privateStorageAccess(); var result = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').remove([expense.receiptPath]); if (result.error) throw result.error; }
+    if (expense.receiptPath && cloud) { var access = await privateStorageAccess(); assertExperienceCurrent(context); var result = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').remove([expense.receiptPath]); assertExperienceCurrent(context); if (result.error) throw result.error; }
     if (expense.receiptLocalKey) await deleteLocalReceipt(expense.receiptLocalKey);
   }
   async function migrateInlineReceipts() {
+    var context = experienceContext();
     var changed = false;
     for (var index = 0; index < state.expenses.length; index += 1) {
       var expense = state.expenses[index];
       if (!expense.receiptData || expense.receiptPath) continue;
       try {
         var blob = await fetch(expense.receiptData).then(function (response) { return response.blob(); });
+        if (!experienceIsCurrent(context)) return;
         var file = new File([blob], expense.receiptName || ('receipt-' + expense.id), { type: expense.receiptType || blob.type || 'application/octet-stream' });
         expense.receiptPath = await storePrivateReceiptWithRetry(file, expense.id);
+        if (!experienceIsCurrent(context)) return;
         delete expense.receiptData;
         changed = true;
-      } catch (error) { console.warn('TravelMate receipt migration deferred', error); }
+      } catch (error) { if (!experienceIsCurrent(context)) return; console.warn('TravelMate receipt migration deferred', error); }
     }
     if (changed) { writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); }
   }
   async function syncPendingReceipts() {
+    var context = experienceContext();
     var changed = false;
     for (var index = 0; index < state.expenses.length; index += 1) {
       var expense = state.expenses[index];
       if (!expense.receiptPending || !expense.receiptLocalKey) continue;
       try {
         var local = await getLocalReceipt(expense.receiptLocalKey); if (!local || !local.blob) continue;
+        if (!experienceIsCurrent(context)) return;
         var file = new File([local.blob], local.name || expense.receiptName || ('receipt-' + expense.id), { type: local.type || expense.receiptType || 'application/octet-stream' });
         var previousPath = expense.receiptPath || '';
         expense.receiptPath = await storePrivateReceiptWithRetry(file, expense.id);
+        if (!experienceIsCurrent(context)) return;
         expense.receiptPending = false;
         await deleteLocalReceipt(expense.receiptLocalKey); delete expense.receiptLocalKey;
+        if (!experienceIsCurrent(context)) return;
         if (previousPath && previousPath !== expense.receiptPath) removePrivateReceipt({ receiptPath: previousPath }).catch(function () {});
         changed = true;
-      } catch (error) { console.warn('TravelMate receipt sync deferred', error && error.message || error); }
+      } catch (error) { if (!experienceIsCurrent(context)) return; console.warn('TravelMate receipt sync deferred', error && error.message || error); }
     }
     if (changed) { writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); }
   }
@@ -374,6 +421,7 @@
     panel.querySelector('[data-budget-column-add]').onclick = function () { state.budgetCategories.push({ id: Date.now(), name: 'קטגוריה חדשה', amount: 0 }); persistBudgetColumns(); };
     form.onsubmit = async function (event) {
       event.preventDefault();
+      var context = experienceContext(); if (!experienceIsCurrent(context)) return;
       var file = selectedReceiptFile(form); var status = panel.querySelector('[data-receipt-status]'); var editing = expenseById(form.dataset.editingId);
       if (file && file.size > 5 * 1024 * 1024) { status.textContent = 'כדי לשמור את הקבלה בענן יש לבחור קובץ עד 5MB.'; return; }
       status.textContent = file ? 'שומר את הקבלה…' : '';
@@ -391,6 +439,7 @@
           legacyReceiptData = '';
           if (oldReceipt) removePrivateReceipt(oldReceipt).catch(function () {});
         } catch (receiptError) {
+          if (!experienceIsCurrent(context)) return;
           try {
             receiptLocalKeyValue = await putLocalReceipt(file, expenseId); receiptPendingValue = true; legacyReceiptData = '';
             status.textContent = 'הקבלה נשמרה במכשיר ותסונכרן אוטומטית עם האחסון הפרטי כשהחיבור יהיה זמין.';
@@ -401,6 +450,7 @@
           }
         }
       }
+      if (!experienceIsCurrent(context)) return;
       var saved = { id: expenseId, amount: Number(form.amount.value), currency: form.currency.value, category: form.category.value, date: form.date.value, note: form.note.value.trim(), receiptName: file ? file.name : editing && editing.receiptName || '', receiptType: file ? file.type : editing && editing.receiptType || '', receiptSize: file ? file.size : editing && editing.receiptSize || 0, receiptPath: receiptPathValue, receiptPending: receiptPendingValue };
       if (receiptLocalKeyValue) saved.receiptLocalKey = receiptLocalKeyValue;
       if (legacyReceiptData && !receiptPathValue) saved.receiptData = legacyReceiptData;
@@ -671,8 +721,24 @@
   function applyReceipt(form, receipt) { if (receipt.amount) form.amount.value = Number(receipt.amount).toFixed(2); if (receipt.currency && form.currency.querySelector('option[value="' + receipt.currency + '"]')) form.currency.value = receipt.currency; if (receipt.category && [].slice.call(form.category.options).some(function (option) { return option.value === receipt.category; })) form.category.value = receipt.category; if (receipt.date) form.date.value = receipt.date; if (receipt.merchant) form.note.value = receipt.merchant; }
   async function localReceiptScan(file, status) { status.textContent = 'הענן לא זמין — מבצע סריקה מקומית במכשיר…'; var tesseract = await loadTesseract(); var result = await tesseract.recognize(file, 'heb+eng', { logger: function (progress) { if (progress.status === 'recognizing text') status.textContent = 'סורק במכשיר… ' + Math.round(progress.progress * 100) + '%'; } }); return receiptFromText(result.data && result.data.text); }
   async function scanReceipt(form, panel) {
+    var context = experienceContext(); if (!experienceIsCurrent(context)) return;
     var file = selectedReceiptFile(form); var status = panel.querySelector('[data-receipt-status]'); if (!file) { status.textContent = 'צלם קבלה או העלה קובץ לפני הסריקה.'; return; } if (file.size > 5 * 1024 * 1024) { status.textContent = 'לסריקה חכמה יש לבחור תמונה עד 5MB.'; return; } status.textContent = 'סורק את הקבלה…';
-    try { if (!cloud) throw new Error('cloud-unavailable'); var client = await cloud.getClient(); var data = await fileToBase64(file); var result = await client.functions.invoke('travel-assistant', { body: { receipt: { mimeType: file.type || 'image/jpeg', data: data } } }); if (result.error || !result.data || !result.data.receipt) throw result.error || new Error('scan-failed'); applyReceipt(form, result.data.receipt); status.textContent = 'הסריקה הושלמה. בדוק את הסכום והפרטים לפני השמירה.'; } catch (error) { try { var localReceipt = await localReceiptScan(file, status); applyReceipt(form, localReceipt); status.textContent = localReceipt.amount ? 'הסריקה המקומית הושלמה. בדוק את הפרטים לפני השמירה.' : 'הטקסט זוהה, אך הסכום לא היה ברור. הזן אותו ידנית.'; } catch (localError) { status.textContent = 'הסריקה החכמה לא זמינה כרגע. אפשר לראות את הקבלה ולהקליד את הפרטים ידנית.'; } }
+    try {
+      if (!cloud) throw new Error('cloud-unavailable');
+      var client = await cloud.getClient(); var data = await fileToBase64(file);
+      if (!experienceIsCurrent(context)) return;
+      var result = await client.functions.invoke('travel-assistant', { body: { receipt: { mimeType: file.type || 'image/jpeg', data: data } } });
+      if (!experienceIsCurrent(context)) return;
+      if (result.error || !result.data || !result.data.receipt) throw result.error || new Error('scan-failed');
+      applyReceipt(form, result.data.receipt); status.textContent = 'הסריקה הושלמה. בדוק את הסכום והפרטים לפני השמירה.';
+    } catch (error) {
+      if (!experienceIsCurrent(context)) return;
+      try {
+        var localReceipt = await localReceiptScan(file, status);
+        if (!experienceIsCurrent(context)) return;
+        applyReceipt(form, localReceipt); status.textContent = localReceipt.amount ? 'הסריקה המקומית הושלמה. בדוק את הפרטים לפני השמירה.' : 'הטקסט זוהה, אך הסכום לא היה ברור. הזן אותו ידנית.';
+      } catch (localError) { if (experienceIsCurrent(context)) status.textContent = 'הסריקה החכמה לא זמינה כרגע. אפשר לראות את הקבלה ולהקליד את הפרטים ידנית.'; }
+    }
   }
   function expenseInEuros(expense) { if (expense.currency === 'EUR' || !expense.currency) return Number(expense.amount || 0); var rate = Number(state.rates[expense.currency] || 0); return rate ? Number(expense.amount || 0) / rate : 0; }
   function renderExpenseList() {
@@ -744,10 +810,10 @@
     document.body.appendChild(modal);
     document.body.classList.add('receipt-preview-open');
   }
-  async function openExpenseReceipt(id) { var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData && !expense.receiptLocalKey)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); if (!blob) throw new Error('RECEIPT_NOT_FOUND'); showReceiptPreview(expense, blob); } catch (error) { toast('לא הצלחנו לפתוח את הקבלה. ודא שהחשבון מחובר או נסה מהמכשיר שבו היא נשמרה.'); } }
-  async function downloadExpenseReceipt(id) { var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData && !expense.receiptLocalKey)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); if (!blob) throw new Error('RECEIPT_NOT_FOUND'); var url = URL.createObjectURL(blob); var link = document.createElement('a'); link.href = url; link.download = expense.receiptName || ('receipt-' + expense.id + (String(expense.receiptType).indexOf('pdf') >= 0 ? '.pdf' : '.jpg')); document.body.appendChild(link); link.click(); link.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 60000); } catch (error) { toast('לא הצלחנו להוריד את הקבלה. נסה מהמכשיר שבו היא נשמרה.'); } }
+  async function openExpenseReceipt(id) { var context = experienceContext(); if (!experienceIsCurrent(context)) return; var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData && !expense.receiptLocalKey)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); if (!experienceIsCurrent(context)) return; if (!blob) throw new Error('RECEIPT_NOT_FOUND'); showReceiptPreview(expense, blob); } catch (error) { toast('לא הצלחנו לפתוח את הקבלה. ודא שהחשבון מחובר או נסה מהמכשיר שבו היא נשמרה.'); } }
+  async function downloadExpenseReceipt(id) { var context = experienceContext(); if (!experienceIsCurrent(context)) return; var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData && !expense.receiptLocalKey)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); if (!experienceIsCurrent(context)) return; if (!blob) throw new Error('RECEIPT_NOT_FOUND'); var url = URL.createObjectURL(blob); var link = document.createElement('a'); link.href = url; link.download = expense.receiptName || ('receipt-' + expense.id + (String(expense.receiptType).indexOf('pdf') >= 0 ? '.pdf' : '.jpg')); document.body.appendChild(link); link.click(); link.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 60000); } catch (error) { toast('לא הצלחנו להוריד את הקבלה. נסה מהמכשיר שבו היא נשמרה.'); } }
   function editExpense(id) { var expense = expenseById(id); var form = document.querySelector('[data-receipt-form]'); if (!expense || !form) return; form.dataset.editingId = String(expense.id); form.amount.value = expense.amount || ''; form.currency.value = expense.currency || state.localCurrency; form.category.value = expense.category || 'אחר'; form.date.value = expense.date || localDateValue(); form.note.value = expense.note || ''; form.hidden = false; var status = document.querySelector('[data-receipt-status]'); if (status) status.textContent = expense.receiptName ? 'הקבלה הקיימת תישמר, אלא אם תצלם או תעלה קובץ חדש.' : 'ערוך את הפרטים ושמור את ההוצאה.'; form.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  async function deleteExpense(id) { var expense = expenseById(id); if (!expense || !window.confirm('למחוק את ההוצאה ואת הקבלה המצורפת?')) return; try { await removePrivateReceipt(expense); } catch (error) { return toast('מחיקת הקבלה מהאחסון הפרטי נכשלה. נסה שוב.'); } state.expenses = state.expenses.filter(function (item) { return String(item.id) !== String(id); }); writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); renderBudgetColumns(); renderSummary(); toast('ההוצאה והקבלה נמחקו.'); }
+  async function deleteExpense(id) { var context = experienceContext(); if (!experienceIsCurrent(context)) return; var expense = expenseById(id); if (!expense || !window.confirm('למחוק את ההוצאה ואת הקבלה המצורפת?')) return; try { await removePrivateReceipt(expense); } catch (error) { return toast('מחיקת הקבלה מהאחסון הפרטי נכשלה. נסה שוב.'); } if (!experienceIsCurrent(context)) return; state.expenses = state.expenses.filter(function (item) { return String(item.id) !== String(id); }); writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); renderBudgetColumns(); renderSummary(); toast('ההוצאה והקבלה נמחקו.'); }
 
   function createMemoriesSection() {
     var content = document.querySelector('.content'); if (!content || document.getElementById('memories')) return; var section = document.createElement('section'); section.id = 'memories'; section.className = 'section trip-memories';
@@ -758,6 +824,7 @@
     memoryForm.attachments.onchange = function () { renderSelectedMemoryFiles(memoryForm); };
     memoryForm.onsubmit = async function (event) {
       event.preventDefault();
+      var context = experienceContext(); if (!experienceIsCurrent(context)) return;
       var files = Array.prototype.slice.call(memoryForm.attachments.files || []);
       var note = memoryForm.note.value.trim();
       var status = section.querySelector('[data-memory-upload-status]');
@@ -769,12 +836,12 @@
       try {
         var memoryId = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
         var attachments = [];
-        for (var index = 0; index < files.length; index += 1) attachments.push(await storeMemoryAttachment(files[index], memoryId));
+        for (var index = 0; index < files.length; index += 1) { attachments.push(await storeMemoryAttachment(files[index], memoryId)); if (!experienceIsCurrent(context)) return; }
         var memoryNow = new Date();
         state.memories.push({ id: memoryId, note: note || 'קובץ מצורף', date: memoryNow.toISOString(), localDate: localDateValue(memoryNow), attachments: attachments });
         writeJson(storageKey('memories'), state.memories); saveTripData(); memoryForm.reset(); renderSelectedMemoryFiles(memoryForm); status.textContent = ''; renderMemories(); renderSummary(); toast('הרגע והקבצים נשמרו.');
-      } catch (error) { status.textContent = 'לא הצלחנו לשמור את הקובץ. בדוק את החיבור ונסה שוב.'; }
-      finally { submit.disabled = false; }
+      } catch (error) { if (experienceIsCurrent(context)) status.textContent = 'לא הצלחנו לשמור את הקובץ. בדוק את החיבור ונסה שוב.'; }
+      finally { if (experienceIsCurrent(context)) submit.disabled = false; }
     };
     section.querySelector('[data-summary-refresh]').onclick = renderSummary; section.querySelector('[data-summary-ai]').onclick = function () { window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi, { prompt: buildSummaryPrompt(), source: 'trip-summary' }); }; section.querySelector('[data-summary-copy]').onclick = function () { var text = section.querySelector('[data-trip-summary]').innerText; navigator.clipboard && navigator.clipboard.writeText(text).then(function () { toast('סיכום הטיול הועתק.'); }); };
     renderAlbumActions(); renderMemories(); renderSummary(); setupCollapsibleSections();
@@ -787,19 +854,26 @@
   async function getLocalMemoryFile(key) { var database = await memoryDatabase(); return new Promise(function (resolve, reject) { var request = database.transaction('files').objectStore('files').get(key); request.onsuccess = function () { database.close(); resolve(request.result); }; request.onerror = function () { database.close(); reject(request.error); }; }); }
   async function deleteLocalMemoryFile(key) { var database = await memoryDatabase(); return new Promise(function (resolve) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = function () { database.close(); resolve(); }; transaction.onerror = function () { database.close(); resolve(); }; }); }
   async function storeMemoryAttachment(file, memoryId) {
+    var context = experienceContext(); assertExperienceCurrent(context);
     try {
       var access = await privateStorageAccess();
+      assertExperienceCurrent(context);
+      if (context.userId !== String(access.session.user.id)) throw new Error('AUTH_CONTEXT_CHANGED');
       var path = access.session.user.id + '/memories/' + encodeURIComponent(tripId()) + '/' + memoryId + '/' + Date.now() + '-' + safeFileName(file.name);
       var result = await access.client.storage.from('travel-documents').upload(path, file, { contentType: 'application/octet-stream', cacheControl: '0', upsert: false });
+      assertExperienceCurrent(context);
       if (result.error) throw result.error;
       return { name: file.name, type: file.type || 'application/octet-stream', size: file.size, storagePath: path, cloud: true };
     } catch (error) {
-      var key = tripId() + ':' + memoryId + ':' + Date.now() + ':' + Math.random().toString(36).slice(2);
+      assertExperienceCurrent(context);
+      var key = (activeOwnerId() || 'guest') + ':' + tripId() + ':' + memoryId + ':' + Date.now() + ':' + Math.random().toString(36).slice(2);
       await putLocalMemoryFile(key, file);
+      assertExperienceCurrent(context);
       return { name: file.name, type: file.type || 'application/octet-stream', size: file.size, localKey: key, local: true };
     }
   }
   async function openMemoryAttachment(attachment) {
+    var context = experienceContext(); if (!experienceIsCurrent(context)) return;
     try {
       var url = '';
       if (attachment.cloud) {
@@ -808,14 +882,18 @@
       } else {
         var blob = await getLocalMemoryFile(attachment.localKey); if (!blob) throw new Error('missing-file'); url = URL.createObjectURL(blob); setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
       }
+      if (!experienceIsCurrent(context)) return;
       var link = document.createElement('a'); link.href = url; link.target = '_blank'; link.rel = 'noopener'; link.click();
     } catch (error) { toast('הקובץ אינו זמין במכשיר הזה כרגע.'); }
   }
   async function removeMemory(memoryId) {
+    var context = experienceContext(); if (!experienceIsCurrent(context)) return;
     var memory = state.memories.find(function (item) { return String(item.id) === String(memoryId); }); if (!memory) return;
     var attachments = Array.isArray(memory.attachments) ? memory.attachments : [];
-    try { var cloudPaths = attachments.filter(function (item) { return item.cloud && item.storagePath; }).map(function (item) { return item.storagePath; }); if (cloudPaths.length && cloud) { var access = await privateStorageAccess(); await access.client.storage.from('travel-documents').remove(cloudPaths); } } catch (error) {}
+    try { var cloudPaths = attachments.filter(function (item) { return item.cloud && item.storagePath; }).map(function (item) { return item.storagePath; }); if (cloudPaths.length && cloud) { var access = await privateStorageAccess(); if (!experienceIsCurrent(context)) return; await access.client.storage.from('travel-documents').remove(cloudPaths); } } catch (error) {}
+    if (!experienceIsCurrent(context)) return;
     await Promise.all(attachments.filter(function (item) { return item.localKey; }).map(function (item) { return deleteLocalMemoryFile(item.localKey); }));
+    if (!experienceIsCurrent(context)) return;
     state.memories = state.memories.filter(function (item) { return String(item.id) !== String(memoryId); }); writeJson(storageKey('memories'), state.memories); saveTripData(); renderMemories(); renderSummary();
   }
   function memoryDateLabel(memory) {
@@ -837,7 +915,11 @@
   function buildSummaryPrompt() { return 'כתוב סיכום מסע מרגש אך אמיתי לטיול ב' + [state.trip.city, state.trip.country].filter(Boolean).join(', ') + '. השתמש רק בפרטים הבאים. זיכרונות: ' + state.memories.map(function (item) { return item.note; }).join(' | ') + '. הוצאות: ' + state.expenses.map(function (item) { return item.category + ' ' + item.amount + ' ' + (item.currency || 'EUR'); }).join(' | ') + '. כלול פתיחה קצרה, רגעים בולטים, נתון תקציבי וסיום אישי. אל תמציא מקומות או אירועים שלא סופקו.'; }
 
   async function init() {
-    try { state.trip = window.travelMateTripReady ? await window.travelMateTripReady : null; } catch (error) {}
+    var generation = lifecycleGeneration;
+    var readyTrip = null;
+    try { readyTrip = window.travelMateTripReady ? await window.travelMateTripReady : null; } catch (error) {}
+    if (generation !== lifecycleGeneration) return;
+    state.trip = readyTrip;
     if (!state.trip) { var heroTitle = clean(document.querySelector('.hero h1') && document.querySelector('.hero h1').textContent); var heroSubtitle = clean(document.querySelector('.hero .hero-copy p') && document.querySelector('.hero .hero-copy p').textContent); state.trip = { id: new URLSearchParams(location.search).get('id') || location.pathname, city: document.querySelector('[data-city]') && clean(document.querySelector('[data-city]').textContent) || heroSubtitle.split('·')[0].trim() || heroTitle || 'היעד', country: document.querySelector('[data-country]') && clean(document.querySelector('[data-country]').textContent) || heroTitle, budget: 0 }; }
     state.localCurrency = countryCurrency(state.trip.country);
     state.budgetUnlimited = typeof state.trip.budgetUnlimited === 'boolean' ? state.trip.budgetUnlimited : readJson(storageKey('budget-unlimited'), false) === true;
@@ -849,12 +931,49 @@
         return value ? money(value, state.localCurrency) : money(euros, 'EUR');
       }
     };
-    state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readJson(storageKey('expenses'), []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) && state.trip.budgetCategories.length ? state.trip.budgetCategories : readJson(storageKey('budget-categories'), null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readJson(storageKey('memories'), []); state.albumUrl = state.trip.photoAlbumUrl || readJson(storageKey('album-url'), ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readJson(storageKey('currency-fee'), 2.5));
+    state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readExperienceJson('expenses', []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) ? state.trip.budgetCategories : readExperienceJson('budget-categories', null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readExperienceJson('memories', []); state.albumUrl = typeof state.trip.photoAlbumUrl === 'string' ? state.trip.photoAlbumUrl : readExperienceJson('album-url', ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readExperienceJson('currency-fee', 2.5));
     injectCurrencyCards(); createBudgetTools(); createCurrencyConverter(); createMemoriesSection(); setupCollapsibleSections();
     loadRate();
     migrateInlineReceipts();
     syncPendingReceipts();
     window.addEventListener('online', syncPendingReceipts);
   }
+  function refreshFromCanonicalTrip(detail) {
+    var tripIdValue = new URLSearchParams(location.search).get('id');
+    if (!tripIdValue || !detail) return;
+    var incoming = detail.trip || (Array.isArray(detail.trips) ? detail.trips.find(function (item) { return item && String(item.id) === String(tripIdValue); }) : null);
+    if (!incoming || String(incoming.id) !== String(tripIdValue)) return;
+    var activeOwner = String(localStorage.getItem('travelmate-active-user') || '');
+    if (detail.userId && String(detail.userId) !== activeOwner || !activeOwner && incoming.ownerId) return;
+    state.trip = incoming;
+    state.localCurrency = countryCurrency(state.trip.country);
+    state.budgetUnlimited = typeof state.trip.budgetUnlimited === 'boolean' ? state.trip.budgetUnlimited : readExperienceJson('budget-unlimited', false) === true;
+    state.secondaryCurrency = state.trip.secondaryCurrency || readExperienceJson('secondary-currency', state.localCurrency === 'ILS' ? 'EUR' : 'ILS');
+    state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readExperienceJson('expenses', []);
+    state.budgetCategories = Array.isArray(state.trip.budgetCategories) ? state.trip.budgetCategories : readExperienceJson('budget-categories', null) || defaultBudgetCategories();
+    state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readExperienceJson('memories', []);
+    state.albumUrl = typeof state.trip.photoAlbumUrl === 'string' ? state.trip.photoAlbumUrl : readExperienceJson('album-url', '');
+    state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readExperienceJson('currency-fee', 2.5));
+    experienceAvailable = true;
+    document.querySelectorAll('[data-budget]').forEach(function (node) { node.dataset.euroAmount = String(Number(incoming.budget || 0)); });
+    document.querySelectorAll('[data-currency-insight]').forEach(function (node) { node.dataset.euros = String(Number(incoming.budget || 0)); });
+    var budgetForm = document.querySelector('[data-total-budget-form]'); if (budgetForm) budgetForm.total.value = Math.round(state.localCurrency === 'EUR' ? Number(incoming.budget || 0) : localFromEuros(incoming.budget));
+    renderLocalBudgetTotals();
+    renderCurrency(); renderExpenseList(); renderBudgetColumns(); renderMemories(); renderAlbumActions(); renderSummary(); renderBudgetCharts();
+    var albumForm = document.querySelector('[data-album-form]'); if (albumForm) albumForm.url.value = state.albumUrl;
+    window.dispatchEvent(new CustomEvent('travelmate:experience-canonical-refreshed', { detail: { tripId: tripIdValue, ownerId: incoming.ownerId || activeOwner || null, source: detail.source || 'canonical' } }));
+  }
+  window.addEventListener('travelmate:account-context-changed', function (event) {
+    lifecycleGeneration += 1;
+    state.trip = null; state.expenses = []; state.memories = []; state.budgetCategories = []; state.albumUrl = ''; state.budgetUnlimited = false;
+    experienceAvailable = false;
+    document.querySelectorAll('[data-memory-form], [data-album-form], [data-receipt-form]').forEach(function (form) { form.reset(); });
+    document.querySelectorAll('[data-memory-upload-status], [data-receipt-status], [data-memory-file-selection]').forEach(function (node) { node.textContent = ''; });
+    document.querySelectorAll('[data-memory-form] button[type="submit"]').forEach(function (button) { button.disabled = false; });
+    document.querySelectorAll('.receipt-preview-backdrop, .trip-experience-toast').forEach(function (node) { node.remove(); });
+    renderExpenseList(); renderMemories(); renderAlbumActions(); renderSummary(); renderBudgetColumns(); renderBudgetCharts();
+    refreshFromCanonicalTrip({ trips: event.detail && event.detail.trips || [], source: 'account-switch' });
+  });
+  window.addEventListener('travelmate:canonical-trip-replaced', function (event) { refreshFromCanonicalTrip(event.detail || {}); });
   init();
 })();

@@ -1,0 +1,293 @@
+/* TravelMate phone visual QA patch: phone surfaces + icon/text rhythm. */
+
+/* Shared Font Awesome label contract. It normalizes glyph boxes without changing
+   the layout model of the surrounding control. */
+html body :is(button,a[href],[role="button"]) > :is(i.fa-solid,i.fa-regular,i.fa-brands,i.fa){
+  display:inline-grid;
+  place-items:center;
+  inline-size:1.12em;
+  min-inline-size:1.12em;
+  block-size:1.12em;
+  margin:0;
+  line-height:1;
+  vertical-align:middle;
+  flex:0 0 1.12em;
+}
+html body :is(button,a[href],[role="button"]) > :is(i.fa-solid,i.fa-regular,i.fa-brands,i.fa) + :is(span,strong,small){
+  vertical-align:middle;
+}
+
+/* New Trip: keep destination context visible instead of replacing it with white. */
+html body.home-page #modal-destination.modal-backdrop{
+  background:rgba(7,31,34,.34);
+  -webkit-backdrop-filter:blur(16px) saturate(.86);
+  backdrop-filter:blur(16px) saturate(.86);
+}
+html body.home-page #modal-destination .destination-modal{
+  --tm-overlay-surface:rgba(234,243,245,.94);
+  background:color-mix(in srgb,var(--tm-brand-primary,#147D92) 4%,rgba(234,243,245,.94));
+  border-color:rgba(77,122,132,.30);
+  box-shadow:0 24px 64px rgba(4,31,37,.26);
+}
+html body.home-page #modal-destination .destination-modal :is(input,select){
+  background:rgba(250,252,252,.90);
+  border-color:rgba(77,122,132,.32);
+}
+html body.home-page #modal-destination .destination-modal .modal-close{
+  background:rgba(238,246,247,.88);
+  border-color:rgba(77,122,132,.34);
+}
+html[data-theme="dark"] body.home-page #modal-destination.modal-backdrop{
+  background:rgba(2,13,18,.72);
+}
+html[data-theme="dark"] body.home-page #modal-destination .destination-modal{
+  --tm-overlay-surface:rgba(16,35,43,.92);
+  background:rgba(16,35,43,.92);
+  border-color:rgba(169,220,231,.22);
+}
+@media(max-width:640px){
+  html body.home-page #modal-destination.modal-backdrop{padding:10px;align-items:center}
+  html body.home-page #modal-destination .destination-modal{
+    width:100%;
+    max-height:calc(100dvh - 20px);
+    border-radius:24px;
+  }
+}
+
+/* Overview weather card: transparent photo surface, not milky glass. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget{
+  background:rgba(169,220,231,.05);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  border-color:rgba(235,252,248,.50);
+}
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget:hover{
+  background:rgba(169,220,231,.08);
+}
+
+/* Full forecast: near-opaque app sheet over a strongly blurred live page. */
+html body.tm-new-design #modal-weather-live.modal-backdrop{
+  background:rgba(5,24,29,.36);
+  -webkit-backdrop-filter:blur(18px) saturate(.84);
+  backdrop-filter:blur(18px) saturate(.84);
+}
+html body.tm-new-design #modal-weather-live .weather-live-modal{
+  --tm-weather-surface:rgba(232,241,243,.94);
+  background:color-mix(in srgb,var(--tm-brand-primary,#147D92) 3%,rgba(232,241,243,.94));
+  border-color:rgba(77,122,132,.30);
+  box-shadow:0 24px 64px rgba(4,31,37,.28);
+}
+html body.tm-new-design #modal-weather-live .weather-live-modal>header{
+  display:flex;
+  flex-flow:row nowrap;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  padding:18px 20px;
+  background:rgba(235,243,245,.97);
+  border-bottom-color:rgba(77,122,132,.24);
+}
+html body.tm-new-design #modal-weather-live .weather-live-header-copy{
+  min-width:0;
+  flex:1 1 auto;
+}
+html body.tm-new-design #modal-weather-live .modal-close{
+  position:static;
+  inset:auto;
+  flex:0 0 44px;
+  margin:0;
+  align-self:flex-start;
+}
+html body.tm-new-design #modal-weather-live .weather-live-grid{
+  background:rgba(169,220,231,.04);
+  border-radius:18px;
+}
+html body.tm-new-design #modal-weather-live .weather-live-day{
+  background:transparent;
+}
+html[data-theme="dark"] body.tm-new-design #modal-weather-live.modal-backdrop{
+  background:rgba(2,13,18,.72);
+}
+html[data-theme="dark"] body.tm-new-design #modal-weather-live .weather-live-modal,
+html[data-theme="dark"] body.tm-new-design #modal-weather-live .weather-live-modal>header{
+  --tm-weather-surface:rgba(16,35,43,.94);
+  background:rgba(16,35,43,.94);
+  border-color:rgba(169,220,231,.22);
+}
+@media(max-width:650px){
+  html body.tm-new-design #modal-weather-live.modal-backdrop{padding:8px}
+  html body.tm-new-design #modal-weather-live .weather-live-modal{
+    width:100%;
+    max-height:calc(100dvh - 16px);
+    border-radius:24px;
+  }
+  html body.tm-new-design #modal-weather-live .weather-live-modal>header{
+    padding:16px;
+  }
+  html body.tm-new-design #modal-weather-live .modal-close{
+    width:44px;
+    min-width:44px;
+    height:44px;
+    min-height:44px;
+  }
+}
+
+/* Phone overlay flattening: nested pale layers must not add opacity. */
+html:not([data-theme="dark"]) body.home-page #modal-destination :is(.destination-modal>header,.destination-form){
+  background:transparent;
+}
+html:not([data-theme="dark"]) body.home-page #modal-destination .destination-modal header>div>span{
+  background:rgba(247,235,232,.42);
+  border-color:rgba(126,104,98,.20);
+}
+html:not([data-theme="dark"]) body.tm-new-design #modal-weather-live :is(.weather-insight,.weather-live-grid,.weather-live-day){
+  background:transparent;
+}
+html:not([data-theme="dark"]) body.tm-new-design #modal-weather-live .weather-live-day.today{
+  background:rgba(169,220,231,.10);
+}
+html:not([data-theme="dark"]) body.tm-new-design #modal-weather-live :is(.weather-insight>i,.weather-live-day-icon){
+  background:rgba(220,235,241,.24);
+}
+html:not([data-theme="dark"]) body.tm-new-design #modal-weather-live .weather-live-header-copy>span{
+  background:rgba(220,235,241,.18);
+}
+html:not([data-theme="dark"]) body.tm-new-design #modal-weather-live .modal-close{
+  --tm-control-current-bg:rgba(220,235,241,.30);
+  --tm-control-current-border:rgba(77,122,132,.34);
+}
+
+/* Phone account: use the app material system instead of the old photographic dark split. */
+@media(max-width:760px){
+  html:not([data-theme="dark"]) body.home-page .cloud-account-backdrop{
+    background:rgba(7,31,34,.34);
+    -webkit-backdrop-filter:blur(18px) saturate(.86);
+    backdrop-filter:blur(18px) saturate(.86)
+  }
+  html:not([data-theme="dark"]) body.home-page .cloud-account-backdrop .cloud-account-split{
+    --tm-auth-surface:#e8f1ef;
+    --tm-auth-text:#17352d;
+    --tm-auth-muted:#526b64;
+    --tm-auth-field:rgba(255,255,255,.90);
+    --tm-auth-field-text:#17352d;
+    --tm-auth-field-muted:#6f837d;
+    --tm-auth-line:rgba(62,108,98,.30);
+    --tm-auth-focus:var(--tm-brand-primary,#176b52);
+    --tm-auth-action:var(--tm-brand-primary,#176b52);
+    --tm-auth-action-hover:color-mix(in srgb,var(--tm-brand-primary,#176b52) 84%,#082f28);
+    min-height:min(660px,calc(100dvh - 20px));
+    grid-template-columns:1fr;
+    padding:58px 20px 24px;
+    border:1px solid rgba(62,108,98,.28);
+    background:#e8f1ef;
+    background-image:none;
+    color:var(--tm-auth-text);
+    -webkit-text-fill-color:currentColor;
+    box-shadow:0 24px 70px rgba(4,31,37,.28)
+  }
+  html:not([data-theme="dark"]) body.home-page .cloud-account-backdrop .cloud-account-split:before{display:none}
+  html:not([data-theme="dark"]) body.home-page .cloud-account-backdrop .cloud-account-split :is(.cloud-account-copy,form,.cloud-account-session){
+    width:100%;
+    max-width:520px;
+    color:var(--tm-auth-text)
+  }
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-copy h2{
+    color:var(--tm-auth-text);
+    -webkit-text-fill-color:var(--tm-auth-text);
+    font-size:34px;
+    font-weight:750
+  }
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-copy small,
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session span,
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-auth-field{
+    color:var(--tm-auth-muted);
+    -webkit-text-fill-color:currentColor;
+    text-shadow:none
+  }
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-close{
+    background:rgba(255,255,255,.78);
+    border-color:rgba(62,108,98,.30);
+    color:var(--tm-auth-text);
+    -webkit-text-fill-color:var(--tm-auth-text);
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none
+  }
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session [data-cloud-sync-now]{
+    border-color:var(--tm-auth-action);
+    background:var(--tm-auth-action);
+    color:#fff;
+    -webkit-text-fill-color:#fff
+  }
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session button.secondary,
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split form button.secondary{
+    border-color:rgba(62,108,98,.30);
+    background:rgba(255,255,255,.72);
+    color:var(--tm-auth-text);
+    -webkit-text-fill-color:var(--tm-auth-text)
+  }
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .account-accent-picker{
+    border-color:rgba(62,108,98,.28)
+  }
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session .account-accent-picker button{
+    border-color:rgba(62,108,98,.24);
+    background:rgba(255,255,255,.68);
+    color:var(--tm-auth-text);
+    -webkit-text-fill-color:var(--tm-auth-text)
+  }
+}
+
+
+/* Phone acceptance 2.20.1: Weather transparency and predictable close targets. */
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget{
+  background:transparent;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 4px 12px rgba(8,39,29,.08);
+}
+html body :is(.modal-close,.profile-wizard-close,.about-close,.invite-close,[data-security-close],[data-admin-close],[data-directions-close],[data-place-share-close],[data-vault-preview-close],[data-trip-map-close]){
+  inline-size:48px;
+  min-inline-size:48px;
+  block-size:48px;
+  min-block-size:48px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  line-height:1;
+  touch-action:manipulation;
+}
+html body :is(.modal-close,.profile-wizard-close,.about-close,.invite-close,[data-security-close],[data-admin-close],[data-directions-close],[data-place-share-close],[data-vault-preview-close],[data-trip-map-close])>i{
+  pointer-events:none;
+  margin:0;
+  line-height:1;
+}
+
+/* Mobile UX 2.20.2: one stable trip Back target in every custom-trip view. */
+@media(max-width:1000px){
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header>.mobile-trip-back{
+    flex:0 0 50px;
+    width:50px;
+    min-width:50px;
+    height:50px;
+    min-height:50px;
+    display:grid;
+    place-items:center;
+    padding:0;
+    border:1px solid var(--tm-border-control);
+    border-radius:14px;
+    background:var(--tm-action-secondary);
+    color:var(--tm-card-control-text);
+    -webkit-text-fill-color:currentColor;
+    box-shadow:none;
+    line-height:1;
+    touch-action:manipulation;
+  }
+  html body[data-trip-kind="custom"].tm-new-design[data-trip-view] .mobile-header>.mobile-trip-back>i{
+    width:20px;
+    height:20px;
+    display:grid;
+    place-items:center;
+    margin:0;
+    font-size:20px;
+    line-height:1;
+  }
+}

@@ -22,11 +22,12 @@
   }
 
   function createButton() {
-    if (document.querySelector('[data-security-open]')) return;
+    if (document.querySelector('.security-center-launcher[data-security-open]')) return;
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'security-center-launcher';
     button.dataset.securityOpen = '';
+    button.dataset.lazyAccount = '';
     button.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i><span class="security-launcher-label">הגדרות</span>';
     button.setAttribute('aria-label', 'פתיחת הגדרות');
     var sidebar = document.querySelector(document.body.classList.contains('home-page') ? '.home-sidebar' : '.sidebar');
@@ -44,6 +45,7 @@
     backdrop.innerHTML = '<div class="security-center" role="dialog" aria-modal="true" aria-labelledby="security-title">' +
       '<header><div><small>התאמה אישית, אבטחה וניהול המכשיר</small><h2 id="security-title">הגדרות</h2></div><button type="button" data-security-close aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button></header>' +
       '<p class="security-message" data-security-message></p>' +
+      '<section class="security-profile" data-security-profile><div class="security-profile-head"><span class="security-profile-avatar" data-security-profile-avatar aria-hidden="true"></span><div><small>הפרופיל שלך</small><strong data-security-profile-name>TravelMate</strong><span data-security-profile-email></span></div></div><section class="security-declared-summary" data-security-declared-summary><div><small>מה שסיפרת ל־TravelMate</small><strong>העדפות נסיעה מוצהרות</strong></div><p data-security-profile-completion></p><div class="security-declared-items" data-security-declared-items></div><p data-security-declared-empty hidden>עדיין לא הוגדרו העדפות נסיעה.</p><p data-security-learning-state></p><div class="security-profile-edit-actions"><button type="button" data-profile-wizard-open><i class="fa-solid fa-image" aria-hidden="true"></i> תמונה ואווטר</button><button type="button" data-profile-interests-open><i class="fa-solid fa-heart" aria-hidden="true"></i> העדפות ותחומי עניין</button></div><small class="security-declared-privacy">העריכה מתבצעת רק באשף הפרופיל. הצעות ש־Mate ילמד בעתיד יוצגו בנפרד וידרשו אישור; מסמכים, הערות פרטיות ו־GPS אינם מקור ללמידה.</small></section><p data-security-profile-note></p></section>' +
       '<section class="security-preferences"><h3>העדפות האפליקציה</h3><div class="settings-list">' +
       '<div class="settings-row"><i class="fa-solid fa-language" aria-hidden="true"></i><span><strong>שפת האפליקציה</strong><small>בחר את שפת הממשק בכל המכשיר הזה</small></span><div class="settings-options" role="group" aria-label="שפת האפליקציה"><button type="button" data-language-choice="he">עברית</button><button type="button" data-language-choice="en">English</button></div></div>' +
       '<div class="settings-row"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span><strong>תצוגת האפליקציה</strong><small>בחר מצב בהיר או כהה</small></span><div class="settings-options" role="group" aria-label="תצוגת האפליקציה"><button type="button" data-theme-choice="light"><i class="fa-regular fa-sun"></i> בהיר</button><button type="button" data-theme-choice="dark"><i class="fa-regular fa-moon"></i> כהה</button></div></div>' +
@@ -195,6 +197,52 @@
     else if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); }
   }
 
+  function profileFromSession() {
+    var user = currentSession && currentSession.user;
+    var helper = window.TravelMateUserProfile;
+    if (helper && typeof helper.fromUser === 'function') return helper.fromUser(user);
+    var email = String(user && user.email || '').trim();
+    var name = String(user && user.user_metadata && (user.user_metadata.display_name || user.user_metadata.full_name || user.user_metadata.name) || '').trim();
+    if (!name && email) name = email.split('@')[0].replace(/[._-]+/g, ' ').trim();
+    return { name: name, firstName: name ? name.split(/\s+/)[0] : '', initials: name ? name.split(/\s+/).slice(0, 2).map(function (part) { return part.charAt(0); }).join('').toUpperCase() : '', avatarUrl: '' };
+  }
+
+  function renderProfile() {
+    var host = document.querySelector('[data-security-profile]');
+    if (!host) return;
+    var user = currentSession && currentSession.user;
+    var profile = profileFromSession();
+    var avatar = host.querySelector('[data-security-profile-avatar]');
+    var name = host.querySelector('[data-security-profile-name]');
+    var email = host.querySelector('[data-security-profile-email]');
+    var note = host.querySelector('[data-security-profile-note]');
+    var items = host.querySelector('[data-security-declared-items]');
+    var empty = host.querySelector('[data-security-declared-empty]');
+    var completion = host.querySelector('[data-security-profile-completion]');
+    var learning = host.querySelector('[data-security-learning-state]');
+    host.classList.toggle('is-signed-out', !user);
+    name.textContent = user ? (profile.name || 'הפרופיל שלי') : 'פרופיל אישי';
+    email.textContent = user ? String(user.email || '') : 'יש להתחבר כדי לשמור שם תצוגה בין מכשירים.';
+    avatar.textContent = user && !profile.avatarUrl ? profile.initials : '';
+    avatar.classList.toggle('has-image', Boolean(user && profile.avatarUrl));
+    avatar.style.backgroundImage = user && profile.avatarUrl ? 'url("' + profile.avatarUrl.replace(/"/g, '%22') + '")' : '';
+    var helper = window.TravelMateUserProfile;
+    var summary = helper && helper.preferenceSummary ? helper.preferenceSummary(profile.preferences) : { items: [], isEmpty: true, learningEnabled: false };
+    items.replaceChildren();
+    completion.textContent = user ? summary.completionLabel || '' : '';
+    summary.items.forEach(function (item) {
+      var row = document.createElement('span');
+      row.textContent = item.label + ': ' + item.valueLabel;
+      items.appendChild(row);
+    });
+    empty.hidden = !user || !summary.isEmpty;
+    learning.hidden = !user;
+    learning.classList.toggle('is-enabled', summary.learningEnabled === true);
+    learning.textContent = summary.learningEnabled === true ? 'התאמה עתידית: הצטרפת במפורש' : 'התאמה עתידית: כבויה עד להצטרפות מפורשת';
+    host.querySelectorAll('[data-profile-wizard-open],[data-profile-interests-open]').forEach(function(button){button.hidden=!user});
+    note.textContent = user ? 'הפרופיל וההעדפות נשמרים בחשבון Auth הקיים שלך.' : 'יש להתחבר כדי לנהל את הפרופיל וההעדפות.';
+  }
+
   async function renderMfa() {
     var host = document.querySelector('[data-security-mfa]');
     if (!host) return;
@@ -247,6 +295,7 @@
     if (result.error) return message('הקוד אינו תקין או שפג תוקפו. נסה קוד חדש.', true);
     pendingFactorId = '';
     message('האימות הדו־שלבי פעיל וההתחברות מאובטחת.');
+    renderProfile();
     await renderMfa();
     await enforceMfaChallenge();
   }
@@ -262,6 +311,7 @@
   async function refresh() {
     cloud = window.TravelMateCloud || cloud;
     try { currentSession = cloud ? await cloud.getSession() : null; } catch (error) { currentSession = null; }
+    renderProfile();
     var host = document.querySelector('[data-security-status]');
     if (host) host.innerHTML = currentSession && currentSession.user
       ? '<i class="fa-solid fa-circle-check"></i><div><strong>החשבון מחובר ומוצפן בתעבורה</strong><small>' + escapeHtml(currentSession.user.email) + (currentSession.user.email_confirmed_at ? ' · כתובת מאומתת' : ' · כתובת טרם אומתה') + '</small></div>'
@@ -276,6 +326,7 @@
     createMfaGate();
     document.addEventListener('click', function (event) {
       if (event.target.closest('[data-security-open]')) openDialog();
+      if (event.target.closest('[data-security-profile] [data-profile-wizard-open],[data-security-profile] [data-profile-interests-open]')) closeDialog();
       if (event.target.closest('[data-security-close]') || event.target.matches('[data-security-dialog]')) closeDialog();
       var languageChoice = event.target.closest('[data-language-choice]');
       if (languageChoice && window.TravelMateLanguage) {
@@ -298,6 +349,12 @@
       }
     });
     document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeDialog(); else trapDialogFocus(event); });
+    window.addEventListener('travelmate:profile-change', function (event) {
+      var changed = event.detail && event.detail.user;
+      if (!currentSession || !currentSession.user || !changed || String(changed.id) !== String(currentSession.user.id)) return;
+      currentSession.user = changed;
+      renderProfile();
+    });
     document.querySelector('[data-security-signout]').onclick = async function () { await cloud.signOut('local'); location.reload(); };
     document.querySelector('[data-security-signout-all]').onclick = async function () {
       if (!window.confirm('לנתק את החשבון מכל המכשירים המחוברים?')) return;

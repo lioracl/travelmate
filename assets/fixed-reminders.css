@@ -1,0 +1,54 @@
+.fixed-reminder-banner{
+  position:sticky;
+  top:calc(env(safe-area-inset-top,0px) + 8px);
+  z-index:315;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  margin:8px 0 12px;
+  padding:10px 12px;
+  border:1px solid color-mix(in srgb,var(--tm-brand-primary) 28%,var(--tm-card-control-border));
+  border-radius:16px;
+  background:color-mix(in srgb,var(--tm-card-control) 92%,var(--tm-brand-primary) 8%);
+  color:var(--tm-card-control-text);
+  box-shadow:0 10px 28px rgb(0 0 0 / .12)
+}
+.fixed-reminder-banner[hidden]{display:none}
+.fixed-reminder-banner>i{font-size:18px;color:var(--tm-brand-primary)}
+.fixed-reminder-banner>div{display:grid;gap:2px;min-width:0}
+.fixed-reminder-banner strong,.fixed-reminder-banner span{min-width:0;overflow-wrap:anywhere}
+.fixed-reminder-banner__actions{display:flex;align-items:center;gap:6px}
+.fixed-reminder-banner__actions button,
+.tm-fixed-reminder-action{
+  min-height:44px;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:12px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
+  -webkit-text-fill-color:currentColor;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer
+}
+.fixed-reminder-banner__actions button{padding:0 12px}
+.fixed-reminder-banner__actions [data-fixed-reminder-dismiss]{inline-size:44px;padding:0;display:grid;place-items:center}
+.tm-fixed-reminder-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px}
+.tm-fixed-reminder-action.active{
+  border-color:color-mix(in srgb,var(--tm-brand-primary) 42%,var(--tm-card-control-border));
+  background:color-mix(in srgb,var(--tm-card-control) 78%,var(--tm-brand-primary) 22%);
+  color:var(--tm-card-control-text)
+}
+.tm-fixed-reminder-action:focus-visible,.fixed-reminder-banner button:focus-visible{outline:3px solid color-mix(in srgb,var(--tm-brand-primary) 60%,transparent);outline-offset:2px}
+@media(max-width:700px){
+  .fixed-reminder-banner{
+    position:relative;
+    top:auto;
+    grid-template-columns:auto minmax(0,1fr);
+    margin:8px 8px 10px;
+    padding:10px
+  }
+  .fixed-reminder-banner__actions{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 44px;width:100%}
+  .fixed-reminder-banner__actions button{width:100%}
+  #plan .tm-fixed-reminder-action{width:100%}
+}

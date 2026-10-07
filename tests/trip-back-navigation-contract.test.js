@@ -24,3 +24,11 @@ test('generic modal cleanup leaves dedicated Weather and Smart Hub cleanup to th
   assert.match(read('assets/app.js'),/\.modal-backdrop\.open:not\(#modal-weather-live\):not\(#modal-smart-hub\)/);
   assert.match(read('assets/app.js'),/var featureReady=coreReady\.then/);
 });
+
+test('mobile Back trusts the rendered view and treats Profile Wizard as an overlay',()=>{
+  const nav=read('assets/navigation-memory.js');
+  assert.match(nav,/document\.body && document\.body\.dataset\.tripView/);
+  assert.match(nav,/return rendered \|\| activeView/);
+  assert.match(nav,/\['\.profile-wizard-backdrop', '\[data-profile-wizard-close\]'\]/);
+  assert.match(nav,/var topBack = event\.target\.closest\('\.mobile-back,\.mobile-trip-back,\.hero-back'\)/);
+});

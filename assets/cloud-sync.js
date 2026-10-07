@@ -14,6 +14,7 @@
   var fullSyncPromises = new Map();
   var deletedTripIds = new Set();
 
+  var authGeneration = 0;
   function loadLibrary() {
     if (window.supabase && window.supabase.createClient) return Promise.resolve(window.supabase);
     if (window.travelMateSupabaseLoader) return window.travelMateSupabaseLoader;
@@ -121,8 +122,8 @@
     return error;
   }
 
-  function assertActiveUser(userId) {
-    if (activeUserId() !== String(userId || '')) throw authContextError();
+  function assertActiveUser(userId, generation) {
+    if (activeUserId() !== String(userId || '') || generation != null && generation !== authGeneration) throw authContextError();
   }
 
   function isTripDeleted(trip, fallbackOwnerId) {
@@ -267,12 +268,19 @@
       return;
     }
 
+    authGeneration += 1;
+    saveTimers.forEach(function (timer) { clearTimeout(timer); });
+    saveTimers.clear();
+    saveChains.clear();
+    fullSyncPromises.clear();
+
     var currentTrips = getLocalTrips();
     if (activeUser) localStorage.setItem(USER_STORAGE_PREFIX + activeUser, JSON.stringify(currentTrips));
 
     if (!userId) {
       localStorage.removeItem(ACTIVE_USER_KEY);
       setLocalTrips([]);
+      window.dispatchEvent(new CustomEvent('travelmate:account-context-changed', { detail: { previousUserId: activeUser || null, userId: null, generation: authGeneration, trips: [] } }));
       return;
     }
 
@@ -286,6 +294,7 @@
     localStorage.setItem(ACTIVE_USER_KEY, userId);
     localStorage.setItem(userStorageKey, JSON.stringify(userTrips));
     setLocalTrips(userTrips);
+    window.dispatchEvent(new CustomEvent('travelmate:account-context-changed', { detail: { previousUserId: activeUser || null, userId: userId, generation: authGeneration, trips: userTrips } }));
   }
 
   function upsertLocalTrip(trip) {
@@ -352,12 +361,32 @@
     });
   }
 
+  // Read the canonical account snapshot without activating another account or Auth.
+  function getCachedTrips() {
+    var owner = activeUserId();
+    if (!owner) return [];
+    var backup = readTripList(USER_STORAGE_PREFIX + owner);
+    var authorized = new Set(backup.map(function (trip) { return tripIdentity(trip, owner); }));
+    var active = getLocalTrips().filter(function (trip) {
+      return String(trip.ownerId || '') === owner || authorized.has(tripIdentity(trip, owner));
+    });
+    return mergeActiveTripsWithBackup(active, backup, owner);
+  }
+
   async function getSession() {
+    var expectedOwner = activeUserId();
+    var generation = authGeneration;
     var client = await getClient();
+    if (generation !== authGeneration) throw authContextError();
     var result = await client.auth.getSession();
+    if (generation !== authGeneration) throw authContextError();
     if (result.error) throw result.error;
     var session = result.data.session;
-    activateUserStorage(session && session.user ? session.user.id : null);
+    var sessionOwner = session && session.user ? String(session.user.id) : '';
+    if (activeUserId() !== expectedOwner && sessionOwner !== activeUserId()) throw authContextError();
+    if (session || typeof navigator === 'undefined' || navigator.onLine !== false) {
+      activateUserStorage(sessionOwner);
+    }
     return session;
   }
 
@@ -375,8 +404,11 @@
   }
 
   async function getPrivateStorageSession() {
+    var generation = authGeneration;
     var client = await getClient();
+    if (generation !== authGeneration) throw authContextError();
     var sessionResult = await client.auth.getSession();
+    if (generation !== authGeneration) throw authContextError();
     if (sessionResult.error) throw sessionResult.error;
     var session = sessionResult.data.session;
     if (!session || !session.user) {
@@ -385,6 +417,7 @@
       throw signedOutError;
     }
     var assuranceResult = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (generation !== authGeneration) throw authContextError();
     if (assuranceResult.error) throw assuranceResult.error;
     var assurance = assuranceResult.data || {};
     if (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
@@ -508,13 +541,16 @@
     var current = localTripFor(incoming);
     if (current && !shouldUseCloudTrip(current, incoming)) return false;
     upsertLocalTrip(incoming);
+    window.dispatchEvent(new CustomEvent('travelmate:canonical-trip-replaced', { detail: { userId: activeUserId(), tripId: incoming.id, trip: incoming, generation: authGeneration, source: 'realtime' } }));
     return true;
   }
 
-  async function performTripSave(trip, expectedUserId) {
-    if (expectedUserId) assertActiveUser(expectedUserId);
+  async function performTripSave(trip, expectedUserId, generation) {
+    if (generation !== authGeneration) throw authContextError();
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     var client = await getClient();
     var session = await getSession();
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     if (expectedUserId && (!session || !session.user || String(session.user.id) !== String(expectedUserId))) throw authContextError();
     if (!session || !session.user) {
       updateLocalSyncState(trip, 'local', null, expectedUserId);
@@ -556,7 +592,7 @@
       if (String(row.user_id) !== String(session.user.id) && !result.data) throw new Error('TRIP_EDIT_FORBIDDEN');
       response = { result_status: 'saved', result_revision: trip.cloudRevision || 0, result_updated_at: timestamp };
     }
-    if (expectedUserId) assertActiveUser(expectedUserId);
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     if (isStaleSyncSnapshot(trip, expectedUserId)) return { saved: false, reason: 'STALE_AFTER_CONFLICT_RESOLUTION' };
     timestamp = response.result_updated_at || timestamp;
     updateLocalSyncState(trip, 'synced', timestamp, expectedUserId, response.result_revision);
@@ -565,13 +601,15 @@
   }
 
   function enqueueTripSave(snapshot, expectedUserId) {
+    var generation = authGeneration;
     var id = tripIdentity(snapshot, expectedUserId);
     if (isTripDeleted(snapshot, expectedUserId)) return Promise.resolve({ saved: false, reason: 'DELETED' });
     var previous = saveChains.get(id) || Promise.resolve();
-    var current = previous.catch(function () {}).then(function () { return performTripSave(snapshot, expectedUserId); });
+    var current = previous.catch(function () {}).then(function () { return performTripSave(snapshot, expectedUserId, generation); });
     saveChains.set(id, current);
     current.then(function () { if (saveChains.get(id) === current) saveChains.delete(id); }, function () { if (saveChains.get(id) === current) saveChains.delete(id); });
     return current.catch(async function (error) {
+      if (generation !== authGeneration) throw authContextError();
       if (isStaleSyncSnapshot(snapshot, expectedUserId)) return { saved: false, reason: 'STALE_AFTER_CONFLICT_RESOLUTION' };
       if (acceptRemoteDeletion(snapshot, error, expectedUserId)) throw error;
       if (isTripEditForbidden(error)) {
@@ -614,6 +652,7 @@
   }
 
   function deleteTrip(trip, expectedUserId) {
+    var generation = authGeneration;
     expectedUserId = expectedUserId || activeUserId();
     var id = tripIdentity(trip, expectedUserId);
     if (expectedUserId) assertActiveUser(expectedUserId);
@@ -628,8 +667,10 @@
     saveTimers.delete(timerKey);
     var previous = saveChains.get(id) || Promise.resolve();
     var current = previous.catch(function () {}).then(async function () {
+      if (generation !== authGeneration) throw authContextError();
       var client = await getClient();
       var session = await getSession();
+      if (expectedUserId) assertActiveUser(expectedUserId, generation);
       if (expectedUserId && (!session || !session.user || String(session.user.id) !== String(expectedUserId))) throw authContextError();
       if (!session || !session.user) {
         deletedTripIds.delete(deletionKey);
@@ -659,13 +700,14 @@
           .eq('user_id', ownerId).eq('id', String(trip.id)).select('id').maybeSingle());
         if (result.error) throw result.error;
       }
-      if (expectedUserId) assertActiveUser(expectedUserId);
+      if (expectedUserId) assertActiveUser(expectedUserId, generation);
       removeLocalTrip(trip.id, ownerId);
       window.dispatchEvent(new CustomEvent('travelmate:trip-deleted', { detail: { id: trip.id, ownerId: ownerId } }));
       return { deleted: true };
     });
     saveChains.set(id, current);
     current.then(function () { if (saveChains.get(id) === current) saveChains.delete(id); }, function (error) {
+      if (generation !== authGeneration) return;
       deletedTripIds.delete(deletionKey);
       updateLocalSyncState(trip, error && error.code === 'TRIP_CONFLICT' ? 'conflict'
         : error && error.code === 'TRIP_WRITE_TIMEOUT' ? 'unknown' : 'failed', error && error.cloud && error.cloud.result_updated_at, expectedUserId, error && error.cloud && error.cloud.result_revision);
@@ -692,6 +734,7 @@
   async function getTrip(id, expectedOwnerId) {
     if (expectedOwnerId && isTripDeleted(id, expectedOwnerId)) return null;
     var session = await getSession();
+    var generation = authGeneration;
     var local = findLocalTrip(id, expectedOwnerId);
     if (!session || !session.user) return local || null;
     await assertMfaReadyForPersonalData();
@@ -703,7 +746,7 @@
       .eq('id', String(id))
       .order('updated_at', { ascending: false })
       .limit(10);
-    assertActiveUser(requestUserId);
+    assertActiveUser(requestUserId, generation);
     if (isTripDeleted(id, deletionOwnerId)) return null;
     if (result.error) throw result.error;
     local = findLocalTrip(id, expectedOwnerId);
@@ -742,7 +785,7 @@
     var localNeedsSave = (hasUnsyncedChanges(local) && !localConflict) || legacyLocalAhead;
     if (local.ownerId && String(local.ownerId) !== requestUserId && (localConflict || localNeedsSave)) {
       var editable = await canEditSharedTrip(local.ownerId, local.id);
-      assertActiveUser(requestUserId);
+      assertActiveUser(requestUserId, generation);
       if (!editable) {
         upsertLocalTrip(cloud);
         return cloud;
@@ -840,10 +883,11 @@
     var client = await getClient();
     var session = await getSession();
     var subscriberUserId = session && session.user ? String(session.user.id) : '';
+    var subscriberGeneration = authGeneration;
     callbacks = callbacks || {};
     var channel = client.channel('travelmate-trip:' + ownerId + ':' + tripId)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'travel_trips', filter: 'id=eq.' + String(tripId) }, function (payload) {
-        if (activeUserId() !== subscriberUserId) return;
+        if (activeUserId() !== subscriberUserId || subscriberGeneration !== authGeneration) return;
         if (!payload.new || String(payload.new.user_id) !== String(ownerId)) return;
         var incoming = fromRow(payload.new);
         if (!acceptCloudTrip(incoming)) return;
@@ -852,15 +896,16 @@
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'trip_members', filter: 'trip_id=eq.' + String(tripId) }, function (payload) {
-        if (activeUserId() !== subscriberUserId) return;
+        if (activeUserId() !== subscriberUserId || subscriberGeneration !== authGeneration) return;
         var row = payload.new || payload.old;
         if (row && String(row.trip_owner_id) === String(ownerId) && callbacks.onMembersChange) callbacks.onMembersChange(payload);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'trip_messages', filter: 'trip_id=eq.' + String(tripId) }, function (payload) {
-        if (activeUserId() !== subscriberUserId) return;
+        if (activeUserId() !== subscriberUserId || subscriberGeneration !== authGeneration) return;
         if (payload.new && String(payload.new.trip_owner_id) === String(ownerId) && callbacks.onMessage) callbacks.onMessage(payload.new);
       });
     await channel.subscribe();
+    if (subscriberGeneration !== authGeneration) { client.removeChannel(channel); throw authContextError(); }
     return function () { client.removeChannel(channel); };
   }
 
@@ -876,26 +921,28 @@
   }
 
   async function fetchCloudTripVersion(tripId, ownerId, expectedUserId) {
-    if (expectedUserId) assertActiveUser(expectedUserId);
+    var generation = authGeneration;
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     await assertMfaReadyForPersonalData();
     var client = await getClient();
     var result = await client.from('travel_trips').select('*')
       .eq('id', String(tripId))
       .eq('user_id', String(ownerId))
       .maybeSingle();
-    if (expectedUserId) assertActiveUser(expectedUserId);
+    if (expectedUserId) assertActiveUser(expectedUserId, generation);
     if (result.error) throw result.error;
     return result.data ? fromRow(result.data) : null;
   }
 
   async function resolveTripConflict(tripId, ownerId, strategy) {
+    var generation = authGeneration;
     strategy = String(strategy || '').toLowerCase();
     if (strategy !== 'local' && strategy !== 'cloud') throw cloudError('INVALID_CONFLICT_STRATEGY');
 
     var session = await getSession();
     if (!session || !session.user) throw cloudError('SIGNED_OUT');
     var requestUserId = String(session.user.id);
-    assertActiveUser(requestUserId);
+    assertActiveUser(requestUserId, generation);
 
     var local = findLocalTrip(tripId, ownerId);
     if (!local || String(local.syncStatus || '') !== 'conflict') throw cloudError('TRIP_CONFLICT_NOT_FOUND');
@@ -915,7 +962,7 @@
 
     if (resolvedOwnerId !== requestUserId) {
       var editable = await canEditSharedTrip(resolvedOwnerId, tripId);
-      assertActiveUser(requestUserId);
+      assertActiveUser(requestUserId, generation);
       if (!editable) throw cloudError('TRIP_EDIT_FORBIDDEN');
     }
 
@@ -934,14 +981,15 @@
   }
 
   async function performLocalTripSync(session, syncUserId) {
-    assertActiveUser(syncUserId);
+    var generation = authGeneration;
+    assertActiveUser(syncUserId, generation);
     await assertMfaReadyForPersonalData();
-    assertActiveUser(syncUserId);
+    assertActiveUser(syncUserId, generation);
     var localTrips = getLocalTrips().filter(function (trip) { return !isTripDeleted(trip); });
     var cloudState = await Promise.all([listCloudTrips(), listCloudTripTombstones()]);
     var cloudTrips = cloudState[0];
     var tombstones = cloudState[1];
-    assertActiveUser(syncUserId);
+    assertActiveUser(syncUserId, generation);
     var tombstoneIds = new Set(tombstones.map(function (trip) { return tripIdentity(trip, syncUserId); }));
     tombstones.forEach(function (trip) {
       deletedTripIds.add(deletionIdentity(trip, syncUserId));
@@ -955,11 +1003,11 @@
     var cloudById = new Map(cloudTrips.map(function (trip) { return [tripIdentity(trip, syncUserId), trip]; }));
     var readOnlySharedIds = new Set();
     var merged = await Promise.all(localTrips.map(async function (local) {
-      assertActiveUser(syncUserId);
+      assertActiveUser(syncUserId, generation);
       if (isTripDeleted(local)) return null;
       if (local.deletePending) {
         await deleteTrip(local, syncUserId);
-        assertActiveUser(syncUserId);
+        assertActiveUser(syncUserId, generation);
         return null;
       }
       var identity = tripIdentity(local, syncUserId);
@@ -972,7 +1020,7 @@
         }
         try { await saveTrip(local, syncUserId, true); }
         catch (error) { if (acceptRemoteDeletion(local, error, syncUserId)) return null; throw error; }
-        assertActiveUser(syncUserId);
+        assertActiveUser(syncUserId, generation);
         if (isTripDeleted(local)) return null;
         return localTripFor(local) || local;
       }
@@ -983,7 +1031,7 @@
       var localNeedsSave = (hasUnsyncedChanges(local) && !localConflict) || legacyLocalAhead;
       if (local.ownerId && String(local.ownerId) !== syncUserId && (localConflict || localNeedsSave)) {
         var editable = await canEditSharedTrip(local.ownerId, local.id);
-        assertActiveUser(syncUserId);
+        assertActiveUser(syncUserId, generation);
         if (!editable) {
           readOnlySharedIds.add(identity);
           removeLocalTrip(local.id, local.ownerId);
@@ -999,7 +1047,7 @@
           if (error && error.code === 'TRIP_CONFLICT') return localTripFor(local) || local;
           throw error;
         }
-        assertActiveUser(syncUserId);
+        assertActiveUser(syncUserId, generation);
         if (isTripDeleted(local)) return null;
         return localTripFor(local) || local;
       }
@@ -1007,7 +1055,7 @@
     }));
     merged = merged.filter(Boolean);
     cloudById.forEach(function (trip) { if (!isTripDeleted(trip)) merged.push(trip); });
-    assertActiveUser(syncUserId);
+    assertActiveUser(syncUserId, generation);
     var latestLocalTrips = getLocalTrips().filter(function (trip) {
       if (isTripDeleted(trip)) return false;
       if (!trip.ownerId || String(trip.ownerId) === syncUserId) return true;
@@ -1017,16 +1065,18 @@
     merged = mergeTripLists([merged, latestLocalTrips], syncUserId)
       .filter(function (trip) { return !isTripDeleted(trip); });
     merged.sort(function (a, b) { return String(a.start).localeCompare(String(b.start)); });
-    assertActiveUser(syncUserId);
+    assertActiveUser(syncUserId, generation);
     setLocalTrips(merged);
     return merged;
   }
 
   function syncLocalTrips() {
     var requestedUserId = activeUserId();
+    var requestedGeneration = authGeneration;
     var syncKey = requestedUserId || '__session__';
     if (fullSyncPromises.has(syncKey)) return fullSyncPromises.get(syncKey);
     var syncPromise = getSession().then(function (session) {
+      if (requestedUserId && requestedGeneration !== authGeneration) throw authContextError();
       if (!session || !session.user) return getLocalTrips();
       var syncUserId = String(session.user.id);
       if (requestedUserId && requestedUserId !== syncUserId) throw authContextError();
@@ -1102,10 +1152,297 @@
     return client.auth.updateUser({ password: password });
   }
 
-  async function updateProfile(displayName) {
+  var AVATAR_BUCKET = 'profile-avatars';
+  var AVATAR_SOURCE_MAX_BYTES = 20 * 1024 * 1024;
+  var AVATAR_STORED_MAX_BYTES = 2 * 1024 * 1024;
+  var AVATAR_TYPES = Object.freeze({ 'image/jpeg': ['jpg','jpeg'], 'image/png': ['png'], 'image/webp': ['webp'] });
+  var avatarOperationChains = new Map();
+
+  function validateAvatarFile(file) {
+    if (!file) return { ok: false, error: 'יש לבחור תמונה.' };
+    var mime = String(file.type || '').toLowerCase();
+    var name = String(file.name || '');
+    var ext = (name.split('.').pop() || '').toLowerCase();
+    if (!AVATAR_TYPES[mime] || AVATAR_TYPES[mime].indexOf(ext) < 0) return { ok: false, error: 'אפשר להעלות JPG, PNG או WebP בלבד.' };
+    if (!Number(file.size) || Number(file.size) > AVATAR_SOURCE_MAX_BYTES) return { ok: false, error: 'גודל תמונת המקור חייב להיות עד 20MB.' };
+    return { ok: true, mime: mime, ext: mime === 'image/jpeg' ? 'jpg' : ext };
+  }
+  async function validateAvatarSignature(file, mime) {
+    if (!file || typeof file.arrayBuffer !== 'function') return false;
+    var bytes = new Uint8Array(await file.arrayBuffer());
+    if (mime === 'image/jpeg' && !(bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff)) return false;
+    if (mime === 'image/png' && !(bytes.length >= 8 && [0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a].every(function(value,index){ return bytes[index] === value; }))) return false;
+    if (mime === 'image/webp' && !(bytes.length >= 12 && String.fromCharCode.apply(null,bytes.slice(0,4)) === 'RIFF' && String.fromCharCode.apply(null,bytes.slice(8,12)) === 'WEBP')) return false;
+    if (typeof window.__travelMateAvatarDecode === 'function') { try { return Boolean(await window.__travelMateAvatarDecode(file)); } catch(error) { return false; } }
+    if (typeof window.createImageBitmap === 'function') {
+      try { var bitmap = await window.createImageBitmap(file); var valid = Boolean(bitmap && bitmap.width > 0 && bitmap.height > 0); if (bitmap && typeof bitmap.close === 'function') bitmap.close(); if (valid) return true; } catch(error) {}
+    }
+    if (typeof window.Image === 'function' && window.URL && typeof window.URL.createObjectURL === 'function') {
+      try { return await new Promise(function(resolve){ var url=window.URL.createObjectURL(file),image=new window.Image(); image.onload=function(){window.URL.revokeObjectURL(url);resolve(Boolean(image.naturalWidth&&image.naturalHeight))}; image.onerror=function(){window.URL.revokeObjectURL(url);resolve(false)}; image.src=url; }); } catch(error) { return false; }
+    }
+    return false;
+  }
+  function ownedAvatarPath(value, userId) {
+    var candidate = String(value || ''), owner = String(userId || '');
+    if (!candidate || !owner || candidate.indexOf('..') !== -1) return '';
+    var parts = candidate.split('/');
+    return parts.length === 2 && parts[0] === owner && /^[A-Za-z0-9._-]+$/.test(parts[1]) ? candidate : '';
+  }
+  function avatarObjectName(ext) { var token = window.crypto && typeof window.crypto.randomUUID === 'function' ? window.crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2); return token + '.' + ext; }
+  function avatarSnapshot(user) { var metadata=user&&user.user_metadata||{}; return {avatarUrl:metadata.avatar_url||null,avatarPath:metadata.avatar_path||null,avatarRemoved:metadata.avatar_removed===true}; }
+  function avatarMutationMatches(user, expectedUrl, expectedPath, expectedRemoved) { var metadata=user&&user.user_metadata||{}; return String(metadata.avatar_url||'')===String(expectedUrl||'')&&String(metadata.avatar_path||'')===String(expectedPath||'')&&Boolean(metadata.avatar_removed===true)===Boolean(expectedRemoved); }
+  function queueAvatarOperation(owner, task) {
+    function locked(){ if(typeof navigator!=='undefined'&&navigator.locks&&typeof navigator.locks.request==='function')return navigator.locks.request('travelmate-avatar:'+owner,{mode:'exclusive'},task); return task(); }
+    var prior=avatarOperationChains.get(owner)||Promise.resolve();
+    var current=prior.catch(function(){}).then(locked);
+    avatarOperationChains.set(owner,current);
+    current.finally(function(){if(avatarOperationChains.get(owner)===current)avatarOperationChains.delete(owner)}).catch(function(){});
+    return current;
+  }
+  async function requireAvatarSession(client, owner, fresh) { var result=await client.auth.getSession(); if(result.error)throw result.error; var session=result.data&&result.data.session; var user=session&&session.user; if(!user)throw new Error('AUTH_REQUIRED'); if(fresh&&client.auth.getUser){var current=await client.auth.getUser();if(current.error)throw current.error;if(current.data&&current.data.user){if(String(current.data.user.id)!==String(user.id))throw authContextError();user=current.data.user;}session=Object.assign({},session,{user:user});} if(owner&&String(user.id)!==String(owner))throw authContextError(); return session; }
+  async function createAvatarScopedClient(session) {
+    if (!session || !session.user) throw new Error('AUTH_REQUIRED');
+    if (typeof window.__travelMateAvatarClientFactory === 'function') return window.__travelMateAvatarClientFactory(session);
+    var config=window.TRAVELMATE_SUPABASE;
+    if(!config||!config.url||!config.publishableKey||!session.access_token||!session.refresh_token)throw new Error('AVATAR_SESSION_UNAVAILABLE');
+    var library=await loadLibrary();
+    var scoped=library.createClient(config.url,config.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    var setResult=await scoped.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token});
+    if(setResult.error)throw setResult.error;
+    var scopedUser=setResult.data&&setResult.data.session&&setResult.data.session.user;
+    if(!scopedUser||String(scopedUser.id)!==String(session.user.id))throw authContextError();
+    return scoped;
+  }
+  async function removeAvatarObject(client, objectPath) { var first=await client.storage.from(AVATAR_BUCKET).remove([objectPath]); if(!first.error)return null; var retry=await client.storage.from(AVATAR_BUCKET).remove([objectPath]); return retry.error||null; }
+  async function scopedAvatarUser(client) {
+    var result=client.auth.getUser?await client.auth.getUser():await client.auth.getSession();
+    if(result.error)throw result.error;
+    return result.data&&((result.data.user)||(result.data.session&&result.data.session.user));
+  }
+  function avatarPathReferenced(user, path) {
+    if(!path)return false;var metadata=user&&user.user_metadata||{};
+    if(String(metadata.avatar_path||'')===String(path))return true;
+    var url=String(metadata.avatar_url||'').split('?')[0];
+    return Boolean(url&&url.endsWith('/profile-avatars/'+path));
+  }
+  async function cleanupSupersededAvatarPaths(client, owner, paths, currentUser) {
+    var user=currentUser||await scopedAvatarUser(client);if(!user||String(user.id)!==String(owner))return authContextError();
+    var firstError=null,seen={};for(var index=0;index<paths.length;index+=1){var path=ownedAvatarPath(paths[index],owner);if(!path||seen[path]||avatarPathReferenced(user,path))continue;seen[path]=true;var error=await removeAvatarObject(client,path);if(error&&!firstError)firstError=error;}
+    return firstError;
+  }
+  function avatarConflictError(){var error=new Error('AVATAR_CONFLICT');error.code='AVATAR_CONFLICT';return error;}
+  async function compareAndSetAvatar(client, expected, next) {
+    if(!client||typeof client.rpc!=='function')return {changed:false,error:new Error('AVATAR_CAS_UNAVAILABLE')};
+    var result=await client.rpc('travelmate_compare_and_set_avatar',{
+      p_expected_avatar_url:expected.avatarUrl,
+      p_expected_avatar_path:expected.avatarPath,
+      p_expected_avatar_removed:Boolean(expected.avatarRemoved),
+      p_new_avatar_url:next.avatarUrl,
+      p_new_avatar_path:next.avatarPath,
+      p_new_avatar_removed:Boolean(next.avatarRemoved)
+    });
+    if(result.error)return {changed:false,error:result.error};
+    return {changed:result.data===true,error:null};
+  }
+  async function compensateAvatarMutation(client, owner, expected, previous) {
+    try {
+      var changed=await compareAndSetAvatar(client,expected,previous);
+      if(changed.error)return {restored:false,safeToDelete:false,error:changed.error};
+      if(changed.changed)return {restored:true,safeToDelete:true,error:null};
+      var current=await scopedAvatarUser(client);if(!current||String(current.id)!==String(owner))return {restored:false,safeToDelete:false,error:authContextError()};
+      return {restored:false,safeToDelete:false,error:null};
+    } catch(error){return {restored:false,safeToDelete:false,error:error};}
+  }
+  async function resolveAvatarCasError(client, owner, previous, next, error) {
+    try {
+      var current=await scopedAvatarUser(client);
+      if(!current||String(current.id)!==String(owner))return {state:'unknown',user:current||null,error:error};
+      if(avatarMutationMatches(current,next.avatarUrl,next.avatarPath,next.avatarRemoved))return {state:'committed',user:current,error:error};
+      if(avatarMutationMatches(current,previous.avatarUrl,previous.avatarPath,previous.avatarRemoved))return {state:'not_committed',user:current,error:error};
+      return {state:'superseded',user:current,error:error};
+    } catch(readError){return {state:'unknown',user:null,error:error,readError:readError};}
+  }
+  // Sends only the local normalized photo to the authenticated image function.
+  // Captured bearer session belongs to owner; never use a mutable shared client for this request.
+  async function generateAvatarForOwner(owner, style, photo, signal) {
+    if(!owner)throw new Error('AUTH_REQUIRED');
+    if(signal&&signal.aborted)throw new DOMException('Cancelled','AbortError');
+    if(navigator.onLine===false)throw new Error('AVATAR_GENERATION_OFFLINE');
+    if(!['classic','tokyo-neon','japanese-calm','beach-journey','manga-action','cinematic'].includes(style))throw new Error('UNKNOWN_STYLE');
+    if(!photo||!['image/jpeg','image/png','image/webp'].includes(photo.type)||!photo.size||photo.size>2*1024*1024)throw new Error('INVALID_IMAGE');
+    var client=await getClient(),session=await requireAvatarSession(client,String(owner),true),config=window.TRAVELMATE_SUPABASE;
+    if(!config||!config.url||!config.publishableKey||!session.access_token)throw new Error('AVATAR_GENERATION_NOT_CONFIGURED');
+    var bytes=new Uint8Array(await photo.arrayBuffer()),pieces=[];
+    for(var offset=0;offset<bytes.length;offset+=8192)pieces.push(String.fromCharCode.apply(null,bytes.subarray(offset,offset+8192)));
+    var imageData=btoa(pieces.join(''));pieces=[];bytes=null;
+    await requireAvatarSession(client,String(owner),true);
+    var controller=new AbortController(),abort=function(){controller.abort()},timer=setTimeout(abort,105000);
+    if(signal){if(signal.aborted)controller.abort();else signal.addEventListener('abort',abort,{once:true})}
+    try {
+      var response=await fetch(config.url.replace(/\/$/,'')+'/functions/v1/avatar-generator',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:config.publishableKey,'Content-Type':'application/json'},body:JSON.stringify({style:style,mimeType:photo.type,imageData:imageData}),signal:controller.signal,cache:'no-store'});
+      imageData=null;
+      if(!response.ok){
+        var errorCode='';
+        try{var errorPayload=await response.json();errorCode=String(errorPayload&&errorPayload.error||'')}catch(error){if(response.body)await response.body.cancel().catch(function(){})}
+        var mappedError=errorCode==='GENERATION_DAILY_LIMIT'?'AVATAR_GENERATION_DAILY_LIMIT':errorCode==='GENERATION_BUSY'?'AVATAR_GENERATION_BUSY':errorCode==='PROVIDER_LIMIT'?'AVATAR_PROVIDER_LIMIT':errorCode==='GENERATION_NOT_CONFIGURED'?'AVATAR_GENERATION_NOT_CONFIGURED':'';
+        var failure=new Error(mappedError||(response.status===429?'AVATAR_GENERATION_LIMIT':response.status===401?'AUTH_REQUIRED':response.status===503?'AVATAR_GENERATION_NOT_CONFIGURED':'AVATAR_GENERATION_FAILED'));failure.status=response.status;throw failure;
+      }
+      var reader=response.body.getReader(),chunks=[],size=0;
+      try{while(true){var part=await reader.read();if(part.done)break;size+=part.value.length;if(size>4*1024*1024+65536)throw new Error('INVALID_GENERATED_IMAGE');chunks.push(part.value)}}
+      catch(error){await reader.cancel().catch(function(){});throw error}finally{reader.releaseLock()}
+      var bodyBytes=new Uint8Array(size),position=0;chunks.forEach(function(chunk){bodyBytes.set(chunk,position);position+=chunk.length});
+      var result=JSON.parse(new TextDecoder().decode(bodyBytes));chunks=[];bodyBytes=null;
+      await requireAvatarSession(client,String(owner),true);if(controller.signal.aborted)throw new DOMException('Cancelled','AbortError');
+      if(!['image/jpeg','image/png','image/webp'].includes(result.mimeType)||typeof result.imageData!=='string'||result.imageData.length>4*1024*1024||result.imageData.length%4!==0||!/^[A-Za-z0-9+/]+={0,2}$/.test(result.imageData))throw new Error('INVALID_GENERATED_IMAGE');
+      var raw=atob(result.imageData),imageBytes=Uint8Array.from(raw,function(c){return c.charCodeAt(0)});
+      if(!imageBytes.length||imageBytes.length>3*1024*1024)throw new Error('INVALID_GENERATED_IMAGE');
+      return new Blob([imageBytes],{type:result.mimeType});
+    } finally {clearTimeout(timer);imageData=null;if(signal)signal.removeEventListener('abort',abort)}
+  }
+
+  async function uploadAvatar(file, avatarOptions) {
+    if(typeof navigator!=='undefined'&&navigator.onLine===false)return {data:null,error:new Error('AVATAR_OFFLINE')};
+    var check=validateAvatarFile(file);if(!check.ok)return {data:null,error:new Error(check.error)};
+    if(Number(file.size)>AVATAR_STORED_MAX_BYTES)return {data:null,error:new Error('AVATAR_NORMALIZED_TOO_LARGE')};
+    if(!(await validateAvatarSignature(file,check.mime)))return {data:null,error:new Error('AVATAR_CONTENT_INVALID')};
+    var mainClient=await getClient(),initial;try{initial=await requireAvatarSession(mainClient,avatarOptions&&avatarOptions.ownerId,true)}catch(error){return {data:null,error:error}}
+    var owner=String(initial.user.id);
+    return queueAvatarOperation(owner,async function(){
+      var liveSession;try{liveSession=await requireAvatarSession(mainClient,owner,true)}catch(error){return {data:null,error:error}}
+      var previous=avatarSnapshot(liveSession.user),scoped;try{scoped=await createAvatarScopedClient(liveSession)}catch(error){return {data:null,error:error}}
+      var style=String(avatarOptions&&avatarOptions.style||'').replace(/[^a-z0-9-]/g,'').slice(0,24);
+      var oldPath=ownedAvatarPath(previous.avatarPath,owner),objectPath=owner+'/'+(style?style+'-':'')+avatarObjectName(check.ext);
+      var uploadOptions={cacheControl:'31536000',contentType:check.mime,upsert:false};
+      if(style)uploadOptions.metadata={travelmateAvatarStyle:style};
+      var uploaded=await scoped.storage.from(AVATAR_BUCKET).upload(objectPath,file,uploadOptions);
+      if(uploaded.error)return {data:null,error:uploaded.error};
+      var publicResult=scoped.storage.from(AVATAR_BUCKET).getPublicUrl(objectPath),publicUrl=publicResult&&publicResult.data&&publicResult.data.publicUrl;
+      if(!publicUrl){var urlRollback=await removeAvatarObject(scoped,objectPath);return {data:null,error:new Error('AVATAR_URL_FAILED'),rollbackError:urlRollback}}
+      try{await requireAvatarSession(mainClient,owner,true)}catch(error){var staleRollback=await removeAvatarObject(scoped,objectPath);return {data:null,error:error,rollbackError:staleRollback}}
+      var next={avatarUrl:publicUrl,avatarPath:objectPath,avatarRemoved:false};
+      var cas=await compareAndSetAvatar(scoped,previous,next);
+      if(cas.error){
+        var resolution=await resolveAvatarCasError(scoped,owner,previous,next,cas.error);
+        if(resolution.state==='committed'){cas={changed:true,error:null};}
+        else if(resolution.state==='not_committed'){var casRollback=await removeAvatarObject(scoped,objectPath);return {data:{user:resolution.user},error:cas.error,rollbackError:casRollback};}
+        else if(resolution.state==='superseded'){var predecessorCleanup=await cleanupSupersededAvatarPaths(scoped,owner,[oldPath],resolution.user);return {data:{user:resolution.user},error:avatarConflictError(),rollbackError:predecessorCleanup,superseded:true};}
+        else return {data:null,error:cas.error,rollbackError:resolution.readError||null,uncertain:true};
+      }
+      if(!cas.changed){var conflictRollback=await removeAvatarObject(scoped,objectPath),conflictUser=await scopedAvatarUser(scoped);return {data:{user:conflictUser},error:avatarConflictError(),rollbackError:conflictRollback,superseded:true}}
+      try{await requireAvatarSession(mainClient,owner,true)}catch(error){
+        var compensation=await compensateAvatarMutation(scoped,owner,next,previous);
+        var staleCleanup=compensation.safeToDelete?await removeAvatarObject(scoped,objectPath):null;
+        return {data:null,error:error,rollbackError:compensation.error||staleCleanup,stale:true};
+      }
+      var authoritative=await scopedAvatarUser(scoped);
+      if(!authoritative||String(authoritative.id)!==owner)return {data:null,error:authContextError()};
+      if(!avatarMutationMatches(authoritative,publicUrl,objectPath,false)){
+        var supersededCleanup=await cleanupSupersededAvatarPaths(scoped,owner,[oldPath],authoritative);
+        return {data:{user:authoritative},error:avatarConflictError(),rollbackError:supersededCleanup,superseded:true};
+      }
+      var cleanupError=oldPath&&oldPath!==objectPath?await removeAvatarObject(scoped,oldPath):null;
+      return {data:{user:authoritative},error:null,cleanupError:cleanupError};
+    });
+  }
+
+  async function removeAvatar() {
+    if(typeof navigator!=='undefined'&&navigator.onLine===false)return {data:null,error:new Error('AVATAR_OFFLINE')};
+    var mainClient=await getClient(),initial;try{initial=await requireAvatarSession(mainClient)}catch(error){return {data:null,error:error}}
+    var owner=String(initial.user.id);
+    return queueAvatarOperation(owner,async function(){
+      var liveSession;try{liveSession=await requireAvatarSession(mainClient,owner,true)}catch(error){return {data:null,error:error}}
+      var previous=avatarSnapshot(liveSession.user),scoped;try{scoped=await createAvatarScopedClient(liveSession)}catch(error){return {data:null,error:error}}
+      var oldPath=ownedAvatarPath(previous.avatarPath,owner),next={avatarUrl:null,avatarPath:null,avatarRemoved:true};
+      var cas=await compareAndSetAvatar(scoped,previous,next);
+      if(cas.error)return {data:null,error:cas.error};
+      if(!cas.changed){var conflictUser=await scopedAvatarUser(scoped);return {data:{user:conflictUser},error:avatarConflictError(),superseded:true};}
+      try{await requireAvatarSession(mainClient,owner,true)}catch(error){
+        var compensation=await compensateAvatarMutation(scoped,owner,next,previous);
+        return {data:null,error:error,rollbackError:compensation.error,stale:true};
+      }
+      var authoritative=await scopedAvatarUser(scoped);
+      if(!authoritative||String(authoritative.id)!==owner)return {data:null,error:authContextError()};
+      if(!avatarMutationMatches(authoritative,null,null,true)){var supersededCleanup=await cleanupSupersededAvatarPaths(scoped,owner,[oldPath],authoritative);return {data:{user:authoritative},error:avatarConflictError(),rollbackError:supersededCleanup,superseded:true};}
+      var cleanupError=oldPath?await removeAvatarObject(scoped,oldPath):null;
+      return {data:{user:authoritative},error:null,cleanupError:cleanupError};
+    });
+  }
+
+  async function updateProfile(displayName, preferences) {
     var client = await getClient();
     var normalizedName = String(displayName || '').trim().replace(/\s+/g, ' ').slice(0, 80);
-    return client.auth.updateUser({ data: { display_name: normalizedName } });
+    var hasPreferencesArgument = preferences && typeof preferences === 'object';
+    var input = hasPreferencesArgument ? preferences : {};
+    var allowed = {
+      pace: ['relaxed', 'balanced', 'active', 'intensive'],
+      activityDensity: ['light', 'balanced', 'dense'],
+      transport: ['walking', 'transit', 'mixed', 'car'],
+      tripStyle: ['city', 'culture', 'nature', 'food', 'relaxation', 'mixed'],
+      interests: window.TravelMateUserProfile&&window.TravelMateUserProfile.preferenceOptions?window.TravelMateUserProfile.preferenceOptions.interests:['culture', 'food', 'nature', 'history', 'shopping', 'nightlife', 'photography', 'relaxation']
+    };
+    function one(key) {
+      return allowed[key].indexOf(String(input[key] || '')) >= 0 ? String(input[key]) : '';
+    }
+    var interests = Array.isArray(input.interests) ? input.interests.filter(function (item, index, list) {
+      return allowed.interests.indexOf(String(item)) >= 0 && list.indexOf(item) === index;
+    }).slice(0, allowed.interests.length) : [];
+    var normalizedPreferences = {
+      pace: one('pace'),
+      activityDensity: one('activityDensity'),
+      transport: one('transport'),
+      tripStyle: one('tripStyle'),
+      interests: interests,
+      learningEnabled: input.learningEnabled === true
+    };
+    var hasPreference = normalizedPreferences.pace || normalizedPreferences.activityDensity ||
+      normalizedPreferences.transport || normalizedPreferences.tripStyle || interests.length || typeof input.learningEnabled === 'boolean';
+    if(hasPreferencesArgument&&Object.prototype.hasOwnProperty.call(input,'profile2')&&window.TravelMateUserProfile&&window.TravelMateUserProfile.normalizeTraveler)normalizedPreferences.profile2=window.TravelMateUserProfile.normalizeTraveler(input.profile2);
+    hasPreference = hasPreference || normalizedPreferences.profile2;
+    var metadataPatch = { display_name: normalizedName };
+    if (hasPreferencesArgument) metadataPatch.travelmate_preferences = hasPreference ? normalizedPreferences : null;
+    return client.auth.updateUser({ data: metadataPatch });
+  }
+
+  async function updateProfileForOwner(owner, displayName, preferences, onboarding) {
+    if(typeof navigator!=='undefined'&&navigator.onLine===false)throw new Error('PROFILE_OFFLINE');
+    var mainClient=await getClient(),session=await requireAvatarSession(mainClient,String(owner||''),true);
+    var scoped=await createAvatarScopedClient(session);
+    if(!scoped.auth||typeof scoped.auth.updateUser!=='function')throw new Error('PROFILE_SESSION_UNAVAILABLE');
+    var normalizedName=String(displayName||'').trim().replace(/\s+/g,' ').slice(0,80);
+    if(!window.TravelMateUserProfile||typeof window.TravelMateUserProfile.normalizePreferences!=='function')throw new Error('PROFILE_CONTRACT_UNAVAILABLE');
+    var patch={display_name:normalizedName};
+    if(onboarding&&Object.prototype.hasOwnProperty.call(onboarding,'avatarStyle')){if(['classic','tokyo-neon','japanese-calm','beach-journey','manga-action','cinematic'].indexOf(onboarding.avatarStyle)>=0)patch.travelmate_avatar_style=onboarding.avatarStyle;else if(onboarding.avatarStyle===null||onboarding.avatarStyle==='')patch.travelmate_avatar_style=null;}
+    if(preferences&&typeof preferences==='object')patch.travelmate_preferences=window.TravelMateUserProfile.normalizePreferences(preferences);
+    var result=await scoped.auth.updateUser({data:patch});
+    if(result.error)return result;
+    var user=result.data&&result.data.user;
+    if(!user||String(user.id)!==String(owner))throw authContextError();
+    await requireAvatarSession(mainClient,String(owner),true);
+    return result;
+  }
+
+  async function scopedClientForOwner(owner) {
+    var expectedOwner=String(owner||'');
+    var mainClient=await getClient(),session=await requireAvatarSession(mainClient,expectedOwner,true);
+    var scoped=await createAvatarScopedClient(session);
+    await requireAvatarSession(mainClient,expectedOwner,true);
+    return {client:scoped,session:session,ownerId:expectedOwner};
+  }
+
+  async function updatePreferencesForOwner(owner, preferences) {
+    if(typeof navigator!=='undefined'&&navigator.onLine===false)throw new Error('PROFILE_OFFLINE');
+    var expectedOwner=String(owner||'');
+    var mainClient=await getClient(),session=await requireAvatarSession(mainClient,expectedOwner,true);
+    var scoped=await createAvatarScopedClient(session);
+    if(!scoped.auth||typeof scoped.auth.updateUser!=='function')throw new Error('PROFILE_SESSION_UNAVAILABLE');
+    if(!window.TravelMateUserProfile||typeof window.TravelMateUserProfile.normalizePreferences!=='function')throw new Error('PROFILE_CONTRACT_UNAVAILABLE');
+    var normalized=window.TravelMateUserProfile.normalizePreferences(preferences&&typeof preferences==='object'?preferences:{});
+    var result=await scoped.auth.updateUser({data:{travelmate_preferences:normalized}});
+    if(result.error)return result;
+    var user=result.data&&result.data.user;
+    if(!user||String(user.id)!==expectedOwner)throw authContextError();
+    await requireAvatarSession(mainClient,expectedOwner,true);
+    return result;
   }
 
   function authRedirectUrl(hash) {
@@ -1170,9 +1507,14 @@
 
   async function onAuthChange(callback) {
     var client = await getClient();
+    var sequence = 0;
     return client.auth.onAuthStateChange(function (event, session) {
+      var delivery = ++sequence;
+      var shouldActivate = Boolean(session) || event === 'SIGNED_OUT' || typeof navigator === 'undefined' || navigator.onLine !== false;
+      if (shouldActivate) activateUserStorage(session && session.user ? session.user.id : null);
+      var generation = authGeneration;
       setTimeout(function () {
-        activateUserStorage(session && session.user ? session.user.id : null);
+        if (delivery !== sequence || generation !== authGeneration) return;
         callback(event, session);
       }, 0);
     });
@@ -1194,6 +1536,12 @@
     getSession: getSession,
     getPrivateStorageSession: getPrivateStorageSession,
     getLocalTrips: getLocalTrips,
+    getCachedTrips: getCachedTrips,
+    cacheChangeType: function (key) {
+      if (key === ACTIVE_USER_KEY) return 'account';
+      if (key === STORAGE_KEY || key === USER_STORAGE_PREFIX + activeUserId()) return 'trips';
+      return '';
+    },
     setLocalTrips: setLocalTrips,
     upsertLocalTrip: upsertLocalTrip,
     removeLocalTrip: removeLocalTrip,
@@ -1217,6 +1565,13 @@
     resetPassword: resetPassword,
     updatePassword: updatePassword,
     updateProfile: updateProfile,
+    updateProfileForOwner: updateProfileForOwner,
+    updatePreferencesForOwner: updatePreferencesForOwner,
+    scopedClientForOwner: scopedClientForOwner,
+    validateAvatarFile: validateAvatarFile,
+    generateAvatarForOwner: generateAvatarForOwner,
+    uploadAvatar: uploadAvatar,
+    removeAvatar: removeAvatar,
     authRedirectUrl: authRedirectUrl,
     signOut: signOut,
     listMfaFactors: listMfaFactors,

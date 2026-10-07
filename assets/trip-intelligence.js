@@ -13,10 +13,65 @@
   var newTripSessionId = String(Date.now());
   var responseSequence = 0;
   var states = {};
+  var lifecycleUserId = String(localStorage.getItem('travelmate-active-user') || '');
+  var lifecycleGeneration = 0;
   function emptyState(key) { return { key: key, context: null, fingerprint: '', recommendation: null, prompt: '', responseData: null, responseId: '', requestId: 0, pendingSave: false, stale: false, busy: false, returnFocus: null, status: 'new' }; }
   var state = emptyState('NEW_TRIP:' + newTripSessionId);
   states[state.key] = state;
   var ui = {};
+  var declaredPreferences = window.TravelMateUserProfile && window.TravelMateUserProfile.normalizePreferences
+    ? window.TravelMateUserProfile.normalizePreferences(null)
+    : { pace: '', activityDensity: '', transport: '', tripStyle: '', interests: [] };
+  var learnedPreferences = [];
+
+  function setDeclaredPreferences(value) {
+    if (window.TravelMateUserProfile && window.TravelMateUserProfile.normalizePreferences) {
+      declaredPreferences = window.TravelMateUserProfile.normalizePreferences(value);
+    }
+    return declaredPreferences;
+  }
+
+  function refreshDeclaredPreferences() {
+    var generation = lifecycleGeneration;
+    var service = window.TravelMateCloud;
+    if (!service || typeof service.getSession !== 'function') return Promise.resolve(declaredPreferences);
+    return service.getSession().then(function (session) {
+      if (generation !== lifecycleGeneration) return declaredPreferences;
+      var user = session && session.user;
+      var profile = window.TravelMateUserProfile;
+      return setDeclaredPreferences(profile && profile.fromUser ? profile.fromUser(user).preferences : null);
+    }).catch(function () {
+      return declaredPreferences;
+    });
+  }
+
+  function declaredPreferenceLines(value) {
+    var preferences = value || declaredPreferences;
+    var helper = window.TravelMateUserProfile;
+    if (!helper || typeof helper.preferenceSummary !== 'function') return [];
+    return helper.preferenceSummary(preferences).items.map(function (item) { return item.label + ': ' + item.valueLabel; });
+  }
+
+  function learnedPreferenceLines(value) {
+    var helper = window.TravelMateUserProfile;
+    var labels = helper && helper.preferenceLabels && helper.preferenceLabels.interests || {};
+    return (Array.isArray(value) ? value : []).filter(function (item) { return item && item.preferenceKey === 'interests' && item.reviewState === 'confirmed'; }).map(function (item) { return labels[item.value] || ''; }).filter(Boolean).slice(0, 6);
+  }
+
+  async function refreshLearnedPreferences() {
+    learnedPreferences = [];
+    var cloud = window.TravelMateCloud, service = window.TravelMateLearnedProfile, helper = window.TravelMateUserProfile;
+    if (!cloud || !service || typeof cloud.getSession !== 'function' || typeof service.confirmedForMate !== 'function') return learnedPreferences;
+    try {
+      var session = await cloud.getSession(), user = session && session.user;
+      if (!user || !helper || typeof helper.fromUser !== 'function') return learnedPreferences;
+      var profile = helper.fromUser(user);
+      if (!profile.preferences || profile.preferences.learningEnabled !== true) return learnedPreferences;
+      if (typeof service.sync === 'function') await service.sync();
+      learnedPreferences = await service.confirmedForMate(String(user.id), true);
+    } catch (error) { learnedPreferences = []; }
+    return learnedPreferences;
+  }
 
   function contextKey(context) { return context.contextMode + ':' + (context.tripId || context.sessionId || 'general'); }
   function newResponseId() {
@@ -73,6 +128,12 @@
       currency: clean(input.currency, 12) || 'EUR',
       tripType: supportedType(clean(input.tripType || input.type, 40)) || null,
       preferences: Array.isArray(input.preferences) ? input.preferences.map(function (item) { return clean(item, 80); }).filter(Boolean).slice(0, 2) : [],
+      declaredPreferences: input.declaredPreferences && typeof input.declaredPreferences === 'object'
+        ? (window.TravelMateUserProfile && window.TravelMateUserProfile.normalizePreferences
+          ? window.TravelMateUserProfile.normalizePreferences(input.declaredPreferences)
+          : input.declaredPreferences)
+        : declaredPreferences,
+      learnedPreferences: Array.isArray(input.learnedPreferences) ? input.learnedPreferences.slice(0, 6) : learnedPreferences.slice(0, 6),
       itineraryContext: normalizeItinerary(input.itineraryContext || input.activities),
       savedPlacesContext: normalizePlaces(input.savedPlacesContext || input.savedPlaces),
       lodgingContext: normalizeLodging(input.lodgingContext),
@@ -80,7 +141,7 @@
     };
   }
   function fingerprint(context) {
-    return JSON.stringify([context.contextMode, context.tripId, context.destination, context.country, context.startDate, context.endDate, context.durationDays, context.budget, context.currency, context.tripType, context.preferences, context.itineraryContext, context.savedPlacesContext, context.lodgingContext, context.transportContext]);
+    return JSON.stringify([context.contextMode, context.tripId, context.destination, context.country, context.startDate, context.endDate, context.durationDays, context.budget, context.currency, context.tripType, context.preferences, context.declaredPreferences, context.learnedPreferences, context.itineraryContext, context.savedPlacesContext, context.lodgingContext, context.transportContext]);
   }
   function monthLabel(date) {
     if (!date) return '';
@@ -122,6 +183,9 @@
         context.tripType ? 'סוג טיול: ' + context.tripType + '. ' + typeInstruction : '',
         context.startDate && context.endDate ? 'תאריכים: ' + context.startDate + ' עד ' + context.endDate + '; ' + context.durationDays + ' ימים.' : '',
         context.budget ? 'תקציב משוער: ' + context.budget + ' ' + context.currency + '.' : '',
+        declaredPreferenceLines(context.declaredPreferences).length ? 'העדפות אישיות שהמשתמש הצהיר עליהן: ' + declaredPreferenceLines(context.declaredPreferences).join('; ') + '.' : '',
+        learnedPreferenceLines(context.learnedPreferences).length ? 'העדפות נלמדות שאישרת במפורש: ' + learnedPreferenceLines(context.learnedPreferences).join(', ') + '.' : '',
+        'סדר עדיפויות: החרגות מפורשות של המשתמש קודמות להעדפות המוצהרות הנוכחיות, אחריהן העדפות נלמדות שאושרו ולבסוף ברירות מחדל. אל תציע קטגוריה שהמשתמש החריג. אין לשנות מסלול או תקציב אוטומטית.',
         context.itineraryContext.length ? 'מסלול מתוכנן ומאומת: ' + JSON.stringify(context.itineraryContext) : 'אין מסלול מובנה זמין לבדיקה.',
         context.savedPlacesContext.length ? 'מקומות שכבר נשמרו: ' + JSON.stringify(context.savedPlacesContext) : '',
         context.lodgingContext ? 'לינה קיימת: ' + JSON.stringify(context.lodgingContext) : '',
@@ -137,7 +201,11 @@
       context.tripType ? 'סוג טיול: ' + context.tripType + '. ' + typeInstruction : '',
       context.startDate && context.endDate ? 'תאריכים: ' + context.startDate + ' עד ' + context.endDate + '; ' + context.durationDays + ' ימים.' : '',
       context.budget ? 'תקציב משוער: ' + context.budget + ' ' + context.currency + '.' : '',
-      context.preferences.length ? 'העדפות: ' + context.preferences.join(', ') + '.' : '',
+      context.preferences.length ? 'העדפות שהוגדרו לטיול הזה: ' + context.preferences.join(', ') + '.' : '',
+      declaredPreferenceLines(context.declaredPreferences).length ? 'העדפות אישיות שהמשתמש הצהיר עליהן: ' + declaredPreferenceLines(context.declaredPreferences).join('; ') + '.' : '',
+      learnedPreferenceLines(context.learnedPreferences).length ? 'העדפות נלמדות שאישרת במפורש: ' + learnedPreferenceLines(context.learnedPreferences).join(', ') + '.' : '',
+        'סדר עדיפויות: החרגות מפורשות של המשתמש קודמות להעדפות המוצהרות הנוכחיות, אחריהן העדפות נלמדות שאושרו ולבסוף ברירות מחדל. אל תציע קטגוריה שהמשתמש החריג. אין לשנות מסלול או תקציב אוטומטית.',
+      'התייחס להעדפות המוצהרות כבחירה ישירה של המשתמש. העדפות נלמדות הן רק פריטים שהמשתמש אישר; במקרה של סתירה, ההעדפה המוצהרת גוברת. אל תשתמש בהן כדי לשנות מסלול, לתזמן, לדרג או לבצע פעולה בלי בקשה מפורשת.',
       'התמקד בהתאמת היעד, 4–6 דברים שלא כדאי לפספס, אזורי לינה, אוכל ובילוי, התניידות, קצב מומלץ, טיפ לעונה וטיפ אישי אחד של Mate.',
       'אל תטען שיש מסלול קיים. אל תמציא מחירים, שעות פתיחה, סגירות, אירועים או מצב תחבורה בזמן אמת. השתמש בכותרות קצרות ורשימות.'
     ].filter(Boolean).join('\n');
@@ -204,7 +272,11 @@
     if (state.busy || !state.context) return;
     var navo = window.TravelMateNavo;
     if (!navo || !navo.request) { ui.content.innerHTML = '<p class="navo-intelligence-error">Mate עדיין נטען. נסה שוב בעוד רגע.</p>'; return; }
-    var activeState = state; var activeContext = state.context; var contextFingerprint = fingerprint(activeContext); var requestId = ++activeState.requestId;
+    var activeState = state;
+    var currentLearned = typeof refreshLearnedPreferences === 'function' ? await refreshLearnedPreferences() : (activeState.context && activeState.context.learnedPreferences || []);
+    if (state !== activeState || !activeState.context) return;
+    activeState.context.learnedPreferences = currentLearned.slice(0, 6);
+    var activeContext = activeState.context; var contextFingerprint = fingerprint(activeContext); var requestId = ++activeState.requestId;
     activeState.busy = true; activeState.stale = false; activeState.pendingSave = false;
     ui.stale.hidden = true; ui.content.innerHTML = '<div class="navo-intelligence-loading"><i class="fa-solid fa-spinner fa-spin"></i><p>Mate מכין המלצות שמתאימות לטיול שלך…</p></div>';
     try {
@@ -278,7 +350,7 @@
     return Boolean(added);
   }
   function formContext(form) {
-    return normalizeContext({ sessionId: 'new-trip-' + newTripSessionId, destination: form.elements.city.value, country: form.elements.country.value, startDate: form.elements.start.value, endDate: form.elements.end.value, budget: form.elements.budget.value, currency: 'EUR', tripType: form.elements.type.value }, MODE.NEW_TRIP);
+    return normalizeContext({ sessionId: 'new-trip-' + newTripSessionId, destination: form.elements.city.value, country: form.elements.country.value, startDate: form.elements.start.value, endDate: form.elements.end.value, budget: form.elements.budget.value, currency: 'EUR', tripType: form.elements.type.value, declaredPreferences: declaredPreferences }, MODE.NEW_TRIP);
   }
   function syncNewTrip(form) {
     var context = formContext(form);
@@ -348,7 +420,7 @@
       id: trip.id, destination: trip.city || trip.destination, country: trip.country,
       start: trip.start, end: trip.end, days: trip.days, budget: trip.budget,
       currency: trip.currency || 'EUR', type: supportedType(trip.type) || existingTransientTypes[String(trip.id)],
-      preferences: trip.preferences, activities: trip.activities, savedPlaces: savedPlaces,
+      preferences: trip.preferences, declaredPreferences: declaredPreferences, activities: trip.activities, savedPlaces: savedPlaces,
       lodgingContext: lodging, transportContext: trip.transportContext || trip.transport || trip.transportation
     }, MODE.EXISTING_TRIP);
   }
@@ -410,6 +482,36 @@
     });
   }
 
-  createSheet(); initNewTrip(); initExistingTrip();
-  window.TravelMateTripIntelligence = { MODE: MODE, normalizeContext: normalizeContext, promptFor: promptFor, renderAnswer: renderAnswer, sanitizeRecommendationBody: sanitizeRecommendationBody, recommendationFor: recommendationFor, open: openSheet, attachPendingToTrip: attachPendingToTrip };
+  createSheet();
+  refreshDeclaredPreferences().then(function () {
+    initNewTrip();
+    initExistingTrip();
+  });
+  if (window.TravelMateCloud && typeof window.TravelMateCloud.onAuthChange === 'function') {
+    window.TravelMateCloud.onAuthChange(function (event, session) {
+      var profile = window.TravelMateUserProfile;
+      setDeclaredPreferences(profile && profile.fromUser ? profile.fromUser(session && session.user).preferences : null);
+      learnedPreferences = [];
+      if (session && session.user) refreshLearnedPreferences();
+    }).catch(function () {});
+  }
+  window.addEventListener('travelmate:learned-profile-change', function () { learnedPreferences = []; Object.keys(states).forEach(function (key) { var item = states[key]; if (item && item.recommendation) { item.stale = true; item.status = 'stale'; } }); });
+  window.addEventListener('travelmate:account-context-changed', function (event) {
+    var nextUserId = String(event.detail && event.detail.userId || '');
+    if (nextUserId === lifecycleUserId) return;
+    lifecycleUserId = nextUserId; lifecycleGeneration += 1;
+    Object.keys(states).forEach(function (key) { states[key].requestId += 1; });
+    closeSheet();
+    states = {}; existingTransientTypes = {};
+    newTripSessionId = String(Date.now()) + ':' + lifecycleGeneration;
+    state = emptyState('NEW_TRIP:' + newTripSessionId); states[state.key] = state;
+    setDeclaredPreferences(null); renderState();
+    if (ui.banner) ui.banner.hidden = true;
+  });
+  window.addEventListener('travelmate:canonical-trip-replaced', function () {
+    var id = new URLSearchParams(location.search).get('id');
+    var trip = id && canonicalTrip(id);
+    if (trip && ui.banner) { ui.banner.hidden = false; markExistingStale(existingContext(trip)); }
+  });
+  window.TravelMateTripIntelligence = { MODE: MODE, normalizeContext: normalizeContext, promptFor: promptFor, renderAnswer: renderAnswer, sanitizeRecommendationBody: sanitizeRecommendationBody, recommendationFor: recommendationFor, open: openSheet, attachPendingToTrip: attachPendingToTrip, declaredPreferenceLines: declaredPreferenceLines, learnedPreferenceLines: learnedPreferenceLines, refreshLearnedPreferences: refreshLearnedPreferences };
 })();

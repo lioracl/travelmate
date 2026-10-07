@@ -20,7 +20,11 @@
   var queuedView = null;
   var renderView = null;
   var lastOutsideFocus = document.activeElement;
-  function currentView() { return activeView; }
+  function currentView() {
+    var rendered = document.body && document.body.dataset.tripView;
+    if (rendered === 'car-rental') rendered = 'transport';
+    return rendered || activeView;
+  }
 
   function viewFromLocation() {
     var view = new URLSearchParams(location.search).get('view') || location.hash.slice(1) || 'overview';
@@ -120,6 +124,7 @@
     ['#modal-smart-hub', '[data-smart-close]', 'open'],
     ['[data-about-modal]', '[data-about-close]', 'open'],
     ['[data-security-dialog]', '[data-security-close]'],
+    ['.profile-wizard-backdrop', '[data-profile-wizard-close]'],
     ['[data-admin-dialog]', '[data-admin-close]'],
     ['.auto-place-backdrop', '[data-auto-place-close]'],
     ['.place-directions-backdrop', '[data-directions-close]', 'open'],

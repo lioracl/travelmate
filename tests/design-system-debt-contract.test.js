@@ -190,12 +190,17 @@ test('Personalization reuses authenticated Supabase user identity', () => {
   const cloud = read(path.join(root, 'assets/cloud-sync.js'));
 
   assert.match(cloud, /client\.auth\.getSession\(\)/);
-  assert.match(cloud, /function updateProfile\(displayName\)/);
-  assert.match(cloud, /client\.auth\.updateUser\(\{ data: \{ display_name: normalizedName \} \}\)/);
+  assert.match(cloud, /function updateProfile\(displayName, preferences\)/);
+  assert.match(cloud, /var hasPreferencesArgument = preferences && typeof preferences === 'object'/);
+  assert.match(cloud, /var metadataPatch = \{ display_name: normalizedName \}/);
+  assert.match(cloud, /if \(hasPreferencesArgument\) metadataPatch\.travelmate_preferences = hasPreference \? normalizedPreferences : null/);
+  assert.match(cloud, /client\.auth\.updateUser\(\{ data: metadataPatch \}\)/);
+  assert.match(cloud, /learningEnabled: input\.learningEnabled === true/);
   assert.match(home, /user\.user_metadata/);
   assert.match(home, /metadata\.display_name \|\| metadata\.full_name \|\| metadata\.name/);
-  assert.match(home, /data-cloud-profile-form/);
-  assert.match(home, /cloud\.updateProfile\(displayName\)/);
+  assert.match(home, /data-smart-profile/);
+  assert.match(home, /data-profile-wizard-open/);
+  assert.match(home, /legacyProfileForm\.remove\(\)/);
   assert.match(home, /renderPersonalization\(currentSession\)/);
   assert.match(home, /data-account-label/);
   assert.match(home, /data-user-avatar/);
@@ -213,12 +218,14 @@ test('Accent personalization changes only central semantic brand tokens', () => 
   assert.doesNotMatch(theme, /document\.querySelectorAll\(['"][.#](?:card|nearby|planner)/);
 });
 
-test('Account settings expose the persisted accent choices accessibly', () => {
+test('Appearance settings expose persisted accent choices accessibly', () => {
+  const settings = read(path.join(root, 'assets/security-center.js'));
   const home = read(path.join(root, 'assets/home.js'));
   const theme = read(path.join(root, 'assets/theme.js'));
-  for (const accent of ['ocean', 'emerald', 'teal', 'sunset', 'plum', 'pink']) assert.match(home, new RegExp('data-accent-choice="' + accent + '"'));
-  assert.match(home, /fieldset class="account-accent-picker"/);
-  assert.match(home, /aria-label="בחירת ערכת צבע"/);
+  for (const accent of ['ocean', 'emerald', 'teal', 'sunset', 'plum', 'pink']) assert.match(settings, new RegExp('data-accent-choice="' + accent + '"'));
+  assert.match(settings, /fieldset class="settings-accent-picker"/);
+  assert.doesNotMatch(home, /account-accent-picker/);
+  assert.match(settings, /aria-label="בחירת ערכת צבע"/);
   assert.match(theme, /localStorage\.setItem\(ACCENT_KEY, accent\)/);
 });
 

@@ -29,6 +29,9 @@
   var addButton = list && list.querySelector('.add-destination');
   var cloud = window.TravelMateCloud;
   var currentSession = null;
+  var sessionGeneration = 0;
+  var authSubscriptionPending = false;
+  var authSubscribed = false;
   var passwordChangeMode = false;
   var renderedTrips = new Map();
   var staticActivityKey = 'travelmate-static-trip-activity';
@@ -345,6 +348,7 @@
       queueDestinationCardImage(shell, trip);
     });
     updateCounts();
+    renderAdaptiveHome(canonicalTrips);
     handlePwaShortcut(canonicalTrips);
   }
 
@@ -515,7 +519,13 @@
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-labelledby', 'cloud-account-title');
-    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message role="status" aria-live="polite" data-message-state="info">התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><div class="cloud-auth-secondary" aria-label="אפשרויות התחברות נוספות"><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></div></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><form class="cloud-profile-form" data-cloud-profile-form><label class="cloud-auth-field"><span>שם תצוגה</span><span class="cloud-auth-input"><i class="fa-regular fa-user" aria-hidden="true"></i><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></span></label><button type="submit" class="secondary" data-cloud-profile-save><i class="fa-solid fa-user-check"></i> שמירת שם</button></form><fieldset class="account-accent-picker"><legend>ערכת צבע</legend><div role="group" aria-label="בחירת ערכת צבע"><button type="button" data-accent-choice="ocean" aria-label="אוקיינוס"><i></i><span>אוקיינוס</span></button><button type="button" data-accent-choice="emerald" aria-label="אמרלד"><i></i><span>אמרלד</span></button><button type="button" data-accent-choice="teal" aria-label="טורקיז"><i></i><span>טורקיז</span></button><button type="button" data-accent-choice="sunset" aria-label="שקיעה"><i></i><span>שקיעה</span></button><button type="button" data-accent-choice="plum" aria-label="שזיף"><i></i><span>שזיף</span></button><button type="button" data-accent-choice="pink" aria-label="ורוד"><i></i><span>ורוד</span></button></div></fieldset><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
+    panel.innerHTML = '<div class="cloud-account-copy"><h2 id="cloud-account-title">התחברות</h2><small data-cloud-message role="status" aria-live="polite" data-message-state="info">התחברו כדי לשמור את כל הטיולים בענן הפרטי.</small></div><form data-cloud-auth-form><label class="cloud-auth-field"><span>דואר אלקטרוני</span><span class="cloud-auth-input"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input name="email" type="email" autocomplete="email" required placeholder="הזן אימייל"></span></label><label class="cloud-auth-field"><span>סיסמה</span><span class="cloud-auth-input"><i class="fa-solid fa-lock" aria-hidden="true"></i><input name="password" type="password" autocomplete="current-password" required placeholder="הזן את הסיסמה"></span></label><button class="cloud-login-submit" type="submit">להתחבר</button><div class="cloud-auth-secondary" aria-label="אפשרויות התחברות נוספות"><button type="button" class="cloud-create-account" data-cloud-signup>צריך חשבון?</button><button type="button" class="cloud-create-account" data-cloud-forgot>שכחתי סיסמה</button><button type="button" class="cloud-create-account" data-cloud-resend>לא קיבלתי מייל · שלח שוב</button></div></form><form data-cloud-password-form hidden><input name="newPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="סיסמה חדשה · לפחות 8 תווים"><input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="אימות הסיסמה החדשה"><button type="submit"><i class="fa-solid fa-key"></i> שמירת סיסמה חדשה</button><button type="button" class="secondary" data-cloud-password-cancel>ביטול</button></form><div class="cloud-account-session" data-cloud-session hidden><span><i class="fa-solid fa-circle-check"></i> מחובר/ת בתור <strong data-cloud-email></strong></span><section class="cloud-avatar-editor" data-cloud-avatar-editor aria-labelledby="cloud-avatar-title"><span class="cloud-avatar-preview" data-cloud-avatar-preview data-user-avatar hidden aria-hidden="true"></span><div class="cloud-avatar-copy"><strong id="cloud-avatar-title">הפרופיל שלי</strong><small>תמונה והעדפות נסיעה נשמרות בחשבון הקיים. עיבוד התמונה מתבצע במכשיר; לאחר שמירה האווטר זמין דרך כתובת ציבורית.</small></div><div class="cloud-avatar-actions"><button type="button" class="secondary" data-profile-wizard-open>עריכת פרופיל</button><button type="button" class="secondary" data-cloud-avatar-remove>הסרת תמונה</button><label class="cloud-avatar-pick cloud-avatar-legacy" hidden>בחירת תמונה<input type="file" data-cloud-avatar-input accept="image/jpeg,image/png,image/webp"></label><button type="button" data-cloud-avatar-upload hidden disabled>שמירת תמונה</button></div><small class="cloud-avatar-status" data-cloud-avatar-status role="status" aria-live="polite"></small></section><form class="cloud-profile-form" data-cloud-profile-form><label class="cloud-auth-field"><span>שם תצוגה</span><span class="cloud-auth-input"><i class="fa-regular fa-user" aria-hidden="true"></i><input name="displayName" type="text" maxlength="80" autocomplete="name" placeholder="איך לפנות אליך?"></span></label><button type="submit" class="secondary" data-cloud-profile-save><i class="fa-solid fa-user-check"></i> שמירת שם</button></form><button type="button" data-cloud-sync-now><i class="fa-solid fa-arrows-rotate"></i> סנכרון עכשיו</button><button type="button" class="secondary" data-cloud-change-password><i class="fa-solid fa-key"></i> שינוי סיסמה</button><button type="button" class="secondary" data-cloud-signout>יציאה</button></div>';
+    var smartProfile = panel.querySelector('[data-cloud-avatar-editor]');
+    smartProfile.classList.add('cloud-smart-profile');
+    smartProfile.dataset.smartProfile = '';
+    smartProfile.innerHTML = '<div class="cloud-smart-profile-head"><span class="cloud-avatar-preview" data-cloud-avatar-preview data-user-avatar hidden aria-hidden="true"></span><div><small data-smart-profile-greeting></small><strong id="cloud-avatar-title" data-smart-profile-name>הפרופיל שלי</strong><span data-smart-profile-email></span></div></div><section class="cloud-declared-preferences" aria-labelledby="cloud-declared-title"><div><small>מה שסיפרת ל־TravelMate</small><h3 id="cloud-declared-title">העדפות הנסיעה המוצהרות שלך</h3></div><p data-smart-profile-completion></p><div class="cloud-preference-chips" data-smart-profile-preferences></div><p data-smart-profile-empty hidden>עדיין לא הוגדרו העדפות נסיעה.</p><p class="cloud-learning-state" data-smart-profile-learning></p></section><section class="cloud-learned-profile" data-learned-profile-host aria-label="העדפות נלמדות"><p class="cloud-learned-loading">העדפות נלמדות נטענות לאחר פתיחת החשבון.</p></section><p class="cloud-profile-privacy"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>ההעדפות בשליטתך. Mate מקבל העדפות מוצהרות, ורק העדפות נלמדות שאישרת במפורש כשהלמידה פעילה. מסמכים, הערות פרטיות, הודעות פרטיות ו־GPS אינם משמשים ללמידה.</span></p><div class="cloud-avatar-actions"><button type="button" class="secondary cloud-profile-edit" data-profile-wizard-open><i class="fa-solid fa-image" aria-hidden="true"></i> תמונה ואווטר</button><button type="button" class="secondary cloud-profile-interests" data-profile-interests-open><i class="fa-solid fa-heart" aria-hidden="true"></i> העדפות ותחומי עניין</button><button type="button" class="secondary" data-cloud-avatar-remove>הסרת תמונה</button><label class="cloud-avatar-pick cloud-avatar-legacy" hidden>בחירת תמונה<input type="file" data-cloud-avatar-input accept="image/jpeg,image/png,image/webp"></label><button type="button" data-cloud-avatar-upload hidden disabled>שמירת תמונה</button></div><small class="cloud-avatar-status" data-cloud-avatar-status role="status" aria-live="polite"></small>';
+    var legacyProfileForm = panel.querySelector('[data-cloud-profile-form]');
+    if (legacyProfileForm) legacyProfileForm.remove();
     panel.classList.add('cloud-account-split');
     panel.insertAdjacentHTML('afterbegin', '<button class="cloud-account-close" type="button" data-cloud-account-close aria-label="סגירת חלון ההתחברות"><i class="fa-solid fa-xmark"></i></button>');
     backdrop.appendChild(panel);
@@ -527,7 +537,16 @@
   if (window.TravelMateTheme && window.TravelMateTheme.refreshAccentChoices) window.TravelMateTheme.refreshAccentChoices();
   var authForm = accountPanel.querySelector('[data-cloud-auth-form]');
   var passwordForm = accountPanel.querySelector('[data-cloud-password-form]');
-  var profileForm = accountPanel.querySelector('[data-cloud-profile-form]');
+  var avatarInput = accountPanel.querySelector('[data-cloud-avatar-input]');
+  var avatarUpload = accountPanel.querySelector('[data-cloud-avatar-upload]');
+  var avatarRemove = accountPanel.querySelector('[data-cloud-avatar-remove]');
+  var avatarPreview = accountPanel.querySelector('[data-cloud-avatar-preview]');
+  var avatarStatus = accountPanel.querySelector('[data-cloud-avatar-status]');
+  var pendingAvatarFile = null;
+  var pendingAvatarPreviewUrl = '';
+  var avatarBusy = false;
+  var avatarRenderGeneration = 0;
+
   var sessionPanel = accountPanel.querySelector('[data-cloud-session]');
   var message = accountPanel.querySelector('[data-cloud-message]');
   var accountBackdrop = accountPanel.closest('[data-cloud-account-backdrop]');
@@ -587,10 +606,15 @@
     if (/email address not authorized/i.test(value)) return 'Supabase אינו מורשה לשלוח לכתובת הזו. יש להגדיר SMTP פרטי או להשתמש בכתובת של חבר צוות הפרויקט.';
     if (/rate limit|too many requests|over_email_send_rate_limit/i.test(value)) return 'הגעת למגבלת השליחה של Supabase. המתן כשעה ונסה שוב, או הגדר SMTP פרטי.';
     if (/invalid login/i.test(value)) return 'כתובת הדוא״ל או הסיסמה אינן נכונות. אם טרם אימתת את החשבון, שלח שוב את מייל האימות.';
+    if (/AVATAR_CONFLICT/i.test(value)) return 'תמונת הפרופיל השתנתה במכשיר או בחלון אחר. המצב העדכני נטען; אפשר לבחור שוב תמונה אם רוצים להחליף אותה.';
+    if (/AVATAR_OFFLINE/i.test(value)) return 'שינוי תמונת פרופיל דורש חיבור לרשת.';
+    if (/AUTH_CONTEXT_CHANGED/i.test(value)) return 'החשבון השתנה בזמן הפעולה. לא בוצע שינוי בחשבון החדש.';
     return 'לא הצלחנו להשלים את הפעולה. נסו שוב בעוד רגע.';
   }
 
   function personalizedUser(user) {
+    var shared = window.TravelMateUserProfile;
+    if (shared && typeof shared.fromUser === 'function') return shared.fromUser(user);
     var metadata = user && user.user_metadata || {};
     var email = String(user && user.email || '').trim();
     var rawName = String(metadata.display_name || metadata.full_name || metadata.name || '').trim();
@@ -600,7 +624,24 @@
     var hour = new Date().getHours();
     var greeting = hour < 5 ? 'לילה טוב' : hour < 12 ? 'בוקר טוב' : hour < 17 ? 'צהריים טובים' : 'ערב טוב';
     var initials = name ? name.split(/\s+/).slice(0, 2).map(function (part) { return part.charAt(0); }).join('').toUpperCase() : (email ? email.charAt(0).toUpperCase() : '');
-    return { name: name, firstName: firstName, greeting: greeting, initials: initials };
+    return { name: name, firstName: firstName, greeting: greeting, initials: initials, avatarUrl: '' };
+  }
+
+  function paintAvatar(avatar, user, profile) {
+    avatar.hidden = !user;
+    avatar.textContent = user ? profile.initials : '';
+    avatar.classList.toggle('has-image', Boolean(user && profile.avatarUrl));
+    avatar.style.backgroundImage = user && profile.avatarUrl ? 'url("' + profile.avatarUrl.replace(/"/g, '%22') + '")' : '';
+    avatar.dataset.avatarUrl = user && profile.avatarUrl ? profile.avatarUrl : '';
+    var renderGeneration = String(++avatarRenderGeneration);
+    avatar.dataset.avatarGeneration = renderGeneration;
+    avatar.setAttribute('aria-label', user && profile.name ? 'משתמש: ' + profile.name : 'משתמש מחובר');
+    if (user && profile.avatarUrl && typeof window.Image === 'function') {
+      var expected = profile.avatarUrl;
+      var probe = new window.Image();
+      probe.onerror = function () { if (avatar.dataset.avatarGeneration === renderGeneration && avatar.dataset.avatarUrl === expected) { avatar.classList.remove('has-image'); avatar.style.backgroundImage = ''; avatar.dataset.avatarUrl = ''; } };
+      probe.src = expected;
+    }
   }
 
   function renderPersonalization(session) {
@@ -609,26 +650,118 @@
     document.querySelectorAll('[data-account-label]').forEach(function (label) {
       label.textContent = user ? profile.greeting + (profile.firstName ? ', ' + profile.firstName : '') : 'התחברות';
     });
-    document.querySelectorAll('[data-user-avatar]').forEach(function (avatar) {
-      avatar.hidden = !user;
-      avatar.textContent = user ? profile.initials : '';
-      avatar.setAttribute('aria-label', user && profile.name ? 'משתמש: ' + profile.name : 'משתמש מחובר');
+    document.querySelectorAll('[data-user-avatar]').forEach(function (avatar) { paintAvatar(avatar, user, profile); });
+    document.querySelectorAll('[data-cloud-account-open]').forEach(function (button) {
+      var icon = button.querySelector('[data-account-icon]');
+      if (icon) icon.hidden = Boolean(user);
     });
+    renderSmartProfile(session);
+  }
+
+  function renderSmartProfile(session) {
+    var host = accountPanel && accountPanel.querySelector('[data-smart-profile]');
+    var user = session && session.user;
+    if (!host || !user) return;
+    var profile = personalizedUser(user);
+    var helper = window.TravelMateUserProfile;
+    var summary = helper && typeof helper.preferenceSummary === 'function' ? helper.preferenceSummary(profile.preferences) : { items: [], isEmpty: true, learningEnabled: false };
+    var greeting = host.querySelector('[data-smart-profile-greeting]');
+    var name = host.querySelector('[data-smart-profile-name]');
+    var email = host.querySelector('[data-smart-profile-email]');
+    var list = host.querySelector('[data-smart-profile-preferences]');
+    var completion = host.querySelector('[data-smart-profile-completion]');
+    var empty = host.querySelector('[data-smart-profile-empty]');
+    var learning = host.querySelector('[data-smart-profile-learning]');
+    greeting.textContent = profile.greeting + (profile.firstName ? ', ' + profile.firstName : '');
+    name.textContent = profile.name || 'הפרופיל שלי';
+    email.textContent = String(user.email || '');
+    list.replaceChildren();
+    completion.textContent = summary.completionLabel || '';
+    summary.items.forEach(function (item) {
+      var chip = document.createElement('span');
+      var label = document.createElement('small');
+      var value = document.createElement('strong');
+      label.textContent = item.label;
+      value.textContent = item.valueLabel;
+      chip.append(label, value);
+      list.appendChild(chip);
+    });
+    empty.hidden = !summary.isEmpty;
+    learning.classList.toggle('is-enabled', summary.learningEnabled === true);
+    learning.textContent = summary.learningEnabled === true ? 'התאמה עתידית: הצטרפת במפורש' : 'התאמה עתידית: כבויה עד להצטרפות מפורשת';
+  }
+
+  function adaptiveHomeContext(trips) {
+    var shared = window.TravelMateUserProfile;
+    if (shared && typeof shared.selectHomeContext === 'function') return shared.selectHomeContext(trips || [], new Date());
+    return { type: 'empty', trip: null };
+  }
+
+  function renderAdaptiveHome(trips) {
+    var host = document.querySelector('[data-home-personal-summary]');
+    if (!host) return;
+    var user = currentSession && currentSession.user;
+    host.hidden = !user;
+    if (!user) return;
+    var profile = personalizedUser(user);
+    var context = adaptiveHomeContext(trips || Array.from(renderedTrips.values()));
+    var greeting = host.querySelector('[data-home-greeting]');
+    var kicker = host.querySelector('[data-home-context-kicker]');
+    var copy = host.querySelector('[data-home-context]');
+    var action = host.querySelector('[data-home-context-action]');
+    if (greeting) greeting.textContent = profile.greeting + (profile.firstName ? ', ' + profile.firstName : '');
+    if (!kicker || !copy || !action) return;
+    var trip = context.trip;
+    if (context.type === 'current' && trip) {
+      kicker.textContent = 'הפרופיל שלי';
+      copy.textContent = 'הטיול ל־' + trip.city + ' מתקיים עכשיו' + (context.daysRemaining ? ' · נשארו ' + context.daysRemaining + ' ימים' : ' · זה היום האחרון') + '.';
+      action.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
+      action.innerHTML = 'חזרה לטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
+      return;
+    }
+    if (context.type === 'upcoming' && trip) {
+      kicker.textContent = 'הפרופיל שלי';
+      copy.textContent = 'הטיול ל־' + trip.city + ' מתחיל ' + (context.daysUntil === 1 ? 'מחר' : 'בעוד ' + context.daysUntil + ' ימים') + '.';
+      action.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
+      action.innerHTML = 'להמשך התכנון <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
+      return;
+    }
+    if (context.type === 'recent' && trip) {
+      kicker.textContent = 'הפרופיל שלי';
+      copy.textContent = 'הטיול האחרון ל־' + trip.city + ' הסתיים ' + (context.daysAgo === 1 ? 'אתמול' : 'לפני ' + context.daysAgo + ' ימים') + '. אפשר להשלים זיכרונות ופרטים שנשארו.';
+      action.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
+      action.innerHTML = 'פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
+      return;
+    }
+    kicker.textContent = 'הפרופיל שלי';
+    copy.textContent = 'אין כרגע טיול אישי פעיל. אפשר לבחור יעד חדש ולהתחיל לתכנן.';
+    action.href = '#active-trips';
+    action.innerHTML = 'לטיולים שלי <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>';
+  }
+
+  function hydrateCachedTrips() {
+    var trips = cloud && cloud.getCachedTrips ? cloud.getCachedTrips() : [];
+    document.body.classList.toggle('has-cached-trips', trips.length > 0);
+    renderTrips(trips);
   }
 
   function setSession(session) {
+    sessionGeneration += 1;
     currentSession = session;
     var user = session && session.user;
     var profile = personalizedUser(user);
     document.body.classList.toggle('is-authenticated', Boolean(session));
     renderPersonalization(session);
+    hydrateCachedTrips();
+    renderAdaptiveHome(Array.from(renderedTrips.values()));
     window.dispatchEvent(new CustomEvent('travelmate:home-auth', { detail: { authenticated: Boolean(session) } }));
     if (passwordChangeMode && session) return;
     authForm.hidden = Boolean(session);
     passwordForm.hidden = true;
     sessionPanel.hidden = !session;
     accountPanel.querySelector('[data-cloud-email]').textContent = session && session.user ? session.user.email : '';
-    if (profileForm) profileForm.elements.displayName.value = user ? profile.name : '';
+    clearPendingAvatar();
+    updateAvatarControls();
     accountOpenButtons.forEach(function (button) {
       var label = session ? 'החשבון שלי' : 'התחברות';
       button.setAttribute('aria-label', label);
@@ -653,7 +786,7 @@
       synchronize();
     }
     else {
-      renderTrips(cloud ? cloud.getLocalTrips() : []);
+      hydrateCachedTrips();
       setMessage('התחברו כדי לשמור את כל הטיולים בענן הפרטי.');
     }
   }
@@ -678,12 +811,17 @@
 
   async function synchronize() {
     if (!cloud || !currentSession) return;
+    hydrateCachedTrips();
+    var generation = sessionGeneration;
+    var owner = currentSession.user.id;
     setMessage('מסנכרן/ת את הטיולים…');
     try {
       var trips = await cloud.syncLocalTrips();
+      if (generation !== sessionGeneration || !currentSession || currentSession.user.id !== owner) return;
       renderTrips(trips);
       setMessage('הכול מסונכרן · ' + trips.length + ' טיולים זמינים בכל המכשירים');
     } catch (error) {
+      if (generation !== sessionGeneration || !currentSession || currentSession.user.id !== owner) return;
       console.error('TravelMate trip sync failed', error);
       var missingTable = /travel_trips|schema cache|does not exist/i.test(String(error && error.message || ''));
       setMessage(missingTable ? 'טבלת סנכרון הטיולים עדיין לא הופעלה ב־Supabase.' : 'הסנכרון נכשל זמנית. הטיולים נשארו שמורים במכשיר.', true);
@@ -713,33 +851,79 @@
     }
   });
 
-  if (profileForm) profileForm.addEventListener('submit', async function (event) {
-    event.preventDefault();
-    if (!currentSession || !currentSession.user || !cloud || typeof cloud.updateProfile !== 'function') return;
-    var button = profileForm.querySelector('[data-cloud-profile-save]');
-    var displayName = String(profileForm.elements.displayName.value || '').trim().replace(/\s+/g, ' ').slice(0, 80);
-    button.disabled = true;
-    button.setAttribute('aria-busy', 'true');
-    setMessage('שומר/ת את הפרופיל…');
-    try {
-      var result = await cloud.updateProfile(displayName);
-      if (result.error) {
-        setMessage(authMessage(result.error), true);
-        return;
-      }
-      if (result.data && result.data.user) currentSession.user = result.data.user;
-      var updatedProfile = personalizedUser(currentSession.user);
-      profileForm.elements.displayName.value = updatedProfile.name;
-      renderPersonalization(currentSession);
-      setMessage(displayName ? 'השם נשמר. TravelMate יפנה אליך מעכשיו בשם ' + updatedProfile.firstName + '.' : 'שם התצוגה אופס. TravelMate ישתמש בשם שמופיע בכתובת הדוא״ל.');
-    } catch (error) {
-      console.error('TravelMate profile update failed', error);
-      setMessage(authMessage(error), true);
-    } finally {
-      button.disabled = false;
-      button.removeAttribute('aria-busy');
-    }
+  function clearPendingAvatar() {
+    pendingAvatarFile = null;
+    if (pendingAvatarPreviewUrl) { URL.revokeObjectURL(pendingAvatarPreviewUrl); pendingAvatarPreviewUrl = ''; }
+    if (avatarInput) avatarInput.value = '';
+  }
+  function setAvatarStatus(value, error) {
+    if (!avatarStatus) return;
+    avatarStatus.textContent = value || '';
+    avatarStatus.classList.toggle('error', Boolean(error));
+    avatarStatus.setAttribute('role', error ? 'alert' : 'status');
+  }
+  function updateAvatarControls() {
+    if (!avatarInput || !avatarUpload || !avatarRemove) return;
+    var user = currentSession && currentSession.user;
+    var online = typeof navigator === 'undefined' || navigator.onLine !== false;
+    var profile = personalizedUser(user);
+    avatarInput.disabled = avatarBusy || !user || !online;
+    avatarUpload.disabled = avatarBusy || !user || !online || !pendingAvatarFile;
+    avatarRemove.disabled = avatarBusy || !user || !online || !profile.avatarUrl;
+    if (user && !online) setAvatarStatus('כדי לשנות תמונת פרופיל יש להתחבר לרשת.', false);
+  }
+  if (avatarInput) avatarInput.addEventListener('change', function () {
+    var file = avatarInput.files && avatarInput.files[0];
+    clearPendingAvatar();
+    if (!file) { renderPersonalization(currentSession); updateAvatarControls(); return; }
+    var check = cloud && cloud.validateAvatarFile ? cloud.validateAvatarFile(file) : { ok: false, error: 'שירות האווטר עדיין נטען.' };
+    if (!check.ok) { setAvatarStatus(check.error, true); renderPersonalization(currentSession); updateAvatarControls(); return; }
+    var previewUrl = URL.createObjectURL(file);
+    pendingAvatarPreviewUrl = previewUrl;
+    var profile = personalizedUser(currentSession && currentSession.user);
+    if (avatarPreview) { avatarPreview.hidden = false; avatarPreview.textContent = profile.initials || ''; avatarPreview.classList.remove('has-image'); avatarPreview.style.backgroundImage = ''; }
+    if (typeof window.Image !== 'function') { pendingAvatarFile = file; if (avatarPreview) { avatarPreview.classList.add('has-image'); avatarPreview.style.backgroundImage = 'url("' + previewUrl.replace(/"/g, '%22') + '")'; } setAvatarStatus('התמונה מוכנה לתצוגה מקדימה. לחץ על „שמירת תמונה” כדי לעדכן.', false); updateAvatarControls(); return; }
+    var probe = new window.Image();
+    probe.onload = function () { if (pendingAvatarPreviewUrl !== previewUrl) return; pendingAvatarFile = file; if (avatarPreview) { avatarPreview.classList.add('has-image'); avatarPreview.style.backgroundImage = 'url("' + previewUrl.replace(/"/g, '%22') + '")'; } setAvatarStatus('התמונה מוכנה לתצוגה מקדימה. לחץ על „שמירת תמונה” כדי לעדכן.', false); updateAvatarControls(); };
+    probe.onerror = function () { if (pendingAvatarPreviewUrl !== previewUrl) return; clearPendingAvatar(); renderPersonalization(currentSession); setAvatarStatus('לא הצלחנו לקרוא את קובץ התמונה. נסו קובץ אחר.', true); updateAvatarControls(); };
+    probe.src = previewUrl;
+    updateAvatarControls();
   });
+  if (avatarUpload) avatarUpload.addEventListener('click', async function () {
+    if (!pendingAvatarFile || !cloud || typeof cloud.uploadAvatar !== 'function' || !currentSession || !currentSession.user) return;
+    var ownerId = String(currentSession.user.id);
+    avatarBusy = true; avatarUpload.setAttribute('aria-busy', 'true'); updateAvatarControls();
+    setAvatarStatus('מעלה את תמונת הפרופיל…', false);
+    try {
+      var result = await cloud.uploadAvatar(pendingAvatarFile);
+      if (!currentSession || !currentSession.user || String(currentSession.user.id) !== ownerId) return;
+      if (result.error) { if (result.data && result.data.user && String(result.data.user.id) === ownerId) { currentSession.user = result.data.user; clearPendingAvatar(); renderPersonalization(currentSession); window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } })); } setAvatarStatus(result.rollbackError ? 'העדכון נכשל וגם ניקוי הקובץ החדש לא הושלם. נסו שוב מאוחר יותר.' : authMessage(result.error), true); return; }
+      if (!result.data || !result.data.user || String(result.data.user.id) !== ownerId) { setAvatarStatus('החשבון השתנה בזמן העדכון. התמונה לא הוחלה במסך הנוכחי.', true); return; }
+      currentSession.user = result.data.user;
+      clearPendingAvatar(); renderPersonalization(currentSession); updateAvatarControls();
+      window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } }));
+      setAvatarStatus(result.cleanupError ? 'התמונה נשמרה. ניקוי הגרסה הקודמת לא הושלם.' : 'תמונת הפרופיל נשמרה.', Boolean(result.cleanupError));
+    } catch (error) { if (currentSession && currentSession.user && String(currentSession.user.id) === ownerId) { console.error('TravelMate avatar upload failed', error); setAvatarStatus(authMessage(error), true); } }
+    finally { avatarBusy = false; avatarUpload.removeAttribute('aria-busy'); updateAvatarControls(); }
+  });
+  if (avatarRemove) avatarRemove.addEventListener('click', async function () {
+    if (!cloud || typeof cloud.removeAvatar !== 'function' || !currentSession || !currentSession.user) return;
+    var ownerId = String(currentSession.user.id);
+    avatarBusy = true; avatarRemove.setAttribute('aria-busy', 'true'); updateAvatarControls(); setAvatarStatus('מסיר את תמונת הפרופיל…', false);
+    try {
+      var result = await cloud.removeAvatar();
+      if (!currentSession || !currentSession.user || String(currentSession.user.id) !== ownerId) return;
+      if (result.error) { if (result.data && result.data.user && String(result.data.user.id) === ownerId) { currentSession.user = result.data.user; renderPersonalization(currentSession); window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } })); } setAvatarStatus(authMessage(result.error), true); return; }
+      if (!result.data || !result.data.user || String(result.data.user.id) !== ownerId) { setAvatarStatus('החשבון השתנה בזמן העדכון. השינוי לא הוחל במסך הנוכחי.', true); return; }
+      currentSession.user = result.data.user;
+      clearPendingAvatar(); renderPersonalization(currentSession); updateAvatarControls();
+      window.dispatchEvent(new CustomEvent('travelmate:profile-change', { detail: { user: currentSession.user } }));
+      setAvatarStatus(result.cleanupError ? 'האווטר הוסר מהפרופיל, אך ניקוי הקובץ הישן לא הושלם.' : 'תמונת הפרופיל הוסרה. מוצגים כעת ראשי התיבות.', Boolean(result.cleanupError));
+    } catch (error) { if (currentSession && currentSession.user && String(currentSession.user.id) === ownerId) { console.error('TravelMate avatar removal failed', error); setAvatarStatus(authMessage(error), true); } }
+    finally { avatarBusy = false; avatarRemove.removeAttribute('aria-busy'); updateAvatarControls(); }
+  });
+  window.addEventListener('online', updateAvatarControls);
+  window.addEventListener('offline', updateAvatarControls);
 
   accountPanel.querySelector('[data-cloud-signup]').addEventListener('click', async function (event) {
     if (!authForm.reportValidity()) return;
@@ -856,12 +1040,45 @@
     setMessage('חיבור הענן אינו זמין כרגע. הטיולים נשמרים במכשיר בלבד.', true);
     return;
   }
-  cloud.getSession().then(setSession).catch(function () { setMessage('לא ניתן להתחבר לענן כרגע.', true); });
-  cloud.onAuthChange(function (event, session) {
-    if (event === 'PASSWORD_RECOVERY') {
-      showPasswordForm(session, true);
-      return;
+  function restoreSession() {
+    hydrateCachedTrips();
+    var generation = sessionGeneration;
+    cloud.getSession().then(function (session) {
+      if (generation === sessionGeneration) setSession(session);
+    }).catch(function () {
+      if (generation !== sessionGeneration) return;
+      hydrateCachedTrips();
+      setMessage('חיבור הענן אינו זמין כרגע. הטיולים השמורים זמינים במכשיר.', true);
+    });
+    if (authSubscribed || authSubscriptionPending) return;
+    authSubscriptionPending = true;
+    cloud.onAuthChange(function (event, session) {
+      if (event === 'PASSWORD_RECOVERY') { showPasswordForm(session, true); return; }
+      setSession(session);
+    }).then(function () { authSubscribed = true; }).catch(function () {
+      // Reconnection can load the SDK and subscribe again.
+    }).finally(function () { authSubscriptionPending = false; });
+  }
+  restoreSession();
+  window.addEventListener('online', restoreSession);
+  window.addEventListener('travelmate:local-trips-updated', hydrateCachedTrips);
+  window.addEventListener('storage', function (event) {
+    var change = cloud.cacheChangeType(event.key);
+    if (change === 'account') setSession(null);
+    else if (change === 'trips') hydrateCachedTrips();
+  });
+  window.addEventListener('travelmate:user-profile-ready', function () {
+    if (!currentSession) return;
+    renderPersonalization(currentSession);
+    renderAdaptiveHome(Array.from(renderedTrips.values()));
+  });
+  window.addEventListener('travelmate:profile-change', function (event) {
+    if (!currentSession) return;
+    if (event.detail && event.detail.user) {
+      if (String(event.detail.user.id) !== String(currentSession.user.id)) return;
+      currentSession.user = event.detail.user;
     }
-    setSession(session);
+    renderPersonalization(currentSession);
+    renderAdaptiveHome(Array.from(renderedTrips.values()));
   });
 })();

@@ -419,3 +419,201 @@ body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links :is(
   }
   body.tm-new-design[data-trip-view="plan"] #plan .saved-place-links .saved-calendar-link{grid-column:1/-1}
 }
+
+
+/* 2.1 Flexible Planning — timing mode controls and readable mode badges. */
+body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{
+  grid-template-columns:110px 100px minmax(180px,1fr) 110px 110px 130px minmax(170px,auto) auto
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-window-field{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  min-width:0
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-window-field[hidden]{display:none}
+body.tm-new-design[data-trip-view="plan"] #plan .activity-schedule-mode,
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-mode{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  min-height:22px;
+  margin-top:4px;
+  padding:0 8px;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:999px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-secondary);
+  -webkit-text-fill-color:currentColor;
+  font-size:10px;
+  font-weight:800;
+  line-height:1
+}
+body.tm-new-design[data-trip-view="plan"] #plan .activity-schedule-mode[data-schedule-mode="fixed"]{
+  border-color:color-mix(in srgb,var(--tm-action-danger) 36%,var(--tm-card-control-border));
+  background:var(--tm-action-danger-soft);
+  color:var(--tm-action-danger)
+}
+body.tm-new-design[data-trip-view="plan"] #plan .activity-schedule-mode[data-schedule-mode="window"]{
+  border-color:color-mix(in srgb,var(--tm-warning) 42%,var(--tm-card-control-border));
+  background:color-mix(in srgb,var(--tm-warning) 12%,var(--tm-card-control));
+  color:var(--tm-card-heading)
+}
+body.tm-new-design[data-trip-view="plan"] #plan .activity-schedule-mode[data-schedule-mode="flexible"]{
+  border-color:color-mix(in srgb,var(--tm-action-primary) 35%,var(--tm-card-control-border));
+  background:var(--tm-action-secondary);
+  color:var(--tm-card-heading)
+}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-mode{margin-inline-start:6px}
+@media(max-width:850px){
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{grid-template-columns:1fr 1fr}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-window-field{grid-column:1/-1}
+}
+@media(max-width:560px){
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{grid-template-columns:1fr}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-window-field{grid-column:auto}
+}
+
+
+/* 2.1 Quick Add — keep the common add path lightweight; advanced planning stays one tap away. */
+body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{
+  grid-template-columns:110px 100px minmax(200px,1fr) auto auto;
+  align-items:center
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-details-toggle,
+body.tm-new-design[data-trip-view="plan"] #plan .planner-quick-save{
+  min-height:44px;
+  border-radius:12px;
+  font-weight:800
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-details-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border:1px solid var(--tm-card-control-border);
+  background:var(--tm-card-control);
+  color:var(--tm-card-control-text);
+  -webkit-text-fill-color:currentColor
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:minmax(130px,1fr) minmax(110px,.75fr) minmax(140px,1fr) minmax(180px,1.2fr);
+  gap:8px;
+  min-width:0
+}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced[hidden]{display:none}
+body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced .planner-window-field{
+  min-width:0
+}
+@media(max-width:850px){
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{grid-template-columns:1fr 1fr}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer input[name="title"]{grid-column:1/-1}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced{
+    grid-column:1/-1;
+    grid-template-columns:1fr 1fr
+  }
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced .planner-window-field{grid-column:1/-1}
+}
+@media(max-width:560px){
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer{grid-template-columns:1fr 1fr}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer select[name="date"],
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer input[name="time"]{min-width:0}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-details-toggle,
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-quick-save{width:100%}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced{grid-template-columns:1fr}
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-composer-advanced .planner-window-field{grid-column:auto}
+}
+
+
+/* 2.1 Day Mode Control — explicit override stays compact and optional. */
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-mode-select{
+  min-height:28px;
+  max-width:150px;
+  margin-inline-start:6px;
+  padding:2px 26px 2px 8px;
+  border:1px solid var(--tm-card-control-border);
+  border-radius:999px;
+  background:var(--tm-card-control);
+  color:var(--tm-card-heading);
+  -webkit-text-fill-color:currentColor;
+  font:inherit;
+  font-size:11px;
+  font-weight:750;
+  cursor:pointer
+}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-mode-select:focus-visible{
+  outline:2px solid var(--tm-focus-ring);
+  outline-offset:2px
+}
+@media(max-width:560px){
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-mode-select{
+    max-width:132px;
+    font-size:10px
+  }
+}
+
+
+/* 2.2 Travel Time + Smart Conflicts — advisory only; never blocks the user's plan. */
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-transition{
+  display:inline-flex;
+  align-items:flex-start;
+  gap:6px;
+  width:max-content;
+  max-width:100%;
+  margin-top:6px;
+  padding:5px 8px;
+  border:1px solid color-mix(in srgb,var(--tm-action-primary) 30%,var(--tm-card-control-border));
+  border-radius:10px;
+  background:var(--tm-action-secondary);
+  color:var(--tm-card-secondary);
+  -webkit-text-fill-color:currentColor;
+  font-size:11px;
+  font-weight:750;
+  line-height:1.35
+}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-transition>i{
+  margin-top:1px;
+  color:var(--tm-action-primary);
+  -webkit-text-fill-color:currentColor
+}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-transition.is-risk{
+  border-color:color-mix(in srgb,var(--tm-warning) 52%,var(--tm-card-control-border));
+  background:color-mix(in srgb,var(--tm-warning) 13%,var(--tm-card-control));
+  color:var(--tm-card-heading)
+}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-transition.is-risk>i{
+  color:var(--tm-warning);
+  -webkit-text-fill-color:currentColor
+}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-day-travel-risk{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  min-height:22px;
+  margin-top:4px;
+  margin-inline-start:6px;
+  padding:0 8px;
+  border:1px solid color-mix(in srgb,var(--tm-warning) 52%,var(--tm-card-control-border));
+  border-radius:999px;
+  background:color-mix(in srgb,var(--tm-warning) 13%,var(--tm-card-control));
+  color:var(--tm-card-heading);
+  -webkit-text-fill-color:currentColor;
+  font-size:10px;
+  font-weight:850;
+  line-height:1
+}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item.tm-plan-travel-risk{
+  border-color:color-mix(in srgb,var(--tm-warning) 44%,var(--tm-card-border))
+}
+@media(max-width:560px){
+  body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-transition{
+    width:100%;
+    box-sizing:border-box
+  }
+}
+/* Phone QA: action labels wrap without shrinking newer planner controls. */
+@media(max-width:430px){
+  body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolbar-actions button{white-space:normal;overflow-wrap:break-word;flex-wrap:wrap}
+}

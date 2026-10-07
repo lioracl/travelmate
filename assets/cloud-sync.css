@@ -343,3 +343,83 @@ html body.home-page .cloud-account-split .security-captcha-development i{flex:0 
 .cloud-account-split .cloud-account-session .account-accent-picker button.active{border-color:#fff;background:color-mix(in srgb,var(--accent-swatch) 26%,rgba(255,255,255,.08));box-shadow:0 0 0 2px var(--accent-swatch)}
 .cloud-account-split .cloud-account-session .account-accent-picker button:focus-visible{outline:3px solid rgba(255,255,255,.7);outline-offset:2px}
 @media(max-width:520px){.account-accent-picker>div{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 2.13 Profile Avatar */
+.cloud-avatar-editor{display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:center;width:100%;padding:14px;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:18px;background:color-mix(in srgb,var(--tm-card-control,#fff) 72%,transparent)}
+.cloud-avatar-preview{display:grid;place-items:center;width:72px;height:72px;border-radius:22px;background:color-mix(in srgb,var(--tm-brand-primary,#1f7a68) 18%,#fff);background-position:center;background-size:cover;background-repeat:no-repeat;font-size:22px;font-weight:800;color:var(--tm-text,#17352d);overflow:hidden}
+.cloud-avatar-preview.has-image{color:transparent}
+.cloud-avatar-copy{min-width:0;display:grid;gap:4px;text-align:start}
+.cloud-avatar-copy strong{font-size:16px}
+.cloud-avatar-copy small,.cloud-avatar-status{font-size:13px;line-height:1.45;opacity:.78}
+.cloud-avatar-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cloud-avatar-actions .secondary,.cloud-avatar-pick{min-height:44px;margin:0;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer}
+.cloud-avatar-pick input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.cloud-avatar-pick:has(input:focus-visible){outline:3px solid color-mix(in srgb,var(--tm-brand-primary,#1f7a68) 35%,transparent);outline-offset:2px}
+.cloud-avatar-pick:has(input:disabled){opacity:.5;cursor:not-allowed}
+.cloud-avatar-status{grid-column:1/-1;min-height:1.45em;margin:0}
+.cloud-avatar-status.error{color:var(--tm-danger,#b42318);opacity:1}
+@media(max-width:560px){
+  .cloud-avatar-editor{grid-template-columns:60px minmax(0,1fr);padding:12px}
+  .cloud-avatar-preview{width:60px;height:60px;border-radius:18px}
+  .cloud-avatar-actions{grid-template-columns:1fr 1fr}
+  .cloud-avatar-pick{grid-column:1/-1}
+}
+
+/* 2.14 Smart Profile — declared personalization only */
+html body.home-page .cloud-account-split .cloud-account-session .cloud-smart-profile{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:14px;
+  min-width:0;
+  padding:16px;
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:20px;
+  background:rgba(8,27,22,.62);
+  color:#fff
+}
+.cloud-smart-profile-head{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:14px;min-width:0}
+.cloud-smart-profile-head>div{display:grid;gap:3px;min-width:0;text-align:start}
+html body.home-page .cloud-account-split .cloud-account-session .cloud-smart-profile-head :is(small,strong,span){min-width:0;padding:0;overflow:hidden;color:#fff;-webkit-text-fill-color:#fff;text-overflow:ellipsis;white-space:nowrap;text-align:start}
+.cloud-smart-profile-head small{font-size:13px;opacity:.78}
+.cloud-smart-profile-head strong{font-size:20px}
+.cloud-smart-profile-head span{font-size:13px;opacity:.72}
+.cloud-declared-preferences{display:grid;gap:10px;min-width:0;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:16px;background:rgba(255,255,255,.07)}
+.cloud-declared-preferences h3{margin:2px 0 0;color:#fff;font-size:16px}
+.cloud-declared-preferences>div:first-child>small{color:rgba(255,255,255,.7);font-size:12px;font-weight:800}
+.cloud-preference-chips{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+html body.home-page .cloud-account-split .cloud-account-session .cloud-preference-chips>span{min-width:0;display:grid;gap:2px;padding:8px 10px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;-webkit-text-fill-color:#fff;line-height:1.3;text-align:start;white-space:normal}
+.cloud-preference-chips small{font-size:10px;opacity:.68}.cloud-preference-chips strong{overflow-wrap:anywhere;font-size:12px}
+html body.home-page .cloud-account-split .cloud-account-session .cloud-declared-preferences>p{margin:0;padding:0;color:rgba(255,255,255,.78);-webkit-text-fill-color:rgba(255,255,255,.78);font-size:12px;line-height:1.45;text-align:start}
+html body.home-page .cloud-account-split .cloud-account-session .cloud-learning-state.is-enabled{color:#9fe6c8;-webkit-text-fill-color:#9fe6c8}
+html body.home-page .cloud-account-split .cloud-account-session .cloud-profile-privacy{display:flex;align-items:flex-start;gap:9px;margin:0;padding:0;color:rgba(255,255,255,.78);-webkit-text-fill-color:rgba(255,255,255,.78);font-size:12px;line-height:1.5;text-align:start}
+.cloud-profile-privacy i{margin-top:3px;color:#9fe6c8}.cloud-profile-privacy span{min-width:0;padding:0;white-space:normal}
+html body.home-page .cloud-account-split .cloud-smart-profile .cloud-avatar-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+html body.home-page .cloud-account-split .cloud-smart-profile .cloud-avatar-actions button{min-width:0;min-height:48px;font-size:14px}
+html body.home-page .cloud-account-split .cloud-smart-profile .cloud-profile-edit{border-color:#9fe6c8;background:#fff;color:#17352d;-webkit-text-fill-color:#17352d}
+@media(max-width:760px){
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session .cloud-smart-profile{border-color:rgba(62,108,98,.24);background:rgba(255,255,255,.66);color:var(--tm-auth-text,#17352d)}
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session .cloud-smart-profile-head :is(small,strong,span){color:var(--tm-auth-text,#17352d);-webkit-text-fill-color:var(--tm-auth-text,#17352d)}
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-declared-preferences{border-color:rgba(62,108,98,.2);background:rgba(255,255,255,.58)}
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-declared-preferences h3{color:var(--tm-auth-text,#17352d)}
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-declared-preferences>div:first-child>small,
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session .cloud-declared-preferences>p,
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session .cloud-profile-privacy{color:var(--tm-auth-muted,#526b64);-webkit-text-fill-color:var(--tm-auth-muted,#526b64)}
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session .cloud-preference-chips>span{border-color:rgba(62,108,98,.2);background:rgba(255,255,255,.72);color:var(--tm-auth-text,#17352d);-webkit-text-fill-color:var(--tm-auth-text,#17352d)}
+  html:not([data-theme="dark"]) body.home-page .cloud-account-split .cloud-account-session .cloud-learning-state.is-enabled{color:#176b52;-webkit-text-fill-color:#176b52}
+}
+@media(max-width:560px){
+  html body.home-page .cloud-account-split .cloud-account-session .cloud-smart-profile{padding:12px}
+  .cloud-smart-profile-head{grid-template-columns:60px minmax(0,1fr)}
+  .cloud-preference-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  html body.home-page .cloud-account-split .cloud-smart-profile .cloud-avatar-actions{grid-template-columns:1fr}
+}
+
+
+/* 2.15 Learned Profile */
+.cloud-learned-profile{display:grid;gap:12px;min-width:0;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:16px;background:rgba(255,255,255,.055)}
+.cloud-learned-loading,.cloud-learned-intro,.cloud-learned-status,.cloud-learned-empty,.cloud-learned-paused{margin:0;color:rgba(255,255,255,.76);font-size:12px;line-height:1.5;text-align:start}
+.cloud-learned-heading,.cloud-learned-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0}.cloud-learned-heading>div,.cloud-learned-card-head>div{display:grid;gap:2px;min-width:0}.cloud-learned-heading small,.cloud-learned-card-head small{color:rgba(255,255,255,.68);font-size:11px;font-weight:800}.cloud-learned-heading h3{margin:0;color:#fff;font-size:16px}.cloud-learned-heading>[data-learned-count]{flex:0 0 auto;color:rgba(255,255,255,.72);font-size:11px}
+.cloud-learned-list{display:grid;gap:10px;min-width:0}.cloud-learned-card{display:grid;gap:9px;min-width:0;padding:12px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.065);color:#fff}.cloud-learned-card.is-inactive{opacity:.82}.cloud-learned-card-head strong{overflow-wrap:anywhere;font-size:14px}.cloud-learned-state{flex:0 0 auto;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.1);font-size:10px;font-weight:800}.cloud-learned-card p{margin:0;color:rgba(255,255,255,.76);font-size:11px;line-height:1.45}.cloud-learned-card details{font-size:11px}.cloud-learned-card summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:800}.cloud-learned-card details p{padding-block:4px 8px}
+.cloud-learned-actions{display:flex;flex-wrap:wrap;gap:7px}.cloud-account-split .cloud-account-session .cloud-learned-actions button,.cloud-account-split .cloud-account-session .cloud-learned-footer button{min-height:44px;margin:0;padding:7px 11px;font-size:12px}.cloud-learned-correction{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}.cloud-learned-correction label{display:grid;gap:5px;min-width:0;font-size:11px;font-weight:800}.cloud-learned-correction select{width:100%;min-height:44px;border:1px solid rgba(255,255,255,.24);border-radius:10px;background:var(--tm-card-control,#fff);color:var(--tm-card-control-text,#17352d);font:inherit}.cloud-learned-footer{display:flex;justify-content:flex-start}.cloud-learned-status.error{color:var(--tm-danger-soft-text,#ffd8d3)}
+@media(max-width:560px){.cloud-learned-profile{padding:11px}.cloud-learned-card-head{display:grid}.cloud-learned-state{justify-self:start}.cloud-learned-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.cloud-learned-correction{grid-template-columns:1fr}.cloud-learned-correction button{width:100%}.cloud-learned-footer button{width:100%}}

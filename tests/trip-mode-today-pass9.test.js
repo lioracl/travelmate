@@ -63,6 +63,21 @@ test('done items stay in agenda but are excluded from current and next', () => {
   assert.equal(today.currentOrNext(items, 10 * 60 + 30), null);
 });
 
+test('flexible and window activities stay visible in Today but do not become current or next commitments', () => {
+  const value = {
+    activities: [
+      { id: 'flex', date: '2026-10-12', time: '10:00', duration: 120, title: 'Flexible', scheduleMode: 'flexible' },
+      { id: 'window', date: '2026-10-12', time: '11:00', duration: 60, title: 'Window', scheduleMode: 'window' },
+      { id: 'fixed', date: '2026-10-12', time: '12:30', duration: 60, title: 'Fixed', scheduleMode: 'fixed' }
+    ],
+    savedPlaces: []
+  };
+  const items = today.agenda(value, '2026-10-12');
+  assert.deepEqual(items.map(item => item.scheduleMode), ['flexible', 'window', 'fixed']);
+  assert.equal(today.currentOrNext(items, 10 * 60 + 30).id, 'fixed');
+  assert.equal(today.currentOrNext(items, 13 * 60 + 40), null);
+});
+
 test('empty day returns an empty agenda', () => {
   assert.deepEqual(today.agenda(trip, '2026-10-12'), []);
 });

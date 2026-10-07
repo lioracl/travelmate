@@ -952,7 +952,7 @@ html body.home-page :is(.trip-archive,.home-about){
   opacity:1
 }
 
-html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#documents):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
+html body.tm-new-design main.content>section.section:not(.hero):not(#places):not(#documents):not(#plan):not(body[data-trip-kind="custom"][data-trip-view="overview"] *),
 html body.tm-new-design main.content>.trip-home-actions,
 html body.tm-new-design main.content :is(
   .expense-workspace,.transport-card,.travel-service-card,
@@ -2749,4 +2749,41 @@ html body .collaboration-signed-out>i{
 html body.tm-new-design main.content select option{
   background:#f7fffb;
   color:#123f32
+}
+
+/* Trip profile chrome: avatar is separate from navigation and opens personal settings. */
+html body:not(.home-page) .trip-profile-avatar-button,
+html body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile{
+  border:1px solid color-mix(in srgb,var(--tm-brand-primary,#147D92) 28%,var(--tm-border-control));
+  background:var(--tm-surface-control,var(--tm-card-bg));
+  color:var(--tm-card-text,var(--tm-text-primary));
+  -webkit-text-fill-color:currentColor;
+  box-shadow:0 6px 18px rgba(8,39,29,.12)
+}
+html body:not(.home-page) :is(.trip-profile-avatar-button [data-trip-profile-avatar-image],.trip-sidebar-profile-avatar){
+  border:1px solid color-mix(in srgb,var(--tm-brand-primary,#147D92) 24%,transparent);
+  background-color:var(--tm-action-secondary);
+  color:var(--tm-accent-soft-text,var(--tm-brand-primary-dark));
+  -webkit-text-fill-color:currentColor
+}
+html body:not(.home-page) :is(.trip-profile-avatar-button [data-trip-profile-avatar-image],.trip-sidebar-profile-avatar).has-image{
+  color:transparent;
+  -webkit-text-fill-color:transparent
+}
+@media(max-width:1000px){
+  html body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile{
+    border-radius:16px;
+    background:var(--tm-surface-nested,var(--tm-card-bg-nested));
+    box-shadow:0 5px 14px rgba(9,67,49,.08)
+  }
+  html body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile :is(strong,small,i){
+    color:var(--tm-drawer-text,var(--tm-card-text));
+    -webkit-text-fill-color:currentColor
+  }
+  html body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile small{
+    color:var(--tm-drawer-muted,var(--tm-card-secondary));
+    -webkit-text-fill-color:currentColor
+  }
+  html body:not(.home-page) .trip-profile-avatar-button:hover,
+  html body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile:hover{background:var(--tm-action-secondary-hover)}
 }

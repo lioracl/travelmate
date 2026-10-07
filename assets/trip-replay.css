@@ -1,0 +1,40 @@
+/* 2.4 Trip Replay */
+.trip-replay-card{display:grid;gap:16px;margin:16px 0;padding:18px;border:1px solid var(--tm-border,rgba(255,255,255,.24));border-radius:20px;background:var(--tm-surface,rgba(255,255,255,.12))}
+.trip-replay-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.trip-replay-head small{font-weight:800;opacity:.68}
+.trip-replay-head h2{margin:.2rem 0 .35rem}
+.trip-replay-head p{margin:0;max-width:760px;line-height:1.6;opacity:.82}
+.trip-replay-head button{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 13px;border:1px solid var(--tm-border,rgba(255,255,255,.28));border-radius:12px;background:var(--tm-control,rgba(255,255,255,.1));color:inherit}
+.trip-replay-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.trip-replay-stats>div{display:flex;align-items:center;gap:10px;min-height:68px;padding:11px;border:1px solid var(--tm-border,rgba(255,255,255,.2));border-radius:14px;background:var(--tm-nested-surface,rgba(255,255,255,.07))}
+.trip-replay-stats i{font-size:1.05rem}
+.trip-replay-stats span{display:grid;gap:2px}
+.trip-replay-stats small{font-size:.74rem;opacity:.7}
+.trip-replay-stats strong{font-size:1rem}
+.trip-replay-timeline{display:grid;gap:10px}
+.trip-replay-timeline>section{display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--tm-border,rgba(255,255,255,.14))}
+.trip-replay-timeline h3{margin:0;font-size:.9rem}
+.trip-replay-day-items{display:grid;gap:7px}
+.trip-replay-day-items p{display:flex;align-items:flex-start;gap:8px;margin:0;line-height:1.45}
+.trip-replay-day-items .is-memory{opacity:.82}
+.trip-replay-empty{margin:0;opacity:.72}
+@media(max-width:800px){.trip-replay-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.trip-replay-timeline>section{grid-template-columns:1fr}.trip-replay-head{display:grid}.trip-replay-head button{justify-self:start}}
+
+/* 2.12 Trip Summary & Movement Analytics V2 */
+.trip-summary-confidence{display:flex;flex-wrap:wrap;gap:8px}
+.trip-summary-confidence-chip{display:inline-flex;align-items:center;min-height:32px;padding:5px 10px;border:1px solid var(--tm-border,rgba(255,255,255,.2));border-radius:999px;background:var(--tm-nested-surface,rgba(255,255,255,.07));font-size:.78rem;font-weight:700}
+.trip-summary-confidence-chip.is-estimated{opacity:.78}
+.trip-summary-confidence-chip.is-unknown{opacity:.6}
+.trip-summary-expenses,.trip-summary-days,.trip-summary-map-shell{display:grid;gap:10px;padding:13px;border:1px solid var(--tm-border,rgba(255,255,255,.16));border-radius:16px;background:var(--tm-nested-surface,rgba(255,255,255,.055))}
+.trip-summary-expenses h3,.trip-summary-days h3,.trip-summary-map-shell h3{margin:0;font-size:.92rem}
+.trip-summary-expense-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.trip-summary-expense-list p{display:flex;justify-content:space-between;gap:12px;margin:0;padding:9px 10px;border-radius:11px;background:var(--tm-control,rgba(255,255,255,.06))}
+.trip-summary-days>article{display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:12px;padding:8px 0;border-top:1px solid var(--tm-border,rgba(255,255,255,.12))}
+.trip-summary-days>article:first-child{border-top:0}
+.trip-summary-day-facts{display:flex;flex-wrap:wrap;gap:7px 12px;font-size:.84rem;opacity:.86}
+.trip-summary-map-shell>header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.trip-summary-map-shell>header p{margin:.25rem 0 0;font-size:.8rem;opacity:.72}
+.trip-summary-map-shell button{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 12px;border:1px solid var(--tm-border,rgba(255,255,255,.2));border-radius:12px;background:var(--tm-control,rgba(255,255,255,.08));color:inherit}
+.trip-summary-map{height:min(52vh,420px);min-height:280px;border-radius:14px;overflow:hidden}
+.trip-summary-map-marker{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--tm-action-bg,var(--tm-brand-primary,#147D92));color:var(--tm-action-fg,#fff);font-weight:900;border:2px solid currentColor;box-shadow:0 4px 12px rgba(0,0,0,.22)}
+@media(max-width:800px){.trip-summary-expense-list{grid-template-columns:1fr}.trip-summary-days>article{grid-template-columns:1fr}.trip-summary-map-shell>header{display:grid}.trip-summary-map-shell button{justify-self:start;width:100%;justify-content:center}.trip-summary-map{height:320px;min-height:240px}}

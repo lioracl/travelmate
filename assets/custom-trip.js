@@ -36,15 +36,23 @@
     return match ? String(match[1]).padStart(2, '0') + ':' + match[2] : '23:59';
   }
 
+  function timingMode(item) {
+    var raw = String(item && (item.scheduleMode || item.timingMode || item.flexibility) || '').toLowerCase();
+    if (raw === 'fixed' || raw === 'booked' || raw === 'reservation') return 'fixed';
+    if (raw === 'window' || raw === 'time-window' || raw === 'time_window') return 'window';
+    if (raw === 'flexible' || raw === 'free') return 'flexible';
+    return 'planned';
+  }
+
   function agenda(trip, date) {
     var items = [];
     (trip && trip.activities || []).forEach(function (item) {
       if (!item || item.date !== date) return;
-      items.push({ kind: 'activity', id: item.id, title: item.title || 'פעילות', date: item.date, time: normalizedTime(item.time), duration: Math.max(0, Number(item.duration || 0)), category: item.category || 'פעילות', done: item.done === true });
+      items.push({ kind: 'activity', id: item.id, title: item.title || 'פעילות', date: item.date, time: normalizedTime(item.time), duration: Math.max(0, Number(item.duration || 0)), category: item.category || 'פעילות', scheduleMode: timingMode(item), done: item.done === true });
     });
     (trip && trip.savedPlaces || []).forEach(function (item) {
       if (!item || item.date !== date) return;
-      items.push({ kind: 'place', id: item.id, title: item.name || 'מקום שמור', date: item.date, time: normalizedTime(item.time), duration: Math.max(0, Number(item.duration || 0)), category: item.category || 'מקום שמור', done: item.done === true });
+      items.push({ kind: 'place', id: item.id, title: item.name || 'מקום שמור', date: item.date, time: normalizedTime(item.time), duration: Math.max(0, Number(item.duration || 0)), category: item.category || 'מקום שמור', scheduleMode: timingMode(item), done: item.done === true });
     });
     return items.sort(function (left, right) { return left.time.localeCompare(right.time) || left.title.localeCompare(right.title, 'he'); });
   }
@@ -57,7 +65,7 @@
   function currentOrNext(items, nowMinutes) {
     if (typeof nowMinutes === 'string') nowMinutes = minutes(nowMinutes);
     else if (nowMinutes instanceof Date) nowMinutes = nowMinutes.getHours() * 60 + nowMinutes.getMinutes();
-    var remaining = (items || []).filter(function (item) { return !item.done; });
+    var remaining = (items || []).filter(function (item) { return !item.done && item.scheduleMode !== 'flexible' && item.scheduleMode !== 'window'; });
     var current = remaining.find(function (item) {
       var start = minutes(item.time);
       return start !== null && item.duration > 0 && start <= nowMinutes && nowMinutes < start + item.duration;
@@ -144,6 +152,16 @@
     return String(match[1]).padStart(2, '0') + ':' + match[2];
   }
 
+  function overviewTimingMode(item) {
+    var helper = window.TravelMateTripContext;
+    if (helper && helper.scheduleMode) return helper.scheduleMode(item);
+    var raw = String(item && (item.scheduleMode || item.timingMode || item.flexibility) || '').toLowerCase();
+    if (raw === 'fixed' || raw === 'booked' || raw === 'reservation') return 'fixed';
+    if (raw === 'window' || raw === 'time-window' || raw === 'time_window') return 'window';
+    if (raw === 'flexible' || raw === 'free') return 'flexible';
+    return 'planned';
+  }
+
   function overviewItems(trip) {
     var items = [];
     (trip.activities || []).forEach(function (activity) {
@@ -155,7 +173,8 @@
         time: normalizedTime(activity.time),
         duration: Math.max(0, Number(activity.duration || 0)),
         category: activity.category || '',
-        location: activity.locationName || activity.address || ''
+        location: activity.locationName || activity.address || '',
+        scheduleMode: overviewTimingMode(activity)
       });
     });
     (trip.savedPlaces || []).forEach(function (place) {
@@ -167,7 +186,8 @@
         time: normalizedTime(place.time),
         duration: Math.max(0, Number(place.duration || 0)),
         category: place.category || '',
-        location: place.address || place.description || ''
+        location: place.address || place.description || '',
+        scheduleMode: overviewTimingMode(place)
       });
     });
     return items.sort(function (a, b) {
@@ -192,7 +212,8 @@
     var now = new Date();
     var today = localDateValue(now);
     var currentMinutes = now.getHours() * 60 + now.getMinutes();
-    var current = items.find(function (item) {
+    var timedItems = items.filter(function (item) { return item.scheduleMode !== 'flexible' && item.scheduleMode !== 'window'; });
+    var current = timedItems.find(function (item) {
       var startMinutes = item.date === today ? overviewTimeMinutes(item.time) : null;
       return startMinutes !== null && item.duration > 0 && startMinutes <= currentMinutes && currentMinutes < startMinutes + item.duration;
     });
@@ -201,6 +222,10 @@
       return Object.assign({}, current, { isNow: true, endTime: overviewClockValue(currentStart + current.duration) });
     }
     var currentTime = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    var nextTimed = timedItems.find(function (item) {
+      return item.date > today || (item.date === today && item.time >= currentTime);
+    });
+    if (nextTimed) return nextTimed;
     return items.find(function (item) {
       return item.date > today || (item.date === today && item.time >= currentTime);
     }) || null;

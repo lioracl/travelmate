@@ -960,3 +960,24 @@ html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#get
   }
   body:not(.home-page) .network-usage-meter.in-trip{top:68px}
 }
+
+
+/* Trip profile placement — avatar stays separate from the mobile menu control. */
+.trip-profile-avatar-button{display:none}
+body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile{font:inherit;cursor:pointer}
+body:not(.home-page) :is(.trip-profile-avatar-button [data-trip-profile-avatar-image],.trip-sidebar-profile-avatar){display:grid;place-items:center;background-position:center;background-size:contain;background-repeat:no-repeat;font-weight:800;overflow:hidden}
+@media(max-width:1000px){
+  body:not(.home-page) .trip-profile-avatar-button{width:56px;height:56px;margin:0 0 10px auto;padding:3px;display:grid;place-items:center;border-radius:50%;position:relative;z-index:10}
+  body:not(.home-page) .trip-profile-avatar-button>[data-trip-profile-avatar-image]{width:48px;height:48px;border-radius:50%}
+  body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile{width:100%;min-height:68px;flex:0 0 auto;margin:0 0 8px;padding:8px 10px;display:grid;grid-template-columns:52px minmax(0,1fr) 20px;align-items:center;gap:10px;text-align:start}
+  body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile .trip-sidebar-profile-avatar{width:52px;height:52px;border-radius:50%}
+  body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile-copy{min-width:0;display:grid;gap:2px}
+  body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile-copy small{font-size:11px;font-weight:700}
+  body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;font-weight:800}
+  body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile>i{width:20px;display:grid;place-items:center}
+}
+@media(min-width:1001px){
+  body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile{width:52px;height:52px;min-height:52px;margin:0 0 10px;padding:4px;display:grid;place-items:center;border-radius:50%}
+  body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile .trip-sidebar-profile-avatar{width:42px;height:42px;border-radius:50%}
+  body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile-copy,body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile>i{display:none}
+}

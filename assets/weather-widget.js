@@ -4,7 +4,7 @@
   if (window.__travelMateWeatherLoaded) return;
   window.__travelMateWeatherLoaded = true;
 
-  var state = { location: null, forecast: null, loading: false };
+  var state = { location: null, forecast: null, loading: false, error: false };
   var locale = 'he-IL';
 
   function clean(value) { return String(value || '').replace(/[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]/gu, '').trim(); }
@@ -36,6 +36,26 @@
     if (code >= 95) return { label: 'סופות רעמים', icon: 'fa-cloud-bolt' };
     return { label: 'מזג אוויר משתנה', icon: 'fa-cloud-sun' };
   }
+
+  function contextSnapshot() {
+    var data=state.forecast||{},current=data.current||{},daily=data.daily||{},details=state.forecast?weatherDetails(current.weather_code,current.is_day):{label:''};
+    function value(list){var number=Number(Array.isArray(list)?list[0]:null);return Number.isFinite(number)?number:null;}
+    var temperature=Number(current.temperature_2m),apparent=Number(current.apparent_temperature),code=Number(current.weather_code);
+    return Object.freeze({
+      ready:Boolean(state.forecast&&!state.error),
+      currentLabel:details.label||'',
+      temperature:Number.isFinite(temperature)?temperature:null,
+      apparentTemperature:Number.isFinite(apparent)?apparent:null,
+      weatherCode:Number.isFinite(code)?code:null,
+      precipitationProbability:value(daily.precipitation_probability_max),
+      windSpeed:value(daily.wind_speed_10m_max),
+      uvIndex:value(daily.uv_index_max),
+      maxTemperature:value(daily.temperature_2m_max),
+      source:'Open-Meteo'
+    });
+  }
+  function publishContext(){var snapshot=contextSnapshot();window.dispatchEvent(new CustomEvent('travelmate:weather-context-change',{detail:snapshot}));return snapshot;}
+  window.TravelMateWeatherContext=Object.freeze({snapshot:contextSnapshot});
 
   function weatherSvg(icon) {
     var extras = '';
@@ -154,7 +174,7 @@
 
   function render(ui, place, data) {
     var current = data.current || {}; var daily = data.daily || {}; var details = weatherDetails(current.weather_code, current.is_day);
-    ui.summary.textContent = details.label + ' · מרגיש כמו ' + round(current.apparent_temperature) + '°'; ui.temperature.textContent = round(current.temperature_2m) + '°'; ui.icon.innerHTML = weatherSvg(details.icon) + '<small>' + round(current.temperature_2m) + '°</small>';
+    ui.summary.textContent = details.label + ' · מרגיש כמו ' + round(current.apparent_temperature) + '°'; ui.temperature.textContent = round(current.temperature_2m) + '°'; ui.icon.innerHTML = weatherSvg(details.icon);
     ui.updated.textContent = 'עודכן עכשיו · אזור זמן ' + (data.timezone_abbreviation || data.timezone || place.timezone || 'מקומי');
     var advice = adviceFor(data); var rows = (daily.time || []).map(function (date, index) {
       var day = weatherDetails(daily.weather_code[index], 1);
@@ -176,8 +196,8 @@
   async function load(ui, force) {
     if (state.loading) return; state.loading = true;
     if (force) ui.content.innerHTML = '<div class="weather-loading"><i class="fa-solid fa-circle-notch fa-spin"></i>מרענן תחזית…</div>';
-    try { state.location = await resolveLocation(state.location); state.forecast = await fetchForecast(state.location, force); render(ui, state.location, state.forecast); }
-    catch (error) { console.error('TravelMate weather failed', error); renderError(ui); }
+    try { state.location = await resolveLocation(state.location); state.forecast = await fetchForecast(state.location, force); state.error=false; render(ui, state.location, state.forecast); publishContext(); }
+    catch (error) { state.error=true; console.error('TravelMate weather failed', error); renderError(ui); publishContext(); }
     finally { state.loading = false; }
   }
 

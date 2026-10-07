@@ -127,9 +127,11 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.doesNotMatch(source, /loadStructure|deferredStructureScripts|structureScripts|structureStyles/);
   assert.match(source, /ensureLazyNavigation\(\)/);
   assert.match(source, /dynamicSectionViews=\{transport:true,getaways:true,group:true,memories:true\}/);
+  assert.match(source, /memories:\{styles:\['trip-experience\.css','trip-replay\.css'\],scripts:\['trip-context\.js','trip-analytics\.js','trip-experience\.js','trip-replay\.js'\]\}/);
+  assert.match(source, /summary:\{styles:\['trip-experience\.css','trip-replay\.css'\],scripts:\['trip-context\.js','trip-analytics\.js','trip-experience\.js','trip-replay\.js'\]\}/);
   assert.match(source, /baseStyles=\[[^\]]*'ai-assistant\.css'/);
-  assert.match(source, /assistant:\{styles:\['smart-hub\.css'\],scripts:\['ai-assistant\.js','smart-hub\.js'\]\}/);
-  assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
+  assert.match(source, /assistant:\{styles:\['smart-hub\.css'\],scripts:\['trip-context\.js','ai-assistant\.js','smart-hub\.js'\]\}/);
+  assert.match(source, /account:\{styles:\['profile-wizard\.css','security-center\.css','admin-center\.css'\],scripts:\['learned-preferences\.js','learned-profile\.js','learned-profile-ui\.js','profile-wizard\.js','security-center\.js','admin-center\.js'\]\}/);
   assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
   assert.doesNotMatch(source, /scheduleIdleFeature\('account',4200\)/);
   assert.match(source, /function createAssistantShell\(\)/);
@@ -280,7 +282,7 @@ test('home boot loads only home essentials and keeps About lazy', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   const entry = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   assert.match(source, /homeBaseStyles=\['language\.css','network-usage\.css','theme\.css'\]/);
-  assert.match(source, /if\(isHomePage\)[\s\S]*homeBaseStyles\.map\(loadStyle\)[\s\S]*loadSequence\(\['language\.js','theme\.js'\]\)/);
+  assert.match(source, /if\(isHomePage\)[\s\S]*homeBaseStyles\.map\(loadStyle\)[\s\S]*loadSequence\(\['language\.js','theme\.js','user-profile\.js'\]\)/);
   assert.match(source, /\}else\{[\s\S]*var initialView=activeView\(\)[\s\S]*loadFeature\(initialView\)/);
   assert.equal((entry.match(/data-about-open data-lazy-about/g) || []).length, 2);
 });
@@ -381,7 +383,7 @@ test('past-day enhancement avoids rewriting identical DOM and observer self-loop
 
 test('Overview defers trip intelligence until idle or explicit Overview intent', () => {
   assert.match(appScript, /overview:\{styles:\['weather-widget\.css','trip-intelligence\.css'\],scripts:\['weather-widget\.js'\]\}/);
-  assert.match(appScript, /intelligence:\{styles:\[\],scripts:\['trip-intelligence\.js'\]\}/);
+  assert.match(appScript, /intelligence:\{styles:\['smart-trip-mode\.css'\],scripts:\['trip-context\.js','learned-preferences\.js','learned-profile\.js','personalized-suggestions\.js','smart-trip-mode\.js','trip-intelligence\.js'\]\}/);
   assert.match(appScript, /if\(initialView==='overview'\)scheduleIdleFeature\('intelligence',250\)/);
   assert.match(appScript, /if\(link\.dataset\.view==='overview'\)loadFeature\('intelligence'\)/);
 });
@@ -390,7 +392,7 @@ test('Overview defers trip intelligence until idle or explicit Overview intent',
 test('trip pages defer Account and Admin assets until explicit account intent', () => {
   const source = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8');
   assert.doesNotMatch(source, /scheduleIdleFeature\('account',4200\)/);
-  assert.match(source, /account:\{styles:\['security-center\.css','admin-center\.css'\],scripts:\['security-center\.js','admin-center\.js'\]\}/);
+  assert.match(source, /account:\{styles:\['profile-wizard\.css','security-center\.css','admin-center\.css'\],scripts:\['learned-preferences\.js','learned-profile\.js','learned-profile-ui\.js','profile-wizard\.js','security-center\.js','admin-center\.js'\]\}/);
   assert.match(source, /ensureAccount:function\(\)\{return loadFeature\('account'\)\}/);
   assert.match(source, /scheduleIdleFeature\('intelligence',250\)/);
 });
