@@ -37,6 +37,21 @@
     return { label: 'מזג אוויר משתנה', icon: 'fa-cloud-sun' };
   }
 
+  function weatherAtmosphere(code, isDay, temperature, apparent) {
+    code = Number(code);
+    var temp = Number(temperature);
+    var feels = Number(apparent);
+    var heat = Math.max(Number.isFinite(temp) ? temp : -Infinity, Number.isFinite(feels) ? feels : -Infinity);
+    if (code >= 95) return 'storm';
+    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return 'snow';
+    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'rain';
+    if (code === 45 || code === 48) return 'fog';
+    if (Number(isDay) !== 0 && heat >= 35) return 'heat';
+    if (code === 0) return Number(isDay) === 0 ? 'clear-night' : 'clear-day';
+    if (code >= 1 && code <= 3) return 'clouds';
+    return 'clouds';
+  }
+
   function contextSnapshot() {
     var data=state.forecast||{},current=data.current||{},daily=data.daily||{},details=state.forecast?weatherDetails(current.weather_code,current.is_day):{label:''};
     function value(list){var number=Number(Array.isArray(list)?list[0]:null);return Number.isFinite(number)?number:null;}
@@ -109,13 +124,13 @@
     if (document.body.dataset.tripKind === 'custom' && button.parentElement !== content) hero.insertAdjacentElement('afterend', button);
     button.setAttribute('aria-haspopup', 'dialog'); button.setAttribute('aria-expanded', 'false');
     button.setAttribute('aria-label', 'פתיחת תחזית מזג האוויר המלאה עבור ' + destination.city);
-    button.innerHTML = '<span class="weather-top-icon">' + weatherSvg('fa-cloud-sun') + '</span><span class="weather-top-copy"><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><span class="weather-top-action">פתח תחזית <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>';
+    button.innerHTML = '<span class="weather-atmosphere" data-weather-atmosphere="idle" aria-hidden="true"><span class="weather-atmosphere__orb"></span><span class="weather-atmosphere__stars"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--one"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--two"></span><span class="weather-atmosphere__precip"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--one"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--two"></span><span class="weather-atmosphere__flash"></span></span>' + '<span class="weather-top-icon">' + weatherSvg('fa-cloud-sun') + '</span><span class="weather-top-copy"><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><span class="weather-top-action">פתח תחזית <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>';
 
     var backdrop = document.createElement('section');
     backdrop.id = 'modal-weather-live'; backdrop.className = 'modal-backdrop'; backdrop.setAttribute('role', 'dialog'); backdrop.setAttribute('aria-modal', 'true'); backdrop.setAttribute('aria-labelledby', 'weather-live-title');
     backdrop.innerHTML = '<div class="modal weather-live-modal"><header><div class="weather-live-header-copy"><span>תחזית עדכנית</span><h2 id="weather-live-title">7 ימים ב' + escapeText(destination.city) + '</h2><small data-weather-updated>הנתונים נטענים…</small></div><button class="modal-close" type="button" data-weather-close aria-label="סגירת התחזית"><i class="fa-solid fa-xmark"></i></button></header><div data-weather-content><div class="weather-loading"><i class="fa-solid fa-circle-notch fa-spin"></i>מביא תחזית עדכנית…</div></div></div>';
     document.body.appendChild(backdrop);
-    return { button: button, backdrop: backdrop, content: backdrop.querySelector('[data-weather-content]'), summary: button.querySelector('[data-weather-summary]'), temperature: button.querySelector('[data-weather-temperature]'), icon: button.querySelector('.weather-top-icon'), updated: backdrop.querySelector('[data-weather-updated]') };
+    return { button: button, backdrop: backdrop, content: backdrop.querySelector('[data-weather-content]'), summary: button.querySelector('[data-weather-summary]'), temperature: button.querySelector('[data-weather-temperature]'), icon: button.querySelector('.weather-top-icon'), atmosphere: button.querySelector('[data-weather-atmosphere]'), updated: backdrop.querySelector('[data-weather-updated]') };
   }
 
   async function resolveLocation(destination) {
@@ -174,6 +189,7 @@
 
   function render(ui, place, data) {
     var current = data.current || {}; var daily = data.daily || {}; var details = weatherDetails(current.weather_code, current.is_day);
+    if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = weatherAtmosphere(current.weather_code, current.is_day, current.temperature_2m, current.apparent_temperature);
     ui.summary.textContent = details.label + ' · מרגיש כמו ' + round(current.apparent_temperature) + '°'; ui.temperature.textContent = round(current.temperature_2m) + '°'; ui.icon.innerHTML = weatherSvg(details.icon);
     ui.updated.textContent = 'עודכן עכשיו · אזור זמן ' + (data.timezone_abbreviation || data.timezone || place.timezone || 'מקומי');
     var advice = adviceFor(data); var rows = (daily.time || []).map(function (date, index) {
@@ -188,6 +204,7 @@
   }
 
   function renderError(ui) {
+    if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = 'idle';
     ui.summary.textContent = 'לא הצלחנו לעדכן כרגע'; ui.temperature.textContent = '--°';
     ui.content.innerHTML = '<div class="weather-error"><i class="fa-solid fa-cloud-arrow-down"></i><strong>התחזית לא נטענה</strong><span>בדוק את החיבור ונסה שוב.</span><button type="button" data-weather-retry>ניסיון נוסף</button></div>';
     ui.content.querySelector('[data-weather-retry]').addEventListener('click', function () { load(ui, true); });
