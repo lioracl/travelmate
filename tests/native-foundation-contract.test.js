@@ -36,10 +36,12 @@ test('native staging copies only the runtime web roots', () => {
 
 test('Android shell identity and version match TravelMate 2.20.3', () => {
   const gradle = read('android/app/build.gradle');
+  const variables = read('android/variables.gradle');
   const mainActivity = read('android/app/src/main/java/com/travelmate/app/MainActivity.java');
   const manifest = read('android/app/src/main/AndroidManifest.xml');
 
   assert.match(gradle, /namespace = "com\.travelmate\.app"/);
+  assert.match(variables, /minSdkVersion = 26/);
   assert.match(gradle, /applicationId "com\.travelmate\.app"/);
   assert.match(gradle, /versionCode 22003/);
   assert.match(gradle, /versionName "2\.20\.3"/);

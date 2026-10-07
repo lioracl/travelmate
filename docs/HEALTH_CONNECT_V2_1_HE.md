@@ -209,7 +209,8 @@ Health data חייב להיות משויך ליום לפי timezone של הטי�
 ### Phase 0 — Native Foundation
 - יצירת מעטפת Capacitor מינימלית בלי לשנות את התנהגות ה־PWA.
 - Android app ID קבוע.
-- Build מקומי ב־Android Studio.
+- `minSdkVersion = 26` כדי להתאים למינימום הרשמי של Health Connect SDK; במכשירים שבהם Health Connect עצמו אינו זמין, ה־adapter נשאר `unsupported`.
+- Build ב־CI וב־Android Studio לפני מיזוג ל־preview.
 - smoke לפתיחת TravelMate מתוך ה־Web assets הקיימים.
 
 ### Phase 1 — Health Adapter
@@ -219,7 +220,8 @@ Health data חייב להיות משויך ליום לפי timezone של הטי�
 - contract tests ללא Health data אמיתי.
 
 ### Phase 2 — Read Only Data
-- Steps + Distance aggregates.
+- Steps + Distance aggregates בלבד דרך `HealthConnectClient.aggregate()` כדי לצמצם סיכון לספירה כפולה בין מקורות.
+- הרשאות Android מצומצמות ל־`android.permission.health.READ_STEPS` ו־`android.permission.health.READ_DISTANCE` בלבד.
 - date range מוגבל לימי הטיול.
 - ביטול בקשות stale.
 - no-cloud default.
