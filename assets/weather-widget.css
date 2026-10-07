@@ -449,3 +449,29 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-
 @keyframes weather-lightning{0%,92%,94%,100%{opacity:0}93%,95%{opacity:.28}}
 @media(prefers-reduced-motion:reduce){.weather-atmosphere,.weather-atmosphere *{animation:none;transition:none}.weather-atmosphere[data-weather-atmosphere="storm"] .weather-atmosphere__flash{opacity:0}}
 @media(prefers-reduced-transparency:reduce){.weather-atmosphere{display:none}}
+
+
+/* Weather Atmosphere Color Pass */
+.weather-atmosphere[data-weather-atmosphere="clear-day"]{background:linear-gradient(135deg,rgba(255,211,92,.22),rgba(111,205,255,.15))}
+.weather-atmosphere[data-weather-atmosphere="heat"]{background:linear-gradient(135deg,rgba(255,105,55,.24),rgba(255,193,82,.16))}
+.weather-atmosphere[data-weather-atmosphere="clear-night"]{background:linear-gradient(135deg,rgba(52,66,132,.26),rgba(94,73,145,.18))}
+.weather-atmosphere[data-weather-atmosphere="clouds"]{background:linear-gradient(135deg,rgba(176,199,210,.22),rgba(117,171,166,.12))}
+.weather-atmosphere[data-weather-atmosphere="rain"]{background:linear-gradient(135deg,rgba(64,145,182,.24),rgba(71,128,151,.16))}
+.weather-atmosphere[data-weather-atmosphere="storm"]{background:linear-gradient(135deg,rgba(72,78,126,.28),rgba(105,87,137,.18))}
+.weather-atmosphere[data-weather-atmosphere="snow"]{background:linear-gradient(135deg,rgba(192,231,242,.30),rgba(228,242,246,.18))}
+.weather-atmosphere[data-weather-atmosphere="fog"]{background:linear-gradient(135deg,rgba(183,205,199,.24),rgba(213,220,215,.16))}
+html body #modal-weather-live .weather-live-scene.weather-atmosphere{position:relative;inset:auto;display:flex;min-height:86px;height:86px;margin:14px 18px 0;padding:14px 16px;flex-direction:column;justify-content:flex-end;align-items:flex-start;border:1px solid var(--tm-weather-border);border-radius:20px;opacity:1;isolation:isolate;color:var(--tm-weather-text);-webkit-text-fill-color:currentColor}
+html body #modal-weather-live .weather-live-scene>strong,html body #modal-weather-live .weather-live-scene>small{position:relative;inset:auto;z-index:2;opacity:1;color:inherit;-webkit-text-fill-color:currentColor;text-shadow:0 1px 2px rgba(255,255,255,.72)}
+html body #modal-weather-live .weather-live-scene>strong{font-size:18px;font-weight:900}
+html body #modal-weather-live .weather-live-scene>small{margin-top:2px;font-size:12px;font-weight:750}
+html[data-theme="dark"] body #modal-weather-live .weather-live-scene>strong,html[data-theme="dark"] body #modal-weather-live .weather-live-scene>small{text-shadow:0 1px 2px rgba(8,24,20,.85)}
+html body #modal-weather-live .weather-live-day-icon{transition:background-color .2s ease,border-color .2s ease,color .2s ease}
+html body #modal-weather-live .weather-live-day[data-weather-day="clear-day"] .weather-live-day-icon{background:rgba(255,208,83,.20);border-color:rgba(201,143,38,.34);color:#9b6814}
+html body #modal-weather-live .weather-live-day[data-weather-day="heat"] .weather-live-day-icon{background:rgba(255,128,70,.18);border-color:rgba(196,83,39,.34);color:#a84b28}
+html body #modal-weather-live .weather-live-day[data-weather-day="clouds"] .weather-live-day-icon{background:rgba(151,178,186,.18);border-color:rgba(98,129,139,.30);color:#526f77}
+html body #modal-weather-live .weather-live-day[data-weather-day="rain"] .weather-live-day-icon{background:rgba(72,155,190,.18);border-color:rgba(55,120,150,.34);color:#326f8a}
+html body #modal-weather-live .weather-live-day[data-weather-day="storm"] .weather-live-day-icon{background:rgba(99,91,145,.18);border-color:rgba(80,71,129,.34);color:#51487f}
+html body #modal-weather-live .weather-live-day[data-weather-day="snow"] .weather-live-day-icon{background:rgba(183,224,237,.24);border-color:rgba(103,165,184,.32);color:#477f91}
+html body #modal-weather-live .weather-live-day[data-weather-day="fog"] .weather-live-day-icon{background:rgba(169,193,185,.20);border-color:rgba(111,145,134,.30);color:#56776c}
+@media(max-width:650px){html body #modal-weather-live .weather-live-scene.weather-atmosphere{margin:12px 12px 0;min-height:76px;height:76px}}
+@media(prefers-reduced-motion:reduce){html body #modal-weather-live .weather-live-day-icon{transition:none}}

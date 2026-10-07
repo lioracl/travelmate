@@ -172,14 +172,18 @@
   }
 
   function adviceFor(data) {
-    var daily = data.daily || {}; var rain = daily.precipitation_probability_max || []; var wind = daily.wind_speed_10m_max || []; var uv = daily.uv_index_max || [];
+    var daily = data.daily || {}; var rain = daily.precipitation_probability_max || []; var wind = daily.wind_speed_10m_max || []; var uv = daily.uv_index_max || []; var codes = daily.weather_code || []; var highs = daily.temperature_2m_max || [];
+    function target(index) { return dayName(daily.time && daily.time[index], index); }
     var rainIndex = rain.findIndex(function (value) { return Number(value) >= 60; });
-    if (rainIndex >= 0) return { icon: 'fa-umbrella', title: 'כדאי להכניס מטרייה לתיק', text: 'סיכוי של ' + round(rain[rainIndex]) + '% לגשם ב' + dayName(daily.time[rainIndex], rainIndex) + '. Mate יכול להתאים את המסלול למקומות מקורים.' };
+    if (rainIndex >= 0) { var rainDay = target(rainIndex); return { icon: 'fa-umbrella', target: rainDay, title: rainDay === 'היום' ? 'גשם צפוי היום' : 'גשם צפוי ב' + rainDay, text: 'סיכוי של ' + round(rain[rainIndex]) + '% לגשם. Mate יכול להתאים את המסלול למקומות מקורים.' }; }
     var windIndex = wind.findIndex(function (value) { return Number(value) >= 35; });
-    if (windIndex >= 0) return { icon: 'fa-wind', title: 'צפויה רוח חזקה', text: 'מומלץ לבדוק מחדש תצפיות, שיט ופעילויות פתוחות ב' + dayName(daily.time[windIndex], windIndex) + '.' };
+    if (windIndex >= 0) { var windDay = target(windIndex); return { icon: 'fa-wind', target: windDay, title: windDay === 'היום' ? 'רוח חזקה צפויה היום' : 'רוח חזקה צפויה ב' + windDay, text: 'מומלץ לבדוק מחדש תצפיות, שיט ופעילויות פתוחות.' }; }
     var uvIndex = uv.findIndex(function (value) { return Number(value) >= 7; });
-    if (uvIndex >= 0) return { icon: 'fa-sun', title: 'לא לשכוח הגנה מהשמש', text: 'מדד UV גבוה צפוי ב' + dayName(daily.time[uvIndex], uvIndex) + '. מומלצים מים, כובע וקרם הגנה.' };
-    return { icon: 'fa-suitcase-rolling', title: 'התחזית מתאימה לתכנון', text: 'לא זוהתה כרגע התרעת מזג אוויר חריגה. כדאי לבדוק שוב סמוך ליציאה.' };
+    if (uvIndex >= 0) {
+      var uvDay = target(uvIndex); var uvState = weatherAtmosphere(codes[uvIndex], 1, highs[uvIndex], highs[uvIndex]); var mixed = uvState === 'clouds' || uvState === 'rain' || uvState === 'storm' || uvState === 'fog';
+      return { icon: 'fa-sun', target: uvDay, title: uvDay === 'היום' ? 'UV גבוה היום' : 'UV גבוה ב' + uvDay, text: (mixed ? 'זהו שיא ה־UV היומי הצפוי, גם אם בחלק מהיום התחזית מעוננת או גשומה. ' : '') + 'מומלצים מים, כובע וקרם הגנה.' };
+    }
+    return { icon: 'fa-suitcase-rolling', target: 'כללי', title: 'התחזית מתאימה לתכנון', text: 'לא זוהתה כרגע התרעת מזג אוויר חריגה. כדאי לבדוק שוב סמוך ליציאה.' };
   }
 
   function dayName(date, index) {
@@ -188,15 +192,16 @@
   }
 
   function render(ui, place, data) {
-    var current = data.current || {}; var daily = data.daily || {}; var details = weatherDetails(current.weather_code, current.is_day);
-    if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = weatherAtmosphere(current.weather_code, current.is_day, current.temperature_2m, current.apparent_temperature);
+    var current = data.current || {}; var daily = data.daily || {}; var details = weatherDetails(current.weather_code, current.is_day); var currentAtmosphere = weatherAtmosphere(current.weather_code, current.is_day, current.temperature_2m, current.apparent_temperature);
+    if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = currentAtmosphere;
     ui.summary.textContent = details.label + ' · מרגיש כמו ' + round(current.apparent_temperature) + '°'; ui.temperature.textContent = round(current.temperature_2m) + '°'; ui.icon.innerHTML = weatherSvg(details.icon);
     ui.updated.textContent = 'עודכן עכשיו · אזור זמן ' + (data.timezone_abbreviation || data.timezone || place.timezone || 'מקומי');
     var advice = adviceFor(data); var rows = (daily.time || []).map(function (date, index) {
-      var day = weatherDetails(daily.weather_code[index], 1);
-      return '<article class="weather-live-day' + (index === 0 ? ' today' : '') + '"><span class="weather-live-day-icon"><i class="fa-solid ' + day.icon + '"></i><small>' + round(daily.temperature_2m_max[index]) + '°</small></span><div><strong>' + escapeText(dayName(date, index)) + '</strong><span>' + escapeText(day.label) + ' · ' + new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(date + 'T12:00:00')) + '</span></div><div class="weather-live-metrics"><b><i class="fa-solid fa-temperature-half"></i> ' + round(daily.temperature_2m_max[index]) + '° / ' + round(daily.temperature_2m_min[index]) + '°</b><b><i class="fa-solid fa-droplet"></i> ' + round(daily.precipitation_probability_max[index]) + '%</b><b><i class="fa-solid fa-wind"></i> ' + round(daily.wind_speed_10m_max[index]) + ' קמ״ש</b></div></article>';
+      var day = weatherDetails(daily.weather_code[index], 1); var dayAtmosphere = weatherAtmosphere(daily.weather_code[index], 1, daily.temperature_2m_max[index], daily.temperature_2m_max[index]);
+      return '<article class="weather-live-day' + (index === 0 ? ' today' : '') + '" data-weather-day="' + dayAtmosphere + '"><span class="weather-live-day-icon"><i class="fa-solid ' + day.icon + '"></i><small>' + round(daily.temperature_2m_max[index]) + '°</small></span><div><strong>' + escapeText(dayName(date, index)) + '</strong><span>' + escapeText(day.label) + ' · ' + new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(date + 'T12:00:00')) + '</span></div><div class="weather-live-metrics"><b><i class="fa-solid fa-temperature-half"></i> ' + round(daily.temperature_2m_max[index]) + '° / ' + round(daily.temperature_2m_min[index]) + '°</b><b><i class="fa-solid fa-droplet"></i> ' + round(daily.precipitation_probability_max[index]) + '%</b><b><i class="fa-solid fa-wind"></i> ' + round(daily.wind_speed_10m_max[index]) + ' קמ״ש</b></div></article>';
     }).join('');
-    ui.content.innerHTML = '<div class="weather-insight"><i class="fa-solid ' + advice.icon + '"></i><div><strong>' + escapeText(advice.title) + '</strong><span>' + escapeText(advice.text) + '</span></div></div><div class="weather-live-grid">' + rows + '</div><div class="weather-live-footer"><div class="weather-live-actions"><button class="primary" type="button" data-weather-ai><i class="fa-solid fa-wand-magic-sparkles"></i> שאל את Mate על התחזית</button><button type="button" data-weather-refresh><i class="fa-solid fa-rotate"></i> רענון</button></div><a class="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">נתונים: Open-Meteo ומודלים של שירותי מזג אוויר לאומיים</a></div>';
+    var scene = '<div class="weather-live-scene weather-atmosphere" data-weather-atmosphere="' + currentAtmosphere + '" aria-hidden="true"><span class="weather-atmosphere__orb"></span><span class="weather-atmosphere__stars"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--one"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--two"></span><span class="weather-atmosphere__precip"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--one"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--two"></span><span class="weather-atmosphere__flash"></span><strong>' + escapeText(details.label) + '</strong><small>' + round(current.temperature_2m) + '° · מרגיש כמו ' + round(current.apparent_temperature) + '°</small></div>';
+    ui.content.innerHTML = scene + '<div class="weather-insight"><i class="fa-solid ' + advice.icon + '"></i><div><strong>' + escapeText(advice.title) + '</strong><span>' + escapeText(advice.text) + '</span></div></div><div class="weather-live-grid">' + rows + '</div><div class="weather-live-footer"><div class="weather-live-actions"><button class="primary" type="button" data-weather-ai><i class="fa-solid fa-wand-magic-sparkles"></i> שאל את Mate על התחזית</button><button type="button" data-weather-refresh><i class="fa-solid fa-rotate"></i> רענון</button></div><a class="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">נתונים: Open-Meteo ומודלים של שירותי מזג אוויר לאומיים</a></div>';
     ui.content.querySelector('[data-weather-refresh]').addEventListener('click', function () { load(ui, true); });
     ui.content.querySelector('[data-weather-ai]').addEventListener('click', function () {
       close(ui); window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi, { prompt: 'בדוק את תחזית מזג האוויר ל־7 הימים הקרובים ב' + place.city + ' והצע לי התאמות למסלול ורשימת ציוד קצרה.', source: 'weather' });

@@ -93,7 +93,7 @@ test('current app assets and cache versions are synchronized',()=>{
   assert.match(html,new RegExp('profile-wizard\\.css\\?v='+version));
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
-  assert.equal(version,'20261007-02');
+  assert.equal(version,'20261007-03');
   assert.match(about,/version: '2[.]20[.]3'/);
   assert.match(about,/Account & Document Lifecycle Hardening - 2[.]20[.]3/);
 });
