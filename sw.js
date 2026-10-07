@@ -47,6 +47,9 @@ const CORE_PATHS=[
   './assets/theme.js',
   './assets/weather-widget.css',
   './assets/weather-widget.js',
+  './assets/trip-intelligence.css',
+  './assets/today-activities.css',
+  './assets/today-activities.js',
   './assets/app-icon.svg',
   './manifest.webmanifest'
 ];

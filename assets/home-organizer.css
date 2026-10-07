@@ -919,3 +919,15 @@ html body.home-page #modal-destination .create-trip{background:var(--tm-action-p
 .home-page.is-authenticated .home-profile-launcher{background:var(--tm-surface-nested,#fff)}
 .home-page.is-authenticated .home-profile-avatar.has-image{background-size:contain;background-repeat:no-repeat;background-color:var(--tm-surface-nested,#fff)}
 @media(max-width:700px){.home-page.is-authenticated main.content{padding-top:88px}.home-page.is-authenticated .home-personal-summary{margin:0 0 16px;min-height:78px;padding:12px 14px}.home-page.is-authenticated .home-profile-launcher{width:62px;height:62px}.home-page.is-authenticated .home-profile-avatar{width:54px;height:54px}}
+
+/* Accessibility: suppress dashboard/carousel motion when the OS requests reduced motion. */
+@media(prefers-reduced-motion:reduce){
+  .home-page.is-authenticated .home-landing,
+  .destination-slide,
+  .destination-slide>div,
+  .carousel-dots button,
+  .trip-archive-toggle .fa-chevron-down,
+  .home-sidebar .tip,
+  .landing-login{animation:none;transition:none;scroll-behavior:auto}
+  .landing-login:hover{transform:none}
+}

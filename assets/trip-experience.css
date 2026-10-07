@@ -525,3 +525,12 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-t
     transform:none
   }
 }
+
+@media(prefers-reduced-motion:reduce){
+  #budget .expense-record-chevron,
+  #budget .budget-meter-track i,
+  #budget .budget-hero-meter>span i,
+  #budget .budget-settings-toggle>i:last-child,
+  #budget .budget-limit-mode label>span{transition:none}
+  #budget .budget-limit-mode label:hover>span{transform:none}
+}
