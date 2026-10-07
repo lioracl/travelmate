@@ -518,3 +518,23 @@ html body #modal-weather-live .weather-live-day[data-weather-day="fog"] .weather
 @media(prefers-reduced-motion:reduce){.weather-atmosphere[data-weather-atmosphere] *{animation:none}.weather-atmosphere[data-weather-atmosphere="clouds"] .weather-atmosphere__cloud--one,.weather-atmosphere[data-weather-atmosphere="rain"] .weather-atmosphere__cloud--one{transform:none}}
 
 @media(prefers-reduced-transparency:reduce){body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget[data-weather-atmosphere]{background:var(--tm-family-solid);border-color:var(--tm-border-control)}}
+
+
+/* Weather Colorful Icons */
+.weather-icon-svg{display:block;width:30px;height:30px;overflow:visible}
+.weather-top-icon .weather-icon-svg{width:34px;height:34px}
+html body #modal-weather-live .weather-live-day-icon .weather-icon-svg{width:26px;height:26px;margin-bottom:1px}
+.weather-icon__cloud{fill:#d6edf4;stroke:#547f8d;stroke-width:.9;stroke-linejoin:round}
+.weather-icon__sun{fill:#ffd34e;stroke:#e39b13;stroke-width:.9}
+.weather-icon__sun--solo{fill:#ffd34e}
+.weather-icon__sun-ray{fill:none;stroke:#e9a218;stroke-width:1.7;stroke-linecap:round}
+.weather-icon__rain{fill:none;stroke:#168fd4;stroke-width:2.1;stroke-linecap:round}
+.weather-icon__snow{fill:none;stroke:#52a9d0;stroke-width:1.8;stroke-linecap:round}
+.weather-icon__bolt{fill:#ffd447;stroke:#c88409;stroke-width:.65;stroke-linejoin:round}
+.weather-icon__moon{fill:#cbd4ff;stroke:#6e78bd;stroke-width:1}
+.weather-icon__fog{fill:none;stroke:#6d9099;stroke-width:1.8;stroke-linecap:round}
+html[data-theme="dark"] .weather-icon__cloud{fill:#c4e1ea;stroke:#7eb4c3}
+html[data-theme="dark"] .weather-icon__sun{fill:#ffd865;stroke:#f3b83d}
+html[data-theme="dark"] .weather-icon__rain{stroke:#63c5ff}
+html[data-theme="dark"] .weather-icon__snow{stroke:#9ce1ff}
+@media(prefers-reduced-transparency:reduce){.weather-icon-svg{filter:none}}

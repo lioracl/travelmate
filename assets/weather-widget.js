@@ -52,6 +52,26 @@
     return 'clouds';
   }
 
+  function dailyWeatherPresentation(code, precipitationProbability, temperature) {
+    var numericCode = Number(code);
+    var chance = Number(precipitationProbability);
+    var base = weatherDetails(numericCode, 1);
+    var atmosphere = weatherAtmosphere(numericCode, 1, temperature, temperature);
+    var drizzle = numericCode >= 51 && numericCode <= 57;
+    var rain = (numericCode >= 61 && numericCode <= 67) || (numericCode >= 80 && numericCode <= 82);
+    var snow = (numericCode >= 71 && numericCode <= 77) || (numericCode >= 85 && numericCode <= 86);
+    if (!(drizzle || rain || snow) || !Number.isFinite(chance)) return { label: base.label, icon: base.icon, atmosphere: atmosphere };
+    if (chance < 20) return { label: '\u05de\u05e2\u05d5\u05e0\u05df \u05d7\u05dc\u05e7\u05d9\u05ea', icon: 'fa-cloud-sun', atmosphere: 'clouds' };
+    if (chance < 50) {
+      return {
+        label: snow ? '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05e9\u05dc\u05d2' : drizzle ? '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05d8\u05e4\u05d8\u05d5\u05e3' : '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05d2\u05e9\u05dd',
+        icon: snow ? 'fa-snowflake' : drizzle ? 'fa-cloud-rain' : 'fa-cloud-showers-heavy',
+        atmosphere: chance >= 40 ? atmosphere : 'clouds'
+      };
+    }
+    return { label: base.label, icon: base.icon, atmosphere: atmosphere };
+  }
+
   function contextSnapshot() {
     var data=state.forecast||{},current=data.current||{},daily=data.daily||{},details=state.forecast?weatherDetails(current.weather_code,current.is_day):{label:''};
     function value(list){var number=Number(Array.isArray(list)?list[0]:null);return Number.isFinite(number)?number:null;}
@@ -73,13 +93,21 @@
   window.TravelMateWeatherContext=Object.freeze({snapshot:contextSnapshot});
 
   function weatherSvg(icon) {
-    var extras = '';
-    if (icon === 'fa-sun') extras = '<circle cx="18" cy="6" r="3"></circle><path d="M18 1v2M18 9v2M13 6h-2M23 6h2M14.5 2.5 13 1M21.5 2.5 23 1"></path>';
-    if (icon === 'fa-cloud-sun') extras = '<circle cx="19" cy="7" r="3"></circle><path d="M19 2v2M24 7h2M22.5 3.5 24 2"></path>';
-    if (icon.indexOf('rain') !== -1 || icon.indexOf('showers') !== -1) extras = '<path d="m9 21-1 2M14 21l-1 2M19 21l-1 2"></path>';
-    if (icon === 'fa-snowflake') extras = '<path d="M9 21v3M7.5 22.5h3M15 21v3M13.5 22.5h3"></path>';
-    if (icon === 'fa-cloud-bolt') extras = '<path d="m15 19-3 5h3l-1 4 5-7h-3l2-2"></path>';
-    return '<svg viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path d="M7 19h12a5 5 0 0 0 .6-10A7 7 0 0 0 6.4 11 4 4 0 0 0 7 19Z"></path>' + extras + '</svg>';
+    var cloud = '<path class="weather-icon__cloud" d="M7 19h12a5 5 0 0 0 .6-10A7 7 0 0 0 6.4 11 4 4 0 0 0 7 19Z"></path>';
+    var sun = '<circle class="weather-icon__sun" cx="19" cy="7" r="3.3"></circle><path class="weather-icon__sun-ray" d="M19 1.5v2M19 10.5v2M13.5 7h-2M24.5 7h2M15.3 3.3 13.8 1.8M22.7 3.3 24.2 1.8"></path>';
+    var rain = '<path class="weather-icon__rain" d="m9 21-1.2 2.5M14 21l-1.2 2.5M19 21l-1.2 2.5"></path>';
+    var snow = '<path class="weather-icon__snow" d="M9 21v4M7 23h4M16 21v4M14 23h4"></path>';
+    var bolt = '<path class="weather-icon__bolt" d="m15 18.5-3 5h3l-1 4 5-7h-3l2-2Z"></path>';
+    var fog = '<path class="weather-icon__fog" d="M6 21h16M8 24h12"></path>';
+    var body = cloud;
+    if (icon === 'fa-sun') body = '<circle class="weather-icon__sun weather-icon__sun--solo" cx="14" cy="14" r="5"></circle><path class="weather-icon__sun-ray" d="M14 3v3M14 22v3M3 14h3M22 14h3M6.2 6.2l2.1 2.1M19.7 19.7l2.1 2.1M21.8 6.2l-2.1 2.1M8.3 19.7l-2.1 2.1"></path>';
+    else if (icon === 'fa-moon') body = '<path class="weather-icon__moon" d="M18.5 4.2a9.2 9.2 0 1 0 5.3 15.9A8.2 8.2 0 0 1 18.5 4.2Z"></path>';
+    else if (icon === 'fa-cloud-sun') body = sun + cloud;
+    else if (icon === 'fa-cloud-rain' || icon === 'fa-cloud-showers-heavy') body = cloud + rain;
+    else if (icon === 'fa-snowflake') body = cloud + snow;
+    else if (icon === 'fa-cloud-bolt') body = cloud + bolt;
+    else if (icon === 'fa-smog') body = cloud + fog;
+    return '<svg class="weather-icon-svg" viewBox="0 0 28 28" aria-hidden="true" focusable="false">' + body + '</svg>';
   }
 
   function storedTrip() {
@@ -180,7 +208,7 @@
     if (windIndex >= 0) { var windDay = target(windIndex); return { icon: 'fa-wind', target: windDay, title: windDay === 'היום' ? 'רוח חזקה צפויה היום' : 'רוח חזקה צפויה ב' + windDay, text: 'מומלץ לבדוק מחדש תצפיות, שיט ופעילויות פתוחות.' }; }
     var uvIndex = uv.findIndex(function (value) { return Number(value) >= 7; });
     if (uvIndex >= 0) {
-      var uvDay = target(uvIndex); var uvState = weatherAtmosphere(codes[uvIndex], 1, highs[uvIndex], highs[uvIndex]); var mixed = uvState === 'clouds' || uvState === 'rain' || uvState === 'storm' || uvState === 'fog';
+      var uvDay = target(uvIndex); var uvVisual = dailyWeatherPresentation(codes[uvIndex], rain[uvIndex], highs[uvIndex]); var uvState = uvVisual.atmosphere; var mixed = uvState === 'clouds' || uvState === 'rain' || uvState === 'storm' || uvState === 'fog';
       return { icon: 'fa-sun', target: uvDay, title: uvDay === 'היום' ? 'UV גבוה היום' : 'UV גבוה ב' + uvDay, text: (mixed ? 'זהו שיא ה־UV היומי הצפוי, גם אם בחלק מהיום התחזית מעוננת או גשומה. ' : '') + 'מומלצים מים, כובע וקרם הגנה.' };
     }
     return { icon: 'fa-suitcase-rolling', target: 'כללי', title: 'התחזית מתאימה לתכנון', text: 'לא זוהתה כרגע התרעת מזג אוויר חריגה. כדאי לבדוק שוב סמוך ליציאה.' };
@@ -198,8 +226,8 @@
     ui.summary.textContent = details.label + ' · מרגיש כמו ' + round(current.apparent_temperature) + '°'; ui.temperature.textContent = round(current.temperature_2m) + '°'; ui.icon.innerHTML = weatherSvg(details.icon);
     ui.updated.textContent = 'עודכן עכשיו · אזור זמן ' + (data.timezone_abbreviation || data.timezone || place.timezone || 'מקומי');
     var advice = adviceFor(data); var rows = (daily.time || []).map(function (date, index) {
-      var day = weatherDetails(daily.weather_code[index], 1); var dayAtmosphere = weatherAtmosphere(daily.weather_code[index], 1, daily.temperature_2m_max[index], daily.temperature_2m_max[index]);
-      return '<article class="weather-live-day' + (index === 0 ? ' today' : '') + '" data-weather-day="' + dayAtmosphere + '"><span class="weather-live-day-icon"><i class="fa-solid ' + day.icon + '"></i><small>' + round(daily.temperature_2m_max[index]) + '°</small></span><div><strong>' + escapeText(dayName(date, index)) + '</strong><span>' + escapeText(day.label) + ' · ' + new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(date + 'T12:00:00')) + '</span></div><div class="weather-live-metrics"><b><i class="fa-solid fa-temperature-half"></i> ' + round(daily.temperature_2m_max[index]) + '° / ' + round(daily.temperature_2m_min[index]) + '°</b><b><i class="fa-solid fa-droplet"></i> ' + round(daily.precipitation_probability_max[index]) + '%</b><b><i class="fa-solid fa-wind"></i> ' + round(daily.wind_speed_10m_max[index]) + ' קמ״ש</b></div></article>';
+      var day = dailyWeatherPresentation(daily.weather_code[index], daily.precipitation_probability_max[index], daily.temperature_2m_max[index]); var dayAtmosphere = day.atmosphere;
+      return '<article class="weather-live-day' + (index === 0 ? ' today' : '') + '" data-weather-day="' + dayAtmosphere + '"><span class="weather-live-day-icon">' + weatherSvg(day.icon) + '<small>' + round(daily.temperature_2m_max[index]) + '°</small></span><div><strong>' + escapeText(dayName(date, index)) + '</strong><span>' + escapeText(day.label) + ' · ' + new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(date + 'T12:00:00')) + '</span></div><div class="weather-live-metrics"><b><i class="fa-solid fa-temperature-half"></i> ' + round(daily.temperature_2m_max[index]) + '° / ' + round(daily.temperature_2m_min[index]) + '°</b><b><i class="fa-solid fa-droplet"></i> ' + round(daily.precipitation_probability_max[index]) + '%</b><b><i class="fa-solid fa-wind"></i> ' + round(daily.wind_speed_10m_max[index]) + ' קמ״ש</b></div></article>';
     }).join('');
     var scene = '<div class="weather-live-scene weather-atmosphere" data-weather-atmosphere="' + currentAtmosphere + '" aria-hidden="true"><span class="weather-atmosphere__orb"></span><span class="weather-atmosphere__stars"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--one"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--two"></span><span class="weather-atmosphere__precip"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--one"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--two"></span><span class="weather-atmosphere__flash"></span><strong>' + escapeText(details.label) + '</strong><small>' + round(current.temperature_2m) + '° · מרגיש כמו ' + round(current.apparent_temperature) + '°</small></div>';
     ui.content.innerHTML = scene + '<div class="weather-insight"><i class="fa-solid ' + advice.icon + '"></i><div><strong>' + escapeText(advice.title) + '</strong><span>' + escapeText(advice.text) + '</span></div></div><div class="weather-live-grid">' + rows + '</div><div class="weather-live-footer"><div class="weather-live-actions"><button class="primary" type="button" data-weather-ai><i class="fa-solid fa-wand-magic-sparkles"></i> שאל את Mate על התחזית</button><button type="button" data-weather-refresh><i class="fa-solid fa-rotate"></i> רענון</button></div><a class="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">נתונים: Open-Meteo ומודלים של שירותי מזג אוויר לאומיים</a></div>';
