@@ -38,6 +38,8 @@ test('Android shell identity and version match TravelMate 2.20.3', () => {
   const gradle = read('android/app/build.gradle');
   const variables = read('android/variables.gradle');
   const mainActivity = read('android/app/src/main/java/com/travelmate/app/MainActivity.java');
+  const instrumented = read('android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java');
+  const unit = read('android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java');
   const manifest = read('android/app/src/main/AndroidManifest.xml');
 
   assert.match(gradle, /namespace = "com\.travelmate\.app"/);
@@ -46,6 +48,9 @@ test('Android shell identity and version match TravelMate 2.20.3', () => {
   assert.match(gradle, /versionCode 22003/);
   assert.match(gradle, /versionName "2\.20\.3"/);
   assert.match(mainActivity, /package com\.travelmate\.app;/);
+  assert.match(instrumented, /package com\.travelmate\.app;/);
+  assert.match(instrumented, /assertEquals\("com\.travelmate\.app", appContext\.getPackageName\(\)\)/);
+  assert.match(unit, /package com\.travelmate\.app;/);
   assert.match(manifest, /android:supportsRtl="true"/);
   assert.match(manifest, /android\.permission\.INTERNET/);
 });

@@ -35,11 +35,11 @@ jobs:
       - name: Sync TravelMate web runtime into Android
         run: npm run native:sync
 
-      - name: Build debug APK
+      - name: Run native unit tests and build debug APK
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew testDebugUnitTest assembleDebug --stacktrace
 
       - name: Verify APK
         run: test -f android/app/build/outputs/apk/debug/app-debug.apk
