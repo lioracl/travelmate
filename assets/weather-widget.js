@@ -193,6 +193,7 @@
 
   function render(ui, place, data) {
     var current = data.current || {}; var daily = data.daily || {}; var details = weatherDetails(current.weather_code, current.is_day); var currentAtmosphere = weatherAtmosphere(current.weather_code, current.is_day, current.temperature_2m, current.apparent_temperature);
+    ui.button.dataset.weatherAtmosphere = currentAtmosphere;
     if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = currentAtmosphere;
     ui.summary.textContent = details.label + ' · מרגיש כמו ' + round(current.apparent_temperature) + '°'; ui.temperature.textContent = round(current.temperature_2m) + '°'; ui.icon.innerHTML = weatherSvg(details.icon);
     ui.updated.textContent = 'עודכן עכשיו · אזור זמן ' + (data.timezone_abbreviation || data.timezone || place.timezone || 'מקומי');

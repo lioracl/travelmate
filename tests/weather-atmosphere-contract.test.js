@@ -89,3 +89,19 @@ test('color pass enriches all atmosphere states without accessibility or specifi
   assert.match(block, /@media\(prefers-reduced-motion:reduce\)/);
   assert.doesNotMatch(block, /!important/);
 });
+
+
+test('color and motion pass is visible on the compact card and modal scene', () => {
+  assert.match(js, /ui\.button\.dataset\.weatherAtmosphere = currentAtmosphere/);
+  const marker = '/* Weather Color & Motion Pass 2 */';
+  const block = css.slice(css.indexOf(marker));
+  assert.match(block, /weather-top-widget\[data-weather-atmosphere="rain"\]/);
+  assert.match(block, /weather-top-widget\[data-weather-atmosphere="clouds"\]/);
+  assert.match(block, /weather-live-scene\[data-weather-atmosphere="rain"\]/);
+  assert.match(block, /min-height:112px/);
+  assert.match(block, /opacity:\.78/);
+  assert.match(block, /weather-cloud-drift\{from\{transform:translate3d\(-18px/);
+  assert.match(block, /prefers-reduced-motion:reduce/);
+  assert.match(block, /prefers-reduced-transparency:reduce/);
+  assert.doesNotMatch(block, /!important/);
+});
