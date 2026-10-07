@@ -51,3 +51,67 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
+
+  android-emulator-smoke:
+    needs: android-debug
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Download debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: travelmate-v2.1-foundation-debug-apk
+          path: apk
+
+      - name: Prepare Android emulator
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "emulator" "system-images;android-35;google_apis;x86_64"
+          echo no | avdmanager create avd --force --name travelmate-ci --package "system-images;android-35;google_apis;x86_64" --device "pixel_6"
+
+      - name: Boot emulator and launch TravelMate
+        run: |
+          nohup "$ANDROID_HOME/emulator/emulator" \
+            -avd travelmate-ci \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot \
+            -gpu swiftshader_indirect \
+            -no-metrics \
+            > /tmp/travelmate-emulator.log 2>&1 &
+
+          adb wait-for-device
+          for i in {1..120}; do
+            if [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; then
+              break
+            fi
+            sleep 2
+          done
+
+          test "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1"
+          adb install -r apk/app-debug.apk
+          adb shell am start -W -n com.travelmate.app/.MainActivity | tee /tmp/travelmate-start.txt
+          grep -q "Status: ok" /tmp/travelmate-start.txt
+          sleep 5
+          test -n "$(adb shell pidof com.travelmate.app | tr -d '\r')"
+          adb exec-out screencap -p > travelmate-emulator-smoke.png
+
+      - name: Upload emulator smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: travelmate-v2.1-emulator-smoke
+          path: |
+            travelmate-emulator-smoke.png
+            /tmp/travelmate-start.txt
+            /tmp/travelmate-emulator.log
+          if-no-files-found: warn
+          retention-days: 7
