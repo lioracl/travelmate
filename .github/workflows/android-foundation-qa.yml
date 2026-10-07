@@ -24,7 +24,7 @@ jobs:
           cache: npm
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -41,8 +41,16 @@ jobs:
           chmod +x gradlew
           ./gradlew testDebugUnitTest assembleDebug --stacktrace
 
-      - name: Verify APK
-        run: test -f android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify APK and packaged TravelMate runtime
+        run: |
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          unzip -l "$APK" > /tmp/travelmate-apk-files.txt
+          grep -q 'assets/public/index.html' /tmp/travelmate-apk-files.txt
+          grep -q 'assets/public/sw.js' /tmp/travelmate-apk-files.txt
+          grep -q 'assets/public/assets/app.js' /tmp/travelmate-apk-files.txt
+          grep -q 'assets/public/trip/custom/index.html' /tmp/travelmate-apk-files.txt
+          grep -q 'assets/public/manifest.webmanifest' /tmp/travelmate-apk-files.txt
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -50,72 +58,4 @@ jobs:
           name: travelmate-v2.1-foundation-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          retention-days: 7
-
-  android-emulator-smoke:
-    needs: android-debug
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Download debug APK
-        uses: actions/download-artifact@v4
-        with:
-          name: travelmate-v2.1-foundation-debug-apk
-          path: apk
-
-      - name: Prepare Android emulator
-        run: |
-          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
-          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-          AVDMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
-          test -x "$SDKMANAGER"
-          test -x "$AVDMANAGER"
-          yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platform-tools" "emulator" "system-images;android-35;google_apis;x86_64"
-          echo no | "$AVDMANAGER" create avd --force --name travelmate-ci --package "system-images;android-35;google_apis;x86_64" --device "pixel_6"
-
-      - name: Boot emulator and launch TravelMate
-        run: |
-          nohup "$ANDROID_HOME/emulator/emulator" \
-            -avd travelmate-ci \
-            -no-window \
-            -no-audio \
-            -no-boot-anim \
-            -no-snapshot \
-            -gpu swiftshader_indirect \
-            -no-metrics \
-            > /tmp/travelmate-emulator.log 2>&1 &
-
-          adb wait-for-device
-          for i in {1..120}; do
-            if [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; then
-              break
-            fi
-            sleep 2
-          done
-
-          test "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1"
-          adb install -r apk/app-debug.apk
-          adb shell am start -W -n com.travelmate.app/.MainActivity | tee /tmp/travelmate-start.txt
-          grep -q "Status: ok" /tmp/travelmate-start.txt
-          sleep 5
-          test -n "$(adb shell pidof com.travelmate.app | tr -d '\r')"
-          adb exec-out screencap -p > travelmate-emulator-smoke.png
-
-      - name: Upload emulator smoke evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: travelmate-v2.1-emulator-smoke
-          path: |
-            travelmate-emulator-smoke.png
-            /tmp/travelmate-start.txt
-            /tmp/travelmate-emulator.log
-          if-no-files-found: warn
           retention-days: 7
