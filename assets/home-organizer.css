@@ -915,7 +915,9 @@ html body.home-page #modal-destination .create-trip{background:var(--tm-action-p
 @media(max-width:600px){html body.home-page #modal-destination .destination-form{grid-template-columns:minmax(0,1fr)}}
 
 /* 2.16.0 profile strip: keep the signed-in profile directly below the top actions. */
-.home-page.is-authenticated .home-personal-summary{position:relative;z-index:18;min-height:82px;background:color-mix(in srgb,var(--tm-surface-control,#f5faf8) 96%,transparent);border-color:color-mix(in srgb,var(--tm-brand-primary,#147D92) 22%,var(--tm-border-control,#cdd9d5));-webkit-backdrop-filter:none;backdrop-filter:none}
+.home-page.is-authenticated .home-personal-summary{position:relative;z-index:18;min-height:82px;background:linear-gradient(135deg,color-mix(in srgb,var(--tm-surface-neutral,#f4f3ef) 64%,transparent),color-mix(in srgb,var(--tm-brand-primary,#147D92) 12%,transparent));border-color:color-mix(in srgb,var(--tm-brand-primary,#147D92) 28%,var(--tm-border-control,#cdd9d5));color:var(--tm-text-primary,#12383f);-webkit-text-fill-color:currentColor;-webkit-backdrop-filter:none;backdrop-filter:none}
+.home-page.is-authenticated .home-personal-summary .home-personal-copy h1{color:var(--tm-text-primary,#12383f);-webkit-text-fill-color:currentColor;text-shadow:0 1px 1px rgba(255,255,255,.28)}
+.home-page.is-authenticated .home-personal-summary .home-personal-copy :is(small,p){color:var(--tm-text-secondary,#415b60);-webkit-text-fill-color:currentColor}
 .home-page.is-authenticated .home-profile-launcher{background:var(--tm-surface-nested,#fff)}
 .home-page.is-authenticated .home-profile-avatar.has-image{background-size:contain;background-repeat:no-repeat;background-color:var(--tm-surface-nested,#fff)}
 @media(max-width:700px){.home-page.is-authenticated main.content{padding-top:88px}.home-page.is-authenticated .home-personal-summary{margin:0 0 16px;min-height:78px;padding:12px 14px}.home-page.is-authenticated .home-profile-launcher{width:62px;height:62px}.home-page.is-authenticated .home-profile-avatar{width:54px;height:54px}}

@@ -48,7 +48,8 @@
     if (code === 45 || code === 48) return 'fog';
     if (Number(isDay) !== 0 && heat >= 35) return 'heat';
     if (code === 0) return Number(isDay) === 0 ? 'clear-night' : 'clear-day';
-    if (code >= 1 && code <= 3) return 'clouds';
+    if (code === 1 || code === 2) return 'partly-cloudy';
+    if (code === 3) return 'clouds';
     return 'clouds';
   }
 
@@ -61,7 +62,7 @@
     var rain = (numericCode >= 61 && numericCode <= 67) || (numericCode >= 80 && numericCode <= 82);
     var snow = (numericCode >= 71 && numericCode <= 77) || (numericCode >= 85 && numericCode <= 86);
     if (!(drizzle || rain || snow) || !Number.isFinite(chance)) return { label: base.label, icon: base.icon, atmosphere: atmosphere };
-    if (chance < 20) return { label: '\u05de\u05e2\u05d5\u05e0\u05df \u05d7\u05dc\u05e7\u05d9\u05ea', icon: 'fa-cloud-sun', atmosphere: 'clouds' };
+    if (chance < 20) return { label: '\u05de\u05e2\u05d5\u05e0\u05df \u05d7\u05dc\u05e7\u05d9\u05ea', icon: 'fa-cloud-sun', atmosphere: 'partly-cloudy' };
     if (chance < 50) {
       return {
         label: snow ? '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05e9\u05dc\u05d2' : drizzle ? '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05d8\u05e4\u05d8\u05d5\u05e3' : '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05d2\u05e9\u05dd',

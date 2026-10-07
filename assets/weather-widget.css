@@ -576,3 +576,14 @@ html body #modal-weather-live .weather-live-day.expanded{background:color-mix(in
 @media(max-width:390px){html body #modal-weather-live .weather-live-day-quick{gap:7px}html body #modal-weather-live .weather-live-day-detail-grid>div{padding:8px}html body #modal-weather-live .weather-live-day-copy strong{font-size:15px}}
 @media(prefers-reduced-motion:reduce){html body #modal-weather-live .weather-live-day-details{animation:none}html body #modal-weather-live .weather-live-day-chevron{transition:none}}
 @media(prefers-reduced-transparency:reduce){html body #modal-weather-live .weather-live-day-detail-grid>div{background:var(--tm-weather-surface)}html body #modal-weather-live .weather-live-day-scene.weather-atmosphere{display:none}}
+
+
+/* Weather Partly Cloudy Atmosphere */
+.weather-atmosphere[data-weather-atmosphere="partly-cloudy"]{background:linear-gradient(135deg,rgba(255,210,72,.38),rgba(90,184,213,.50))}
+.weather-atmosphere[data-weather-atmosphere="partly-cloudy"] .weather-atmosphere__orb{opacity:.5;background:radial-gradient(circle,rgba(255,224,94,.96) 0 24%,rgba(255,202,57,.52) 43%,transparent 73%);animation:weather-sun-breathe 6s ease-in-out infinite}
+.weather-atmosphere[data-weather-atmosphere="partly-cloudy"] :is(.weather-atmosphere__cloud--one,.weather-atmosphere__cloud--two){opacity:.68;animation:weather-cloud-drift 6s ease-in-out infinite alternate}
+.weather-atmosphere[data-weather-atmosphere="partly-cloudy"] .weather-atmosphere__cloud--two{opacity:.48;animation-duration:8s}
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .weather-top-widget[data-weather-atmosphere="partly-cloudy"]{--tm-weather-state-bg:linear-gradient(135deg,rgba(255,205,67,.42),rgba(82,176,207,.42));--tm-weather-state-border:rgba(177,219,226,.72)}
+html body #modal-weather-live .weather-live-scene[data-weather-atmosphere="partly-cloudy"]{--tm-weather-scene-bg:linear-gradient(135deg,rgba(255,204,58,.60),rgba(84,177,210,.62));--tm-weather-scene-border:rgba(171,216,225,.76)}
+html body #modal-weather-live .weather-live-day[data-weather-day="partly-cloudy"] .weather-live-day-icon{background:rgba(255,207,66,.28);border-color:rgba(97,157,176,.34);color:#526f77}
+html body #modal-weather-live .weather-live-day-scene[data-weather-atmosphere="partly-cloudy"]{background:linear-gradient(135deg,rgba(255,204,58,.58),rgba(84,177,210,.58))}

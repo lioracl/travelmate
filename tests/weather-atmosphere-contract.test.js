@@ -32,7 +32,7 @@ test('weather atmosphere maps Open-Meteo current conditions deterministically', 
   const classify = classifier();
   assert.equal(classify(0, 1, 22, 22), 'clear-day');
   assert.equal(classify(0, 0, 18, 18), 'clear-night');
-  assert.equal(classify(2, 1, 24, 24), 'clouds');
+  assert.equal(classify(2, 1, 24, 24), 'partly-cloudy');
   assert.equal(classify(45, 1, 18, 18), 'fog');
   assert.equal(classify(51, 1, 18, 18), 'rain');
   assert.equal(classify(61, 1, 18, 18), 'rain');
@@ -121,7 +121,7 @@ test('low precipitation probability prevents drizzle from dominating daily prese
   const lowDrizzle = daily(51, 5, 26);
   assert.equal(lowDrizzle.label, '\u05de\u05e2\u05d5\u05e0\u05df \u05d7\u05dc\u05e7\u05d9\u05ea');
   assert.equal(lowDrizzle.icon, 'fa-cloud-sun');
-  assert.equal(lowDrizzle.atmosphere, 'clouds');
+  assert.equal(lowDrizzle.atmosphere, 'partly-cloudy');
   const mediumDrizzle = daily(51, 30, 26);
   assert.equal(mediumDrizzle.label, '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05d8\u05e4\u05d8\u05d5\u05e3');
   assert.equal(mediumDrizzle.atmosphere, 'clouds');
@@ -140,6 +140,17 @@ test('daily rain codes use probability-aware labels while current conditions sta
   assert.equal(daily(61, 60, 25).label, '\u05d2\u05e9\u05dd');
   assert.match(js, /var details = weatherDetails\(current\.weather_code, current\.is_day\)/);
   assert.match(js, /dailyWeatherPresentation\(daily\.weather_code\[index\], daily\.precipitation_probability_max\[index\]/);
+});
+
+test('partly-cloudy atmosphere shows both sun and moving clouds', () => {
+  assert.match(js, /code === 1 \|\| code === 2\) return 'partly-cloudy'/);
+  const marker = '/* Weather Partly Cloudy Atmosphere */';
+  const block = css.slice(css.indexOf(marker));
+  assert.ok(block.length > 0);
+  assert.match(block, /data-weather-atmosphere=\"partly-cloudy\".*weather-atmosphere__orb/);
+  assert.match(block, /data-weather-atmosphere=\"partly-cloudy\".*weather-atmosphere__cloud--one/);
+  assert.match(block, /data-weather-atmosphere=\"partly-cloudy\".*weather-atmosphere__cloud--two/);
+  assert.doesNotMatch(block, /!important/);
 });
 
 test('weather icons are multicolor SVGs owned by Weather', () => {
