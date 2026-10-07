@@ -155,3 +155,39 @@ test('weather icons are multicolor SVGs owned by Weather', () => {
   assert.match(block, /weather-icon__rain{fill:none;stroke:#168fd4/);
   assert.doesNotMatch(block, /!important/);
 });
+
+
+test('weather daily details open today by default and expose animated per-day data', () => {
+  assert.match(js, /var expanded = index === 0/);
+  assert.match(js, /data-weather-day-toggle aria-expanded="' \+ String\(expanded\)/);
+  assert.match(js, /aria-controls="' \+ detailsId/);
+  assert.match(js, /data-weather-day-details' \+ \(expanded \? '' : ' hidden'\)/);
+  assert.match(js, /weather-live-day-scene weather-atmosphere/);
+  assert.match(js, /daily\.uv_index_max\[index\]/);
+  assert.match(js, /daily\.wind_speed_10m_max\[index\]/);
+  assert.match(js, /daily\.precipitation_probability_max\[index\]/);
+  assert.match(js, /querySelectorAll\('\[data-weather-day-toggle\]'\)/);
+  const block = css.slice(css.indexOf('/* Weather Daily Details */'));
+  assert.match(block, /weather-live-day-detail-grid/);
+  assert.match(block, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(block, /weather-live-day-scene\.weather-atmosphere/);
+  assert.match(block, /prefers-reduced-motion:reduce/);
+  assert.match(block, /prefers-reduced-transparency:reduce/);
+  assert.doesNotMatch(block, /!important/);
+});
+
+test('weather Mate action lazy-loads assistant before emitting ask-ai', () => {
+  const start = js.indexOf("var aiButton = ui.content.querySelector('[data-weather-ai]')");
+  const end = js.indexOf('  function renderError(ui)', start);
+  assert.ok(start >= 0 && end > start, 'Weather Mate handler must exist inside render');
+  const block = js.slice(start, end);
+  assert.match(block, /window\.TravelMateFeatures/);
+  assert.match(block, /TravelMateFeatures\.load\('assistant'\)/);
+  assert.match(block, /window\.__travelMateAiAssistantLoaded/);
+  assert.match(block, /TravelMateEvents\.emit\(window\.TravelMateEvents\.names\.askAi/);
+  assert.match(block, /source: 'weather'/);
+  assert.ok(block.includes('var forecastSummary = (daily.time || []).map'));
+  assert.match(block, /forecastSummary/);
+  assert.doesNotMatch(block, /context: context/);
+  assert.ok(block.indexOf("TravelMateFeatures.load('assistant')") < block.lastIndexOf('emitToMate()'), 'assistant load path must precede final emit path');
+});
