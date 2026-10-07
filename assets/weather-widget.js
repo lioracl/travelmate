@@ -225,7 +225,10 @@
     if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = currentAtmosphere;
     ui.summary.textContent = details.label + ' \u00b7 \u05de\u05e8\u05d2\u05d9\u05e9 \u05db\u05de\u05d5 ' + round(current.apparent_temperature) + '\u00b0'; ui.temperature.textContent = round(current.temperature_2m) + '\u00b0'; ui.icon.innerHTML = weatherSvg(details.icon);
     ui.updated.textContent = '\u05e2\u05d5\u05d3\u05db\u05df \u05e2\u05db\u05e9\u05d9\u05d5 \u00b7 \u05d0\u05d6\u05d5\u05e8 \u05d6\u05de\u05df ' + (data.timezone_abbreviation || data.timezone || place.timezone || '\u05de\u05e7\u05d5\u05de\u05d9');
-    function atmospherePieces() { return '<span class="weather-atmosphere__orb"></span><span class="weather-atmosphere__stars"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--one"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--two"></span><span class="weather-atmosphere__precip"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--one"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--two"></span><span class="weather-atmosphere__flash"></span>'; }
+    function atmospherePieces(atmosphere) {
+      var precipitation = atmosphere === 'rain' || atmosphere === 'storm' || atmosphere === 'snow' ? '<span class="weather-atmosphere__precip"></span>' : '';
+      return '<span class="weather-atmosphere__orb"></span><span class="weather-atmosphere__stars"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--one"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--two"></span>' + precipitation + '<span class="weather-atmosphere__mist weather-atmosphere__mist--one"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--two"></span><span class="weather-atmosphere__flash"></span>';
+    }
     var advice = adviceFor(data); var rows = (daily.time || []).map(function (date, index) {
       var day = dailyWeatherPresentation(daily.weather_code[index], daily.precipitation_probability_max[index], daily.temperature_2m_max[index]); var dayAtmosphere = day.atmosphere;
       var expanded = index === 0; var detailsId = 'weather-day-details-' + index; var dayLabel = dayName(date, index);
@@ -237,7 +240,7 @@
           '<span class="weather-live-day-quick"><b><i class="fa-solid fa-droplet"></i> ' + rainChance + '%</b><i class="fa-solid fa-chevron-down weather-live-day-chevron" aria-hidden="true"></i></span>' +
         '</button>' +
         '<div class="weather-live-day-details" id="' + detailsId + '" data-weather-day-details' + (expanded ? '' : ' hidden') + '>' +
-          '<div class="weather-live-day-scene weather-atmosphere" data-weather-atmosphere="' + dayAtmosphere + '" aria-hidden="true">' + atmospherePieces() + '<strong>' + escapeText(day.label) + '</strong><small>' + max + '\u00b0 / ' + min + '\u00b0</small></div>' +
+          '<div class="weather-live-day-scene weather-atmosphere" data-weather-atmosphere="' + dayAtmosphere + '" aria-hidden="true">' + atmospherePieces(dayAtmosphere) + '<strong>' + escapeText(day.label) + '</strong><small>' + max + '\u00b0 / ' + min + '\u00b0</small></div>' +
           '<div class="weather-live-day-detail-grid">' +
             '<div><i class="fa-solid fa-temperature-half"></i><span>\u05d8\u05de\u05e4\u05e8\u05d8\u05d5\u05e8\u05d4</span><strong>' + max + '\u00b0 / ' + min + '\u00b0</strong></div>' +
             '<div><i class="fa-solid fa-droplet"></i><span>\u05de\u05e9\u05e7\u05e2\u05d9\u05dd</span><strong>' + rainChance + '%</strong></div>' +
@@ -247,7 +250,7 @@
         '</div>' +
       '</article>';
     }).join('');
-    var scene = '<div class="weather-live-scene weather-atmosphere" data-weather-atmosphere="' + currentAtmosphere + '" aria-hidden="true">' + atmospherePieces() + '<strong>' + escapeText(details.label) + '</strong><small>' + round(current.temperature_2m) + '\u00b0 \u00b7 \u05de\u05e8\u05d2\u05d9\u05e9 \u05db\u05de\u05d5 ' + round(current.apparent_temperature) + '\u00b0</small></div>';
+    var scene = '<div class="weather-live-scene weather-atmosphere" data-weather-atmosphere="' + currentAtmosphere + '" aria-hidden="true">' + atmospherePieces(currentAtmosphere) + '<strong>' + escapeText(details.label) + '</strong><small>' + round(current.temperature_2m) + '\u00b0 \u00b7 \u05de\u05e8\u05d2\u05d9\u05e9 \u05db\u05de\u05d5 ' + round(current.apparent_temperature) + '\u00b0</small></div>';
     ui.content.innerHTML = scene + '<div class="weather-insight"><i class="fa-solid ' + advice.icon + '"></i><div><strong>' + escapeText(advice.title) + '</strong><span>' + escapeText(advice.text) + '</span></div></div><div class="weather-live-grid">' + rows + '</div><div class="weather-live-footer"><div class="weather-live-actions"><button class="primary" type="button" data-weather-ai><i class="fa-solid fa-wand-magic-sparkles"></i> \u05e9\u05d0\u05dc \u05d0\u05ea Mate \u05e2\u05dc \u05d4\u05ea\u05d7\u05d6\u05d9\u05ea</button><button type="button" data-weather-refresh><i class="fa-solid fa-rotate"></i> \u05e8\u05e2\u05e0\u05d5\u05df</button></div><a class="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd: Open-Meteo \u05d5\u05de\u05d5\u05d3\u05dc\u05d9\u05dd \u05e9\u05dc \u05e9\u05d9\u05e8\u05d5\u05ea\u05d9 \u05de\u05d6\u05d2 \u05d0\u05d5\u05d5\u05d9\u05e8 \u05dc\u05d0\u05d5\u05de\u05d9\u05d9\u05dd</a></div>';
     ui.content.querySelector('[data-weather-refresh]').addEventListener('click', function () { load(ui, true); });
     ui.content.querySelectorAll('[data-weather-day-toggle]').forEach(function (toggle) {

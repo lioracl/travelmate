@@ -157,6 +157,14 @@ test('weather icons are multicolor SVGs owned by Weather', () => {
 });
 
 
+test('precipitation particles are created only for rain storm and snow scenes', () => {
+  assert.ok(js.includes('function atmospherePieces(atmosphere)'));
+  assert.ok(js.includes("atmosphere === 'rain' || atmosphere === 'storm' || atmosphere === 'snow'"));
+  assert.ok(js.includes('atmospherePieces(dayAtmosphere)'));
+  assert.ok(js.includes('atmospherePieces(currentAtmosphere)'));
+  assert.ok(!js.includes('function atmospherePieces()'));
+});
+
 test('weather daily details open today by default and expose animated per-day data', () => {
   assert.match(js, /var expanded = index === 0/);
   assert.match(js, /data-weather-day-toggle aria-expanded="' \+ String\(expanded\)/);
