@@ -19,4 +19,17 @@ for (const directory of directories) {
   fs.cpSync(path.join(root, directory), path.join(dist, directory), { recursive: true });
 }
 
+// Native-only bridge wiring: never alter the published PWA HTML or its asset cache version.
+for (const [relativePath, scriptPath] of [
+  ['index.html', 'assets/native-widget-snapshot.js'],
+  ['trip/custom/index.html', '../../assets/native-widget-snapshot.js']
+]) {
+  const target = path.join(dist, relativePath);
+  const html = fs.readFileSync(target, 'utf8');
+  if (!/<\/body>/i.test(html)) throw new Error(`Native staging missing body: ${relativePath}`);
+  if (!html.includes('native-widget-snapshot.js')) {
+    fs.writeFileSync(target, html.replace(/<\/body>/i, `  <script src="${scriptPath}" defer></script>\n</body>`));
+  }
+}
+
 console.log(`Staged TravelMate web assets in ${dist}`);
