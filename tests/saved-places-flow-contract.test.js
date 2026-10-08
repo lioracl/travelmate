@@ -25,7 +25,11 @@ test('saved places can schedule, unschedule, remove and jump directly to Plan', 
   assert.match(app, /data-saved-shelf-delete/);
   assert.match(app, /data-saved-shelf-open-plan/);
   assert.match(app, /function openSavedPlaceInPlan\(place\)/);
-  assert.match(app, /document\.querySelector\('\.sidebar \[data-view="plan"\],\[data-view="plan"\]'\)/);
+  assert.match(app, /window\.TravelMateNavigation/);
+  assert.match(app, /function requestPlan\(\)/);
+  assert.match(app, /function handleViewChange\(\)/);
+  assert.match(app, /travelmate:viewchange/);
+  assert.doesNotMatch(app, /planLink\.click\(\)/);
   assert.match(app, /place\.date=''/);
 });
 

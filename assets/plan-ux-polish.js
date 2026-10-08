@@ -249,8 +249,8 @@ function enhanceDay(card,index,trip,today){
     preparedDays[date]=true;
     var activeTrip=String(trip.start||'')<=today&&String(trip.end||'')>=today;
     var focus=activeTrip?today:(String(trip.start||'')>today?String(trip.start):'');
-    var shouldCollapse=Boolean(focus&&date!==focus);
-    if(shouldCollapse&&!card.classList.contains('day-collapsed')){var badge=card.querySelector('.badge');if(badge)setTimeout(function(){badge.click()},0)}
+    var shouldCollapse=Boolean(focus&&date!==focus&&card.dataset.planExplicitOpen!=='true');
+    if(shouldCollapse&&!card.classList.contains('day-collapsed')){var badge=card.querySelector('.badge');if(badge)setTimeout(function(){if(card.dataset.planExplicitOpen!=='true'&&!card.classList.contains('day-collapsed'))badge.click()},0)}
     if(!shouldCollapse&&card.classList.contains('day-collapsed')){var openBadge=card.querySelector('.badge');if(openBadge)setTimeout(function(){openBadge.click()},0)}
   }
 }
