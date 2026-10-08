@@ -37,6 +37,42 @@
     return { label: 'מזג אוויר משתנה', icon: 'fa-cloud-sun' };
   }
 
+  function weatherAtmosphere(code, isDay, temperature, apparent) {
+    code = Number(code);
+    var temp = Number(temperature);
+    var feels = Number(apparent);
+    var heat = Math.max(Number.isFinite(temp) ? temp : -Infinity, Number.isFinite(feels) ? feels : -Infinity);
+    if (code >= 95) return 'storm';
+    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return 'snow';
+    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'rain';
+    if (code === 45 || code === 48) return 'fog';
+    if (Number(isDay) !== 0 && heat >= 35) return 'heat';
+    if (code === 0) return Number(isDay) === 0 ? 'clear-night' : 'clear-day';
+    if (code === 1 || code === 2) return 'partly-cloudy';
+    if (code === 3) return 'clouds';
+    return 'clouds';
+  }
+
+  function dailyWeatherPresentation(code, precipitationProbability, temperature) {
+    var numericCode = Number(code);
+    var chance = Number(precipitationProbability);
+    var base = weatherDetails(numericCode, 1);
+    var atmosphere = weatherAtmosphere(numericCode, 1, temperature, temperature);
+    var drizzle = numericCode >= 51 && numericCode <= 57;
+    var rain = (numericCode >= 61 && numericCode <= 67) || (numericCode >= 80 && numericCode <= 82);
+    var snow = (numericCode >= 71 && numericCode <= 77) || (numericCode >= 85 && numericCode <= 86);
+    if (!(drizzle || rain || snow) || !Number.isFinite(chance)) return { label: base.label, icon: base.icon, atmosphere: atmosphere };
+    if (chance < 20) return { label: '\u05de\u05e2\u05d5\u05e0\u05df \u05d7\u05dc\u05e7\u05d9\u05ea', icon: 'fa-cloud-sun', atmosphere: 'partly-cloudy' };
+    if (chance < 50) {
+      return {
+        label: snow ? '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05e9\u05dc\u05d2' : drizzle ? '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05d8\u05e4\u05d8\u05d5\u05e3' : '\u05e1\u05d9\u05db\u05d5\u05d9 \u05dc\u05d2\u05e9\u05dd',
+        icon: snow ? 'fa-snowflake' : drizzle ? 'fa-cloud-rain' : 'fa-cloud-showers-heavy',
+        atmosphere: chance >= 40 ? atmosphere : 'clouds'
+      };
+    }
+    return { label: base.label, icon: base.icon, atmosphere: atmosphere };
+  }
+
   function contextSnapshot() {
     var data=state.forecast||{},current=data.current||{},daily=data.daily||{},details=state.forecast?weatherDetails(current.weather_code,current.is_day):{label:''};
     function value(list){var number=Number(Array.isArray(list)?list[0]:null);return Number.isFinite(number)?number:null;}
@@ -58,13 +94,21 @@
   window.TravelMateWeatherContext=Object.freeze({snapshot:contextSnapshot});
 
   function weatherSvg(icon) {
-    var extras = '';
-    if (icon === 'fa-sun') extras = '<circle cx="18" cy="6" r="3"></circle><path d="M18 1v2M18 9v2M13 6h-2M23 6h2M14.5 2.5 13 1M21.5 2.5 23 1"></path>';
-    if (icon === 'fa-cloud-sun') extras = '<circle cx="19" cy="7" r="3"></circle><path d="M19 2v2M24 7h2M22.5 3.5 24 2"></path>';
-    if (icon.indexOf('rain') !== -1 || icon.indexOf('showers') !== -1) extras = '<path d="m9 21-1 2M14 21l-1 2M19 21l-1 2"></path>';
-    if (icon === 'fa-snowflake') extras = '<path d="M9 21v3M7.5 22.5h3M15 21v3M13.5 22.5h3"></path>';
-    if (icon === 'fa-cloud-bolt') extras = '<path d="m15 19-3 5h3l-1 4 5-7h-3l2-2"></path>';
-    return '<svg viewBox="0 0 28 28" aria-hidden="true" focusable="false"><path d="M7 19h12a5 5 0 0 0 .6-10A7 7 0 0 0 6.4 11 4 4 0 0 0 7 19Z"></path>' + extras + '</svg>';
+    var cloud = '<path class="weather-icon__cloud" d="M7 19h12a5 5 0 0 0 .6-10A7 7 0 0 0 6.4 11 4 4 0 0 0 7 19Z"></path>';
+    var sun = '<circle class="weather-icon__sun" cx="19" cy="7" r="3.3"></circle><path class="weather-icon__sun-ray" d="M19 1.5v2M19 10.5v2M13.5 7h-2M24.5 7h2M15.3 3.3 13.8 1.8M22.7 3.3 24.2 1.8"></path>';
+    var rain = '<path class="weather-icon__rain" d="m9 21-1.2 2.5M14 21l-1.2 2.5M19 21l-1.2 2.5"></path>';
+    var snow = '<path class="weather-icon__snow" d="M9 21v4M7 23h4M16 21v4M14 23h4"></path>';
+    var bolt = '<path class="weather-icon__bolt" d="m15 18.5-3 5h3l-1 4 5-7h-3l2-2Z"></path>';
+    var fog = '<path class="weather-icon__fog" d="M6 21h16M8 24h12"></path>';
+    var body = cloud;
+    if (icon === 'fa-sun') body = '<circle class="weather-icon__sun weather-icon__sun--solo" cx="14" cy="14" r="5"></circle><path class="weather-icon__sun-ray" d="M14 3v3M14 22v3M3 14h3M22 14h3M6.2 6.2l2.1 2.1M19.7 19.7l2.1 2.1M21.8 6.2l-2.1 2.1M8.3 19.7l-2.1 2.1"></path>';
+    else if (icon === 'fa-moon') body = '<path class="weather-icon__moon" d="M18.5 4.2a9.2 9.2 0 1 0 5.3 15.9A8.2 8.2 0 0 1 18.5 4.2Z"></path>';
+    else if (icon === 'fa-cloud-sun') body = sun + cloud;
+    else if (icon === 'fa-cloud-rain' || icon === 'fa-cloud-showers-heavy') body = cloud + rain;
+    else if (icon === 'fa-snowflake') body = cloud + snow;
+    else if (icon === 'fa-cloud-bolt') body = cloud + bolt;
+    else if (icon === 'fa-smog') body = cloud + fog;
+    return '<svg class="weather-icon-svg" viewBox="0 0 28 28" aria-hidden="true" focusable="false">' + body + '</svg>';
   }
 
   function storedTrip() {
@@ -109,13 +153,13 @@
     if (document.body.dataset.tripKind === 'custom' && button.parentElement !== content) hero.insertAdjacentElement('afterend', button);
     button.setAttribute('aria-haspopup', 'dialog'); button.setAttribute('aria-expanded', 'false');
     button.setAttribute('aria-label', 'פתיחת תחזית מזג האוויר המלאה עבור ' + destination.city);
-    button.innerHTML = '<span class="weather-top-icon">' + weatherSvg('fa-cloud-sun') + '</span><span class="weather-top-copy"><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><span class="weather-top-action">פתח תחזית <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>';
+    button.innerHTML = '<span class="weather-atmosphere" data-weather-atmosphere="idle" aria-hidden="true"><span class="weather-atmosphere__orb"></span><span class="weather-atmosphere__stars"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--one"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--two"></span><span class="weather-atmosphere__precip"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--one"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--two"></span><span class="weather-atmosphere__flash"></span></span>' + '<span class="weather-top-icon">' + weatherSvg('fa-cloud-sun') + '</span><span class="weather-top-copy"><small>מזג האוויר ב' + escapeText(destination.city) + '</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><span class="weather-top-action">פתח תחזית <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>';
 
     var backdrop = document.createElement('section');
     backdrop.id = 'modal-weather-live'; backdrop.className = 'modal-backdrop'; backdrop.setAttribute('role', 'dialog'); backdrop.setAttribute('aria-modal', 'true'); backdrop.setAttribute('aria-labelledby', 'weather-live-title');
     backdrop.innerHTML = '<div class="modal weather-live-modal"><header><div class="weather-live-header-copy"><span>תחזית עדכנית</span><h2 id="weather-live-title">7 ימים ב' + escapeText(destination.city) + '</h2><small data-weather-updated>הנתונים נטענים…</small></div><button class="modal-close" type="button" data-weather-close aria-label="סגירת התחזית"><i class="fa-solid fa-xmark"></i></button></header><div data-weather-content><div class="weather-loading"><i class="fa-solid fa-circle-notch fa-spin"></i>מביא תחזית עדכנית…</div></div></div>';
     document.body.appendChild(backdrop);
-    return { button: button, backdrop: backdrop, content: backdrop.querySelector('[data-weather-content]'), summary: button.querySelector('[data-weather-summary]'), temperature: button.querySelector('[data-weather-temperature]'), icon: button.querySelector('.weather-top-icon'), updated: backdrop.querySelector('[data-weather-updated]') };
+    return { button: button, backdrop: backdrop, content: backdrop.querySelector('[data-weather-content]'), summary: button.querySelector('[data-weather-summary]'), temperature: button.querySelector('[data-weather-temperature]'), icon: button.querySelector('.weather-top-icon'), atmosphere: button.querySelector('[data-weather-atmosphere]'), updated: backdrop.querySelector('[data-weather-updated]') };
   }
 
   async function resolveLocation(destination) {
@@ -157,14 +201,18 @@
   }
 
   function adviceFor(data) {
-    var daily = data.daily || {}; var rain = daily.precipitation_probability_max || []; var wind = daily.wind_speed_10m_max || []; var uv = daily.uv_index_max || [];
+    var daily = data.daily || {}; var rain = daily.precipitation_probability_max || []; var wind = daily.wind_speed_10m_max || []; var uv = daily.uv_index_max || []; var codes = daily.weather_code || []; var highs = daily.temperature_2m_max || [];
+    function target(index) { return dayName(daily.time && daily.time[index], index); }
     var rainIndex = rain.findIndex(function (value) { return Number(value) >= 60; });
-    if (rainIndex >= 0) return { icon: 'fa-umbrella', title: 'כדאי להכניס מטרייה לתיק', text: 'סיכוי של ' + round(rain[rainIndex]) + '% לגשם ב' + dayName(daily.time[rainIndex], rainIndex) + '. Mate יכול להתאים את המסלול למקומות מקורים.' };
+    if (rainIndex >= 0) { var rainDay = target(rainIndex); return { icon: 'fa-umbrella', target: rainDay, title: rainDay === 'היום' ? 'גשם צפוי היום' : 'גשם צפוי ב' + rainDay, text: 'סיכוי של ' + round(rain[rainIndex]) + '% לגשם. Mate יכול להתאים את המסלול למקומות מקורים.' }; }
     var windIndex = wind.findIndex(function (value) { return Number(value) >= 35; });
-    if (windIndex >= 0) return { icon: 'fa-wind', title: 'צפויה רוח חזקה', text: 'מומלץ לבדוק מחדש תצפיות, שיט ופעילויות פתוחות ב' + dayName(daily.time[windIndex], windIndex) + '.' };
+    if (windIndex >= 0) { var windDay = target(windIndex); return { icon: 'fa-wind', target: windDay, title: windDay === 'היום' ? 'רוח חזקה צפויה היום' : 'רוח חזקה צפויה ב' + windDay, text: 'מומלץ לבדוק מחדש תצפיות, שיט ופעילויות פתוחות.' }; }
     var uvIndex = uv.findIndex(function (value) { return Number(value) >= 7; });
-    if (uvIndex >= 0) return { icon: 'fa-sun', title: 'לא לשכוח הגנה מהשמש', text: 'מדד UV גבוה צפוי ב' + dayName(daily.time[uvIndex], uvIndex) + '. מומלצים מים, כובע וקרם הגנה.' };
-    return { icon: 'fa-suitcase-rolling', title: 'התחזית מתאימה לתכנון', text: 'לא זוהתה כרגע התרעת מזג אוויר חריגה. כדאי לבדוק שוב סמוך ליציאה.' };
+    if (uvIndex >= 0) {
+      var uvDay = target(uvIndex); var uvVisual = dailyWeatherPresentation(codes[uvIndex], rain[uvIndex], highs[uvIndex]); var uvState = uvVisual.atmosphere; var mixed = uvState === 'clouds' || uvState === 'rain' || uvState === 'storm' || uvState === 'fog';
+      return { icon: 'fa-sun', target: uvDay, title: uvDay === 'היום' ? 'UV גבוה היום' : 'UV גבוה ב' + uvDay, text: (mixed ? 'זהו שיא ה־UV היומי הצפוי, גם אם בחלק מהיום התחזית מעוננת או גשומה. ' : '') + 'מומלצים מים, כובע וקרם הגנה.' };
+    }
+    return { icon: 'fa-suitcase-rolling', target: 'כללי', title: 'התחזית מתאימה לתכנון', text: 'לא זוהתה כרגע התרעת מזג אוויר חריגה. כדאי לבדוק שוב סמוך ליציאה.' };
   }
 
   function dayName(date, index) {
@@ -173,21 +221,72 @@
   }
 
   function render(ui, place, data) {
-    var current = data.current || {}; var daily = data.daily || {}; var details = weatherDetails(current.weather_code, current.is_day);
-    ui.summary.textContent = details.label + ' · מרגיש כמו ' + round(current.apparent_temperature) + '°'; ui.temperature.textContent = round(current.temperature_2m) + '°'; ui.icon.innerHTML = weatherSvg(details.icon);
-    ui.updated.textContent = 'עודכן עכשיו · אזור זמן ' + (data.timezone_abbreviation || data.timezone || place.timezone || 'מקומי');
+    var current = data.current || {}; var daily = data.daily || {}; var details = weatherDetails(current.weather_code, current.is_day); var currentAtmosphere = weatherAtmosphere(current.weather_code, current.is_day, current.temperature_2m, current.apparent_temperature);
+    ui.button.dataset.weatherAtmosphere = currentAtmosphere;
+    if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = currentAtmosphere;
+    ui.summary.textContent = details.label + ' \u00b7 \u05de\u05e8\u05d2\u05d9\u05e9 \u05db\u05de\u05d5 ' + round(current.apparent_temperature) + '\u00b0'; ui.temperature.textContent = round(current.temperature_2m) + '\u00b0'; ui.icon.innerHTML = weatherSvg(details.icon);
+    ui.updated.textContent = '\u05e2\u05d5\u05d3\u05db\u05df \u05e2\u05db\u05e9\u05d9\u05d5 \u00b7 \u05d0\u05d6\u05d5\u05e8 \u05d6\u05de\u05df ' + (data.timezone_abbreviation || data.timezone || place.timezone || '\u05de\u05e7\u05d5\u05de\u05d9');
+    function atmospherePieces(atmosphere) {
+      var precipitation = atmosphere === 'rain' || atmosphere === 'storm' || atmosphere === 'snow' ? '<span class="weather-atmosphere__precip"></span>' : '';
+      return '<span class="weather-atmosphere__orb"></span><span class="weather-atmosphere__stars"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--one"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--two"></span>' + precipitation + '<span class="weather-atmosphere__mist weather-atmosphere__mist--one"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--two"></span><span class="weather-atmosphere__flash"></span>';
+    }
     var advice = adviceFor(data); var rows = (daily.time || []).map(function (date, index) {
-      var day = weatherDetails(daily.weather_code[index], 1);
-      return '<article class="weather-live-day' + (index === 0 ? ' today' : '') + '"><span class="weather-live-day-icon"><i class="fa-solid ' + day.icon + '"></i><small>' + round(daily.temperature_2m_max[index]) + '°</small></span><div><strong>' + escapeText(dayName(date, index)) + '</strong><span>' + escapeText(day.label) + ' · ' + new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(date + 'T12:00:00')) + '</span></div><div class="weather-live-metrics"><b><i class="fa-solid fa-temperature-half"></i> ' + round(daily.temperature_2m_max[index]) + '° / ' + round(daily.temperature_2m_min[index]) + '°</b><b><i class="fa-solid fa-droplet"></i> ' + round(daily.precipitation_probability_max[index]) + '%</b><b><i class="fa-solid fa-wind"></i> ' + round(daily.wind_speed_10m_max[index]) + ' קמ״ש</b></div></article>';
+      var day = dailyWeatherPresentation(daily.weather_code[index], daily.precipitation_probability_max[index], daily.temperature_2m_max[index]); var dayAtmosphere = day.atmosphere;
+      var expanded = index === 0; var detailsId = 'weather-day-details-' + index; var dayLabel = dayName(date, index);
+      var max = round(daily.temperature_2m_max[index]), min = round(daily.temperature_2m_min[index]), rainChance = round(daily.precipitation_probability_max[index]), wind = round(daily.wind_speed_10m_max[index]), uv = round(daily.uv_index_max[index]);
+      return '<article class="weather-live-day' + (index === 0 ? ' today' : '') + (expanded ? ' expanded' : '') + '" data-weather-day="' + dayAtmosphere + '">' +
+        '<button type="button" class="weather-live-day-toggle" data-weather-day-toggle aria-expanded="' + String(expanded) + '" aria-controls="' + detailsId + '">' +
+          '<span class="weather-live-day-icon">' + weatherSvg(day.icon) + '<small>' + max + '\u00b0</small></span>' +
+          '<span class="weather-live-day-copy"><strong>' + escapeText(dayLabel) + '</strong><span>' + escapeText(day.label) + ' \u00b7 ' + new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }).format(new Date(date + 'T12:00:00')) + '</span></span>' +
+          '<span class="weather-live-day-quick"><b><i class="fa-solid fa-droplet"></i> ' + rainChance + '%</b><i class="fa-solid fa-chevron-down weather-live-day-chevron" aria-hidden="true"></i></span>' +
+        '</button>' +
+        '<div class="weather-live-day-details" id="' + detailsId + '" data-weather-day-details' + (expanded ? '' : ' hidden') + '>' +
+          '<div class="weather-live-day-scene weather-atmosphere" data-weather-atmosphere="' + dayAtmosphere + '" aria-hidden="true">' + atmospherePieces(dayAtmosphere) + '<strong>' + escapeText(day.label) + '</strong><small>' + max + '\u00b0 / ' + min + '\u00b0</small></div>' +
+          '<div class="weather-live-day-detail-grid">' +
+            '<div><i class="fa-solid fa-temperature-half"></i><span>\u05d8\u05de\u05e4\u05e8\u05d8\u05d5\u05e8\u05d4</span><strong>' + max + '\u00b0 / ' + min + '\u00b0</strong></div>' +
+            '<div><i class="fa-solid fa-droplet"></i><span>\u05de\u05e9\u05e7\u05e2\u05d9\u05dd</span><strong>' + rainChance + '%</strong></div>' +
+            '<div><i class="fa-solid fa-wind"></i><span>\u05e8\u05d5\u05d7</span><strong>' + wind + ' \u05e7\u05de\u05f4\u05e9</strong></div>' +
+            '<div><i class="fa-solid fa-sun"></i><span>UV</span><strong>' + uv + '</strong></div>' +
+          '</div>' +
+        '</div>' +
+      '</article>';
     }).join('');
-    ui.content.innerHTML = '<div class="weather-insight"><i class="fa-solid ' + advice.icon + '"></i><div><strong>' + escapeText(advice.title) + '</strong><span>' + escapeText(advice.text) + '</span></div></div><div class="weather-live-grid">' + rows + '</div><div class="weather-live-footer"><div class="weather-live-actions"><button class="primary" type="button" data-weather-ai><i class="fa-solid fa-wand-magic-sparkles"></i> שאל את Mate על התחזית</button><button type="button" data-weather-refresh><i class="fa-solid fa-rotate"></i> רענון</button></div><a class="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">נתונים: Open-Meteo ומודלים של שירותי מזג אוויר לאומיים</a></div>';
+    var scene = '<div class="weather-live-scene weather-atmosphere" data-weather-atmosphere="' + currentAtmosphere + '" aria-hidden="true">' + atmospherePieces(currentAtmosphere) + '<strong>' + escapeText(details.label) + '</strong><small>' + round(current.temperature_2m) + '\u00b0 \u00b7 \u05de\u05e8\u05d2\u05d9\u05e9 \u05db\u05de\u05d5 ' + round(current.apparent_temperature) + '\u00b0</small></div>';
+    ui.content.innerHTML = scene + '<div class="weather-insight"><i class="fa-solid ' + advice.icon + '"></i><div><strong>' + escapeText(advice.title) + '</strong><span>' + escapeText(advice.text) + '</span></div></div><div class="weather-live-grid">' + rows + '</div><div class="weather-live-footer"><div class="weather-live-actions"><button class="primary" type="button" data-weather-ai><i class="fa-solid fa-wand-magic-sparkles"></i> \u05e9\u05d0\u05dc \u05d0\u05ea Mate \u05e2\u05dc \u05d4\u05ea\u05d7\u05d6\u05d9\u05ea</button><button type="button" data-weather-refresh><i class="fa-solid fa-rotate"></i> \u05e8\u05e2\u05e0\u05d5\u05df</button></div><a class="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd: Open-Meteo \u05d5\u05de\u05d5\u05d3\u05dc\u05d9\u05dd \u05e9\u05dc \u05e9\u05d9\u05e8\u05d5\u05ea\u05d9 \u05de\u05d6\u05d2 \u05d0\u05d5\u05d5\u05d9\u05e8 \u05dc\u05d0\u05d5\u05de\u05d9\u05d9\u05dd</a></div>';
     ui.content.querySelector('[data-weather-refresh]').addEventListener('click', function () { load(ui, true); });
-    ui.content.querySelector('[data-weather-ai]').addEventListener('click', function () {
-      close(ui); window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi, { prompt: 'בדוק את תחזית מזג האוויר ל־7 הימים הקרובים ב' + place.city + ' והצע לי התאמות למסלול ורשימת ציוד קצרה.', source: 'weather' });
+    ui.content.querySelectorAll('[data-weather-day-toggle]').forEach(function (toggle) {
+      toggle.addEventListener('click', function () {
+        var opening = toggle.getAttribute('aria-expanded') !== 'true';
+        ui.content.querySelectorAll('[data-weather-day-toggle]').forEach(function (other) {
+          var panel = document.getElementById(other.getAttribute('aria-controls')); var article = other.closest('.weather-live-day');
+          other.setAttribute('aria-expanded', 'false'); if (panel) panel.hidden = true; if (article) article.classList.remove('expanded');
+        });
+        if (opening) { var panel = document.getElementById(toggle.getAttribute('aria-controls')); var article = toggle.closest('.weather-live-day'); toggle.setAttribute('aria-expanded', 'true'); if (panel) panel.hidden = false; if (article) article.classList.add('expanded'); }
+      });
+    });
+    var aiButton = ui.content.querySelector('[data-weather-ai]');
+    aiButton.addEventListener('click', function () {
+      var forecastSummary = (daily.time || []).map(function (date, index) {
+        var day = dailyWeatherPresentation(daily.weather_code[index], daily.precipitation_probability_max[index], daily.temperature_2m_max[index]);
+        return dayName(date, index) + ': ' + day.label + ', ' + round(daily.temperature_2m_max[index]) + '\u00b0/' + round(daily.temperature_2m_min[index]) + '\u00b0, ' + round(daily.precipitation_probability_max[index]) + '% \u05de\u05e9\u05e7\u05e2\u05d9\u05dd, ' + round(daily.wind_speed_10m_max[index]) + ' \u05e7\u05de\u05f4\u05e9, UV ' + round(daily.uv_index_max[index]);
+      }).join('; ');
+      var prompt = '\u05d1\u05d3\u05d5\u05e7 \u05d0\u05ea \u05ea\u05d7\u05d6\u05d9\u05ea \u05de\u05d6\u05d2 \u05d4\u05d0\u05d5\u05d5\u05d9\u05e8 \u05dc\u05be7 \u05d4\u05d9\u05de\u05d9\u05dd \u05d4\u05e7\u05e8\u05d5\u05d1\u05d9\u05dd \u05d1' + place.city + ' \u05d5\u05d4\u05e6\u05e2 \u05dc\u05d9 \u05d4\u05ea\u05d0\u05de\u05d5\u05ea \u05dc\u05de\u05e1\u05dc\u05d5\u05dc \u05d5\u05e8\u05e9\u05d9\u05de\u05ea \u05e6\u05d9\u05d5\u05d3 \u05e7\u05e6\u05e8\u05d4.\n\n\u05e0\u05ea\u05d5\u05e0\u05d9 \u05d4\u05ea\u05d7\u05d6\u05d9\u05ea: ' + forecastSummary;
+      function emitToMate() {
+        if (!window.TravelMateEvents || !window.TravelMateEvents.names || !window.TravelMateEvents.names.askAi) return;
+        close(ui, false); window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi, { prompt: prompt, source: 'weather' });
+      }
+      if (window.__travelMateAiAssistantLoaded) { emitToMate(); return; }
+      if (window.TravelMateFeatures && typeof window.TravelMateFeatures.load === 'function') {
+        aiButton.disabled = true; aiButton.setAttribute('aria-busy', 'true');
+        window.TravelMateFeatures.load('assistant').then(function (ready) { if (ready !== false) emitToMate(); }).catch(function (error) { console.error('TravelMate weather assistant failed to load', error); }).finally(function () { aiButton.disabled = false; aiButton.removeAttribute('aria-busy'); });
+        return;
+      }
+      emitToMate();
     });
   }
 
   function renderError(ui) {
+    if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = 'idle';
     ui.summary.textContent = 'לא הצלחנו לעדכן כרגע'; ui.temperature.textContent = '--°';
     ui.content.innerHTML = '<div class="weather-error"><i class="fa-solid fa-cloud-arrow-down"></i><strong>התחזית לא נטענה</strong><span>בדוק את החיבור ונסה שוב.</span><button type="button" data-weather-retry>ניסיון נוסף</button></div>';
     ui.content.querySelector('[data-weather-retry]').addEventListener('click', function () { load(ui, true); });

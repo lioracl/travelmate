@@ -617,3 +617,8 @@ body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item.tm-plan-travel-ris
 @media(max-width:430px){
   body.tm-new-design[data-trip-view="plan"] #plan .planner-toolbar .planner-toolbar-actions button{white-space:normal;overflow-wrap:break-word;flex-wrap:wrap}
 }
+
+@media(prefers-reduced-motion:reduce){
+  .auto-plan-option,.auto-plan-option i{transition:none}
+  .auto-plan-option:hover{transform:none}
+}

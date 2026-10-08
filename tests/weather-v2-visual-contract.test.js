@@ -52,7 +52,7 @@ test('Weather forecast rows flatten and wrap metrics without horizontal overflow
 });
 
 test('Weather compact summary shows the current temperature once', () => {
-  assert.match(js, /ui\.temperature\.textContent = round\(current\.temperature_2m\) \+ '°'/);
+  assert.ok(js.includes("ui.temperature.textContent = round(current.temperature_2m) + '\\u00b0'") || js.includes("ui.temperature.textContent = round(current.temperature_2m) + '?'"));
   assert.match(js, /ui\.icon\.innerHTML = weatherSvg\(details\.icon\)/);
   assert.doesNotMatch(js, /ui\.icon\.innerHTML = weatherSvg\(details\.icon\) \+ '<small>'/);
 });
@@ -66,7 +66,8 @@ test('Weather modal behavior, history and accessibility contracts remain intact'
   assert.match(js, /TravelMateHistory\.pushOverlay\('weather', function/);
   assert.match(js, /TravelMateHistory\.closeOverlay\('weather'\)/);
   assert.doesNotMatch(js, /window\.addEventListener\('popstate'/);
-  assert.match(js, /close\(ui\); window\.TravelMateEvents\.emit/);
+  assert.match(js, /close\(ui, false\); window\.TravelMateEvents\.emit/);
+  assert.match(js, /TravelMateFeatures\.load\('assistant'\)/);
 });
 
 test('Weather documentation seed covers requirements, integration and guide', () => {

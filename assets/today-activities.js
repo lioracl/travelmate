@@ -25,7 +25,24 @@
     return /^(?:מיקום יתווסף בהמשך|מיקום לא הוגדר|ללא מיקום)$/i.test(location) ? '' : location;
   }
 
-  var api = { selectNextActivity: selectNextActivity, shortLocation: shortLocation };
+  function summaryFromModel(model, now) {
+    if (!model) return { activity: null, status: 'אין פעילויות ביום הזה' };
+    var phase = String(model.phase || '').toLowerCase();
+    if (phase === 'before') return { activity: null, status: Number(model.daysUntilStart) === 1 ? 'מחר יוצאים לדרך' : 'עוד ' + Number(model.daysUntilStart || 0) + ' ימים יוצאים לדרך' };
+    if (phase === 'after') return { activity: null, status: 'הטיול הסתיים' };
+    var focus = model.currentOrNext;
+    if (!focus) {
+      var flexibleRemaining = (model.todayItems || []).some(function (item) { return !item.done && (item.scheduleMode === 'flexible' || item.scheduleMode === 'window'); });
+      return { activity: null, status: flexibleRemaining ? 'היום פתוח וגמיש' : 'אין עוד פעילויות היום' };
+    }
+    if (focus.state === 'current') return { activity: focus, status: 'מתקיים עכשיו' };
+    var currentMinutes = now.getHours() * 60 + now.getMinutes();
+    var start = minutes(focus.time);
+    var difference = start == null ? null : Math.max(0, start - currentMinutes);
+    return { activity: focus, status: difference == null ? 'הבא היום' : difference <= 1 ? 'מתחיל עכשיו' : 'עוד ' + difference + ' דקות' };
+  }
+
+  var api = { selectNextActivity: selectNextActivity, summaryFromModel: summaryFromModel, shortLocation: shortLocation };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.TravelMateTodayActivities = api;
   if (typeof document === 'undefined') return;
@@ -184,7 +201,6 @@
     new MutationObserver(function (changes) {
       if (changes.some(function (change) { return change.type === 'childList' || change.attributeName === 'class'; })) renderSummary();
     }).observe(expanded, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-    window.setInterval(renderSummary, 60000);
     renderSummary();
     return true;
   }
@@ -193,26 +209,6 @@
     var id = new URLSearchParams(location.search).get('id');
     var store = window.TravelMateTripStore;
     return store && store.getTrip ? store.getTrip(id) : null;
-  }
-
-  function customActivityData(trip) {
-    if (!trip || !window.TravelMateToday) return { items: [], selectedDate: new Date() };
-    var state = window.TravelMateToday.phase(trip, new Date());
-    var selectedDate = new Date(state.today + 'T12:00:00');
-    var agenda = state.name === 'active' ? window.TravelMateToday.agenda(trip, state.today) : [];
-    var items = agenda.map(function (item) {
-      var source = item.kind === 'place'
-        ? (trip.savedPlaces || []).find(function (record) { return String(record.id) === String(item.id); })
-        : (trip.activities || []).find(function (record) { return String(record.id) === String(item.id); });
-      return {
-        startMinutes: minutes(item.time),
-        duration: Number(item.duration || 60),
-        time: item.time === '23:59' ? '' : item.time,
-        title: item.title,
-        location: shortLocation(source && (source.address || source.locationName))
-      };
-    });
-    return { items: items, selectedDate: selectedDate, state: state };
   }
 
   function enhanceCustom() {
@@ -237,14 +233,15 @@
 
     function refresh() {
       var freshTrip = currentTrip();
-      var data = customActivityData(freshTrip);
-      var result;
-      if (data.state && data.state.name === 'before') {
-        result = { activity: null, status: data.state.daysUntil === 1 ? 'מחר יוצאים לדרך' : 'עוד ' + data.state.daysUntil + ' ימים יוצאים לדרך' };
-      } else if (data.state && data.state.name === 'after') {
-        result = { activity: null, status: 'הטיול הסתיים' };
-      } else {
-        result = selectNextActivity(data.items, data.selectedDate, new Date());
+      var now = new Date();
+      var model = freshTrip && window.TravelMateToday && window.TravelMateToday.model ? window.TravelMateToday.model(freshTrip, now) : null;
+      var result = summaryFromModel(model, now);
+      if (result.activity && freshTrip) {
+        var source = result.activity.kind === 'place'
+          ? (freshTrip.savedPlaces || []).find(function (record) { return String(record.id) === String(result.activity.id); })
+          : (freshTrip.activities || []).find(function (record) { return String(record.id) === String(result.activity.id); });
+        result.activity.location = shortLocation(source && (source.address || source.locationName));
+        result.activity.time = result.activity.time === '23:59' ? '' : result.activity.time;
       }
       renderCollapsedSummary(card, result);
     }
@@ -255,30 +252,42 @@
     return true;
   }
 
-  var frame = 0;
+  var initScheduled = false;
   function scheduleInit() {
-    if (frame) return;
-    frame = requestAnimationFrame(function () {
-      frame = 0;
+    if (initScheduled) return;
+    initScheduled = true;
+    Promise.resolve().then(function () {
+      initScheduled = false;
       initLegacy();
       enhanceCustom();
     });
   }
 
+  var started = false, minuteTimer = 0;
+  function refreshCardsForMinute() {
+    var cards = document.querySelectorAll('.today-activities-card');
+    cards.forEach(function (card) { if (card.__todayActivitiesRefresh) card.__todayActivitiesRefresh(); });
+    document.dispatchEvent(new CustomEvent('travelmate:today-minute'));
+  }
+  function scheduleMinuteRefresh() {
+    if (minuteTimer) return;
+    var delay = 60000 - (Date.now() % 60000) + 25;
+    minuteTimer = window.setTimeout(function tick() {
+      refreshCardsForMinute();
+      minuteTimer = window.setTimeout(tick, 60000);
+    }, delay);
+  }
   function start() {
+    if (started) return;
+    started = true;
     scheduleInit();
-    var observer = new MutationObserver(scheduleInit);
-    observer.observe(document.body, { childList: true, subtree: true });
     ['travelmate:planner-rendered', 'travelmate:places-updated', 'travelmate:activities-updated'].forEach(function (name) {
       document.addEventListener(name, scheduleInit);
     });
     window.addEventListener('travelmate:local-trips-updated', scheduleInit);
     window.addEventListener('focus', scheduleInit);
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') scheduleInit(); });
-    window.setInterval(function () {
-      var cards = document.querySelectorAll('.today-activities-card');
-      cards.forEach(function (card) { if (card.__todayActivitiesRefresh) card.__todayActivitiesRefresh(); });
-    }, 60000);
+    scheduleMinuteRefresh();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);

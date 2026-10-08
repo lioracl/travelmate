@@ -13,7 +13,7 @@ function read(relative) {
 
 test('custom trip exposes a dedicated accessible sync conflict banner', () => {
   const html = read('trip/custom/index.html');
-  assert.match(html, /sync-status\.css\?v=20261007-01/);
+  assert.match(html, /sync-status\.css\?v=20261008-02/);
   assert.match(html, /data-sync-conflict[^>]*role="status"[^>]*aria-live="polite"/);
   assert.match(html, /data-sync-use-cloud/);
   assert.match(html, /data-sync-keep-local/);

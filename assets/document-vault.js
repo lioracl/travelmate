@@ -307,6 +307,7 @@
       uploadInProgress = false;
       uploadButton.disabled = false;
       clearRemoteDocumentMetadata();
+      if (window.TravelMateDocumentHealth && String(window.TravelMateDocumentHealth.tripId || '') === String(tripId)) delete window.TravelMateDocumentHealth;
       var preview = document.querySelector('[data-vault-preview]');
       if (preview && preview._closePreview) preview._closePreview();
       if (!currentUser) {
@@ -399,6 +400,7 @@
 
     async function renderDocuments(expectedEpoch, expectedUserId) {
       if (!currentUser) return;
+      if (window.TravelMateDocumentHealth && String(window.TravelMateDocumentHealth.tripId || '') === String(tripId)) delete window.TravelMateDocumentHealth;
       var requestEpoch = typeof expectedEpoch === 'number' ? expectedEpoch : documentSessionEpoch;
       var requestUserId = expectedUserId || currentUser.id;
       var result = await client.from('travel_documents').select('*').eq('user_id', requestUserId).eq('trip_id', tripId).order('created_at', { ascending: false });
@@ -408,6 +410,7 @@
         return;
       }
       var documents = (result.data || []).filter(function (record) { return String(record.user_id) === String(requestUserId) && ownsStoragePath(requestUserId, record.storage_path); });
+      window.TravelMateDocumentHealth = Object.freeze({ tripId: String(tripId), count: documents.length, loaded: true });
       var total = documents.reduce(function (sum, item) { return sum + Number(item.file_size || 0); }, 0);
       section.querySelector('[data-vault-count]').textContent = documents.length + ' מסמכים';
       section.querySelector('[data-vault-size]').textContent = formatSize(total) + ' בענן';
@@ -590,8 +593,8 @@
       preview.dataset.vaultPreview = '';
       preview.setAttribute('role', 'dialog');
       preview.setAttribute('aria-modal', 'true');
-      preview.setAttribute('aria-label', 'תצוגת המסמך ' + record.file_name);
-      preview.innerHTML = '<article class="vault-preview"><header><div><span>תצוגה מאובטחת</span><h2>' + escapeHtml(record.file_name) + '</h2><p>' + escapeHtml(storedCategoryForGroup(groupForCategory(record.category))) + ' · ' + formatSize(record.file_size) + '</p></div><button type="button" data-vault-preview-close aria-label="סגירת המסמך"><i class="fa-solid fa-xmark"></i></button></header><div class="vault-preview-body" data-vault-preview-body></div><footer><small><i class="fa-solid fa-shield-halved"></i> הקובץ פוענח רק בזיכרון המכשיר ולא נשלח לשירות חיצוני.</small><button type="button" data-vault-preview-download><i class="fa-solid fa-download"></i> הורדה למכשיר</button></footer></article>';
+      preview.setAttribute('aria-labelledby', 'vault-preview-title');
+      preview.innerHTML = '<article class="vault-preview"><header><div><span>תצוגה מאובטחת</span><h2 id="vault-preview-title">' + escapeHtml(record.file_name) + '</h2><p>' + escapeHtml(storedCategoryForGroup(groupForCategory(record.category))) + ' · ' + formatSize(record.file_size) + '</p></div><button type="button" data-vault-preview-close aria-label="סגירת המסמך"><i class="fa-solid fa-xmark"></i></button></header><div class="vault-preview-body" data-vault-preview-body></div><footer><small><i class="fa-solid fa-shield-halved"></i> הקובץ פוענח רק בזיכרון המכשיר ולא נשלח לשירות חיצוני.</small><button type="button" data-vault-preview-download><i class="fa-solid fa-download"></i> הורדה למכשיר</button></footer></article>';
       var body = preview.querySelector('[data-vault-preview-body]');
       var closeButton = preview.querySelector('[data-vault-preview-close]');
       var previouslyFocused = document.activeElement;
@@ -612,9 +615,19 @@
       });
       preview.querySelector('[data-vault-preview-download]').addEventListener('click', function () { downloadBlob(blob, record.file_name); });
       preview.addEventListener('click', function (event) { if (event.target === preview) closePreview(); });
-      preview.addEventListener('keydown', function (event) { if (event.key === 'Escape') closePreview(); });
+      preview.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') { event.preventDefault(); closePreview(); return; }
+        if (event.key !== 'Tab') return;
+        var focusable = [].slice.call(preview.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(function (node) { return !node.hidden; });
+        if (!focusable.length) { event.preventDefault(); preview.focus(); return; }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      });
       document.body.classList.add('vault-preview-open');
       document.body.appendChild(preview);
+      closeButton.focus();
 
       if (type.indexOf('image/') === 0) {
         var image = document.createElement('img');

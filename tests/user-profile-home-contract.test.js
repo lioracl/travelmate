@@ -121,6 +121,10 @@ test('Home exposes Smart Profile from the existing account/profile owner', () =>
   const featureCss = css.slice(css.indexOf('/* 2.1 Profile Lite + Adaptive Home'));
   assert.ok(featureCss.length > 0);
   assert.doesNotMatch(featureCss, /!important/);
+  assert.doesNotMatch(featureCss, /tm-surface-control,#f5faf8\) 96%/);
+  assert.match(featureCss, /home-personal-summary\{[^}]*tm-surface-neutral/);
+  assert.match(featureCss, /home-personal-summary \.home-personal-copy h1\{[^}]*tm-text-primary/);
+  assert.match(featureCss, /home-personal-summary \.home-personal-copy :is\(small,p\)\{[^}]*tm-text-secondary/);
   const profileSettingsCss = settingsCss.slice(settingsCss.indexOf('/* 2.1 Profile Lite settings'));
   assert.ok(profileSettingsCss.length > 0);
   assert.doesNotMatch(profileSettingsCss, /!important/);

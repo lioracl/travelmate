@@ -8,7 +8,7 @@ if (/\/trip\//.test(location.pathname)) window.addEventListener('travelmate:acco
   if (!id || nextTrip) location.reload();
   else location.replace(new URL('../../index.html', location.href).href);
 });
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261007-01'}catch(error){return'20261007-01'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261008-02'}catch(error){return'20261008-02'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
@@ -317,17 +317,94 @@ function initTripPlacePlanner(){var daysContainer=document.querySelector('[data-
   }
   function openSavedPlaceInPlan(place){
     if(!place||!place.date)return;
-    var openRow=function(){
-      var row=daysContainer.querySelector('[data-saved-place-id="'+String(place.id||'').replace(/"/g,'\\\"')+'"]');
-      if(!row)return;
-      var day=row.closest('.generated-day');
-      if(day&&day.classList.contains('day-collapsed')){var badge=day.querySelector('.badge');if(badge)badge.click()}
-      requestAnimationFrame(function(){row.classList.add('is-plan-target');row.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){row.classList.remove('is-plan-target')},1800)})
+    var placeId=String(place.id||''),date=String(place.date),completed=false,focusPending=false,focusedOnce=false,focusedRow=null,queued=false,settleTimer=0,safetyTimer=0,highlightTimer=0;
+    var observer=new MutationObserver(function(){scheduleReveal();if(focusedOnce)scheduleSettle()});
+    var cleanup=function(){
+      window.removeEventListener('travelmate:viewchange',handleViewChange);
+      document.removeEventListener('travelmate:planner-ready',scheduleReveal);
+      document.removeEventListener('travelmate:planner-rendered',scheduleReveal);
+      document.removeEventListener('travelmate:places-updated',scheduleReveal);
+      document.removeEventListener('focusin',handleFocusIn,true);
+      observer.disconnect();
+      clearTimeout(settleTimer);
+      clearTimeout(safetyTimer)
     };
-    if(document.body.dataset.tripView==='plan'){openRow();return}
-    var planLink=document.querySelector('.sidebar [data-view="plan"],[data-view="plan"]');
-    if(planLink){planLink.click();setTimeout(openRow,120);return}
-    var target=new URL(location.href);target.searchParams.set('view','plan');location.href=target.href
+    var findRow=function(){
+      return [].find.call(daysContainer.querySelectorAll('[data-saved-place-id]'),function(node){return node.dataset.savedPlaceId===placeId})
+    };
+    function scheduleSettle(){
+      clearTimeout(settleTimer);
+      settleTimer=setTimeout(function(){completed=true;cleanup()},300)
+    }
+    function handleFocusIn(event){
+      if(!focusedOnce||completed)return;
+      var current=findRow();
+      if(event.target===current)return;
+      if(event.target===document.body||event.target===document.documentElement){scheduleReveal();return}
+      completed=true;cleanup()
+    }
+    function focusCurrent(current){
+      var firstFocus=!focusedOnce;
+      current.setAttribute('tabindex','-1');
+      current.classList.add('is-plan-target');
+      if(firstFocus){
+        var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        current.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'})
+      }
+      current.focus({preventScroll:true});
+      focusedOnce=true;focusedRow=current;
+      clearTimeout(highlightTimer);
+      highlightTimer=setTimeout(function(){var latest=findRow();if(latest)latest.classList.remove('is-plan-target')},1800);
+      scheduleSettle()
+    }
+    function reveal(){
+      if(completed||document.body.dataset.tripView!=='plan')return;
+      var planner=window.TravelMatePlanner;
+      if(!planner||typeof planner.openDay!=='function'||!planner.openDay(date))return;
+      var row=findRow(),day=row&&row.closest('.generated-day');
+      if(!row||!day||day.dataset.dayDate!==date||day.classList.contains('day-collapsed')||focusPending)return;
+      if(focusedOnce&&row===focusedRow&&document.activeElement===row){scheduleSettle();return}
+      var active=document.activeElement;
+      if(focusedOnce&&active&&active!==document.body&&active!==document.documentElement&&active!==focusedRow&&active!==row){completed=true;cleanup();return}
+      focusPending=true;
+      Promise.resolve().then(function(){
+        focusPending=false;
+        if(completed||document.body.dataset.tripView!=='plan')return;
+        // Planner and Plan UX can recreate rows while collapsing sibling days.
+        var current=findRow(),currentDay=current&&current.closest('.generated-day');
+        if(!current||!currentDay||currentDay.dataset.dayDate!==date||currentDay.classList.contains('day-collapsed'))return;
+        if(focusedOnce&&current===focusedRow&&document.activeElement===current){scheduleSettle();return}
+        var currentActive=document.activeElement;
+        if(focusedOnce&&currentActive&&currentActive!==document.body&&currentActive!==document.documentElement&&currentActive!==focusedRow&&currentActive!==current){completed=true;cleanup();return}
+        focusCurrent(current)
+      })
+    }
+    function requestPlan(){
+      if(completed||document.body.dataset.tripView==='plan')return true;
+      var navigation=window.TravelMateNavigation;
+      if(!navigation||typeof navigation.open!=='function')return false;
+      navigation.open('plan');
+      return true
+    }
+    function handleViewChange(){
+      if(document.body.dataset.tripView!=='plan')requestPlan();
+      scheduleReveal()
+    }
+    function scheduleReveal(){
+      if(queued||completed)return;
+      queued=true;
+      Promise.resolve().then(function(){queued=false;reveal()})
+    }
+    window.addEventListener('travelmate:viewchange',handleViewChange);
+    document.addEventListener('travelmate:planner-ready',scheduleReveal);
+    document.addEventListener('travelmate:planner-rendered',scheduleReveal);
+    document.addEventListener('travelmate:places-updated',scheduleReveal);
+    document.addEventListener('focusin',handleFocusIn,true);
+    observer.observe(daysContainer,{childList:true,subtree:true});
+    // Safety cleanup only; readiness and replacement recovery are event-driven.
+    safetyTimer=setTimeout(function(){if(!completed)cleanup()},15000);
+    requestPlan();
+    scheduleReveal()
   }
   function renderSavedShelf(){
     var shelf=panel.querySelector('[data-saved-places-shelf]'),list=panel.querySelector('[data-saved-places-list]'),count=panel.querySelector('[data-saved-places-count]'),scheduledCount=panel.querySelector('[data-saved-places-scheduled]'),unscheduledCount=panel.querySelector('[data-saved-places-unscheduled]'),items=(trip.savedPlaces||[]).slice();

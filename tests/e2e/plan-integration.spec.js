@@ -147,6 +147,7 @@ for (const viewport of [
 
     test('Saved Places has a complete save-to-Plan lifecycle', async ({ page }) => {
       await seedSavedPlaces(page);
+
       page.on('dialog', dialog => dialog.accept());
       await page.goto('/trip/custom/index.html?id=qa-playwright&view=places', { waitUntil: 'domcontentloaded' });
 
@@ -179,7 +180,12 @@ for (const viewport of [
       savedOnly = shelf.locator('[data-saved-shelf-id="saved-only-1"]');
       await savedOnly.locator('[data-saved-shelf-open-plan]').click();
       await expect(page.locator('body')).toHaveAttribute('data-trip-view', 'plan');
-      await expect(page.locator('[data-saved-place-id="saved-only-1"]')).toBeVisible();
+      const targetDay = page.locator('.generated-day[data-day-date="'+dates.tomorrow+'"]');
+      const targetRow = page.locator('[data-saved-place-id="saved-only-1"]');
+      await expect(targetDay).not.toHaveClass(/day-collapsed/);
+      await expect(targetDay.locator('[data-toggle-day]').first()).toHaveAttribute('aria-expanded', 'true');
+      await expect(targetRow).toBeVisible();
+      await expect(targetRow).toBeFocused();
       expect(await noHorizontalOverflow(page)).toBeTruthy();
     });
   });
