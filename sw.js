@@ -1,4 +1,4 @@
-const ASSET_VERSION='20261008-01';
+const ASSET_VERSION='20261008-02';
 const CACHE_SCHEMA='v266';
 const CACHE_NAME='travelmate-smart-'+CACHE_SCHEMA+'-'+ASSET_VERSION;
 const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-20\d{6}-\d+)?$/;
@@ -28,6 +28,8 @@ const CORE_PATHS=[
   './assets/cloud-sync.css',
   './assets/cloud-sync.js',
   './assets/trip-store.js',
+  './assets/trip-change-notifications.css',
+  './assets/trip-change-notifications.js',
   './assets/event-contracts.js',
   './assets/user-profile.js',
   './assets/fixed-reminders.css',

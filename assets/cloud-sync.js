@@ -879,6 +879,59 @@
     return result.data;
   }
 
+  async function listTripChangeEvents(ownerId, tripId, limit) {
+    var client = await getClient();
+    var boundedLimit = Math.min(100, Math.max(1, Number(limit || 100)));
+    var result = await client.from('trip_change_events')
+      .select('id,actor_user_id,revision,entity_type,entity_id,action,summary,severity,created_at')
+      .eq('trip_owner_id', ownerId).eq('trip_id', String(tripId))
+      .order('id', { ascending: false }).limit(boundedLimit);
+    if (result.error) throw result.error;
+    return (result.data || []).slice().reverse();
+  }
+
+  async function getTripChangeReadState(ownerId, tripId) {
+    var client = await getClient();
+    var session = await getSession();
+    if (!session || !session.user) return null;
+    var result = await client.from('trip_change_read_state')
+      .select('last_read_event_id,updated_at')
+      .eq('trip_owner_id', ownerId).eq('trip_id', String(tripId))
+      .eq('user_id', session.user.id).maybeSingle();
+    if (result.error) throw result.error;
+    return result.data || null;
+  }
+
+  async function markTripChangesRead(ownerId, tripId, eventId) {
+    var client = await getClient();
+    var numericEventId = Number(eventId);
+    if (!Number.isFinite(numericEventId) || numericEventId <= 0) throw cloudError('INVALID_EVENT_ID');
+    var result = await client.rpc('mark_trip_changes_read', {
+      p_owner: ownerId,
+      p_trip_id: String(tripId),
+      p_event_id: numericEventId
+    });
+    if (result.error) throw result.error;
+    return Number(result.data || 0);
+  }
+
+  async function subscribeToTripChangeEvents(ownerId, tripId, callback) {
+    var client = await getClient();
+    var session = await getSession();
+    if (!session || !session.user) throw cloudError('SIGNED_OUT');
+    var subscriberUserId = String(session.user.id);
+    var subscriberGeneration = authGeneration;
+    var channel = client.channel('travelmate-trip-change-events:' + ownerId + ':' + tripId + ':' + subscriberUserId)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'trip_change_events', filter: 'trip_id=eq.' + String(tripId) }, function (payload) {
+        if (activeUserId() !== subscriberUserId || subscriberGeneration !== authGeneration) return;
+        if (!payload.new || String(payload.new.trip_owner_id || '') !== String(ownerId)) return;
+        if (typeof callback === 'function') callback(payload.new);
+      });
+    await channel.subscribe();
+    if (subscriberGeneration !== authGeneration) { client.removeChannel(channel); throw authContextError(); }
+    return function () { client.removeChannel(channel); };
+  }
+
   async function subscribeToSharedTrip(ownerId, tripId, callbacks) {
     var client = await getClient();
     var session = await getSession();
@@ -1553,6 +1606,10 @@
     removeTripMember: removeTripMember,
     listTripMessages: listTripMessages,
     sendTripMessage: sendTripMessage,
+    listTripChangeEvents: listTripChangeEvents,
+    getTripChangeReadState: getTripChangeReadState,
+    markTripChangesRead: markTripChangesRead,
+    subscribeToTripChangeEvents: subscribeToTripChangeEvents,
     subscribeToSharedTrip: subscribeToSharedTrip,
     saveTrip: saveTrip,
     deleteTrip: deleteTrip,
