@@ -1,0 +1,78 @@
+name: TravelMate iOS Foundation Preflight
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - chatgpt/ios-foundation
+
+permissions:
+  contents: read
+
+jobs:
+  ios-simulator:
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Verify Xcode 26+
+        shell: bash
+        run: |
+          xcodebuild -version
+          XCODE_MAJOR="$(xcodebuild -version | awk '/Xcode/{split($2,a,"."); print a[1]}')"
+          test "${XCODE_MAJOR}" -ge 26
+
+      - name: Install TravelMate dependencies
+        run: npm ci --no-audit
+
+      - name: Install Capacitor iOS 8.5.2 for preflight
+        run: npm install --no-save --no-audit @capacitor/ios@8.5.2
+
+      - name: Stage canonical TravelMate web runtime
+        run: npm run native:stage
+
+      - name: Generate iOS project with Swift Package Manager
+        run: npx cap add ios --packagemanager SPM
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Build unsigned iOS Simulator app
+        shell: bash
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Verify packaged TravelMate runtime
+        shell: bash
+        run: |
+          APP="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/App.app"
+          test -d "$APP"
+          test -f "$APP/public/index.html"
+          test -f "$APP/public/assets/app.js"
+          test -f "$APP/public/trip/custom/index.html"
+          test -f "$APP/public/manifest.webmanifest"
+
+      - name: Upload iOS Simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: travelmate-v2.21-ios-simulator-app
+          path: ${{ runner.temp }}/DerivedData/Build/Products/Debug-iphonesimulator/App.app
+          if-no-files-found: error
+          retention-days: 7
