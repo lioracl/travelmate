@@ -1,0 +1,129 @@
+name: TravelMate iOS Live Today Widget QA
+
+on:
+  push:
+    branches:
+      - chatgpt/ios-live-today-widget
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ios-live-today-widget:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+        
+      - name: Verify Xcode and branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          test "${GITHUB_REF_NAME}" = "chatgpt/ios-live-today-widget"
+          node -e "const p=require('./package.json'); if(p.version!=='2.21.0') process.exit(1)"
+
+      - name: Install dependencies
+        run: npm ci --no-audit
+
+      - name: Configure shared WidgetKit target
+        shell: bash
+        run: |
+          set -euo pipefail
+          gem install xcodeproj -v 1.27.0 --no-document
+          ruby tools/configure-ios-budget-widget.rb
+          grep -q 'TravelMateBudgetWidget' ios/App/App.xcodeproj/project.pbxproj
+          grep -q 'TravelMateLiveTodayWidget.swift' ios/App/App.xcodeproj/project.pbxproj
+          grep -q 'group.com.travelmate.app' ios/App/App/App.entitlements
+          grep -q 'group.com.travelmate.app' ios/App/TravelMateBudgetWidget/TravelMateBudgetWidget.entitlements
+
+      - name: Sync canonical TravelMate runtime
+        run: npm run native:sync:ios
+
+      - name: Contract and regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/ios-live-today-widget-contract.test.js tests/ios-budget-widget-contract.test.js tests/native-widget-snapshot-contract.test.js tests/live-today-widget-contract.test.js tests/today-activities-canonical.test.js tests/trip-mode-today-pass9.test.js
+          node --test tests/*.test.js
+
+      - name: Build app with both WidgetKit surfaces
+        id: xcode_build
+        shell: bash
+        run: |
+          set -o pipefail
+          rm -rf build/ios-live-today-widget
+          mkdir -p build/ios-live-today-widget
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/ios-live-today-widget \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build 2>&1 | tee build/ios-live-today-widget/xcodebuild.log
+
+      - name: Report Xcode compiler errors
+        if: failure() && steps.xcode_build.outcome == 'failure'
+        shell: bash
+        run: |
+          echo '--- XCODE COMPILER ERRORS ---'
+          grep -E -C 3 '(^|[[:space:]])(error:|fatal error:)|SwiftCompile|CompileSwift' build/ios-live-today-widget/xcodebuild.log | tail -n 240 || true
+          echo '--- END XCODE COMPILER ERRORS ---'
+
+      - name: Upload failed Xcode log
+        if: failure() && steps.xcode_build.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: travelmate-ios-live-today-xcode-failure-log
+          path: build/ios-live-today-widget/xcodebuild.log
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Verify packaged app and widget bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP='build/ios-live-today-widget/Build/Products/Debug-iphonesimulator/App.app'
+          WIDGET="$APP/PlugIns/TravelMateBudgetWidget.appex"
+          test -d "$APP"
+          test -d "$WIDGET"
+          test -f "$APP/public/assets/native-widget-snapshot.js"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$WIDGET/Info.plist")" = 'com.travelmate.app.budgetwidget'
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$WIDGET/Info.plist")" = '2.21.0'
+          grep -q 'TravelMateLiveTodayWidget.swift' ios/App/App.xcodeproj/project.pbxproj
+          grep -q 'TravelMateLiveTodayWidget()' ios/App/TravelMateBudgetWidget/TravelMateBudgetWidget.swift
+          grep -q 'TravelMateLiveTodayWidget' ios/App/App/TravelMateWidgetBridgePlugin.swift
+
+      - name: Upload iOS Live Today simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: travelmate-v2.21-ios-live-today-widget-simulator
+          path: build/ios-live-today-widget/Build/Products/Debug-iphonesimulator/App.app
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Commit reproducible WidgetBundle wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ios/App/App.xcodeproj/project.pbxproj
+          if git diff --cached --quiet; then
+            echo 'Live Today WidgetKit source wiring already committed.'
+            exit 0
+          fi
+          git commit -m 'build: wire iOS Live Today widget source'
+          git push origin HEAD:chatgpt/ios-live-today-widget
