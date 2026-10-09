@@ -928,7 +928,7 @@
       code: function () { return state.localCurrency; },
       formatFromEuros: function (euros) {
         var value = state.localCurrency === 'EUR' ? Number(euros || 0) : localFromEuros(euros);
-        return value ? money(value, state.localCurrency) : money(euros, 'EUR');
+        return Number(euros || 0) === 0 || value ? money(value, state.localCurrency) : money(euros, 'EUR');
       }
     };
     state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readExperienceJson('expenses', []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) ? state.trip.budgetCategories : readExperienceJson('budget-categories', null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readExperienceJson('memories', []); state.albumUrl = typeof state.trip.photoAlbumUrl === 'string' ? state.trip.photoAlbumUrl : readExperienceJson('album-url', ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readExperienceJson('currency-fee', 2.5));
