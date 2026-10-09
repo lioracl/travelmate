@@ -113,6 +113,9 @@ public class TravelMateWidgetBridgePlugin extends Plugin {
         safe.put("expiresAtEpochMs", expires);
         safe.put("privacyMode", "redacted");
         safe.put("unreadChanges", Math.max(0, Math.min(999, input.optInt("unreadChanges", 0))));
+        String phase = input.optString("phase", "UNKNOWN");
+        if (!phase.matches("BEFORE|ACTIVE|AFTER|UNKNOWN")) phase = "UNKNOWN";
+        safe.put("phase", phase);
 
         JSONArray agenda = new JSONArray();
         JSONArray incoming = input.optJSONArray("agenda");
@@ -176,6 +179,7 @@ public class TravelMateWidgetBridgePlugin extends Plugin {
             return;
         }
         TravelMateWidgetProvider.refreshAll(context);
+        TravelMateLiveTodayWidgetProvider.refreshAll(context);
         JSObject result = new JSObject();
         result.put("saved", true);
         call.resolve(result);
@@ -190,6 +194,7 @@ public class TravelMateWidgetBridgePlugin extends Plugin {
         if (active != null) editor.remove(active);
         boolean cleared = editor.commit();
         TravelMateWidgetProvider.refreshAll(context);
+        TravelMateLiveTodayWidgetProvider.refreshAll(context);
         if (!cleared) {
             call.reject("Unable to clear widget snapshot", "WIDGET_STORAGE_FAILED");
             return;

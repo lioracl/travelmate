@@ -22,4 +22,16 @@
     <string name="widget_unread">%1$d עדכונים</string>
     <string name="widget_unread_many">99+ עדכונים</string>
     <string name="widget_description">תקציב TravelMate: הוצאות, הוצאה מהירה והמרת מטבע</string>
+    <string name="live_today_widget_title">TravelMate · היום</string>
+    <string name="live_today_widget_current">מתקיים עכשיו</string>
+    <string name="live_today_widget_next">הבא בתוכנית</string>
+    <string name="live_today_widget_activity">פעילות מתוזמנת</string>
+    <string name="live_today_widget_open_day">פתח תוכנית</string>
+    <string name="live_today_widget_open_flexible">היום פתוח וגמיש</string>
+    <string name="live_today_widget_before">הטיול עוד לא התחיל</string>
+    <string name="live_today_widget_after">הטיול הסתיים</string>
+    <string name="live_today_widget_unknown">פתח את TravelMate לעדכון</string>
+    <string name="live_today_widget_stale">המידע שמור במכשיר · פתח לעדכון</string>
+    <string name="live_today_widget_weather_unavailable">מזג האוויר יתעדכן מתוך TravelMate</string>
+    <string name="live_today_widget_description">TravelMate היום: הפעילות הקבועה הקרובה, מזג אוויר ועדכוני טיול</string>
 </resources>
