@@ -58,7 +58,7 @@ jobs:
           test -d ios/App/App.xcodeproj
           test -f ios/App/Package.swift
           test -f ios/App/App/Info.plist
-          grep -q 'com.travelmate.app' ios/App/App.xcodeproj/project.pbxproj
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -showBuildSettings | grep -E '^ *PRODUCT_BUNDLE_IDENTIFIER = com\.travelmate\.app$'
           test -f ios/App/App/public/index.html
 
       - name: Commit reproducible iOS foundation
