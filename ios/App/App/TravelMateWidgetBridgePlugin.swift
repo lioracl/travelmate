@@ -16,6 +16,7 @@ public class TravelMateWidgetBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     private let snapshotPrefix = "snapshot_json:"
     private let maxAgeMs: Double = 60 * 60 * 1000
     private let maxMoney = 1_000_000_000.0
+    private let widgetKinds = ["TravelMateBudgetWidget", "TravelMateLiveTodayWidget"]
 
     @objc public func updateSnapshot(_ call: CAPPluginCall) {
         guard let input = call.getObject("snapshot"), let safe = sanitize(input),
@@ -34,7 +35,7 @@ public class TravelMateWidgetBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         defaults.set(json, forKey: scopedKey)
         defaults.set(scopedKey, forKey: activeKey)
         if let previous, previous != scopedKey { defaults.removeObject(forKey: previous) }
-        WidgetCenter.shared.reloadTimelines(ofKind: "TravelMateBudgetWidget")
+        reloadWidgetTimelines()
         call.resolve(["saved": true])
     }
 
@@ -45,8 +46,12 @@ public class TravelMateWidgetBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         }
         if let active = defaults.string(forKey: activeKey) { defaults.removeObject(forKey: active) }
         defaults.removeObject(forKey: activeKey)
-        WidgetCenter.shared.reloadTimelines(ofKind: "TravelMateBudgetWidget")
+        reloadWidgetTimelines()
         call.resolve()
+    }
+
+    private func reloadWidgetTimelines() {
+        widgetKinds.forEach { WidgetCenter.shared.reloadTimelines(ofKind: $0) }
     }
 
     private func sanitize(_ input: JSObject) -> [String: Any]? {
