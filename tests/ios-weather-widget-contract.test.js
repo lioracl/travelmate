@@ -28,8 +28,9 @@ test('Weather widget is snapshot-only and never owns weather networking or GPS',
 test('Weather freshness remains explicit and zero is not invented for missing temperature', () => {
   assert.match(weather, /weather\.ready/);
   assert.match(weather, /validUntilEpochMs/);
-  assert.match(weather, /temperatureC\.map/);
-  assert.match(weather, /"—"/);
+  assert.match(weather, /value\.map \{ "\\\(\$0\)°" \} \?\? "—"/);
+  assert.match(weather, /hasCachedWeather/);
+  assert.match(weather, /מידע שמור · פתח את TravelMate לעדכון/);
   assert.match(weather, /מזג האוויר לא זמין/);
   assert.match(snapshot, /temperatureC: ready && Number\.isFinite\(temperature\) \? Math\.round\(temperature\) : null/);
 });
