@@ -11,7 +11,7 @@ Status: Draft native P2 work on `chatgpt/ios-live-today-widget`, layered on the 
 
 ## Live Today contract
 
-- Select the first canonical agenda item that has not ended: current when `start <= now < end`, otherwise next future item.
+- In the integrated release candidate, render the `liveToday` state/time selected by `TravelMateToday.currentOrNext`. Native code does not sort agenda items or select a successor. Once `validUntilEpochMs` expires, show update-needed until a fresh canonical snapshot arrives. See `native-widget-snapshot.md` for the additive v1 contract.
 - If there is no fixed/planned commitment, render the canonical trip phase fallback instead of promoting flexible/window content.
 - Show cached Weather only while the sanitized weather snapshot is ready and fresh.
 - Show unread collaborative changes only as a bounded count.
