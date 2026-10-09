@@ -108,9 +108,14 @@ jobs:
             grep -q "$KIND" ios/App/App/TravelMateWidgetBridgePlugin.swift
           done
           EXECUTABLE="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$WIDGET/Info.plist")"
+          test -f "$WIDGET/$EXECUTABLE"
           strings "$WIDGET/$EXECUTABLE" > build/ios-release/widget-symbols.txt
+          # Recent Xcode Debug builds put implementation symbols in a bundled dylib.
+          if [ -f "$WIDGET/$EXECUTABLE.debug.dylib" ]; then
+            strings "$WIDGET/$EXECUTABLE.debug.dylib" >> build/ios-release/widget-symbols.txt
+          fi
           for KIND in TravelMateBudgetWidget TravelMateLiveTodayWidget TravelMateWeatherWidget TravelMateNotificationsWidget; do
-            grep -q "$KIND" build/ios-release/widget-symbols.txt
+            grep -q "$KIND" build/ios-release/widget-symbols.txt || { echo "Missing packaged widget kind: $KIND"; exit 1; }
           done
           git diff --exit-code -- ios/App/App.xcodeproj/project.pbxproj
           ditto -c -k --sequesterRsrc --keepParent "$APP" build/ios-release/TravelMate-Simulator.zip
