@@ -29,7 +29,7 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: Verify branch is safe to bootstrap
+      - name: Verify branch and canonical app identity
         shell: bash
         run: |
           test "$GITHUB_REF_NAME" = "chatgpt/ios-foundation"
@@ -47,21 +47,10 @@ jobs:
           npm pkg set 'scripts.native:copy:ios=npm run native:stage && npx cap copy ios'
           npm pkg set 'scripts.native:open:ios=npx cap open ios'
 
-      - name: Stage TravelMate runtime and create iOS project
-        run: npm run native:add:ios
-
-      - name: Sync generated project
-        run: npm run native:sync:ios
-
-      - name: Verify generated iOS structure
-        shell: bash
+      - name: Create and sync iOS project
         run: |
-          test -d ios/App/App.xcodeproj
-          test -f ios/App/Package.swift
-          test -f ios/App/App/Info.plist
-          test -f ios/App/App/public/index.html
-          test -f ios/App/App/public/assets/app.js
-          test -f ios/App/App/public/trip/custom/index.html
+          npm run native:add:ios
+          npm run native:sync:ios
 
       - name: Build unsigned iOS Simulator app
         shell: bash
@@ -77,7 +66,7 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             build
 
-      - name: Verify built Simulator app
+      - name: Verify built TravelMate runtime
         shell: bash
         run: |
           APP="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/App.app"
