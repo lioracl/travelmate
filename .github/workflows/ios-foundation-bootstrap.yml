@@ -15,7 +15,7 @@ jobs:
   bootstrap-ios:
     if: github.actor != 'github-actions[bot]'
     runs-on: macos-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -34,6 +34,7 @@ jobs:
         run: |
           test "$GITHUB_REF_NAME" = "chatgpt/ios-foundation"
           test ! -d ios
+          node -e "const c=require('./capacitor.config.json'); if(c.appId!=='com.travelmate.app'||c.appName!=='TravelMate'||c.webDir!=='dist') process.exit(1)"
 
       - name: Install pinned Capacitor iOS dependency
         run: npm install --save-exact --no-audit @capacitor/ios@8.5.2
@@ -52,15 +53,38 @@ jobs:
       - name: Sync generated project
         run: npm run native:sync:ios
 
-      - name: Verify generated iOS source contract
+      - name: Verify generated iOS structure
         shell: bash
         run: |
           test -d ios/App/App.xcodeproj
           test -f ios/App/Package.swift
           test -f ios/App/App/Info.plist
-          test -f ios/App/App/capacitor.config.json
-          node -e "const c=require('./ios/App/App/capacitor.config.json'); if(c.appId!=='com.travelmate.app'||c.appName!=='TravelMate') process.exit(1)"
           test -f ios/App/App/public/index.html
+          test -f ios/App/App/public/assets/app.js
+          test -f ios/App/App/public/trip/custom/index.html
+
+      - name: Build unsigned iOS Simulator app
+        shell: bash
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Verify built Simulator app
+        shell: bash
+        run: |
+          APP="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/App.app"
+          test -d "$APP"
+          test -f "$APP/public/index.html"
+          test -f "$APP/public/assets/app.js"
+          test -f "$APP/public/trip/custom/index.html"
 
       - name: Commit reproducible iOS foundation
         shell: bash
