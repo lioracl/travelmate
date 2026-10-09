@@ -3,7 +3,7 @@ import Capacitor
 import WidgetKit
 
 @objc(TravelMateWidgetBridgePlugin)
-public final class TravelMateWidgetBridgePlugin: CAPPlugin, CAPBridgedPlugin {
+public class TravelMateWidgetBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "TravelMateWidgetBridgePlugin"
     public let jsName = "TravelMateWidgetBridge"
     public let pluginMethods: [CAPPluginMethod] = [
