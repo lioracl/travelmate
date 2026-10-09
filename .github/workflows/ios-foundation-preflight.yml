@@ -23,12 +23,13 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: Verify Xcode 26+
+      - name: Verify Xcode 26+ and canonical app identity
         shell: bash
         run: |
           xcodebuild -version
           XCODE_MAJOR="$(xcodebuild -version | awk '/Xcode/{split($2,a,"."); print a[1]}')"
           test "${XCODE_MAJOR}" -ge 26
+          node -e "const c=require('./capacitor.config.json'); if(c.appId!=='com.travelmate.app'||c.appName!=='TravelMate'||c.webDir!=='dist') process.exit(1)"
 
       - name: Install TravelMate dependencies
         run: npm ci --no-audit
@@ -46,15 +47,15 @@ jobs:
             npx cap sync ios
           fi
 
-      - name: Verify generated iOS source contract
+      - name: Verify generated iOS structure
         shell: bash
         run: |
           test -d ios/App/App.xcodeproj
           test -f ios/App/Package.swift
           test -f ios/App/App/Info.plist
-          test -f ios/App/App/capacitor.config.json
-          node -e "const c=require('./ios/App/App/capacitor.config.json'); if(c.appId!=='com.travelmate.app'||c.appName!=='TravelMate') process.exit(1)"
           test -f ios/App/App/public/index.html
+          test -f ios/App/App/public/assets/app.js
+          test -f ios/App/App/public/trip/custom/index.html
 
       - name: Build unsigned iOS Simulator app
         shell: bash
