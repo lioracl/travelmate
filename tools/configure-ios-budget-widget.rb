@@ -19,6 +19,7 @@ end
 add_source(app_group, app, 'TravelMateWidgetBridgePlugin.swift')
 add_source(app_group, app, 'TravelMateBridgeViewController.swift')
 add_source(widget_group, widget, 'TravelMateBudgetWidget.swift')
+add_source(widget_group, widget, 'TravelMateLiveTodayWidget.swift')
 
 app.build_configurations.each do |config|
   config.build_settings['CODE_SIGN_ENTITLEMENTS'] = 'App/App.entitlements'
@@ -57,4 +58,4 @@ frameworks = project.frameworks_group
 end
 
 project.save
-puts "Configured #{widget_name} target"
+puts "Configured #{widget_name} target with Budget and Live Today widgets"
