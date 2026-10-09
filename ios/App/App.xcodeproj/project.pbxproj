@@ -20,6 +20,7 @@
 		6DDDE6C22ABC1FB4D6CA69C9 /* TravelMateWeatherWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 991877601A74704385BB51BD /* TravelMateWeatherWidget.swift */; };
 		7869228B2DC241648B8CF3E0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FBA76E73A030B710F457B63 /* WidgetKit.framework */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
+		990C07FFBFB5BFD38295720A /* TravelMateNotificationsWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854D34F28F64B40E9AE40E6E /* TravelMateNotificationsWidget.swift */; };
 		BC44899A99D64F22EA8518A4 /* TravelMateBudgetWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 51FFD76296980AC6C592BD73 /* TravelMateBudgetWidget.appex */; };
 		D095783FFB3AC7B22B59F2BE /* TravelMateBridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE05AD6A2B177CCDB3EE674 /* TravelMateBridgeViewController.swift */; };
 		DA215FD5E4C9A413F25BA54B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 79D6FE2F36A6AC83345CAFA6 /* Foundation.framework */; };
@@ -67,6 +68,7 @@
 		51FFD76296980AC6C592BD73 /* TravelMateBudgetWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TravelMateBudgetWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		79D6FE2F36A6AC83345CAFA6 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		84C55995EEFE26F5AE9B14F8 /* TravelMateLiveTodayWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TravelMateLiveTodayWidget.swift; sourceTree = "<group>"; };
+		854D34F28F64B40E9AE40E6E /* TravelMateNotificationsWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TravelMateNotificationsWidget.swift; sourceTree = "<group>"; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		991877601A74704385BB51BD /* TravelMateWeatherWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TravelMateWeatherWidget.swift; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 				144C329B33F3DEE40CC6A8DE /* TravelMateBudgetWidget.swift */,
 				84C55995EEFE26F5AE9B14F8 /* TravelMateLiveTodayWidget.swift */,
 				991877601A74704385BB51BD /* TravelMateWeatherWidget.swift */,
+				854D34F28F64B40E9AE40E6E /* TravelMateNotificationsWidget.swift */,
 			);
 			name = TravelMateBudgetWidget;
 			path = TravelMateBudgetWidget;
@@ -287,6 +290,7 @@
 				DEB15278D0CE0DF8CD5A013F /* TravelMateBudgetWidget.swift in Sources */,
 				405AB284A44BA0AC4114C239 /* TravelMateLiveTodayWidget.swift in Sources */,
 				6DDDE6C22ABC1FB4D6CA69C9 /* TravelMateWeatherWidget.swift in Sources */,
+				990C07FFBFB5BFD38295720A /* TravelMateNotificationsWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

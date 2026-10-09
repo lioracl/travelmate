@@ -227,5 +227,6 @@ struct TravelMateBudgetWidgetBundle: WidgetBundle {
         TravelMateBudgetWidget()
         TravelMateLiveTodayWidget()
         TravelMateWeatherWidget()
+        TravelMateNotificationsWidget()
     }
 }

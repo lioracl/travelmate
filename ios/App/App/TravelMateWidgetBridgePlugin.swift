@@ -16,7 +16,7 @@ public class TravelMateWidgetBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     private let snapshotPrefix = "snapshot_json:"
     private let maxAgeMs: Double = 60 * 60 * 1000
     private let maxMoney = 1_000_000_000.0
-    private let widgetKinds = ["TravelMateBudgetWidget", "TravelMateLiveTodayWidget", "TravelMateWeatherWidget"]
+    private let widgetKinds = ["TravelMateBudgetWidget", "TravelMateLiveTodayWidget", "TravelMateWeatherWidget", "TravelMateNotificationsWidget"]
 
     @objc public func updateSnapshot(_ call: CAPPluginCall) {
         guard let input = call.getObject("snapshot"), let safe = sanitize(input),
