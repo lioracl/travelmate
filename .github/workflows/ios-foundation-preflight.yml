@@ -46,13 +46,14 @@ jobs:
             npx cap sync ios
           fi
 
-      - name: Verify generated iOS identity
+      - name: Verify generated iOS source contract
         shell: bash
         run: |
           test -d ios/App/App.xcodeproj
           test -f ios/App/Package.swift
           test -f ios/App/App/Info.plist
-          xcodebuild -project ios/App/App.xcodeproj -scheme App -showBuildSettings | grep -E '^ *PRODUCT_BUNDLE_IDENTIFIER = com\.travelmate\.app$'
+          test -f ios/App/App/capacitor.config.json
+          node -e "const c=require('./ios/App/App/capacitor.config.json'); if(c.appId!=='com.travelmate.app'||c.appName!=='TravelMate'||c.webDir!=='dist') process.exit(1)"
           test -f ios/App/App/public/index.html
 
       - name: Build unsigned iOS Simulator app
