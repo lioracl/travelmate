@@ -223,5 +223,8 @@ private struct TravelMateBudgetWidget: Widget {
 
 @main
 struct TravelMateBudgetWidgetBundle: WidgetBundle {
-    var body: some Widget { TravelMateBudgetWidget() }
+    var body: some Widget {
+        TravelMateBudgetWidget()
+        TravelMateLiveTodayWidget()
+    }
 }
