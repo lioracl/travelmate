@@ -57,10 +57,12 @@ jobs:
           node --test tests/*.test.js
 
       - name: Build app with WidgetKit extension
+        id: xcode_build
         shell: bash
         run: |
-          set -euo pipefail
+          set -o pipefail
           rm -rf build/ios-budget-widget
+          mkdir -p build/ios-budget-widget
           xcodebuild \
             -project ios/App/App.xcodeproj \
             -scheme App \
@@ -70,7 +72,24 @@ jobs:
             -derivedDataPath build/ios-budget-widget \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            build
+            build 2>&1 | tee build/ios-budget-widget/xcodebuild.log
+
+      - name: Report Xcode compiler errors
+        if: failure() && steps.xcode_build.outcome == 'failure'
+        shell: bash
+        run: |
+          echo '--- XCODE COMPILER ERRORS ---'
+          grep -E -C 3 '(^|[[:space:]])(error:|fatal error:)|SwiftCompile|CompileSwift' build/ios-budget-widget/xcodebuild.log | tail -n 240 || true
+          echo '--- END XCODE COMPILER ERRORS ---'
+
+      - name: Upload failed Xcode log
+        if: failure() && steps.xcode_build.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: travelmate-ios-budget-widget-xcode-failure-log
+          path: build/ios-budget-widget/xcodebuild.log
+          if-no-files-found: error
+          retention-days: 3
 
       - name: Verify packaged app and widget
         shell: bash
