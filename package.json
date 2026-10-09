@@ -1,0 +1,20 @@
+{
+  "name": "travelmate",
+  "version": "2.21.0",
+  "private": true,
+  "scripts": {
+    "native:stage": "node tools/stage-native-web.mjs",
+    "native:add:android": "npm run native:stage && npx cap add android",
+    "native:sync": "npm run native:stage && npx cap sync android",
+    "native:copy": "npm run native:stage && npx cap copy android",
+    "native:open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
+  }
+}
