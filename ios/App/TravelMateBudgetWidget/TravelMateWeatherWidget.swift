@@ -79,6 +79,7 @@ private struct WeatherWidgetView: View {
         let snapshotStale = snapshot.map { Date(timeIntervalSince1970: $0.expiresAtEpochMs / 1000) <= entry.date } ?? true
         let weather = snapshot?.weather
         let weatherFresh = !snapshotStale && weather?.ready == true && Date(timeIntervalSince1970: (weather?.validUntilEpochMs ?? 0) / 1000) > entry.date
+        let hasCachedWeather = weather.map { $0.temperatureC != nil || !(($0.label ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) } ?? false
         let overviewURL = deepLink(tripId: snapshot?.tripId ?? "")
 
         VStack(alignment: .leading, spacing: family == .systemSmall ? 7 : 9) {
@@ -92,28 +93,20 @@ private struct WeatherWidgetView: View {
                     .lineLimit(1)
             }
 
-            if snapshotStale {
-                Text("מידע שמור")
-                    .font(family == .systemSmall ? .headline : .title3.bold())
-                Text("פתח את TravelMate לעדכון")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-            } else if weatherFresh, let weather {
-                Text(temperatureText(weather.temperatureC))
-                    .font(family == .systemSmall ? .title.bold() : .largeTitle.bold())
-                    .minimumScaleFactor(0.75)
-                    .lineLimit(1)
-                Text(labelText(weather.label))
-                    .font(.headline)
-                    .lineLimit(2)
-                    .foregroundColor(.primary)
+            if weatherFresh, let weather {
+                weatherValues(weather)
                 if family != .systemSmall {
                     Text("תחזית שמורה במכשיר · מתעדכנת דרך TravelMate")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
+            } else if hasCachedWeather, let weather {
+                weatherValues(weather)
+                Text("מידע שמור · פתח את TravelMate לעדכון")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
             } else {
                 Text("מזג האוויר לא זמין")
                     .font(.headline)
@@ -132,7 +125,19 @@ private struct WeatherWidgetView: View {
         .environment(\.layoutDirection, .rightToLeft)
         .privacySensitive()
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(accessibilityText(snapshotStale: snapshotStale, fresh: weatherFresh, weather: weather))
+        .accessibilityLabel(accessibilityText(stale: !weatherFresh, hasCachedWeather: hasCachedWeather, weather: weather))
+    }
+
+    @ViewBuilder
+    private func weatherValues(_ weather: WeatherState) -> some View {
+        Text(temperatureText(weather.temperatureC))
+            .font(family == .systemSmall ? .title.bold() : .largeTitle.bold())
+            .minimumScaleFactor(0.75)
+            .lineLimit(1)
+        Text(labelText(weather.label))
+            .font(.headline)
+            .lineLimit(2)
+            .foregroundColor(.primary)
     }
 
     private func temperatureText(_ value: Int?) -> String {
@@ -141,13 +146,13 @@ private struct WeatherWidgetView: View {
 
     private func labelText(_ value: String?) -> String {
         let text = (value ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        return text.isEmpty ? "תחזית עדכנית" : String(text.prefix(64))
+        return text.isEmpty ? "תחזית שמורה" : String(text.prefix(64))
     }
 
-    private func accessibilityText(snapshotStale: Bool, fresh: Bool, weather: WeatherState?) -> String {
-        if snapshotStale { return "מזג האוויר ב־TravelMate, המידע השמור אינו עדכני" }
-        guard fresh, let weather else { return "מזג האוויר ב־TravelMate אינו זמין כרגע" }
-        return "מזג האוויר ב־TravelMate, \(temperatureText(weather.temperatureC)), \(labelText(weather.label))"
+    private func accessibilityText(stale: Bool, hasCachedWeather: Bool, weather: WeatherState?) -> String {
+        guard hasCachedWeather, let weather else { return "מזג האוויר ב־TravelMate אינו זמין כרגע" }
+        let state = stale ? "מידע שמור שאינו בהכרח עדכני" : "מידע שמור ועדכני"
+        return "מזג האוויר ב־TravelMate, \(temperatureText(weather.temperatureC)), \(labelText(weather.label)), \(state)"
     }
 
     private func deepLink(tripId: String) -> URL? {
