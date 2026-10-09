@@ -1,6 +1,6 @@
 {
   "name": "travelmate",
-  "version": "2.20.3",
+  "version": "2.21.0",
   "private": true,
   "scripts": {
     "native:stage": "node tools/stage-native-web.mjs",
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@capacitor/android": "8.5.2",
+    "@capacitor/app": "8.1.2",
     "@capacitor/core": "8.5.2"
   },
   "devDependencies": {

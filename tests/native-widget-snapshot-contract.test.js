@@ -69,8 +69,8 @@ test('weather freshness is explicit and unread count is bounded', () => {
 });
 
 test('native deep links accept only the TravelMate scheme and known views', () => {
-  assert.deepEqual(widget.parseDeepLink('travelmate://trip/abc?view=plan'),{tripId:'abc',view:'plan',panel:''});
-  assert.deepEqual(widget.parseDeepLink('travelmate://trip/abc?view=evil'),{tripId:'abc',view:'overview',panel:''});
+  assert.deepEqual(widget.parseDeepLink('travelmate://trip/abc?view=plan'),{tripId:'abc',view:'plan',panel:'',action:''});
+  assert.deepEqual(widget.parseDeepLink('travelmate://trip/abc?view=evil'),{tripId:'abc',view:'overview',panel:'',action:''});
   assert.equal(widget.parseDeepLink('https://example.com/trip/abc?view=plan'),null);
 });
 
@@ -135,8 +135,8 @@ test('widget timezone is validated and clock basis never claims destination-loca
 test('deep links reject path injection and unknown panels', () => {
   assert.equal(widget.parseDeepLink('travelmate://trip/..%2Fsecret?view=plan'),null);
   assert.equal(widget.parseDeepLink('travelmate://evil/trip-1'),null);
-  assert.deepEqual(widget.parseDeepLink('travelmate://trip/trip-1?view=plan&panel=changes'),{tripId:'trip-1',view:'plan',panel:''});
-  assert.deepEqual(widget.parseDeepLink('travelmate://trip/trip-1?view=overview&panel=changes'),{tripId:'trip-1',view:'overview',panel:'changes'});
+  assert.deepEqual(widget.parseDeepLink('travelmate://trip/trip-1?view=plan&panel=changes'),{tripId:'trip-1',view:'plan',panel:'',action:''});
+  assert.deepEqual(widget.parseDeepLink('travelmate://trip/trip-1?view=overview&panel=changes'),{tripId:'trip-1',view:'overview',panel:'changes',action:''});
 });
 
 test('native staging owns widget script wiring without modifying published PWA HTML', () => {
@@ -230,7 +230,10 @@ test('home screen retains last widget for signed-in user but clears it on logout
   await flush();
   assert.equal(writes,0);
   assert.equal(clears,0);
+  (listeners['travelmate:trip-deleted']||[]).forEach(fn=>fn({detail:{id:'trip-1'}}));
+  await flush();
+  assert.equal(clears,1,'deleting a trip from Home must invalidate the retained widget');
   onAuth('SIGNED_OUT',null);
   await flush();
-  assert.equal(clears,1);
+  assert.equal(clears,2);
 });

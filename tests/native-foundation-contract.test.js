@@ -34,7 +34,12 @@ test('native staging copies only the runtime web roots', () => {
   assert.doesNotMatch(stage, /docs/);
 });
 
-test('Android shell identity and version match TravelMate 2.20.3', () => {
+test('Android shell identity and version match the canonical TravelMate package version', () => {
+  const pkg = JSON.parse(read('package.json'));
+  const parts = pkg.version.split('.').map(Number);
+  assert.equal(parts.length, 3);
+  assert.ok(parts.every(Number.isInteger));
+  const versionCode = parts[0] * 10000 + parts[1] * 100 + parts[2];
   const gradle = read('android/app/build.gradle');
   const variables = read('android/variables.gradle');
   const mainActivity = read('android/app/src/main/java/com/travelmate/app/MainActivity.java');
@@ -45,8 +50,8 @@ test('Android shell identity and version match TravelMate 2.20.3', () => {
   assert.match(gradle, /namespace = "com\.travelmate\.app"/);
   assert.match(variables, /minSdkVersion = 26/);
   assert.match(gradle, /applicationId "com\.travelmate\.app"/);
-  assert.match(gradle, /versionCode 22003/);
-  assert.match(gradle, /versionName "2\.20\.3"/);
+  assert.match(gradle, new RegExp(`versionCode ${versionCode}(?:\\s|$)`));
+  assert.match(gradle, new RegExp(`versionName "${pkg.version.replace(/\./g, '\\.')}"`));
   assert.match(mainActivity, /package com\.travelmate\.app;/);
   assert.match(instrumented, /package com\.travelmate\.app;/);
   assert.match(instrumented, /assertEquals\("com\.travelmate\.app", appContext\.getPackageName\(\)\)/);
