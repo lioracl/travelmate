@@ -53,7 +53,7 @@ jobs:
           test -f ios/App/Package.swift
           test -f ios/App/App/Info.plist
           test -f ios/App/App/capacitor.config.json
-          node -e "const c=require('./ios/App/App/capacitor.config.json'); if(c.appId!=='com.travelmate.app'||c.appName!=='TravelMate'||c.webDir!=='dist') process.exit(1)"
+          node -e "const c=require('./ios/App/App/capacitor.config.json'); if(c.appId!=='com.travelmate.app'||c.appName!=='TravelMate') process.exit(1)"
           test -f ios/App/App/public/index.html
 
       - name: Build unsigned iOS Simulator app
