@@ -226,5 +226,6 @@ struct TravelMateBudgetWidgetBundle: WidgetBundle {
     var body: some Widget {
         TravelMateBudgetWidget()
         TravelMateLiveTodayWidget()
+        TravelMateWeatherWidget()
     }
 }
