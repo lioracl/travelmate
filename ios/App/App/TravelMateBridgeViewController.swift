@@ -1,7 +1,7 @@
 import Capacitor
 
 final class TravelMateBridgeViewController: CAPBridgeViewController {
-    override open func capacitorDidLoad() {
+    override public func capacitorDidLoad() {
         bridge?.registerPluginInstance(TravelMateWidgetBridgePlugin())
     }
 }
