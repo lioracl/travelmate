@@ -33,17 +33,27 @@ jobs:
       - name: Install TravelMate dependencies
         run: npm ci --no-audit
 
-      - name: Install Capacitor iOS 8.5.2 for preflight
-        run: npm install --no-save --no-audit @capacitor/ios@8.5.2
+      - name: Prepare Capacitor iOS source
+        shell: bash
+        run: |
+          if [ -d ios/App/App.xcodeproj ]; then
+            test "$(node -p "require('./package.json').dependencies['@capacitor/ios'] || ''")" = "8.5.2"
+            npm run native:sync:ios
+          else
+            npm install --no-save --no-audit @capacitor/ios@8.5.2
+            npm run native:stage
+            npx cap add ios --packagemanager SPM
+            npx cap sync ios
+          fi
 
-      - name: Stage canonical TravelMate web runtime
-        run: npm run native:stage
-
-      - name: Generate iOS project with Swift Package Manager
-        run: npx cap add ios --packagemanager SPM
-
-      - name: Sync Capacitor iOS
-        run: npx cap sync ios
+      - name: Verify generated iOS identity
+        shell: bash
+        run: |
+          test -d ios/App/App.xcodeproj
+          test -f ios/App/Package.swift
+          test -f ios/App/App/Info.plist
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -showBuildSettings | grep -E '^ *PRODUCT_BUNDLE_IDENTIFIER = com\.travelmate\.app$'
+          test -f ios/App/App/public/index.html
 
       - name: Build unsigned iOS Simulator app
         shell: bash
