@@ -7,12 +7,17 @@
     "native:add:android": "npm run native:stage && npx cap add android",
     "native:sync": "npm run native:stage && npx cap sync android",
     "native:copy": "npm run native:stage && npx cap copy android",
-    "native:open:android": "npx cap open android"
+    "native:open:android": "npx cap open android",
+    "native:add:ios": "npm run native:stage && npx cap add ios --packagemanager SPM",
+    "native:sync:ios": "npm run native:stage && npx cap sync ios",
+    "native:copy:ios": "npm run native:stage && npx cap copy ios",
+    "native:open:ios": "npx cap open ios"
   },
   "dependencies": {
     "@capacitor/android": "8.5.2",
     "@capacitor/app": "8.1.2",
-    "@capacitor/core": "8.5.2"
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2"
   },
   "devDependencies": {
     "@capacitor/cli": "8.5.2"
