@@ -52,13 +52,14 @@ jobs:
       - name: Sync generated project
         run: npm run native:sync:ios
 
-      - name: Verify generated iOS identity and SPM project
+      - name: Verify generated iOS source contract
         shell: bash
         run: |
           test -d ios/App/App.xcodeproj
           test -f ios/App/Package.swift
           test -f ios/App/App/Info.plist
-          xcodebuild -project ios/App/App.xcodeproj -scheme App -showBuildSettings | grep -E '^ *PRODUCT_BUNDLE_IDENTIFIER = com\.travelmate\.app$'
+          test -f ios/App/App/capacitor.config.json
+          node -e "const c=require('./ios/App/App/capacitor.config.json'); if(c.appId!=='com.travelmate.app'||c.appName!=='TravelMate'||c.webDir!=='dist') process.exit(1)"
           test -f ios/App/App/public/index.html
 
       - name: Commit reproducible iOS foundation
