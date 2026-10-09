@@ -1,6 +1,6 @@
 # TravelMate Native Widget Snapshot — Contract v1
 
-Status: isolated widget foundation on `chatgpt/widget-foundation`; not published to `preview` or `main`.
+Status: isolated widget foundation on the native/widget draft branch; not published to `preview` or `main`.
 
 ## Ownership and lifecycle
 
@@ -25,12 +25,34 @@ The snapshot is refreshed on canonical activity/place/Today/weather/change event
 
 The payload **must never** contain documents, passwords, notes, receipts, health records, GPS history, private messages, arbitrary event bodies or unapproved learned preferences. Account IDs and trip IDs remain internal to the private native store.
 
+## Android Budget Widget
+
+The Budget Widget is a read-only native rendering of canonical Budget V2 data. It shows spent-so-far, limited-budget remaining/overrun or unlimited-budget daily pace, plus cached FX freshness. `+ Expense` and `Converter` only deep-link to the existing Budget V2 UI. Native code never writes an expense or fetches an exchange rate itself.
+
+## Android Live Today Widget
+
+`TravelMateLiveTodayWidgetProvider` reuses the **same** account/trip-scoped snapshot as the Budget Widget. It does not create another store, scheduler or network path.
+
+- The first canonical `agenda` item is the only activity candidate. Because the browser snapshot already filters `done`, `flexible` and `window`, native code does not introduce a second timing policy.
+- Native compares the candidate `startEpochMs/endEpochMs` with the current device clock only to label it **current** or **next**. A stale whole snapshot is never presented as live.
+- With no fixed candidate, the sanitized `phase` drives the fallback: before trip, active/open-and-flexible, after trip or unknown/update-needed.
+- Default privacy remains `redacted`, so the home-screen widget shows timing/state only and does not expose activity title or location. Exposing those fields later requires an explicit user privacy preference and separate review.
+- Weather is rendered only when the existing snapshot says it is ready and its `validUntilEpochMs` is still in the future. No widget-side weather request is allowed.
+- Unread collaborative changes are a count only. Tapping the count deep-links to Overview `panel=changes`; tapping the widget or `Open Plan` deep-links to Plan.
+- Android refresh remains OS-managed (`updatePeriodMillis=1800000`) plus in-app refresh when the canonical bridge receives a new snapshot. There is no promise of minute-exact background updates.
+- The layout is RTL-aware and uses the same widget material/background tokens as Budget. Real-device accessibility, add/remove/resize, account switch, offline and deep-link smoke remain part of the Draft runtime gate.
+
 ## Tests and integration gates
 
-Focused contract tests: `node --test tests/native-widget-snapshot-contract.test.js`. They cover scope validation, redaction, bounded payloads, canonical timing-mode filtering, malformed dates/times, weather staleness/null temperature, IANA validation, deep-link sanitization, account switch/sign-out and native-only staging.
+Focused contract tests:
+- `node --test tests/native-widget-snapshot-contract.test.js`
+- `node --test tests/budget-widget-contract.test.js`
+- `node --test tests/live-today-widget-contract.test.js`
+
+They cover scope validation, redaction, bounded payloads, canonical timing-mode filtering, malformed dates/times, weather staleness/null temperature, IANA validation, deep-link sanitization, account switch/sign-out, native-only staging, Budget ownership and Live Today native wiring.
 
 Native stage: `npm.cmd run native:stage` on Windows; verify both `dist/index.html` and `dist/trip/custom/index.html` include the bridge script, while original PWA files do not.
 
-**Android follow-up gate:** register the Java Capacitor plugin in `MainActivity`, wire the widget provider/metadata in AndroidManifest, reject stale `expiresAtEpochMs` snapshots, validate the widget UI in RTL/light/dark and test deep links, sign-out, account switching, offline, background refresh limitations and WebView startup on emulator/device. The current Android files in the isolated worktree are uncommitted exploratory work and must be reviewed independently before staging. Keep PR #146 Draft until runtime smoke passes.
+**Android runtime gate:** keep PR #146 Draft until an emulator or real Android device verifies startup/login/trip loading, add/remove/resize for both widgets, Quick Expense, converter, Plan/changes deep links, stale/offline behavior, account switch/logout clearing, RTL/accessibility and packaged WebView behavior.
 
 **iOS later:** add a Capacitor iOS shell, WidgetKit extension and an App Group store with the same schema, account clearing, privacy and OS-managed refresh semantics. No iOS code is included here.
