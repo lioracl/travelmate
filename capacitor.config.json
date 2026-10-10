@@ -1,5 +1,11 @@
 {
   "appId": "com.travelmate.app",
   "appName": "TravelMate",
-  "webDir": "dist"
+  "webDir": "dist",
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
 }

@@ -10,6 +10,8 @@ const CORE_PATHS=[
   './trip/japan-2027/index.html',
   './assets/styles.css',
   './assets/app.js',
+  './assets/app-shell.js',
+  './assets/app-shell.css',
   './assets/readable-glass.css',
   './assets/home.js',
   './assets/profile-wizard.js',

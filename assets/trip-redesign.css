@@ -597,7 +597,7 @@ body:not(.home-page) .workspace>.sidebar nav .sidebar-about{order:999}
   body:not(.home-page) main.content{padding-top:76px}
   body:not(.home-page) .mobile-header{
     position:fixed;
-    top:max(8px,env(safe-area-inset-top));
+    /* App Shell owns the header inset. */
     right:8px;
     left:8px;
     width:auto;
@@ -951,10 +951,6 @@ html body.tm-new-design[data-trip-view] main.content section:is(#car-rental,#get
 /* Mobile chrome edge fix: no page/background strip above the fixed trip header. */
 @media(max-width:1000px){
   body:not(.home-page) .mobile-header{
-    top:0;
-    right:0;
-    left:0;
-    width:100%;
     margin:0;
     border-inline:0
   }
