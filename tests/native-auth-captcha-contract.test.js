@@ -10,8 +10,8 @@ test('Capacitor localhost renders Turnstile instead of disabling CAPTCHA', () =>
   assert.doesNotMatch(security, /בדיקת האבטחה זמינה באתר המאובטח ולא בתצוגה המקומית/);
   assert.doesNotMatch(security, /security-captcha-development/);
   assert.match(security, /window\.turnstile\.render/);
-  assert.match(security, /'expired-callback': clearCaptchaToken/);
-  assert.match(security, /'error-callback': showCaptchaFailure/);
+  assert.match(security, /'expired-callback': function \(\) \{ if \(active && attempt === generation\) showCaptchaFailure\('expired'\)/);
+  assert.match(security, /'error-callback': function \(code\) \{ if \(active && attempt === generation\) showCaptchaFailure\(code\)/);
   assert.match(security, /String\(code \|\| ''\) === '110200'/);
   assert.match(security, /script\.onerror = function/);
 });
@@ -23,7 +23,7 @@ test('Supabase auth fails closed without a Turnstile token and resets one-shot t
   assert.match(cloud, /async function withCaptcha\(action\)/);
   assert.match(cloud, /finally \{ captchaActionPending = false; resetCaptcha\(\); \}/);
   assert.match(cloud, /captchaToken: token/);
-  assert.match(security, /window\.turnstile\.reset\(captchaWidgetId\)/);
+  assert.match(security, /if \(captchaController\) captchaController\.restart\(\)/);
 });
 
 test('Home login reports a specific security-check failure', () => {

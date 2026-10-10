@@ -559,6 +559,7 @@
       try { await window.TravelMateFeatures.ensureAccount(); }
       catch (error) { console.error('TravelMate account feature failed to load', error); }
     }
+    if (window.TravelMateSecurity && window.TravelMateSecurity.resumeCaptcha) window.TravelMateSecurity.resumeCaptcha();
     accountBackdrop.hidden = false;
     accountBackdrop.setAttribute('aria-hidden', 'false');
     document.body.classList.add('cloud-account-open');
@@ -568,6 +569,7 @@
   }
 
   function closeAccountModal() {
+    if (window.TravelMateSecurity && window.TravelMateSecurity.pauseCaptcha) window.TravelMateSecurity.pauseCaptcha();
     accountBackdrop.hidden = true;
     accountBackdrop.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('cloud-account-open');
@@ -972,11 +974,19 @@
   accountPanel.querySelector('[data-cloud-resend]').addEventListener('click', async function (event) {
     if (!authForm.elements.email.reportValidity()) return;
     var button = event.currentTarget; button.disabled = true; setMessage('שולח שוב את מייל האימות…');
-    var result = await cloud.resendSignup(authForm.elements.email.value.trim(), cloud.authRedirectUrl());
-    if (result.error) { setMessage(authMessage(result.error), true); button.disabled = false; return; }
-    setMessage('מייל אימות נוסף נשלח. בדוק גם בתיקיות ספאם וקידומי מכירות.');
-    button.textContent = 'נשלח · אפשר שוב בעוד דקה';
-    setTimeout(function () { button.disabled = false; button.textContent = 'לא קיבלתי מייל · שלח שוב'; }, 60000);
+    var sent = false;
+    try {
+      var result = await cloud.resendSignup(authForm.elements.email.value.trim(), cloud.authRedirectUrl());
+      if (result.error) { setMessage(authMessage(result.error), true); return; }
+      sent = true;
+      setMessage('מייל אימות נוסף נשלח. בדוק גם בתיקיות ספאם וקידומי מכירות.');
+      button.textContent = 'נשלח · אפשר שוב בעוד דקה';
+      setTimeout(function () { button.disabled = false; button.textContent = 'לא קיבלתי מייל · שלח שוב'; }, 60000);
+    } catch (error) {
+      setMessage(authMessage(error), true);
+    } finally {
+      if (!sent) button.disabled = false;
+    }
   });
   accountPanel.querySelector('[data-cloud-signout]').addEventListener('click', function () { cloud.signOut(); });
   accountPanel.querySelector('[data-cloud-sync-now]').addEventListener('click', synchronize);

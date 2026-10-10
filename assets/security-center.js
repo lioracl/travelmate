@@ -5,7 +5,7 @@
   var currentSession = null;
   var captchaToken = '';
   var captchaWidgetId = null;
-  var nativeCaptchaReset = null;
+  var captchaController = null;
   var pendingFactorId = '';
   var challengeInProgress = false;
   var dialogReturnFocus = null;
@@ -396,22 +396,50 @@
     retry.textContent = 'ניסיון נוסף לבדיקת האבטחה';
     retry.hidden = true;
     status.insertAdjacentElement('afterend', retry);
+    var generation = 0;
+    var active = false;
+    var paused = false;
+    var loadTimer = null;
+    var invalidateFrame = null;
     function clearCaptchaToken() { captchaToken = ''; }
-    function showCaptchaFailure(code) {
+    function invalidateChallenge() {
+      active = false;
+      generation += 1;
       clearCaptchaToken();
+      clearTimeout(loadTimer);
+      if (invalidateFrame) invalidateFrame();
+      if (captchaWidgetId !== null && window.turnstile && window.turnstile.remove) {
+        try { window.turnstile.remove(captchaWidgetId); } catch (error) {}
+      }
+      captchaWidgetId = null;
+    }
+    function controlChallenge(restart) {
+      captchaController = {
+        pause: function () { paused = true; invalidateChallenge(); },
+        resume: function () { if (paused) { paused = false; restart(); } },
+        restart: function () { if (!paused) restart(); }
+      };
+    }
+    function showCaptchaFailure(code) {
+      invalidateChallenge();
       status.textContent = String(code || '') === '110200'
         ? 'בדיקת האבטחה אינה זמינה בגרסה זו (110200). יש לעדכן את האפליקציה או לפנות לתמיכה.'
         : 'לא ניתן להשלים את בדיקת האבטחה. בדקו את החיבור ונסו שוב.';
       retry.hidden = false;
     }
     function render() {
-      if (!window.turnstile || captchaWidgetId !== null) return;
+      if (paused || !window.turnstile || captchaWidgetId !== null) return;
+      active = true;
+      var attempt = ++generation;
       captchaWidgetId = window.turnstile.render(host, {
         sitekey: config.turnstileSiteKey,
         theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
-        callback: function (token) { captchaToken = token; status.textContent = ''; retry.hidden = true; },
-        'expired-callback': clearCaptchaToken,
-        'error-callback': showCaptchaFailure
+        callback: function (token) {
+          if (!active || attempt !== generation || typeof token !== 'string' || !token.length || token.length > 2048) return;
+          captchaToken = token; status.textContent = ''; retry.hidden = true;
+        },
+        'expired-callback': function () { if (active && attempt === generation) showCaptchaFailure('expired'); },
+        'error-callback': function (code) { if (active && attempt === generation) showCaptchaFailure(code); }
       });
     }
     // Keep the native localhost origin and its existing offline/account storage.
@@ -422,10 +450,10 @@
       var challengeUrl = challengeOrigin + '/travelmate/auth/turnstile.html';
       var frame = null;
       var nonce = '';
-      var loadTimer = null;
+      invalidateFrame = function () { frame = null; nonce = ''; host.replaceChildren(); };
       function restartNativeChallenge() {
-        clearCaptchaToken();
-        clearTimeout(loadTimer);
+        invalidateChallenge();
+        active = true;
         var bytes = new Uint8Array(16);
         window.crypto.getRandomValues(bytes);
         nonce = Array.from(bytes, function (byte) { return byte.toString(16).padStart(2, '0'); }).join('');
@@ -442,7 +470,7 @@
       }
       window.addEventListener('message', function (event) {
         var data = event.data;
-        if (event.origin !== challengeOrigin || !frame || event.source !== frame.contentWindow || !data || data.channel !== 'travelmate-captcha' || data.nonce !== nonce) return;
+        if (!active || paused || event.origin !== challengeOrigin || !frame || event.source !== frame.contentWindow || !data || data.channel !== 'travelmate-captcha' || data.nonce !== nonce) return;
         if (data.type === 'ready') {
           frame.contentWindow.postMessage({ channel: 'travelmate-captcha', nonce: nonce, type: 'init', theme: document.documentElement.dataset.theme }, challengeOrigin);
         } else if (data.type === 'token' && typeof data.value === 'string' && data.value.length > 0 && data.value.length <= 2048) {
@@ -451,7 +479,7 @@
           status.textContent = '';
           retry.hidden = true;
         } else if (data.type === 'expired') {
-          clearCaptchaToken();
+          invalidateChallenge();
           status.textContent = 'בדיקת האבטחה פגה. יש להשלים אותה שוב.';
           retry.hidden = false;
         } else if (data.type === 'error') {
@@ -459,8 +487,8 @@
           showCaptchaFailure(data.value);
         }
       });
-      nativeCaptchaReset = restartNativeChallenge;
-      retry.addEventListener('click', restartNativeChallenge);
+      controlChallenge(restartNativeChallenge);
+      retry.addEventListener('click', captchaController.restart);
       restartNativeChallenge();
       return;
     }
@@ -477,15 +505,16 @@
       script.onerror = function () { script.remove(); showCaptchaFailure('script'); };
       document.head.appendChild(script);
     }
-    retry.addEventListener('click', function () {
-      clearCaptchaToken();
+    function restartWebChallenge() {
+      invalidateChallenge();
       retry.hidden = true;
       status.textContent = 'בדיקת האבטחה נטענת…';
       try {
-        if (window.turnstile && captchaWidgetId !== null) window.turnstile.reset(captchaWidgetId);
-        else loadScript();
+        loadScript();
       } catch (error) { showCaptchaFailure('retry'); }
-    });
+    }
+    controlChallenge(restartWebChallenge);
+    retry.addEventListener('click', captchaController.restart);
     try { loadScript(); } catch (error) { showCaptchaFailure('render'); }
   }
 
@@ -506,14 +535,23 @@
 
   function resetCaptcha() {
     captchaToken = '';
-    if (nativeCaptchaReset) { nativeCaptchaReset(); return; }
-    if (!window.turnstile || captchaWidgetId === null || typeof window.turnstile.reset !== 'function') return;
-    try { window.turnstile.reset(captchaWidgetId); } catch (error) {}
+    if (captchaController) captchaController.restart();
+  }
+
+  function pauseCaptcha() {
+    captchaToken = '';
+    if (captchaController) captchaController.pause();
+  }
+
+  function resumeCaptcha() {
+    if (captchaController) captchaController.resume();
   }
 
   window.TravelMateSecurity = {
     getCaptchaToken: function () { return captchaToken || undefined; },
     resetCaptcha: resetCaptcha,
+    pauseCaptcha: pauseCaptcha,
+    resumeCaptcha: resumeCaptcha,
     open: openDialog
   };
   window.TravelMateSettings = { open: openDialog, close: closeDialog };
