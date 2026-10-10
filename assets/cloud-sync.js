@@ -1184,10 +1184,17 @@
     return token;
   }
 
+  var captchaActionPending = false;
   async function withCaptcha(action) {
+    if (captchaActionPending) {
+      var error = new Error('CAPTCHA_REQUIRED');
+      error.code = 'CAPTCHA_REQUIRED';
+      throw error;
+    }
     var token = requiredCaptchaToken();
+    captchaActionPending = true;
     try { return await action(token); }
-    finally { resetCaptcha(); }
+    finally { captchaActionPending = false; resetCaptcha(); }
   }
 
   async function signIn(email, password) {
@@ -1214,7 +1221,11 @@
 
   async function resendSignup(email, redirectTo) {
     var client = await getClient();
-    return client.auth.resend({ type: 'signup', email: email, options: { emailRedirectTo: redirectTo } });
+    return withCaptcha(function (token) {
+      var options = { emailRedirectTo: redirectTo };
+      if (token) options.captchaToken = token;
+      return client.auth.resend({ type: 'signup', email: email, options: options });
+    });
   }
 
   async function resetPassword(email, redirectTo) {

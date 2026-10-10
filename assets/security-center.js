@@ -384,24 +384,58 @@
     host.dataset.securityCaptcha = '';
     host.className = 'security-captcha';
     form.insertBefore(host, form.querySelector('.cloud-login-submit'));
+    var status = document.createElement('p');
+    status.className = 'security-captcha-status';
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    host.insertAdjacentElement('afterend', status);
+    var retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'security-captcha-retry';
+    retry.textContent = 'ניסיון נוסף לבדיקת האבטחה';
+    retry.hidden = true;
+    status.insertAdjacentElement('afterend', retry);
     function clearCaptchaToken() { captchaToken = ''; }
+    function showCaptchaFailure(code) {
+      clearCaptchaToken();
+      status.textContent = String(code || '') === '110200'
+        ? 'בדיקת האבטחה אינה זמינה בגרסה זו (110200). יש לעדכן את האפליקציה או לפנות לתמיכה.'
+        : 'לא ניתן להשלים את בדיקת האבטחה. בדקו את החיבור ונסו שוב.';
+      retry.hidden = false;
+    }
     function render() {
       if (!window.turnstile || captchaWidgetId !== null) return;
       captchaWidgetId = window.turnstile.render(host, {
         sitekey: config.turnstileSiteKey,
-        theme: 'light',
-        callback: function (token) { captchaToken = token; },
+        theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
+        callback: function (token) { captchaToken = token; status.textContent = ''; retry.hidden = true; },
         'expired-callback': clearCaptchaToken,
-        'error-callback': clearCaptchaToken
+        'error-callback': showCaptchaFailure
       });
     }
-    if (window.turnstile) { render(); return; }
-    if (document.querySelector('script[data-travelmate-turnstile]')) return;
-    var script = document.createElement('script');
-    script.dataset.travelmateTurnstile = '';
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    script.async = true; script.defer = true; script.onload = render;
-    document.head.appendChild(script);
+    function loadScript() {
+      if (window.turnstile) { render(); return; }
+      if (document.querySelector('script[data-travelmate-turnstile]')) return;
+      var script = document.createElement('script');
+      script.dataset.travelmateTurnstile = '';
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true; script.defer = true;
+      script.onload = function () {
+        try { render(); } catch (error) { showCaptchaFailure('render'); }
+      };
+      script.onerror = function () { script.remove(); showCaptchaFailure('script'); };
+      document.head.appendChild(script);
+    }
+    retry.addEventListener('click', function () {
+      clearCaptchaToken();
+      retry.hidden = true;
+      status.textContent = 'בדיקת האבטחה נטענת…';
+      try {
+        if (window.turnstile && captchaWidgetId !== null) window.turnstile.reset(captchaWidgetId);
+        else loadScript();
+      } catch (error) { showCaptchaFailure('retry'); }
+    });
+    try { loadScript(); } catch (error) { showCaptchaFailure('render'); }
   }
 
   function armCaptcha() {

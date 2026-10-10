@@ -11,7 +11,9 @@ test('Capacitor localhost renders Turnstile instead of disabling CAPTCHA', () =>
   assert.doesNotMatch(security, /security-captcha-development/);
   assert.match(security, /window\.turnstile\.render/);
   assert.match(security, /'expired-callback': clearCaptchaToken/);
-  assert.match(security, /'error-callback': clearCaptchaToken/);
+  assert.match(security, /'error-callback': showCaptchaFailure/);
+  assert.match(security, /String\(code \|\| ''\) === '110200'/);
+  assert.match(security, /script\.onerror = function/);
 });
 
 test('Supabase auth fails closed without a Turnstile token and resets one-shot tokens', () => {
@@ -19,7 +21,7 @@ test('Supabase auth fails closed without a Turnstile token and resets one-shot t
   const security = read('assets/security-center.js');
   assert.match(cloud, /CAPTCHA_REQUIRED/);
   assert.match(cloud, /async function withCaptcha\(action\)/);
-  assert.match(cloud, /finally \{ resetCaptcha\(\); \}/);
+  assert.match(cloud, /finally \{ captchaActionPending = false; resetCaptcha\(\); \}/);
   assert.match(cloud, /captchaToken: token/);
   assert.match(security, /window\.turnstile\.reset\(captchaWidgetId\)/);
 });
@@ -28,4 +30,10 @@ test('Home login reports a specific security-check failure', () => {
   const home = read('assets/home.js');
   assert.match(home, /CAPTCHA_REQUIRED\|captcha\|verification\.\*failed/);
   assert.match(home, /יש להשלים את בדיקת האבטחה לפני הפעולה/);
+});
+
+test('Signup resend also passes a fresh one-shot Turnstile token to Supabase', () => {
+  const cloud = read('assets/cloud-sync.js');
+  assert.match(cloud, /async function resendSignup\(email, redirectTo\) \{[\s\S]*?return withCaptcha\(function \(token\)/);
+  assert.match(cloud, /client\.auth\.resend\(\{ type: 'signup', email: email, options: options \}\)/);
 });
