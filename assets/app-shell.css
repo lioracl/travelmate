@@ -33,7 +33,7 @@ html[data-native-shell]::after{bottom:0;height:var(--tm-safe-bottom)}
   html body.home-page .landing-topbar{padding-top:calc(18px + var(--tm-safe-top))}
 }
 /* Shared modal boundaries keep every scroll ending and action inside system bars. */
-html body :is(.modal-backdrop,.cloud-account-backdrop,.security-backdrop,.profile-wizard-backdrop,.trip-date-editor-backdrop,.about-backdrop){
+html body :is(.modal-backdrop,.cloud-account-backdrop,.security-center-backdrop,.security-mfa-gate,.profile-wizard-backdrop,.trip-date-editor-backdrop,.about-backdrop){
   top:var(--tm-safe-top);bottom:var(--tm-safe-bottom);left:var(--tm-safe-left);right:var(--tm-safe-right);max-height:var(--tm-shell-height);box-sizing:border-box;overflow-y:auto;
 }
-html body :is(.modal-backdrop,.cloud-account-backdrop,.security-backdrop,.profile-wizard-backdrop,.trip-date-editor-backdrop,.about-backdrop)>:first-child{max-block-size:calc(var(--tm-shell-height) - 32px)}
+html body :is(.modal-backdrop,.cloud-account-backdrop,.security-center-backdrop,.security-mfa-gate,.profile-wizard-backdrop,.trip-date-editor-backdrop,.about-backdrop)>:first-child{max-block-size:calc(var(--tm-shell-height) - 32px)}
