@@ -8,7 +8,7 @@ if (/\/trip\//.test(location.pathname)) window.addEventListener('travelmate:acco
   if (!id || nextTrip) location.reload();
   else location.replace(new URL('../../index.html', location.href).href);
 });
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261009-03'}catch(error){return'20261009-03'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261010-01'}catch(error){return'20261010-01'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};

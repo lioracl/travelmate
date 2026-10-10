@@ -5,6 +5,7 @@
   var currentSession = null;
   var captchaToken = '';
   var captchaWidgetId = null;
+  var nativeCaptchaReset = null;
   var pendingFactorId = '';
   var challengeInProgress = false;
   var dialogReturnFocus = null;
@@ -413,6 +414,56 @@
         'error-callback': showCaptchaFailure
       });
     }
+    // Keep the native localhost origin and its existing offline/account storage.
+    // Only the challenge runs on the already-authorized hosted origin.
+    var capacitor = window.Capacitor;
+    if (capacitor && capacitor.isNativePlatform && capacitor.isNativePlatform() && capacitor.getPlatform() === 'android') {
+      var challengeOrigin = 'https://lioracl.github.io';
+      var challengeUrl = challengeOrigin + '/travelmate/auth/turnstile.html';
+      var frame = null;
+      var nonce = '';
+      var loadTimer = null;
+      function restartNativeChallenge() {
+        clearCaptchaToken();
+        clearTimeout(loadTimer);
+        var bytes = new Uint8Array(16);
+        window.crypto.getRandomValues(bytes);
+        nonce = Array.from(bytes, function (byte) { return byte.toString(16).padStart(2, '0'); }).join('');
+        frame = document.createElement('iframe');
+        frame.title = 'בדיקת אבטחה';
+        frame.className = 'security-captcha-frame';
+        frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+        frame.referrerPolicy = 'no-referrer';
+        frame.src = challengeUrl + '#nonce=' + nonce;
+        host.replaceChildren(frame);
+        retry.hidden = true;
+        status.textContent = 'בדיקת האבטחה נטענת…';
+        loadTimer = setTimeout(function () { showCaptchaFailure('timeout'); }, 20000);
+      }
+      window.addEventListener('message', function (event) {
+        var data = event.data;
+        if (event.origin !== challengeOrigin || !frame || event.source !== frame.contentWindow || !data || data.channel !== 'travelmate-captcha' || data.nonce !== nonce) return;
+        if (data.type === 'ready') {
+          frame.contentWindow.postMessage({ channel: 'travelmate-captcha', nonce: nonce, type: 'init', theme: document.documentElement.dataset.theme }, challengeOrigin);
+        } else if (data.type === 'token' && typeof data.value === 'string' && data.value.length > 0 && data.value.length <= 2048) {
+          clearTimeout(loadTimer);
+          captchaToken = data.value;
+          status.textContent = '';
+          retry.hidden = true;
+        } else if (data.type === 'expired') {
+          clearCaptchaToken();
+          status.textContent = 'בדיקת האבטחה פגה. יש להשלים אותה שוב.';
+          retry.hidden = false;
+        } else if (data.type === 'error') {
+          clearTimeout(loadTimer);
+          showCaptchaFailure(data.value);
+        }
+      });
+      nativeCaptchaReset = restartNativeChallenge;
+      retry.addEventListener('click', restartNativeChallenge);
+      restartNativeChallenge();
+      return;
+    }
     function loadScript() {
       if (window.turnstile) { render(); return; }
       if (document.querySelector('script[data-travelmate-turnstile]')) return;
@@ -455,6 +506,7 @@
 
   function resetCaptcha() {
     captchaToken = '';
+    if (nativeCaptchaReset) { nativeCaptchaReset(); return; }
     if (!window.turnstile || captchaWidgetId === null || typeof window.turnstile.reset !== 'function') return;
     try { window.turnstile.reset(captchaWidgetId); } catch (error) {}
   }

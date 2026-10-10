@@ -31,14 +31,14 @@ test('concurrent auth actions cannot replay the same token',async()=>{
 });
 function captchaHarness() {
   const elements=[]; const scripts=[]; let options; let renders=0;
-  function element(tag) {const el={tag,dataset:{},textContent:'',hidden:false,setAttribute(){},addEventListener(name,fn){this[name]=fn;},insertAdjacentElement(_,e){elements.push(e);},remove(){scripts.splice(scripts.indexOf(this),1);}}; elements.push(el);return el;}
+  function element(tag) {const el={tag,dataset:{},textContent:'',hidden:false,contentWindow:{messages:[],postMessage(data,origin){this.messages.push({data,origin});}},replaceChildren(...children){this.children=children;},setAttribute(){},addEventListener(name,fn){this[name]=fn;},insertAdjacentElement(_,e){elements.push(e);},remove(){scripts.splice(scripts.indexOf(this),1);}}; elements.push(el);return el;}
   const form={querySelector:sel=>sel==='[data-security-captcha]'?elements.find(e=>e.dataset.securityCaptcha!==undefined):null,insertBefore(){}};
   const document={documentElement:{dataset:{theme:"dark"}},querySelector:sel=>sel==='[data-cloud-auth-form]'?form:sel==='script[data-travelmate-turnstile]'?scripts[0]:null,createElement:element,head:{appendChild:e=>scripts.push(e)}};
-  const window={TRAVELMATE_SUPABASE:{turnstileSiteKey:'configured'}};
+  const listeners={}; const window={TRAVELMATE_SUPABASE:{turnstileSiteKey:'configured'},crypto:require('node:crypto').webcrypto,addEventListener:(name,fn)=>{listeners[name]=fn;}};
   const source=fs.readFileSync('assets/security-center.js','utf8');
-  const context={window,document,captchaToken:'',captchaWidgetId:null};
+  const context={window,document,captchaToken:'',captchaWidgetId:null,nativeCaptchaReset:null,Uint8Array,setTimeout:()=>1,clearTimeout(){}};
   vm.createContext(context);vm.runInContext(source.slice(source.indexOf('  function setupCaptcha()'),source.indexOf('  function armCaptcha()')),context);
-  return {context,elements,scripts,start:()=>context.setupCaptcha(),install:()=>{window.turnstile={render:(_,o)=>{options=o;renders++;return 'widget';},reset(){}};},options:()=>options,renders:()=>renders};
+  return {window,listeners,context,elements,scripts,start:()=>context.setupCaptcha(),install:()=>{window.turnstile={render:(_,o)=>{options=o;renders++;return 'widget';},reset(){}};},options:()=>options,renders:()=>renders};
 }
 test('failed script can be explicitly retried without duplicate widgets',()=>{
   const h=captchaHarness();h.start();assert.equal(h.scripts.length,1);h.scripts[0].onerror();
@@ -50,4 +50,32 @@ test('expired and errored challenges clear the token; success clears the error',
   o.callback('a');assert.equal(h.context.captchaToken,'a');o['expired-callback']();assert.equal(h.context.captchaToken,'');
   o.callback('b');o['error-callback']('110200');assert.equal(h.context.captchaToken,'');
   const status=h.elements.find(e=>e.tag==='p');assert.match(status.textContent,/110200/);o.callback('c');assert.equal(status.textContent,'');
+});
+
+test('native challenge rejects forged origins, sources and old frames after reset',()=>{
+  const h=captchaHarness();h.window.Capacitor={isNativePlatform:()=>true,getPlatform:()=> 'android'};h.start();
+  const frame=h.elements.find(e=>e.tag==='iframe');const nonce=new URL(frame.src).hash.slice(7);
+  const event={origin:'https://lioracl.github.io',source:frame.contentWindow,data:{channel:'travelmate-captcha',nonce,type:'token',value:'valid'}};
+  h.listeners.message({...event,origin:'https://evil.invalid'});assert.equal(h.context.captchaToken,'');
+  h.listeners.message({...event,source:{}});assert.equal(h.context.captchaToken,'');
+  h.listeners.message({...event,data:{...event.data,nonce:'wrong'}});assert.equal(h.context.captchaToken,'');
+  h.listeners.message({...event,data:{...event.data,value:'x'.repeat(2049)}});assert.equal(h.context.captchaToken,'');
+  h.listeners.message(event);assert.equal(h.context.captchaToken,'valid');
+  h.listeners.message({...event,data:{...event.data,type:'expired'}});assert.equal(h.context.captchaToken,'');
+  h.context.nativeCaptchaReset();h.listeners.message(event);assert.equal(h.context.captchaToken,'');
+  assert.equal(h.scripts.length,0,'native parent must not render localhost Turnstile');
+});
+test('hosted challenge only initializes for its exact native parent and reports lifecycle',()=>{
+  const messages=[],scripts=[];let listener,options;const nonce='a'.repeat(32);
+  const parent={postMessage:(data,origin)=>messages.push({data,origin})};
+  const window={parent,addEventListener:(_,fn)=>{listener=fn;},turnstile:{render:(_,o)=>{options=o;}}};
+  const document={createElement:()=>({}),head:{appendChild:s=>scripts.push(s)}};
+  vm.runInNewContext(fs.readFileSync('auth/turnstile.js','utf8'),{window,document,location:{hash:'#nonce='+nonce},URLSearchParams});
+  assert.equal(messages[0].origin,'https://localhost');
+  const e={source:parent,origin:'https://localhost',data:{channel:'travelmate-captcha',nonce,type:'init',theme:'dark'}};
+  listener({...e,origin:'https://evil.invalid'});listener({...e,source:{}});assert.equal(scripts.length,0);
+  listener(e);listener(e);assert.equal(scripts.length,1);scripts[0].onload();assert.equal(options.theme,'dark');
+  options.callback('single-use');options['expired-callback']();options['error-callback']('110200');
+  assert.deepEqual(messages.map(m=>m.data.type),['ready','token','expired','error']);
+  assert.ok(messages.every(m=>m.origin==='https://localhost'&&m.data.nonce===nonce));
 });
