@@ -1,0 +1,87 @@
+name: TravelMate iOS Foundation Bootstrap
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - chatgpt/ios-foundation
+    paths:
+      - '.github/workflows/ios-foundation-bootstrap.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap-ios:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: chatgpt/ios-foundation
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Verify branch and canonical app identity
+        shell: bash
+        run: |
+          test "$GITHUB_REF_NAME" = "chatgpt/ios-foundation"
+          test ! -d ios
+          node -e "const c=require('./capacitor.config.json'); if(c.appId!=='com.travelmate.app'||c.appName!=='TravelMate'||c.webDir!=='dist') process.exit(1)"
+
+      - name: Install pinned Capacitor iOS dependency
+        run: npm install --save-exact --no-audit @capacitor/ios@8.5.2
+
+      - name: Add canonical iOS npm scripts
+        shell: bash
+        run: |
+          npm pkg set 'scripts.native:add:ios=npm run native:stage && npx cap add ios --packagemanager SPM'
+          npm pkg set 'scripts.native:sync:ios=npm run native:stage && npx cap sync ios'
+          npm pkg set 'scripts.native:copy:ios=npm run native:stage && npx cap copy ios'
+          npm pkg set 'scripts.native:open:ios=npx cap open ios'
+
+      - name: Create and sync iOS project
+        run: |
+          npm run native:add:ios
+          npm run native:sync:ios
+
+      - name: Build unsigned iOS Simulator app
+        shell: bash
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Verify built TravelMate runtime
+        shell: bash
+        run: |
+          APP="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/App.app"
+          test -d "$APP"
+          test -f "$APP/public/index.html"
+          test -f "$APP/public/assets/app.js"
+          test -f "$APP/public/trip/custom/index.html"
+
+      - name: Commit reproducible iOS foundation
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json package-lock.json ios
+          git diff --cached --check
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: add Capacitor iOS foundation'
+          git push origin HEAD:chatgpt/ios-foundation

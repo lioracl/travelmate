@@ -24,7 +24,7 @@ test('phone overlays obscure the live page while keeping nested rows flat', () =
   assert.match(css, /#modal-destination\.modal-backdrop[\s\S]*blur\(16px\)/);
   assert.match(css, /#modal-destination \.destination-modal[\s\S]*rgba\(234,243,245,\.94\)/);
   assert.match(css, /#modal-weather-live\.modal-backdrop[\s\S]*blur\(18px\)/);
-  assert.match(css, /#modal-weather-live \.weather-live-modal[\s\S]*rgba\(232,241,243,\.94\)/);
+  assert.doesNotMatch(css, /--tm-weather-surface:/);
   assert.match(css, /#modal-weather-live :is\(\.weather-insight,\.weather-live-grid,\.weather-live-day\)[\s\S]*background:transparent/);
 });
 
