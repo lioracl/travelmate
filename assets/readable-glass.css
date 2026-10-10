@@ -2787,3 +2787,9 @@ html body:not(.home-page) :is(.trip-profile-avatar-button [data-trip-profile-ava
   html body:not(.home-page) .trip-profile-avatar-button:hover,
   html body:not(.home-page) .workspace>.sidebar>.trip-sidebar-profile:hover{background:var(--tm-action-secondary-hover)}
 }
+/* A slightly denser existing menu tint separates the drawer from page content. */
+@media(max-width:1000px){
+  html body.tm-new-design:not(.home-page) .workspace>.sidebar{
+    background:color-mix(in srgb,var(--tm-surface-control) 50%,var(--tm-family-solid) 50%);
+  }
+}

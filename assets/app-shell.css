@@ -37,3 +37,20 @@ html body :is(.modal-backdrop,.cloud-account-backdrop,.security-center-backdrop,
   top:var(--tm-safe-top);bottom:var(--tm-safe-bottom);left:var(--tm-safe-left);right:var(--tm-safe-right);max-height:var(--tm-shell-height);box-sizing:border-box;overflow-y:auto;
 }
 html body :is(.modal-backdrop,.cloud-account-backdrop,.security-center-backdrop,.security-mfa-gate,.profile-wizard-backdrop,.trip-date-editor-backdrop,.about-backdrop)>:first-child{max-block-size:calc(var(--tm-shell-height) - 32px)}
+/* Mate shares shell insets; visualViewport supplies only the visible IME height. */
+@media(max-width:600px){
+  html body .ai-panel{
+    z-index:1260;left:calc(7px + var(--tm-safe-left));right:calc(7px + var(--tm-safe-right));
+    top:calc(var(--ai-viewport-top,0px) + var(--tm-safe-top) + 8px);bottom:auto;
+    width:auto;max-width:none;
+    height:min(650px,calc(var(--ai-viewport-height,100dvh) - var(--tm-safe-top) - var(--tm-safe-bottom) - 96px));
+    max-height:calc(var(--ai-viewport-height,100dvh) - var(--tm-safe-top) - var(--tm-safe-bottom) - 16px);
+  }
+  html body.ai-keyboard-open .ai-panel{
+    top:calc(var(--ai-viewport-top,0px) + var(--tm-safe-top) + 8px);
+    max-height:calc(var(--ai-viewport-height,100dvh) - var(--tm-safe-top) - var(--tm-safe-bottom) - 16px);
+    height:calc(var(--ai-viewport-height,100dvh) - var(--tm-safe-top) - var(--tm-safe-bottom) - 16px);
+  }
+  html body.ai-keyboard-open .ai-quick-prompts{display:none}
+  html body .ai-composer{padding-bottom:10px}
+}
