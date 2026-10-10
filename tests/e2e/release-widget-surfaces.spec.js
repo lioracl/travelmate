@@ -7,6 +7,8 @@ for(const width of [390,430,768,1440]) for(const theme of ['light','dark']) {
  test(`release Weather and notification offline boundary ${width} ${theme}`,async({page,context})=>{
   await page.setViewportSize({width,height:1000});
   await page.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.abort());
+  await page.route('https://geocoding-api.open-meteo.com/**',route=>route.fulfill({json:{results:[{name:'QA',country:'Italy',latitude:41.9,longitude:12.5,timezone:'Europe/Rome'}]}}));
+  await page.route('https://api.open-meteo.com/**',route=>route.fulfill({json:{timezone_abbreviation:'CEST',current:{temperature_2m:22,apparent_temperature:21,weather_code:2,is_day:1},daily:{time:['2026-10-10','2026-10-11'],weather_code:[2,3],temperature_2m_max:[24,23],temperature_2m_min:[16,15],precipitation_probability_max:[10,20],wind_speed_10m_max:[12,10],uv_index_max:[4,3]}}}));
   await page.addInitScript(({theme})=>{
    const today=new Date().toLocaleDateString('en-CA');
    const trip={id:'release-ui',ownerId:'qa-A',city:'QA',country:'Italy',start:today,end:today,days:1,budget:1000,planInitialized:true,activities:[],savedPlaces:[],expenses:[]};
@@ -17,6 +19,16 @@ for(const width of [390,430,768,1440]) for(const theme of ['light','dark']) {
   const material=await weather.evaluate(el=>({background:getComputedStyle(el).backgroundColor,insideHero:!!el.closest('.hero'),direction:getComputedStyle(document.documentElement).direction,overflow:document.documentElement.scrollWidth>innerWidth+2}));
   expect(material).toEqual({background:'rgba(0, 0, 0, 0)',insideHero:false,direction:'rtl',overflow:false});
   await page.screenshot({path:test.info().outputPath(`weather-${width}-${theme}.png`)});
+  await weather.click();
+  const forecast=page.locator('#modal-weather-live');await expect(forecast).toBeVisible();await expect(forecast).toHaveAttribute('role','dialog');
+  await expect(forecast.locator('.modal-close')).toBeFocused();await expect(weather).toHaveAttribute('aria-expanded','true');
+  await expect(forecast.locator('.weather-live-day')).toHaveCount(2);await expect(forecast.locator('[data-weather-close]')).toHaveText('×');
+  const expanded=await forecast.locator('.weather-live-modal').evaluate(el=>({background:getComputedStyle(el).backgroundColor,header:getComputedStyle(el.querySelector('header')).backgroundColor,overflow:document.documentElement.scrollWidth>innerWidth+2,close:el.querySelector('.modal-close').getBoundingClientRect().width}));
+  // An opaque surface defeats the approved glass treatment even when it is off-white.
+  const alpha=expanded.background.startsWith('rgba')?Number(expanded.background.split(',').pop().replace(')','')):expanded.background.startsWith('color(')?Number(expanded.background.split('/').pop().replace(')','')):1;
+  expect(alpha).toBeGreaterThan(.5);expect(alpha).toBeLessThan(.9);expect(expanded.header).toBe('rgba(0, 0, 0, 0)');expect(expanded.overflow).toBe(false);expect(expanded.close).toBeGreaterThanOrEqual(44);
+  await page.screenshot({path:test.info().outputPath(`weather-expanded-${width}-${theme}.png`)});
+  await page.keyboard.press('Escape');await expect(forecast).toBeHidden();await expect(weather).toBeFocused();await expect(weather).toHaveAttribute('aria-expanded','false');
   // Component fixture: no provider access. Exercise the production notification UI with an explicit Cloud API stub.
   await page.route('**/release-notifications.html',route=>route.fulfill({contentType:'text/html',body:html}));
   await page.goto('/release-notifications.html');
