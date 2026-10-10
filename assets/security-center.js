@@ -4,6 +4,7 @@
   var cloud = window.TravelMateCloud;
   var currentSession = null;
   var captchaToken = '';
+  var captchaWidgetId = null;
   var pendingFactorId = '';
   var challengeInProgress = false;
   var dialogReturnFocus = null;
@@ -383,15 +384,16 @@
     host.dataset.securityCaptcha = '';
     host.className = 'security-captcha';
     form.insertBefore(host, form.querySelector('.cloud-login-submit'));
-    if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
-      host.classList.add('security-captcha-development');
-      host.setAttribute('role', 'status');
-      host.innerHTML = '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>בדיקת האבטחה זמינה באתר המאובטח ולא בתצוגה המקומית.</span>';
-      return;
-    }
+    function clearCaptchaToken() { captchaToken = ''; }
     function render() {
-      if (!window.turnstile) return;
-      window.turnstile.render(host, { sitekey: config.turnstileSiteKey, theme: 'light', callback: function (token) { captchaToken = token; } });
+      if (!window.turnstile || captchaWidgetId !== null) return;
+      captchaWidgetId = window.turnstile.render(host, {
+        sitekey: config.turnstileSiteKey,
+        theme: 'light',
+        callback: function (token) { captchaToken = token; },
+        'expired-callback': clearCaptchaToken,
+        'error-callback': clearCaptchaToken
+      });
     }
     if (window.turnstile) { render(); return; }
     if (document.querySelector('script[data-travelmate-turnstile]')) return;
@@ -417,7 +419,17 @@
     document.addEventListener('pointerdown', start, true);
   }
 
-  window.TravelMateSecurity = { getCaptchaToken: function () { return captchaToken || undefined; }, open: openDialog };
+  function resetCaptcha() {
+    captchaToken = '';
+    if (!window.turnstile || captchaWidgetId === null || typeof window.turnstile.reset !== 'function') return;
+    try { window.turnstile.reset(captchaWidgetId); } catch (error) {}
+  }
+
+  window.TravelMateSecurity = {
+    getCaptchaToken: function () { return captchaToken || undefined; },
+    resetCaptcha: resetCaptcha,
+    open: openDialog
+  };
   window.TravelMateSettings = { open: openDialog, close: closeDialog };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { wire(); armCaptcha(); });
   else { wire(); armCaptcha(); }

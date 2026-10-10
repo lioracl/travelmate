@@ -1167,22 +1167,47 @@
       ? window.TravelMateSecurity.getCaptchaToken() : undefined;
   }
 
+  function resetCaptcha() {
+    if (window.TravelMateSecurity && typeof window.TravelMateSecurity.resetCaptcha === 'function') {
+      window.TravelMateSecurity.resetCaptcha();
+    }
+  }
+
+  function requiredCaptchaToken() {
+    var config = window.TRAVELMATE_SUPABASE || {};
+    var token = captchaToken();
+    if (config.turnstileSiteKey && !token) {
+      var error = new Error('CAPTCHA_REQUIRED');
+      error.code = 'CAPTCHA_REQUIRED';
+      throw error;
+    }
+    return token;
+  }
+
+  async function withCaptcha(action) {
+    var token = requiredCaptchaToken();
+    try { return await action(token); }
+    finally { resetCaptcha(); }
+  }
+
   async function signIn(email, password) {
     var client = await getClient();
-    var token = captchaToken();
-    var credentials = { email: email, password: password };
-    if (token) credentials.options = { captchaToken: token };
-    var result = await client.auth.signInWithPassword(credentials);
+    var result = await withCaptcha(function (token) {
+      var credentials = { email: email, password: password };
+      if (token) credentials.options = { captchaToken: token };
+      return client.auth.signInWithPassword(credentials);
+    });
     if (result.data && result.data.session && result.data.session.user) activateUserStorage(result.data.session.user.id);
     return result;
   }
 
   async function signUp(email, password, redirectTo) {
     var client = await getClient();
-    var options = { emailRedirectTo: redirectTo };
-    var token = captchaToken();
-    if (token) options.captchaToken = token;
-    var result = await client.auth.signUp({ email: email, password: password, options: options });
+    var result = await withCaptcha(function (token) {
+      var options = { emailRedirectTo: redirectTo };
+      if (token) options.captchaToken = token;
+      return client.auth.signUp({ email: email, password: password, options: options });
+    });
     if (result.data && result.data.session && result.data.session.user) activateUserStorage(result.data.session.user.id);
     return result;
   }
@@ -1194,10 +1219,11 @@
 
   async function resetPassword(email, redirectTo) {
     var client = await getClient();
-    var options = { redirectTo: redirectTo };
-    var token = captchaToken();
-    if (token) options.captchaToken = token;
-    return client.auth.resetPasswordForEmail(email, options);
+    return withCaptcha(function (token) {
+      var options = { redirectTo: redirectTo };
+      if (token) options.captchaToken = token;
+      return client.auth.resetPasswordForEmail(email, options);
+    });
   }
 
   async function updatePassword(password) {
