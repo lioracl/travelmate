@@ -3,6 +3,7 @@ import json
 import pathlib
 import sys
 import zipfile
+from apk_png import png_pixels
 
 apk, expected_sha = sys.argv[1:]
 with zipfile.ZipFile(apk) as package:
@@ -16,8 +17,10 @@ with zipfile.ZipFile(apk) as package:
     assert not config.get('server', {}).get('url'), 'Remote shell must never replace offline packaged assets'
     assert config.get('server', {}).get('hostname', 'localhost') == 'localhost', 'Do not strand existing origin storage'
     for density in ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']:
-        for icon in ['ic_launcher.png', 'ic_launcher_round.png', 'ic_launcher_foreground.png']:
-            assert any(n.startswith('res/mipmap-' + density) and n.endswith('/' + icon) for n in names), (density, icon)
+        for icon in ['ic_launcher.png', 'ic_launcher_round.png', 'ic_launcher_foreground.png', 'ic_launcher_background.png']:
+            packaged = next(n for n in names if n.startswith('res/mipmap-' + density) and n.endswith('/' + icon))
+            original = pathlib.Path('android/app/src/main/res', 'mipmap-' + density, icon).read_bytes()
+            assert png_pixels(package.read(packaged)) == png_pixels(original), ('Packaged icon pixels differ', packaged)
     for icon in ['ic_launcher.xml', 'ic_launcher_round.xml']:
         assert any(n.startswith('res/mipmap-anydpi-v26/') and n.endswith('/' + icon) for n in names), icon
     for provider in ['travelmate_widget_info.xml', 'travelmate_live_today_widget_info.xml']:
