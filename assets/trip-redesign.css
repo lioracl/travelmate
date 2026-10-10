@@ -613,7 +613,6 @@ body:not(.home-page) .workspace>.sidebar nav .sidebar-about{order:999}
    Custom-trip material is finalized later by readable-glass.css. */
 @media(max-width:1000px){
   body:not(.home-page):not([data-trip-kind="custom"][data-trip-view="overview"]):not([data-trip-kind="custom"][data-trip-view="places"]) .mobile-header{
-    width:100%;
     min-width:0;
     background:var(--tm-chrome-surface,var(--tm-surface-dark-glass-strong));
     border:1px solid var(--tm-chrome-border,var(--tm-border-on-dark));
