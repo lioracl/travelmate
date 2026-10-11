@@ -191,20 +191,42 @@ window.addEventListener('beforeinstallprompt',function(event){
 (function scheduleServiceWorkerRegistration(){
   if(!('serviceWorker' in navigator)||location.protocol==='file:'||window.__travelMateServiceWorkerScheduled)return;
   window.__travelMateServiceWorkerScheduled=true;
-  var rootUrl=new URL('../',appScript.src);
+  var rootUrl=new URL('../',appScript.src),registration=null,accepted=false,reloaded=false,lastCheck=0,button=null;
+  window.TravelMateWebDiagnostics={build:window.TravelMateWebBuild||null,activeCacheRevision:null};
+  function readWorkerBuild(){
+    var worker=navigator.serviceWorker.controller;if(!worker)return;
+    var channel=new MessageChannel(),timer=setTimeout(function(){channel.port1.close();},3000);
+    channel.port1.onmessage=function(event){clearTimeout(timer);channel.port1.close();window.TravelMateWebDiagnostics.activeCacheRevision=event.data.cacheRevision;window.dispatchEvent(new Event('travelmate:web-build-diagnostics'));};
+    worker.postMessage({type:'GET_BUILD'},[channel.port2]);
+  }
+  function offerUpdate(){
+    if(button)return;
+    button=document.createElement('button');button.type='button';button.dataset.pwaUpdate='';button.textContent='גרסה חדשה זמינה — רענון';
+    button.style.cssText='position:fixed;z-index:2000;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);min-height:44px;padding:10px 18px;border:1px solid #fff;border-radius:12px;background:#12343d;color:#fff;font:inherit;box-shadow:0 2px 12px #0005;';
+    button.addEventListener('click',function(){
+      if(accepted)return;accepted=true;
+      if(registration&&registration.waiting){button.disabled=true;registration.waiting.postMessage({type:'SKIP_WAITING'});}
+      else reloadOnce();
+    });
+    document.body.appendChild(button);
+  }
+  function reloadOnce(){if(reloaded)return;reloaded=true;location.reload();}
+  var hadController=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){readWorkerBuild();if(accepted)reloadOnce();else if(hadController)offerUpdate();hadController=true;});
+  function check(){if(!registration||document.visibilityState==='hidden'||!navigator.onLine||Date.now()-lastCheck<30000)return;lastCheck=Date.now();registration.update().catch(function(){});}
   function register(){
-    navigator.serviceWorker.register(new URL('sw.js?v='+encodeURIComponent(appAssetVersion),rootUrl).href,{updateViaCache:'none'}).then(function(registration){
-      window.TravelMateServiceWorkerRegistration=registration;
+    navigator.serviceWorker.register(new URL('sw.js',rootUrl).href,{updateViaCache:'none'}).then(function(value){
+      registration=value;window.TravelMateServiceWorkerRegistration=registration;
+      if(registration.waiting&&navigator.serviceWorker.controller)offerUpdate();
+      registration.addEventListener('updatefound',function(){var worker=registration.installing;if(!worker)return;worker.addEventListener('statechange',function(){if(worker.state==='installed'&&navigator.serviceWorker.controller)offerUpdate();});});
       window.dispatchEvent(new CustomEvent('travelmate:service-worker-ready',{detail:{registration:registration}}));
-      registration.update().catch(function(){});
+      readWorkerBuild();check();
     }).catch(function(){});
   }
-  function schedule(){
-    if('requestIdleCallback' in window)requestIdleCallback(register,{timeout:3000});
-    else setTimeout(register,700);
-  }
-  if(document.readyState==='complete')schedule();
-  else window.addEventListener('load',schedule,{once:true});
+  window.addEventListener('online',check);window.addEventListener('pageshow',check);window.addEventListener('focus',check);
+  document.addEventListener('visibilitychange',check);
+  function schedule(){if('requestIdleCallback' in window)requestIdleCallback(register,{timeout:3000});else setTimeout(register,700);}
+  if(document.readyState==='complete')schedule();else window.addEventListener('load',schedule,{once:true});
 })();
 var lastModalTrigger=null;
 function closeModal(){document.querySelectorAll('.modal-backdrop.open').forEach(function(modal){modal.classList.remove('open')});if(lastModalTrigger&&document.contains(lastModalTrigger)){lastModalTrigger.focus()}lastModalTrigger=null}

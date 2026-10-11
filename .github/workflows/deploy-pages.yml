@@ -72,6 +72,7 @@ jobs:
             --exclude='AGENTS.md' \
             --exclude='README.md' \
             ./ _site/
+          node tools/stamp-web-build.mjs _site
           touch _site/.nojekyll
 
       - name: Configure Pages
