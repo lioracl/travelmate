@@ -79,13 +79,21 @@
 
   var ui = createUi();
 
+  var keyboardBaseline = { width: window.innerWidth, height: window.innerHeight };
   function syncVisualViewport() {
     var viewport = window.visualViewport;
     var height = viewport ? viewport.height : window.innerHeight;
     var offsetTop = viewport ? viewport.offsetTop : 0;
     document.documentElement.style.setProperty('--ai-viewport-height', Math.round(height) + 'px');
     document.documentElement.style.setProperty('--ai-viewport-top', Math.round(offsetTop) + 'px');
-    document.body.classList.toggle('ai-keyboard-open', state.open && window.innerHeight - height > 120);
+    // Android adjustResize can shrink innerHeight and visualViewport together.
+    // Preserve pre-focus height; reset on orientation/width changes.
+    if (Math.abs(keyboardBaseline.width - window.innerWidth) > 80 ||
+        (!state.open && document.activeElement !== ui.input) || height > keyboardBaseline.height) {
+      keyboardBaseline = { width: window.innerWidth, height: window.innerHeight };
+    }
+    var resizedWithInput = document.activeElement === ui.input && keyboardBaseline.height - height > 120;
+    document.body.classList.toggle('ai-keyboard-open', state.open && (window.innerHeight - height > 120 || resizedWithInput));
   }
 
   function lockPageScroll() {

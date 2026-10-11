@@ -4,6 +4,8 @@
   var cloud = window.TravelMateCloud;
   var currentSession = null;
   var captchaToken = '';
+  var captchaWidgetId = null;
+  var captchaController = null;
   var pendingFactorId = '';
   var challengeInProgress = false;
   var dialogReturnFocus = null;
@@ -383,23 +385,137 @@
     host.dataset.securityCaptcha = '';
     host.className = 'security-captcha';
     form.insertBefore(host, form.querySelector('.cloud-login-submit'));
-    if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
-      host.classList.add('security-captcha-development');
-      host.setAttribute('role', 'status');
-      host.innerHTML = '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>בדיקת האבטחה זמינה באתר המאובטח ולא בתצוגה המקומית.</span>';
-      return;
+    var status = document.createElement('p');
+    status.className = 'security-captcha-status';
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    host.insertAdjacentElement('afterend', status);
+    var retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'security-captcha-retry';
+    retry.textContent = 'ניסיון נוסף לבדיקת האבטחה';
+    retry.hidden = true;
+    status.insertAdjacentElement('afterend', retry);
+    var generation = 0;
+    var active = false;
+    var paused = false;
+    var loadTimer = null;
+    var invalidateFrame = null;
+    function clearCaptchaToken() { captchaToken = ''; }
+    function invalidateChallenge() {
+      active = false;
+      generation += 1;
+      clearCaptchaToken();
+      clearTimeout(loadTimer);
+      if (invalidateFrame) invalidateFrame();
+      if (captchaWidgetId !== null && window.turnstile && window.turnstile.remove) {
+        try { window.turnstile.remove(captchaWidgetId); } catch (error) {}
+      }
+      captchaWidgetId = null;
+    }
+    function controlChallenge(restart) {
+      captchaController = {
+        pause: function () { paused = true; invalidateChallenge(); },
+        resume: function () { if (paused) { paused = false; restart(); } },
+        restart: function () { if (!paused) restart(); }
+      };
+    }
+    function showCaptchaFailure(code) {
+      invalidateChallenge();
+      status.textContent = String(code || '') === '110200'
+        ? 'בדיקת האבטחה אינה זמינה בגרסה זו (110200). יש לעדכן את האפליקציה או לפנות לתמיכה.'
+        : 'לא ניתן להשלים את בדיקת האבטחה. בדקו את החיבור ונסו שוב.';
+      retry.hidden = false;
     }
     function render() {
-      if (!window.turnstile) return;
-      window.turnstile.render(host, { sitekey: config.turnstileSiteKey, theme: 'light', callback: function (token) { captchaToken = token; } });
+      if (paused || !window.turnstile || captchaWidgetId !== null) return;
+      active = true;
+      var attempt = ++generation;
+      captchaWidgetId = window.turnstile.render(host, {
+        sitekey: config.turnstileSiteKey,
+        theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
+        callback: function (token) {
+          if (!active || attempt !== generation || typeof token !== 'string' || !token.length || token.length > 2048) return;
+          captchaToken = token; status.textContent = ''; retry.hidden = true;
+        },
+        'expired-callback': function () { if (active && attempt === generation) showCaptchaFailure('expired'); },
+        'error-callback': function (code) { if (active && attempt === generation) showCaptchaFailure(code); }
+      });
     }
-    if (window.turnstile) { render(); return; }
-    if (document.querySelector('script[data-travelmate-turnstile]')) return;
-    var script = document.createElement('script');
-    script.dataset.travelmateTurnstile = '';
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    script.async = true; script.defer = true; script.onload = render;
-    document.head.appendChild(script);
+    // Keep the native localhost origin and its existing offline/account storage.
+    // Only the challenge runs on the already-authorized hosted origin.
+    var capacitor = window.Capacitor;
+    if (capacitor && capacitor.isNativePlatform && capacitor.isNativePlatform() && capacitor.getPlatform() === 'android') {
+      var challengeOrigin = 'https://lioracl.github.io';
+      var challengeUrl = challengeOrigin + '/travelmate/auth/turnstile.html';
+      var frame = null;
+      var nonce = '';
+      invalidateFrame = function () { frame = null; nonce = ''; host.replaceChildren(); };
+      function restartNativeChallenge() {
+        invalidateChallenge();
+        active = true;
+        var bytes = new Uint8Array(16);
+        window.crypto.getRandomValues(bytes);
+        nonce = Array.from(bytes, function (byte) { return byte.toString(16).padStart(2, '0'); }).join('');
+        frame = document.createElement('iframe');
+        frame.title = 'בדיקת אבטחה';
+        frame.className = 'security-captcha-frame';
+        frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+        frame.referrerPolicy = 'no-referrer';
+        frame.src = challengeUrl + '#nonce=' + nonce;
+        host.replaceChildren(frame);
+        retry.hidden = true;
+        status.textContent = 'בדיקת האבטחה נטענת…';
+        loadTimer = setTimeout(function () { showCaptchaFailure('timeout'); }, 20000);
+      }
+      window.addEventListener('message', function (event) {
+        var data = event.data;
+        if (!active || paused || event.origin !== challengeOrigin || !frame || event.source !== frame.contentWindow || !data || data.channel !== 'travelmate-captcha' || data.nonce !== nonce) return;
+        if (data.type === 'ready') {
+          frame.contentWindow.postMessage({ channel: 'travelmate-captcha', nonce: nonce, type: 'init', theme: document.documentElement.dataset.theme }, challengeOrigin);
+        } else if (data.type === 'token' && typeof data.value === 'string' && data.value.length > 0 && data.value.length <= 2048) {
+          clearTimeout(loadTimer);
+          captchaToken = data.value;
+          status.textContent = '';
+          retry.hidden = true;
+        } else if (data.type === 'expired') {
+          invalidateChallenge();
+          status.textContent = 'בדיקת האבטחה פגה. יש להשלים אותה שוב.';
+          retry.hidden = false;
+        } else if (data.type === 'error') {
+          clearTimeout(loadTimer);
+          showCaptchaFailure(data.value);
+        }
+      });
+      controlChallenge(restartNativeChallenge);
+      retry.addEventListener('click', captchaController.restart);
+      restartNativeChallenge();
+      return;
+    }
+    function loadScript() {
+      if (window.turnstile) { render(); return; }
+      if (document.querySelector('script[data-travelmate-turnstile]')) return;
+      var script = document.createElement('script');
+      script.dataset.travelmateTurnstile = '';
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true; script.defer = true;
+      script.onload = function () {
+        try { render(); } catch (error) { showCaptchaFailure('render'); }
+      };
+      script.onerror = function () { script.remove(); showCaptchaFailure('script'); };
+      document.head.appendChild(script);
+    }
+    function restartWebChallenge() {
+      invalidateChallenge();
+      retry.hidden = true;
+      status.textContent = 'בדיקת האבטחה נטענת…';
+      try {
+        loadScript();
+      } catch (error) { showCaptchaFailure('retry'); }
+    }
+    controlChallenge(restartWebChallenge);
+    retry.addEventListener('click', captchaController.restart);
+    try { loadScript(); } catch (error) { showCaptchaFailure('render'); }
   }
 
   function armCaptcha() {
@@ -417,7 +533,27 @@
     document.addEventListener('pointerdown', start, true);
   }
 
-  window.TravelMateSecurity = { getCaptchaToken: function () { return captchaToken || undefined; }, open: openDialog };
+  function resetCaptcha() {
+    captchaToken = '';
+    if (captchaController) captchaController.restart();
+  }
+
+  function pauseCaptcha() {
+    captchaToken = '';
+    if (captchaController) captchaController.pause();
+  }
+
+  function resumeCaptcha() {
+    if (captchaController) captchaController.resume();
+  }
+
+  window.TravelMateSecurity = {
+    getCaptchaToken: function () { return captchaToken || undefined; },
+    resetCaptcha: resetCaptcha,
+    pauseCaptcha: pauseCaptcha,
+    resumeCaptcha: resumeCaptcha,
+    open: openDialog
+  };
   window.TravelMateSettings = { open: openDialog, close: closeDialog };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { wire(); armCaptcha(); });
   else { wire(); armCaptcha(); }

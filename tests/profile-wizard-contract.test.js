@@ -94,8 +94,10 @@ test('current app assets and cache versions are synchronized',()=>{
   assert.match(sw,/\.\/assets\/profile-wizard\.js/);
   assert.match(sw,/\.\/assets\/profile-wizard\.css/);
   assert.match(version,/^20\d{6}-\d{2}$/);
-  assert.match(about,/version: '2[.]20[.]3'/);
-  assert.match(about,/Account & Document Lifecycle Hardening - 2[.]20[.]3/);
+  // The PWA has no native package manifest; About remains its canonical product version.
+  const productVersion=about.match(/version: '([^']+)'/)[1];
+  assert.match(about,new RegExp("version: '"+productVersion.replace(/\./g,'\\.')+"'"));
+  assert.match(about,new RegExp(productVersion.replace(/\./g,'\\.')));
 });
 
 test('wizard keeps normal next-state logic while direct interests mode bypasses navigation',()=>{

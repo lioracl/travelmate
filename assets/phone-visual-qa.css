@@ -65,15 +65,13 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .con
   background:rgba(169,220,231,.08);
 }
 
-/* Full forecast: near-opaque app sheet over a strongly blurred live page. */
+/* Full forecast geometry; weather-widget.css owns the semantic glass material. */
 html body.tm-new-design #modal-weather-live.modal-backdrop{
   background:rgba(5,24,29,.36);
   -webkit-backdrop-filter:blur(18px) saturate(.84);
   backdrop-filter:blur(18px) saturate(.84);
 }
 html body.tm-new-design #modal-weather-live .weather-live-modal{
-  --tm-weather-surface:rgba(232,241,243,.94);
-  background:color-mix(in srgb,var(--tm-brand-primary,#147D92) 3%,rgba(232,241,243,.94));
   border-color:rgba(77,122,132,.30);
   box-shadow:0 24px 64px rgba(4,31,37,.28);
 }
@@ -84,7 +82,6 @@ html body.tm-new-design #modal-weather-live .weather-live-modal>header{
   justify-content:space-between;
   gap:14px;
   padding:18px 20px;
-  background:rgba(235,243,245,.97);
   border-bottom-color:rgba(77,122,132,.24);
 }
 html body.tm-new-design #modal-weather-live .weather-live-header-copy{
@@ -110,8 +107,6 @@ html[data-theme="dark"] body.tm-new-design #modal-weather-live.modal-backdrop{
 }
 html[data-theme="dark"] body.tm-new-design #modal-weather-live .weather-live-modal,
 html[data-theme="dark"] body.tm-new-design #modal-weather-live .weather-live-modal>header{
-  --tm-weather-surface:rgba(16,35,43,.94);
-  background:rgba(16,35,43,.94);
   border-color:rgba(169,220,231,.22);
 }
 @media(max-width:650px){

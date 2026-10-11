@@ -1,7 +1,7 @@
-const ASSET_VERSION='20261008-02';
+const ASSET_VERSION='20261011-02';
 const CACHE_SCHEMA='v266';
 const CACHE_NAME='travelmate-smart-'+CACHE_SCHEMA+'-'+ASSET_VERSION;
-const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-20\d{6}-\d+)?$/;
+const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-(?:20\d{6}-\d+|[a-f0-9]{40}))?$/;
 const CORE_PATHS=[
   './',
   './index.html',
@@ -10,6 +10,8 @@ const CORE_PATHS=[
   './trip/japan-2027/index.html',
   './assets/styles.css',
   './assets/app.js',
+  './assets/app-shell.js',
+  './assets/app-shell.css',
   './assets/readable-glass.css',
   './assets/home.js',
   './assets/profile-wizard.js',
@@ -53,12 +55,19 @@ const CORE_PATHS=[
   './assets/today-activities.css',
   './assets/today-activities.js',
   './assets/app-icon.svg',
+  './assets/icons/travelmate-48.png',
+  './assets/icons/travelmate-72.png',
+  './assets/icons/travelmate-180.png',
+  './assets/icons/travelmate-192.png',
+  './assets/icons/travelmate-512.png',
+  './assets/icons/travelmate-maskable-192.png',
+  './assets/icons/travelmate-maskable-512.png',
   './manifest.webmanifest'
 ];
 const CORE=CORE_PATHS.map(path=>/\.(?:js|css|json)$/i.test(path)?path+'?v='+ASSET_VERSION:path);
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>TRAVELMATE_CACHE_PATTERN.test(key)&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
-self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting()});
+self.addEventListener('message',event=>{if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting();if(event.data&&event.data.type==='GET_BUILD'&&event.ports[0])event.ports[0].postMessage({sha:ASSET_VERSION,cacheRevision:CACHE_NAME})});
 function reminderNotificationTarget(raw){try{const target=new URL(String(raw||''),self.location.origin),base=new URL('./',self.location.href);if(target.origin!==self.location.origin||!target.pathname.startsWith(base.pathname))return null;const relative=target.pathname.slice(base.pathname.length);if(!/^trip\/[^/]+\/(?:index\.html)?$/.test(relative)||!target.searchParams.get('id'))return null;target.searchParams.set('view','plan');target.hash='';return target}catch(error){return null}}
 self.addEventListener('notificationclick',event=>{event.notification.close();const target=reminderNotificationTarget(event.notification&&event.notification.data&&event.notification.data.url);if(!target)return;event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{const match=list.find(client=>{try{const current=new URL(client.url);return current.origin===target.origin&&current.pathname===target.pathname&&current.searchParams.get('id')===target.searchParams.get('id')}catch(error){return false}});if(!match)return clients.openWindow(target.href);const navigated=typeof match.navigate==='function'?match.navigate(target.href).catch(()=>match):Promise.resolve(match);return navigated.then(client=>client&&client.focus?client.focus():client)}))});
 function persistResponse(event,request,response){
@@ -76,17 +85,17 @@ async function networkFirst(request,event,ignoreSearch){
       return response;
     }
     if(response.status>=500){
-      const hit=await caches.match(request,matchOptions);
+      const hit=await caches.match(request,Object.assign({cacheName:CACHE_NAME},matchOptions));
       if(hit)return hit;
       throw new Error('http-'+response.status);
     }
     return response;
   }catch(error){
-    return caches.match(request,matchOptions).then(hit=>hit||Promise.reject(error));
+    return caches.match(request,Object.assign({cacheName:CACHE_NAME},matchOptions)).then(hit=>hit||Promise.reject(error));
   }
 }
 async function cacheFirstVersioned(request,event){
-  const hit=await caches.match(request);
+  const hit=await caches.match(request,{cacheName:CACHE_NAME});
   if(hit)return hit;
   const response=await fetch(request,{cache:'no-store'});
   persistResponse(event,request,response);
@@ -99,7 +108,7 @@ async function navigationFallback(url){
   const relative=url.pathname.startsWith(base.pathname)?url.pathname.slice(base.pathname.length):'';
   const trip=relative.match(/^trip\/([^/]+)(?:\/(?:index\.html)?)?$/);
   const entry=trip?new URL('trip/'+trip[1]+'/index.html',base):new URL('index.html',base);
-  const hit=await caches.match(entry.href,{ignoreSearch:true});
+  const hit=await caches.match(entry.href,{ignoreSearch:true,cacheName:CACHE_NAME});
   if(hit)return hit;
   // Never disguise an uncached trip as Home.
   return new Response('הטיול אינו זמין במצב לא מקוון. יש להתחבר כדי לטעון אותו.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
@@ -118,9 +127,9 @@ self.addEventListener('fetch',event=>{
       ?cacheFirstVersioned(event.request,event)
     :freshAsset
       ?networkFirst(event.request,event,false)
-    :caches.match(event.request).then(hit=>hit||fetch(event.request).then(response=>{
+    :caches.match(event.request,{cacheName:CACHE_NAME}).then(hit=>hit||fetch(event.request).then(response=>{
       persistResponse(event,event.request,response);
       return response;
-    }).catch(()=>caches.match(event.request)))
+    }).catch(()=>caches.match(event.request,{cacheName:CACHE_NAME})))
   );
 });

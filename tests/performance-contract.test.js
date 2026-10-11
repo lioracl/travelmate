@@ -183,7 +183,7 @@ test('getaway destination geocoding waits for the first search submit', () => {
 test('service worker uses a release-scoped cache namespace and prunes older TravelMate caches', () => {
   assert.match(serviceWorker, /const CACHE_SCHEMA='v266'/);
   assert.match(serviceWorker, /const CACHE_NAME='travelmate-smart-'\+CACHE_SCHEMA\+'-'\+ASSET_VERSION/);
-  assert.match(serviceWorker, /TRAVELMATE_CACHE_PATTERN=\/\^travelmate-smart-v\\d\+\(\?:-20\\d\{6\}-\\d\+\)\?\$\//);
+  assert.ok(serviceWorker.includes('[a-f0-9]{40}'), 'SHA cache namespaces must be included in stale-cache cleanup');
   assert.match(serviceWorker, /keys\.filter\(key=>TRAVELMATE_CACHE_PATTERN\.test\(key\)&&key!==CACHE_NAME\)/);
 });
 
@@ -206,7 +206,7 @@ test('service worker precaches startup essentials and runtime-caches feature-onl
 });
 
 test('service worker treats HTTP 5xx navigation responses as recoverable offline failures', () => {
-  assert.match(serviceWorker, /if\(response\.status>=500\)\{[\s\S]*?caches\.match\(request,matchOptions\)[\s\S]*?throw new Error\('http-'\+response\.status\)/);
+  assert.match(serviceWorker, /if\(response\.status>=500\)\{[\s\S]*?caches\.match\(request,Object\.assign\(\{cacheName:CACHE_NAME\},matchOptions\)\)[\s\S]*?throw new Error\('http-'\+response\.status\)/);
 });
 
 test('versioned local assets use cache-first because the version is part of the URL', () => {
@@ -294,7 +294,7 @@ test('service worker registration is a delayed app bootstrap instead of a Smart 
   assert.match(app, /window\.addEventListener\('load',schedule,\{once:true\}\)/);
   assert.match(app, /requestIdleCallback\(register,\{timeout:3000\}\)/);
   assert.match(app, /var appAssetVersion=\(function\(\)\{try\{return new URL\(appScript\.src,location\.href\)\.searchParams\.get\('v'\)/);
-  assert.match(app, /navigator\.serviceWorker\.register\(new URL\('sw\.js\?v='\+encodeURIComponent\(appAssetVersion\),rootUrl\)\.href,\{updateViaCache:'none'\}\)/);
+  assert.match(app, /navigator\.serviceWorker\.register\(new URL\('sw\.js',rootUrl\)\.href,\{updateViaCache:'none'\}\)/);
   assert.doesNotMatch(app, /serviceWorker\.register\([^\n]*encodeURIComponent\(version\)/);
   assert.match(app, /window\.TravelMateInstallPrompt=event/);
   assert.doesNotMatch(hub, /navigator\.serviceWorker\.register/);
@@ -327,12 +327,12 @@ test('service worker clones responses before returning them and keeps cache writ
 
 test('offline navigation ignores query strings while versioned assets remain exact', () => {
   assert.match(serviceWorker, /networkFirst\(event\.request,event,true\)/);
-  assert.match(serviceWorker, /caches\.match\(entry\.href,\{ignoreSearch:true\}\)/);
+  assert.match(serviceWorker, /caches\.match\(entry\.href,\{ignoreSearch:true,cacheName:CACHE_NAME\}\)/);
   assert.match(serviceWorker, /cacheFirstVersioned\(event\.request,event\)/);
   const start = serviceWorker.indexOf('async function cacheFirstVersioned');
   const end = serviceWorker.indexOf("async function navigationFallback", start);
   const versionedBlock = serviceWorker.slice(start, end);
-  assert.match(versionedBlock, /caches\.match\(request\)/);
+  assert.match(versionedBlock, /caches\.match\(request,\{cacheName:CACHE_NAME\}\)/);
   assert.doesNotMatch(versionedBlock, /ignoreSearch:true/);
 });
 

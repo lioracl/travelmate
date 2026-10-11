@@ -22,7 +22,7 @@ test('Weather 2.0 summary is fully transparent glass while the forecast modal st
   assert.match(block, /body\[data-trip-kind="custom"\]\.tm-new-design\[data-trip-view="overview"\]/);
   assert.match(block, /background:transparent/);
   assert.match(block, /backdrop-filter:var\(--tm-weather-card-blur\)/);
-  assert.match(block, /--tm-weather-surface:var\(--tm-surface-neutral\)/);
+  assert.match(block, /--tm-weather-surface:color-mix\(in srgb,var\(--tm-surface-neutral\) 78%,transparent\)/);
   assert.doesNotMatch(block, /!important/);
   assert.doesNotMatch(block, /background:\s*(?:#000|black)\b/i);
   assert.doesNotMatch(block, /rgba\(244,243,239,\.82\)/);

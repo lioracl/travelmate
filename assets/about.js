@@ -2,10 +2,18 @@
   'use strict';
 
   var release = {
-    version: '2.20.3',
-    label: 'Account & Document Lifecycle Hardening - 2.20.3',
-    date: '7 באוקטובר 2026',
+    version: '2.21.0',
+    label: 'Native Widgets & Release Hardening - 2.21.0',
+    date: '11 באוקטובר 2026',
     highlights: [
+      'עדכוני PWA: פרסום Preview מזהה את גרסת הווב לפי SHA. עדכון מוכן מוצג עם רענון מפורש, בלי להתקין APK ובלי למחוק נתונים מקומיים.',
+      'בדיקת Samsung נוספת: לחיצה חוזרת על פעמון סוגרת עדכונים, כפתור הסגירה ממוקם מתחת לכותרת, תג אפס אינו נוצר, וקטגוריות פעילות מוצגות בעברית. נוסף אימות זהות תעודת חתימת APK.',
+      'תיקוני בדיקת Samsung: מסך הכניסה מכבד את שולי המערכת גם במסך נמוך, הפעמון מוסתר בטיול סולו ותג אפס אינו מוצג. הוסרה כפילות קישור הביקורות, שמות קטגוריות מוצגים בעברית וכפתור החזרה שומר על העיצוב הקיים.',
+      'עדכון RC לבדיקת Samsung: אייקון הנוף עם המטוס ו־AI שוחזר, נוספה בעלות מרכזית על שולי המערכת, תוקנו שבירת מילים בעברית ומיקום Mate בזמן הקלדה. סגירה, שגיאה או פקיעת זמן מבטלות את ניסיון האימות, וכפתור שליחה חוזרת מתאושש מכישלון.',
+      'תיקוני ממשק: תחזית מזג האוויר המורחבת משתמשת במשטח שקוף לפי ערכת הנושא, כפתור הסגירה זמין גם בלי טעינת גופן אייקונים, ולחלון טיול חדש נוסף שם נגיש.',
+      'Android RC: אייקון מותאם לחיתוך במסך הבית, התאוששות מתקלה בבדיקת האבטחה והגנה על אסימוני אימות חד־פעמיים. נתוני הטיולים המקומיים נשמרים במקור הקיים.',
+      'גרסת 2.21.0 מאחדת את תשתיות Android ו־iOS, וידג׳טי תקציב והיום, ומזג אוויר ועדכונים ב־iOS. בחירת הפעילות נשענת על Today הקיים, המידע מוגבל לפי חשבון וטיול ומתיישן בבטחה. תוקנו תצוגת סכום אפס במטבע המקומי והבהרת תקציב טיול חדש באירו.',
+      'Budget Widget 2.21.0: תשתית Native חדשה מציגה במסך הבית את הסכום שהוצא עד עכשיו, יתרה או חריגה בתקציב מוגדר, וקצב הוצאה במצב ללא הגבלה. כפתור הוצאה מהירה פותח את טופס Budget V2 הקיים והממיר משתמש במטבע הטיול ובמטבע המשני הקיים, ללא Store או מנוע שערים נוסף. המידע נשמר כ־snapshot מצומצם לפי חשבון וטיול, ללא הערות, קבלות, מסמכים או מידע בריאותי.',
       'Lifecycle Hardening 2.20.3: חיזוק הפרדה בין חשבונות בזמן החלפה, יציאה והתחברות מחדש; בקשות Mate, סנכרון ענן, Budget/Memories וכספת המסמכים מבטלות תוצאות מאוחרות מחשבון קודם. העלאה, פתיחה ומחיקה של מסמכים נשארות קשורות לחשבון שהתחיל את הפעולה גם אם החשבון משתנה באמצע.',
       'Mobile UX Consistency 2.20.2: במסכי עבודה במובייל Mate כבר אינו מכסה כפתורים ותוכן — הוא נשאר צף בסקירה בלבד וזמין מתוך תפריט ״עוד״ כ־Mate · עוזר אישי. חץ החזרה העליון קיבל יעד מגע אחיד של 50×50 בכל מסכי הטיול המותאמים.',
       'Mobile Navigation & Weather Fix 2.20.1: כפתורי הסגירה במובייל קיבלו יעד מגע עקבי, אשף הפרופיל ניתן לסגירה גם בזמן טעינה או יצירת אווטר אך לא באמצע שמירה, החץ העליון מסתמך על המסך שמוצג בפועל ו־Back מזהה גם את אשף הפרופיל כחלון. חלון דרכי ההגעה מפריד בין אזור הגלילה לכפתור החזרה, וכרטיס מזג האוויר חזר לשקיפות מלאה ומציג את הטמפרטורה הנוכחית פעם אחת בלבד.',
@@ -469,6 +477,18 @@
   ];
   window.TravelMateRelease = release;
 
+  function webBuildHtml() {
+    var build=window.TravelMateWebBuild;
+    if(!build||!/^[a-f0-9]{40}$/.test(build.sha))return '<p>Web build: local / unstamped</p>';
+    return '<p>Web SHA: <code dir="ltr" style="overflow-wrap:anywhere">'+build.sha+'</code></p><p>Asset cache: <code dir="ltr" style="overflow-wrap:anywhere">'+build.cacheRevision+'</code></p><p>Active SW cache: <code data-about-worker-cache dir="ltr" style="overflow-wrap:anywhere"></code></p>';
+  }
+
+  function refreshWorkerDiagnostic() {
+    var node=document.querySelector('[data-about-worker-cache]');
+    if(node)node.textContent=window.TravelMateWebDiagnostics&&window.TravelMateWebDiagnostics.activeCacheRevision||'טרם התקבל';
+  }
+  window.addEventListener('travelmate:web-build-diagnostics',refreshWorkerDiagnostic);
+
   function releaseGroupsHtml() {
     return release.categories.map(function (group) {
       return '<li class="about-release-category"><div><i class="fa-solid ' + group.icon + '"></i><strong>' + group.title + '</strong></div><ul>' + group.items.map(function (item) { return '<li><i class="fa-solid fa-circle-check"></i><span>' + item + '</span></li>'; }).join('') + '</ul></li>';
@@ -476,10 +496,11 @@
   }
 
   function modalHtml() {
-    return '<section class="about-backdrop" data-about-modal aria-hidden="true"><div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"><header><div class="about-brand"><span><i class="fa-solid fa-route"></i></span><div><small>TravelMate</small><h2 id="about-title">אודות האפליקציה</h2></div></div><button class="about-close" type="button" data-about-close aria-label="סגירת אודות"><i class="fa-solid fa-xmark"></i></button></header><div class="about-content"><div class="about-version"><span>גרסה</span><strong>' + release.version + '</strong><small>' + release.label + ' · ' + release.date + '</small></div><section><h3>הטיול שלך, במקום אחד</h3><p>TravelMate מרכזת את תכנון הטיול, המסלול, המקומות, התחבורה, המסמכים, התקציב והשיחה הקבוצתית בחוויה אחת שמסתנכרנת בין המכשירים.</p></section><section><h3>מה כלול בגרסה הזו?</h3><ul>' + releaseGroupsHtml() + '</ul></section><section class="about-rights"><h3><i class="fa-solid fa-copyright"></i> בעלות וזכויות שימוש</h3><p>© 2026 TravelMate. כל הזכויות שמורות לבעלי האפליקציה: <strong>ליאור אחלאו</strong> ו־<strong>נטלי ציינ׳י</strong>.</p><p>אין להעתיק, לשכפל, להפיץ, לפרסם, לשנות, למסחר או לעשות שימוש בקוד, בעיצוב, בתוכן, במאגרי המידע או במותג ללא אישור מראש ובכתב מבעלי האפליקציה. השימוש באפליקציה מותר בהתאם להרשאה ולתנאים שניתנו על ידי הבעלים.</p><p class="about-third-party">שמות, סמלים ושירותים של ספקים חיצוניים המופיעים באפליקציה שייכים לבעליהם, והשימוש בהם כפוף לתנאים של אותם ספקים.</p></section><section class="about-versioning"><h3>איך מספר הגרסה מתעדכן?</h3><div><span><b>1.0.1</b> תיקון נקודתי</span><span><b>1.1</b> פיצ׳ר או שיפור משמעותי</span><span><b>2.0</b> שינוי עמוק באפליקציה</span></div></section></div><footer><span><i class="fa-solid fa-shield-halved"></i> נבנה כדי לשמור את הטיול פרטי, נגיש ומסודר.</span><button type="button" data-about-close aria-label="סגירת אודות">סגירה</button></footer></div></section>';
+    return '<section class="about-backdrop" data-about-modal aria-hidden="true"><div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"><header><div class="about-brand"><span><i class="fa-solid fa-route"></i></span><div><small>TravelMate</small><h2 id="about-title">אודות האפליקציה</h2></div></div><button class="about-close" type="button" data-about-close aria-label="סגירת אודות"><i class="fa-solid fa-xmark"></i></button></header><div class="about-content"><div class="about-version"><span>גרסה</span><strong>' + release.version + '</strong><small>' + release.label + ' · ' + release.date + '</small>' + webBuildHtml() + '</div><section><h3>הטיול שלך, במקום אחד</h3><p>TravelMate מרכזת את תכנון הטיול, המסלול, המקומות, התחבורה, המסמכים, התקציב והשיחה הקבוצתית בחוויה אחת שמסתנכרנת בין המכשירים.</p></section><section><h3>מה כלול בגרסה הזו?</h3><ul>' + releaseGroupsHtml() + '</ul></section><section class="about-rights"><h3><i class="fa-solid fa-copyright"></i> בעלות וזכויות שימוש</h3><p>© 2026 TravelMate. כל הזכויות שמורות לבעלי האפליקציה: <strong>ליאור אחלאו</strong> ו־<strong>נטלי ציינ׳י</strong>.</p><p>אין להעתיק, לשכפל, להפיץ, לפרסם, לשנות, למסחר או לעשות שימוש בקוד, בעיצוב, בתוכן, במאגרי המידע או במותג ללא אישור מראש ובכתב מבעלי האפליקציה. השימוש באפליקציה מותר בהתאם להרשאה ולתנאים שניתנו על ידי הבעלים.</p><p class="about-third-party">שמות, סמלים ושירותים של ספקים חיצוניים המופיעים באפליקציה שייכים לבעליהם, והשימוש בהם כפוף לתנאים של אותם ספקים.</p></section><section class="about-versioning"><h3>איך מספר הגרסה מתעדכן?</h3><div><span><b>1.0.1</b> תיקון נקודתי</span><span><b>1.1</b> פיצ׳ר או שיפור משמעותי</span><span><b>2.0</b> שינוי עמוק באפליקציה</span></div></section></div><footer><span><i class="fa-solid fa-shield-halved"></i> נבנה כדי לשמור את הטיול פרטי, נגיש ומסודר.</span><button type="button" data-about-close aria-label="סגירת אודות">סגירה</button></footer></div></section>';
   }
   var aboutReturnFocus = null;
   function openAbout() {
+    refreshWorkerDiagnostic();
     var modal = document.querySelector('[data-about-modal]');
     if (!modal) return;
     aboutReturnFocus = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
