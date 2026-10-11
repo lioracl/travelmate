@@ -559,6 +559,7 @@
       try { await window.TravelMateFeatures.ensureAccount(); }
       catch (error) { console.error('TravelMate account feature failed to load', error); }
     }
+    if (window.TravelMateSecurity && window.TravelMateSecurity.resumeCaptcha) window.TravelMateSecurity.resumeCaptcha();
     accountBackdrop.hidden = false;
     accountBackdrop.setAttribute('aria-hidden', 'false');
     document.body.classList.add('cloud-account-open');
@@ -568,6 +569,7 @@
   }
 
   function closeAccountModal() {
+    if (window.TravelMateSecurity && window.TravelMateSecurity.pauseCaptcha) window.TravelMateSecurity.pauseCaptcha();
     accountBackdrop.hidden = true;
     accountBackdrop.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('cloud-account-open');
@@ -605,6 +607,7 @@
     if (/email not confirmed/i.test(value)) return 'החשבון עדיין לא אומת. לחץ על „לא קיבלתי מייל” כדי לשלוח שוב.';
     if (/email address not authorized/i.test(value)) return 'Supabase אינו מורשה לשלוח לכתובת הזו. יש להגדיר SMTP פרטי או להשתמש בכתובת של חבר צוות הפרויקט.';
     if (/rate limit|too many requests|over_email_send_rate_limit/i.test(value)) return 'הגעת למגבלת השליחה של Supabase. המתן כשעה ונסה שוב, או הגדר SMTP פרטי.';
+    if (/CAPTCHA_REQUIRED|captcha|verification.*failed/i.test(value)) return 'יש להשלים את בדיקת האבטחה לפני הפעולה. אם הבדיקה לא נטענה, בדוק את החיבור ונסה שוב.';
     if (/invalid login/i.test(value)) return 'כתובת הדוא״ל או הסיסמה אינן נכונות. אם טרם אימתת את החשבון, שלח שוב את מייל האימות.';
     if (/AVATAR_CONFLICT/i.test(value)) return 'תמונת הפרופיל השתנתה במכשיר או בחלון אחר. המצב העדכני נטען; אפשר לבחור שוב תמונה אם רוצים להחליף אותה.';
     if (/AVATAR_OFFLINE/i.test(value)) return 'שינוי תמונת פרופיל דורש חיבור לרשת.';
@@ -971,11 +974,19 @@
   accountPanel.querySelector('[data-cloud-resend]').addEventListener('click', async function (event) {
     if (!authForm.elements.email.reportValidity()) return;
     var button = event.currentTarget; button.disabled = true; setMessage('שולח שוב את מייל האימות…');
-    var result = await cloud.resendSignup(authForm.elements.email.value.trim(), cloud.authRedirectUrl());
-    if (result.error) { setMessage(authMessage(result.error), true); button.disabled = false; return; }
-    setMessage('מייל אימות נוסף נשלח. בדוק גם בתיקיות ספאם וקידומי מכירות.');
-    button.textContent = 'נשלח · אפשר שוב בעוד דקה';
-    setTimeout(function () { button.disabled = false; button.textContent = 'לא קיבלתי מייל · שלח שוב'; }, 60000);
+    var sent = false;
+    try {
+      var result = await cloud.resendSignup(authForm.elements.email.value.trim(), cloud.authRedirectUrl());
+      if (result.error) { setMessage(authMessage(result.error), true); return; }
+      sent = true;
+      setMessage('מייל אימות נוסף נשלח. בדוק גם בתיקיות ספאם וקידומי מכירות.');
+      button.textContent = 'נשלח · אפשר שוב בעוד דקה';
+      setTimeout(function () { button.disabled = false; button.textContent = 'לא קיבלתי מייל · שלח שוב'; }, 60000);
+    } catch (error) {
+      setMessage(authMessage(error), true);
+    } finally {
+      if (!sent) button.disabled = false;
+    }
   });
   accountPanel.querySelector('[data-cloud-signout]').addEventListener('click', function () { cloud.signOut(); });
   accountPanel.querySelector('[data-cloud-sync-now]').addEventListener('click', synchronize);

@@ -129,7 +129,7 @@ function addSecondaryDetails(row,record){
   if(rating)details.appendChild(detailRow('fa-solid fa-star','ציון '+rating+(reviews?' · '+reviews+' ביקורות':'')));
   var nav=document.createElement('nav'),official=safeUrl(record.website||record.officialUrl),ratings=safeUrl(record.ratingsUrl||record.googleMapsUrl);
   if(official)nav.appendChild(detailLink('fa-solid fa-globe','אתר רשמי',official));
-  if(ratings)nav.appendChild(detailLink('fa-brands fa-google','ציונים וביקורות',ratings));
+  if(ratings&&!row.querySelector('.google-rating-link')){var reviewLink=detailLink('fa-brands fa-google','ציונים וביקורות',ratings);reviewLink.className='google-rating-link';reviewLink.dataset.planSecondaryReviews='';nav.appendChild(reviewLink)}
   if(phone){var tel=document.createElement('a');tel.href='tel:'+phone.replace(/[^+\d]/g,'');tel.innerHTML='<i class="fa-solid fa-phone" aria-hidden="true"></i><span></span>';tel.querySelector('span').textContent=phone;nav.appendChild(tel)}
   if(nav.childNodes.length)details.appendChild(nav);
   if(!details.childNodes.length)return;
@@ -196,6 +196,8 @@ function enhanceRow(row,trip,statuses,transitions){
     row.dataset.planUxEnhanced='true';row.classList.add('tm-plan-item');row.dataset.planExpanded='false';
     makeActivityMedia(row,record);addLocation(row,record);addSecondaryDetails(row,record);makeNavigation(actions,record,trip);makeToggle(row,actions)
   }
+  var secondaryReview=row.querySelector('[data-plan-secondary-reviews]');
+  if(secondaryReview&&[].some.call(row.querySelectorAll('.google-rating-link'),function(link){return link!==secondaryReview&&!link.closest('.tm-plan-secondary-details')}))secondaryReview.remove();
   row.dataset.planScheduleMode=scheduleMode(record);
   syncDone(row);
   var key=recordKind(row)+':'+record.id,status=statuses[key];addStatus(row,status&&status.label,status&&status.type);

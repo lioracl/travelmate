@@ -97,8 +97,8 @@
     button.setAttribute('aria-expanded', 'false');
     button.setAttribute('aria-label', label);
     button.hidden = true;
-    button.innerHTML = '<i class="fa-regular fa-bell" aria-hidden="true"></i><span class="trip-notification-label">עדכונים</span><b data-trip-notification-badge hidden aria-hidden="true"></b>';
-    button.addEventListener('click', function () { openPanel(button); });
+    button.innerHTML = '<i class="fa-regular fa-bell" aria-hidden="true"></i><span class="trip-notification-label">עדכונים</span>';
+    button.addEventListener('click', function () { if (state.open) closePanel(); else openPanel(button); });
     return button;
   }
 
@@ -151,16 +151,29 @@
     if (!visible) closePanel(false);
   }
 
+  root.TravelMateTripChangeContext = Object.freeze({ snapshot: function () {
+    return Object.freeze({ ready: Boolean(state.session && state.members.length > 1), unreadCount: unreadCount(state.events, currentUserId(), state.lastReadId) });
+  }});
+
+  function publishContext(count) {
+    root.dispatchEvent(new CustomEvent('travelmate:trip-change-context', { detail: { ready: Boolean(state.session && state.members.length > 1), unreadCount: Number(count || 0) } }));
+  }
+
   function updateBadges() {
     var count = unreadCount(state.events, currentUserId(), state.lastReadId);
     [ui.desktopButton, ui.mobileButton].forEach(function (button) {
       if (!button) return;
       var badge = button.querySelector('[data-trip-notification-badge]');
-      badge.hidden = count === 0;
-      badge.textContent = count > 99 ? '99+' : String(count);
+      if (!count) { if (badge) badge.remove(); }
+      else {
+        if (!badge) { badge = document.createElement('b'); badge.dataset.tripNotificationBadge = ''; badge.setAttribute('aria-hidden', 'true'); button.appendChild(badge); }
+        badge.hidden = false;
+        badge.textContent = String(count);
+      }
       button.setAttribute('aria-label', count ? 'פתיחת עדכוני הטיול · ' + count + ' לא נקראו' : 'פתיחת עדכוני הטיול · אין עדכונים שלא נקראו');
     });
     ui.readAll.disabled = count === 0;
+    publishContext(count);
   }
 
   function render() {
@@ -273,7 +286,7 @@
   }
 
   function openPanel(opener) {
-    if (!state.session) return;
+    if (!state.session || state.members.length < 2 || !state.members.some(function (member) { return String(member.user_id) === currentUserId(); }) || (opener && opener.hidden)) return;
     state.opener = opener || document.activeElement;
     state.open = true;
     ui.panel.hidden = false;
@@ -354,6 +367,7 @@
     state.refreshPromise = null;
     closePanel(false);
     setLaunchersVisible(false);
+    render();
     if (!state.session || !state.trip) return;
     state.trip.ownerId = state.trip.ownerId || state.session.user.id;
     await refresh(true);

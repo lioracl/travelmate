@@ -24,6 +24,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Verify JavaScript syntax
         run: |
@@ -61,6 +62,13 @@ jobs:
             --exclude='.codex' \
             --exclude='supabase' \
             --exclude='docs' \
+            --exclude='android' \
+            --exclude='ios' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='capacitor.config.json' \
             --exclude='AGENTS.md' \
             --exclude='README.md' \
             ./ _site/

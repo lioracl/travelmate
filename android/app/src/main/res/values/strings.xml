@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TravelMate</string>
+    <string name="title_activity_main">TravelMate</string>
+    <string name="package_name">com.travelmate.app</string>
+    <string name="custom_url_scheme">travelmate</string>
+    <string name="widget_title">TravelMate · תקציב</string>
+    <string name="widget_open_app">פתח את TravelMate</string>
+    <string name="widget_prepare">כדי להכין את התקציב לטיול שלך</string>
+    <string name="widget_spent_label">הוצאתי עד עכשיו</string>
+    <string name="widget_remaining">נשארו %1$s</string>
+    <string name="widget_overrun">חריגה של %1$s</string>
+    <string name="widget_unlimited_pace">ממוצע %1$s ליום</string>
+    <string name="widget_before_trip">המעקב מוכן לטיול</string>
+    <string name="widget_completed">הטיול הסתיים · זה הסכום שנרשם</string>
+    <string name="widget_stale">המידע שמור במכשיר · פתח לעדכון</string>
+    <string name="widget_quick_expense">＋ הוצאה</string>
+    <string name="widget_converter">ממיר</string>
+    <string name="widget_fx_rate">1 %1$s ≈ %2$s %3$s</string>
+    <string name="widget_fx_stale">שער שמור · 1 %1$s ≈ %2$s %3$s</string>
+    <string name="widget_fx_unavailable">פתח את הממיר לעדכון שער</string>
+    <string name="widget_unread">%1$d עדכונים</string>
+    <string name="widget_unread_many">99+ עדכונים</string>
+    <string name="widget_description">תקציב TravelMate: הוצאות, הוצאה מהירה והמרת מטבע</string>
+    <string name="live_today_widget_title">TravelMate · היום</string>
+    <string name="live_today_widget_current">מתקיים עכשיו</string>
+    <string name="live_today_widget_next">הבא בתוכנית</string>
+    <string name="live_today_widget_activity">פעילות מתוזמנת</string>
+    <string name="live_today_widget_open_day">פתח תוכנית</string>
+    <string name="live_today_widget_open_flexible">היום פתוח וגמיש</string>
+    <string name="live_today_widget_before">הטיול עוד לא התחיל</string>
+    <string name="live_today_widget_after">הטיול הסתיים</string>
+    <string name="live_today_widget_unknown">פתח את TravelMate לעדכון</string>
+    <string name="live_today_widget_stale">המידע שמור במכשיר · פתח לעדכון</string>
+    <string name="live_today_widget_weather_unavailable">מזג האוויר יתעדכן מתוך TravelMate</string>
+    <string name="live_today_widget_description">TravelMate היום: הפעילות הקבועה הקרובה, מזג אוויר ועדכוני טיול</string>
+</resources>
