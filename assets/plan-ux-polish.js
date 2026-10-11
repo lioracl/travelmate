@@ -129,7 +129,7 @@ function addSecondaryDetails(row,record){
   if(rating)details.appendChild(detailRow('fa-solid fa-star','ציון '+rating+(reviews?' · '+reviews+' ביקורות':'')));
   var nav=document.createElement('nav'),official=safeUrl(record.website||record.officialUrl),ratings=safeUrl(record.ratingsUrl||record.googleMapsUrl);
   if(official)nav.appendChild(detailLink('fa-solid fa-globe','אתר רשמי',official));
-  if(ratings)nav.appendChild(detailLink('fa-brands fa-google','ציונים וביקורות',ratings));
+  if(ratings&&!row.querySelector('.saved-place-links .google-rating-link'))nav.appendChild(detailLink('fa-brands fa-google','ציונים וביקורות',ratings));
   if(phone){var tel=document.createElement('a');tel.href='tel:'+phone.replace(/[^+\d]/g,'');tel.innerHTML='<i class="fa-solid fa-phone" aria-hidden="true"></i><span></span>';tel.querySelector('span').textContent=phone;nav.appendChild(tel)}
   if(nav.childNodes.length)details.appendChild(nav);
   if(!details.childNodes.length)return;

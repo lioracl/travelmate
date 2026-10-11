@@ -282,7 +282,7 @@
   }
 
   function openPanel(opener) {
-    if (!state.session) return;
+    if (!state.session || state.members.length < 2 || !state.members.some(function (member) { return String(member.user_id) === currentUserId(); }) || (opener && opener.hidden)) return;
     state.opener = opener || document.activeElement;
     state.open = true;
     ui.panel.hidden = false;
@@ -363,6 +363,7 @@
     state.refreshPromise = null;
     closePanel(false);
     setLaunchersVisible(false);
+    render();
     if (!state.session || !state.trip) return;
     state.trip.ownerId = state.trip.ownerId || state.session.user.id;
     await refresh(true);

@@ -30,7 +30,7 @@ html[data-native-shell]::after{bottom:0;height:var(--tm-safe-bottom)}
 @media(max-width:700px){
   html body.home-page:is(.is-authenticated,.has-cached-trips) .home-sidebar{top:var(--tm-safe-top);left:var(--tm-safe-left);right:var(--tm-safe-right);width:auto}
   html body.home-page:is(.is-authenticated,.has-cached-trips) main.content{padding-top:calc(var(--tm-safe-top) + var(--tm-shell-header-height) + 16px);padding-bottom:calc(100px + var(--tm-safe-bottom));padding-left:calc(14px + var(--tm-safe-left));padding-right:calc(14px + var(--tm-safe-right))}
-  html body.home-page .landing-topbar{padding-top:calc(18px + var(--tm-safe-top))}
+  html body.home-page:not(.is-authenticated):not(.has-cached-trips) .landing-nav{padding-top:var(--tm-safe-top);min-height:calc(84px + var(--tm-safe-top));box-sizing:border-box}
 }
 /* Shared modal boundaries keep every scroll ending and action inside system bars. */
 html body :is(.modal-backdrop,.cloud-account-backdrop,.security-center-backdrop,.security-mfa-gate,.profile-wizard-backdrop,.trip-date-editor-backdrop,.about-backdrop){
@@ -53,4 +53,11 @@ html body :is(.modal-backdrop,.cloud-account-backdrop,.security-center-backdrop,
   }
   html body.ai-keyboard-open .ai-quick-prompts{display:none}
   html body .ai-composer{padding-bottom:10px}
+}
+
+/* Public landing preserves a scrollable scene on short displays and system bars. */
+@media(max-width:700px){
+ html body.home-page:not(.is-authenticated):not(.has-cached-trips) .home-landing{min-height:max(100svh,calc(720px + var(--tm-safe-top) + var(--tm-safe-bottom)))}
+ html body.home-page:not(.is-authenticated):not(.has-cached-trips) .destination-carousel{top:calc(210px + var(--tm-safe-top));bottom:calc(24px + var(--tm-safe-bottom))}
+ html body.home-page:not(.is-authenticated):not(.has-cached-trips) .carousel-track{min-height:500px}
 }

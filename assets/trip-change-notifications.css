@@ -61,3 +61,6 @@
 @media(prefers-reduced-motion:reduce){
   .trip-notification-launcher,.trip-notification-panel,.trip-notification-item,.is-trip-notification-target{transition:none;animation:none;scroll-behavior:auto}
 }
+
+/* State owns visibility, even when launcher/badge layout declares display. */
+.trip-notification-launcher[hidden],[data-trip-notification-badge][hidden]{display:none}
