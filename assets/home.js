@@ -642,7 +642,7 @@
     if (user && profile.avatarUrl && typeof window.Image === 'function') {
       var expected = profile.avatarUrl;
       var probe = new window.Image();
-      probe.onerror = function () { if (avatar.dataset.avatarGeneration === renderGeneration && avatar.dataset.avatarUrl === expected) { avatar.classList.remove('has-image'); avatar.style.backgroundImage = ''; avatar.dataset.avatarUrl = ''; } };
+      probe.onerror = function () { if (avatar.dataset.avatarGeneration === renderGeneration && avatar.dataset.avatarUrl === expected) { avatar.classList.remove('has-image'); avatar.style.backgroundImage = ''; avatar.dataset.avatarUrl = ''; avatar.textContent = profile.initials || ''; } };
       probe.src = expected;
     }
   }
@@ -660,6 +660,16 @@
     });
     renderSmartProfile(session);
   }
+
+  function refreshLocalGreeting() {
+    if(document.hidden||!currentSession||!currentSession.user)return;
+    var profile=personalizedUser(currentSession.user);
+    var text=profile.greeting+(profile.firstName?' '+profile.firstName:'');
+    document.querySelectorAll('[data-account-label],[data-smart-profile-greeting],[data-home-greeting]').forEach(function(node){node.textContent=text;});
+  }
+  document.addEventListener('visibilitychange',refreshLocalGreeting);
+  window.addEventListener('pageshow',refreshLocalGreeting);
+  setInterval(refreshLocalGreeting,60000);
 
   function renderSmartProfile(session) {
     var host = accountPanel && accountPanel.querySelector('[data-smart-profile]');

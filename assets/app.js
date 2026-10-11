@@ -119,7 +119,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     if(isHomePage)return {floating:null,sidebar:null};
     var header=document.querySelector('.mobile-header'),sidebar=document.querySelector('.workspace>.sidebar');
     var floating=document.querySelector('[data-trip-profile-avatar]');
-    if(!floating&&header){floating=document.createElement('button');floating.type='button';floating.className='trip-profile-avatar-button';floating.dataset.tripProfileAvatar='';floating.dataset.securityOpen='';floating.dataset.lazyAccount='';floating.setAttribute('aria-label','פתיחת הפרופיל וההגדרות האישיות');floating.innerHTML='<span data-trip-profile-avatar-image aria-hidden="true"></span>';header.insertAdjacentElement('afterend',floating)}
+    if(!floating&&header){floating=document.createElement('button');floating.type='button';floating.className='trip-profile-avatar-button';floating.dataset.tripProfileAvatar='';floating.dataset.securityOpen='';floating.dataset.lazyAccount='';floating.setAttribute('aria-label','פתיחת הפרופיל וההגדרות האישיות');floating.innerHTML='<span data-trip-profile-avatar-image aria-hidden="true"></span>';header.appendChild(floating)}
     var profileButton=document.querySelector('[data-trip-sidebar-profile]');
     if(!profileButton&&sidebar){profileButton=document.createElement('button');profileButton.type='button';profileButton.className='trip-sidebar-profile';profileButton.dataset.tripSidebarProfile='';profileButton.dataset.securityOpen='';profileButton.dataset.lazyAccount='';profileButton.setAttribute('aria-label','פתיחת הפרופיל וההגדרות האישיות');profileButton.innerHTML='<span class="trip-sidebar-profile-avatar" data-trip-sidebar-avatar aria-hidden="true"></span><span class="trip-sidebar-profile-copy"><small>הפרופיל שלי</small><strong data-trip-sidebar-profile-name>TravelMate</strong></span><i class="fa-solid fa-chevron-left" aria-hidden="true"></i>';var logo=sidebar.querySelector(':scope > .logo');if(logo)logo.insertAdjacentElement('afterend',profileButton);else sidebar.prepend(profileButton)}
     return {floating:floating,sidebar:profileButton}
@@ -189,7 +189,7 @@ window.addEventListener('beforeinstallprompt',function(event){
 });
 
 (function scheduleServiceWorkerRegistration(){
-  if(!('serviceWorker' in navigator)||location.protocol==='file:'||window.__travelMateServiceWorkerScheduled)return;
+  if((window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())||!('serviceWorker' in navigator)||location.protocol==='file:'||window.__travelMateServiceWorkerScheduled)return;
   window.__travelMateServiceWorkerScheduled=true;
   var rootUrl=new URL('../',appScript.src),registration=null,accepted=false,reloaded=false,lastCheck=0,button=null;
   window.TravelMateWebDiagnostics={build:window.TravelMateWebBuild||null,activeCacheRevision:null};

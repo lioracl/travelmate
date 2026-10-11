@@ -2,7 +2,7 @@
   'use strict';
 
   var release = {
-    version: '2.21.0',
+    version: '2.21.1',
     label: 'Native Widgets & Release Hardening - 2.21.0',
     date: '11 באוקטובר 2026',
     highlights: [
@@ -479,6 +479,7 @@
 
   function webBuildHtml() {
     var build=window.TravelMateWebBuild;
+    if(build&&window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())return '<p>Web SHA: <code dir="ltr" style="overflow-wrap:anywhere">'+build.sha+'</code></p><p>Android OTA · API '+(build.nativeApiLevel||1)+'</p>';
     if(!build||!/^[a-f0-9]{40}$/.test(build.sha))return '<p>Web build: local / unstamped</p>';
     return '<p>Web SHA: <code dir="ltr" style="overflow-wrap:anywhere">'+build.sha+'</code></p><p>Asset cache: <code dir="ltr" style="overflow-wrap:anywhere">'+build.cacheRevision+'</code></p><p>Active SW cache: <code data-about-worker-cache dir="ltr" style="overflow-wrap:anywhere"></code></p>';
   }
