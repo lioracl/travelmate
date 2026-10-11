@@ -15,6 +15,8 @@ root=pathlib.Path(sys.argv[1]); target=sys.argv[2]
 with zipfile.ZipFile(target,'x',zipfile.ZIP_DEFLATED) as z:
  for p in sorted(root.rglob('*')):
   if p.is_file(): z.write(p,p.relative_to(root).as_posix())`,path.resolve(directory),path.join(target,'bundle.zip')]);
+const trusted=JSON.parse(fs.readFileSync(new URL('../capacitor.config.json',import.meta.url))).plugins.LiveUpdate.publicKey;
+if(!createPublicKey(key).export({type:'spki',format:'der'}).equals(createPublicKey(trusted).export({type:'spki',format:'der'})))throw Error('OTA signing key does not match binary trust anchor');
 const zip=fs.readFileSync(path.join(target,'bundle.zip'));
 const manifest={schemaVersion:1,sha:build.sha,version:build.version,nativeApiLevel:contract.nativeApiLevel,url:`https://lioracl.github.io/travelmate/ota/${build.sha}/bundle.zip`,sha256:createHash('sha256').update(zip).digest('hex'),bundleSignature:sign('RSA-SHA256',zip,key).toString('base64'),createdAt:new Date().toISOString()};
 const payload=Buffer.from(JSON.stringify(manifest));

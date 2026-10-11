@@ -661,6 +661,16 @@
     renderSmartProfile(session);
   }
 
+  function refreshLocalGreeting() {
+    if(document.hidden||!currentSession||!currentSession.user)return;
+    var profile=personalizedUser(currentSession.user);
+    var text=profile.greeting+(profile.firstName?' '+profile.firstName:'');
+    document.querySelectorAll('[data-account-label],[data-smart-profile-greeting],[data-home-greeting]').forEach(function(node){node.textContent=text;});
+  }
+  document.addEventListener('visibilitychange',refreshLocalGreeting);
+  window.addEventListener('pageshow',refreshLocalGreeting);
+  setInterval(refreshLocalGreeting,60000);
+
   function renderSmartProfile(session) {
     var host = accountPanel && accountPanel.querySelector('[data-smart-profile]');
     var user = session && session.user;

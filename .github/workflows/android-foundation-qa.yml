@@ -45,7 +45,7 @@ jobs:
 
       - name: Stamp exact source revision
         run: |
-          SOURCE_SHA="$(git rev-parse HEAD)" node -e "const fs=require('fs');fs.writeFileSync('android/app/src/main/assets/public/build-info.json',JSON.stringify({sha:process.env.SOURCE_SHA,version:require('./package.json').version,buildType:'debug'}))"
+          SOURCE_SHA="$(git rev-parse HEAD)" node -e "const fs=require('fs');const info=JSON.parse(fs.readFileSync('android/app/src/main/assets/public/build-info.json'));if(info.sha!==process.env.SOURCE_SHA)throw Error('Embedded source SHA mismatch')"
 
       - name: Test signing certificate identity guard
         run: python3 tools/test_android_signing.py

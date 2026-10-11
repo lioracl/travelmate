@@ -9,7 +9,8 @@ apk, expected_sha = sys.argv[1:]
 with zipfile.ZipFile(apk) as package:
     names = package.namelist()
     info = json.loads(package.read('assets/public/build-info.json'))
-    assert info == dict(sha=expected_sha, version='2.21.0', buildType='debug'), info
+    assert info['sha'] == expected_sha and info['version'] == '2.21.1' and info['nativeApiLevel'] == 1, info
+    assert package.read('assets/public/assets/native-live-update.js') == pathlib.Path('assets/native-live-update.js').read_bytes()
     for relative in ['index.html', 'sw.js', 'assets/security-center.js', 'assets/cloud-sync.js', 'assets/security-center.css', 'assets/weather-widget.js', 'assets/weather-widget.css', 'assets/phone-visual-qa.css', 'assets/native-widget-snapshot.js', 'trip/custom/index.html', 'manifest.webmanifest']:
         assert package.read('assets/public/' + relative) == pathlib.Path('dist', relative).read_bytes(), relative
     config = json.loads(package.read('assets/capacitor.config.json'))
