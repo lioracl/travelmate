@@ -11,7 +11,7 @@ Copies use git show at the exact source SHAs. No merge, memory-based reconstruct
 
 The web/shared runtime is byte-identical to the approved reference, including untouched base files. Its only tree differences against that reference are the five unused/native-only asset omissions below. PWA manifest-referenced scenic SVG/PNG icons are preserved exactly. All HTML, JS/CSS, manifest and SW behavior matches the approved implementation.
 
-One test-only adaptation removes the dependency on native package.json from profile-wizard-contract.test.js: it obtains the product version from About, the canonical existing web owner. Runtime implementation is unchanged. The PWA reference report is preserved verbatim as historical reference evidence; this report describes the clean branch, which does not inherit the native tree.
+A test-only adaptation removes the dependency on native package.json from profile-wizard-contract.test.js: it obtains the product version from About, the canonical existing web owner. A second test-only adjustment waits for the delayed SW registration before calling update(), removing a race exposed by the first CI run. Runtime implementation is unchanged. The PWA reference report is preserved verbatim as historical reference evidence; this report describes the clean branch, which does not inherit the native tree.
 
 ## Validation
 
@@ -261,6 +261,6 @@ Physical phone and live authenticated Supabase acceptance are still required. Te
 
 ## Publication boundary
 
-The final clean commit has exactly the requested Preview base as parent, allowing a normal fast-forward if Preview remains at that SHA. PR #154 stays Draft/unmerged at its original RC head. Main and Preview are unchanged. No publication is authorized by this task.
+The clean branch descends exclusively from the requested Preview base, allowing a normal fast-forward if Preview remains at that SHA. PR #154 stays Draft/unmerged at its original RC head. Main and Preview are unchanged. No publication is authorized by this task.
 
-The only non-native tree differences from the approved reference are this task-specific evidence document and the native-package dependency removed from a web test; there are no extra web runtime differences.
+The only non-native tree differences from the approved reference are this task-specific evidence document and two test-only adaptations (native-package dependency removed and explicit wait for SW registration); there are no extra web runtime differences.
