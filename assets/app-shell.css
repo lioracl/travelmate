@@ -93,11 +93,16 @@ html body:not(.home-page) #overview.hero>.hero-copy{padding-right:66px;box-sizin
  html body:not(.home-page) #overview.hero>.hero-copy{padding-right:62px}
 }
 
-/* Nearby: free GPS search is primary; schedule-fit remains an explicit secondary action. */
+/* Nearby: free GPS search is the default. Time-fit expands only on explicit request. */
 html body .nearby-free-search .tm-nearby-free-note{display:block;margin-top:7px;font-size:.82rem;line-height:1.45;opacity:.78}
-html body .nearby-execute-actions .nearby-free-gps-action{min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;flex:1 1 100%}
-html body [data-contextual-nearby].tm-nearby-time-fit-action{font-weight:700}
+html body [data-contextual-nearby] .tm-nearby-free-primary{font-weight:800}
+html body [data-contextual-nearby] .tm-nearby-time-fit-action,
+html body [data-contextual-nearby] .tm-nearby-time-fit-run{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;font-weight:700}
+html body [data-contextual-nearby]:not(.is-time-fit-open) [data-contextual-window-label],
+html body [data-contextual-nearby]:not(.is-time-fit-open) [data-contextual-mini-route],
+html body [data-contextual-nearby]:not(.is-time-fit-open) [data-nearby-time-fit-run]{display:none!important}
+html body [data-contextual-nearby].is-time-fit-open [data-contextual-window-label]{display:grid}
 @media(max-width:600px){
- html body .nearby-execute-actions{display:flex;flex-wrap:wrap;gap:8px}
- html body .nearby-execute-actions .nearby-free-gps-action{width:100%}
+ html body [data-contextual-nearby] .tm-nearby-time-fit-action,
+ html body [data-contextual-nearby] .tm-nearby-time-fit-run{width:100%}
 }
