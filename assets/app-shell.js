@@ -42,65 +42,188 @@
     window.setTimeout(syncTripProfileHero, 250);
   }
 
-  function setActionLabel(button, label) {
-    if (!button) return;
-    button.setAttribute('aria-label', label);
-    button.title = label;
-    var span = button.querySelector('span');
-    if (span) { span.textContent = label; return; }
-    var textNode = Array.prototype.find.call(button.childNodes, function (node) {
-      return node.nodeType === 3 && String(node.textContent || '').trim();
-    });
-    if (textNode) textNode.textContent = ' ' + label + ' ';
+  function currentTrip() {
+    var store = window.TravelMateTripStore;
+    var id = new URLSearchParams(location.search).get('id');
+    return store && store.getTrip ? store.getTrip(id) : null;
   }
 
-  // Free nearby search is the primary path. Time-fit remains available only through
-  // its existing explicit contextual action; no schedule/window filtering is applied
-  // to this button because it delegates to the normal GPS search owner in nearby.js.
+  function setStatus(panel, message, warning) {
+    var status = panel && panel.querySelector('[data-nearby-status]');
+    if (!status) return;
+    status.classList.remove('is-error', 'is-warning');
+    if (warning) status.classList.add('is-warning');
+    status.textContent = message;
+  }
+
+  function activeNearbyMood(contextual) {
+    var active = contextual && contextual.querySelector('[data-contextual-mood][aria-pressed="true"]');
+    return active ? String(active.dataset.contextualMood || '') : '';
+  }
+
+  function waitForNearbyReady(panel, callback) {
+    if (window.TravelMateNearby) { callback(); return; }
+    var settled = false;
+    function finish() {
+      if (settled) return;
+      settled = true;
+      window.removeEventListener('travelmate:nearby-ready', onReady);
+      callback();
+    }
+    function onReady() { finish(); }
+    window.addEventListener('travelmate:nearby-ready', onReady);
+    window.setTimeout(function () { if (window.TravelMateNearby) finish(); }, 120);
+    window.setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      window.removeEventListener('travelmate:nearby-ready', onReady);
+      setStatus(panel, 'חיפוש המקומות עדיין נטען. נסה שוב בעוד רגע.', true);
+    }, 5000);
+  }
+
+  function applyMoodCategory(panel, contextual) {
+    var mood = activeNearbyMood(contextual);
+    if (!mood) return;
+    var helper = window.TravelMateTripContext;
+    var preset = helper && helper.nearbyPreferencePreset ? helper.nearbyPreferencePreset(mood) : null;
+    var key = preset && Array.isArray(preset.categories) && preset.categories[0];
+    if (key) panel.dispatchEvent(new CustomEvent('travelmate:smart-category', {detail:{category:key}}));
+  }
+
+  function runFreeNearbySearch(panel, contextual) {
+    setStatus(panel, 'מחפש מקומות קרובים לפי המיקום הנוכחי…');
+    waitForNearbyReady(panel, function () {
+      applyMoodCategory(panel, contextual);
+      var gpsMode = panel.querySelector('[data-nearby-mode="gps"]');
+      if (gpsMode && gpsMode.getAttribute('aria-pressed') !== 'true') gpsMode.click();
+      window.setTimeout(function () {
+        var execute = panel.querySelector('[data-nearby-execute-search]') || panel.querySelector('[data-nearby-search]');
+        if (execute) execute.click();
+        else setStatus(panel, 'לא הצלחנו להפעיל את החיפוש כרגע. נסה שוב.', true);
+      }, 0);
+    });
+  }
+
+  function runTimeFitNearbySearch(panel, contextual) {
+    var trip = currentTrip();
+    var helper = window.TravelMateTripContext;
+    var input = contextual.querySelector('[data-contextual-window]');
+    var available = Math.max(30, Math.min(360, Number(input && input.value) || 90));
+    var mood = activeNearbyMood(contextual);
+    var preset = helper && helper.nearbyPreferencePreset ? helper.nearbyPreferencePreset(mood) : null;
+    if (!trip || !helper || !helper.buildNearbyRequest) {
+      setStatus(panel, 'מצב התאמה לזמן עדיין נטען. נסה שוב בעוד רגע.', true);
+      return;
+    }
+    setStatus(panel, 'מחפש התאמה לחלון הזמן שבחרת…');
+    waitForNearbyReady(panel, function () {
+      var results = panel.querySelector('[data-nearby-results]');
+      var status = panel.querySelector('[data-nearby-status]');
+      if (results) {
+        results.addEventListener('travelmate:nearby-results-rendered', function () {
+          window.setTimeout(function () {
+            var text = String(status && status.textContent || '');
+            if (/לא נמצאו מקומות קרובים|מסומנים כסגורים/.test(text)) {
+              setStatus(panel, 'לא נמצאה התאמה מלאה לחלון הזמן. מציג מקומות קרובים ללא סינון זמן.', true);
+              runFreeNearbySearch(panel, contextual);
+            }
+          }, 0);
+        }, {once:true});
+      }
+      panel.dispatchEvent(new CustomEvent('travelmate:contextual-nearby', {detail:{
+        trip:trip,
+        now:new Date(),
+        availableMinutes:available,
+        bufferMinutes:30,
+        mood:preset ? preset.key : '',
+        categories:preset ? preset.categories : [],
+        miniRoute:contextual.querySelector('[data-contextual-mini-route]') && contextual.querySelector('[data-contextual-mini-route]').getAttribute('aria-pressed') === 'true',
+        routeStops:3
+      }}));
+    });
+  }
+
+  // The visible Nearby card now has one clear default: free GPS search. Time-fit is
+  // an explicit secondary mode and never controls the primary search button.
   function enhanceNearbyFreeSearch() {
     var panel = document.querySelector('[data-nearby-places]');
     if (!panel) return false;
+    var contextual = panel.querySelector('[data-contextual-nearby]');
+    if (!contextual) return false;
 
-    var timeFit = panel.querySelector('[data-contextual-nearby]');
-    if (timeFit && timeFit.tagName === 'BUTTON') {
-      timeFit.classList.add('tm-nearby-time-fit-action');
-      setActionLabel(timeFit, 'התאמה לזמן פנוי');
+    var heading = contextual.querySelector(':scope > div strong');
+    var copy = contextual.querySelector(':scope > div small');
+    if (heading) heading.textContent = 'מה יש קרוב אליי?';
+    if (copy) copy.textContent = 'חיפוש חופשי לפי GPS. מסגרת זמן זמינה כאפשרות נפרדת.';
+
+    var windowLabel = contextual.querySelector('[data-contextual-window-label]');
+    if (windowLabel) {
+      var labelText = Array.prototype.find.call(windowLabel.childNodes, function (node) { return node.nodeType === 3; });
+      if (labelText) labelText.textContent = 'זמן פנוי מרבי (דקות)';
+      if (!contextual.classList.contains('is-time-fit-open')) windowLabel.hidden = true;
+    }
+
+    var primary = contextual.querySelector('[data-contextual-nearby-open]');
+    if (primary && primary.dataset.freeNearbyBound !== 'true') {
+      primary.dataset.freeNearbyBound = 'true';
+      primary.classList.add('tm-nearby-free-primary');
+      primary.innerHTML = '<i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i><span>מצא לי משהו קרוב</span>';
+      primary.setAttribute('aria-label', 'חיפוש חופשי של מקומות קרובים לפי GPS');
+      primary.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        runFreeNearbySearch(panel, contextual);
+      }, true);
+    }
+
+    var timeFit = contextual.querySelector('[data-nearby-time-fit]');
+    if (!timeFit && primary) {
+      timeFit = document.createElement('button');
+      timeFit.type = 'button';
+      timeFit.className = 'tm-nearby-time-fit-action';
+      timeFit.dataset.nearbyTimeFit = '';
+      timeFit.setAttribute('aria-expanded', 'false');
+      timeFit.innerHTML = '<i class="fa-regular fa-clock" aria-hidden="true"></i><span>התאמה לזמן פנוי</span>';
+      primary.insertAdjacentElement('afterend', timeFit);
+      timeFit.addEventListener('click', function () {
+        var open = !contextual.classList.contains('is-time-fit-open');
+        contextual.classList.toggle('is-time-fit-open', open);
+        timeFit.setAttribute('aria-expanded', String(open));
+        if (windowLabel) windowLabel.hidden = !open;
+        if (open && windowLabel) {
+          var input = windowLabel.querySelector('input');
+          if (input) input.focus({preventScroll:true});
+        }
+      });
+    }
+
+    var runTimeFit = contextual.querySelector('[data-nearby-time-fit-run]');
+    if (!runTimeFit) {
+      runTimeFit = document.createElement('button');
+      runTimeFit.type = 'button';
+      runTimeFit.className = 'tm-nearby-time-fit-run';
+      runTimeFit.dataset.nearbyTimeFitRun = '';
+      runTimeFit.innerHTML = '<i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>חפש לפי הזמן</span>';
+      var route = contextual.querySelector('[data-contextual-mini-route]');
+      if (route) route.insertAdjacentElement('afterend', runTimeFit);
+      else contextual.appendChild(runTimeFit);
+      runTimeFit.addEventListener('click', function () { runTimeFitNearbySearch(panel, contextual); });
     }
 
     var form = panel.querySelector('[data-nearby-free-form]');
-    var execute = panel.querySelector('[data-nearby-execute-search]');
-    if (!form || !execute) return false;
-
-    var input = form.querySelector('[data-nearby-place-name-input]');
-    var label = input && input.closest('label');
-    var labelText = label && label.querySelector('span');
-    if (labelText) labelText.textContent = 'מה תרצה למצוא קרוב אליך?';
-    if (input) input.placeholder = 'לדוגמה: קפה, מסעדה, מוזיאון או בית מרקחת';
-
-    if (!form.querySelector('[data-nearby-free-note]')) {
-      var note = document.createElement('small');
-      note.className = 'tm-nearby-free-note';
-      note.dataset.nearbyFreeNote = '';
-      note.textContent = 'חיפוש חופשי לפי המיקום הנוכחי — בלי מסגרת זמן ובלי סינון לפי התוכנית.';
-      form.appendChild(note);
-    }
-
-    var actions = execute.closest('.nearby-execute-actions') || execute.parentElement;
-    if (actions && !actions.querySelector('[data-nearby-free-gps]')) {
-      var freeButton = document.createElement('button');
-      freeButton.type = 'button';
-      freeButton.className = 'nearby-free-gps-action primary';
-      freeButton.dataset.nearbyFreeGps = '';
-      freeButton.innerHTML = '<i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i><span>מצא לי משהו קרוב</span>';
-      freeButton.addEventListener('click', function () {
-        var gpsMode = panel.querySelector('[data-nearby-mode="gps"]');
-        if (gpsMode && gpsMode.getAttribute('aria-pressed') !== 'true') gpsMode.click();
-        window.setTimeout(function () {
-          var currentExecute = panel.querySelector('[data-nearby-execute-search]');
-          if (currentExecute) currentExecute.click();
-        }, 0);
-      });
-      actions.insertBefore(freeButton, execute);
+    if (form) {
+      var input = form.querySelector('[data-nearby-place-name-input]');
+      var label = input && input.closest('label');
+      var labelText = label && label.querySelector('span');
+      if (labelText) labelText.textContent = 'מה תרצה למצוא קרוב אליך?';
+      if (input) input.placeholder = 'לדוגמה: קפה, מסעדה, מוזיאון או בית מרקחת';
+      if (!form.querySelector('[data-nearby-free-note]')) {
+        var note = document.createElement('small');
+        note.className = 'tm-nearby-free-note';
+        note.dataset.nearbyFreeNote = '';
+        note.textContent = 'חיפוש חופשי לפי המיקום הנוכחי — בלי מסגרת זמן ובלי סינון לפי התוכנית.';
+        form.appendChild(note);
+      }
     }
 
     panel.dataset.nearbyFreeDefault = 'true';
@@ -111,7 +234,7 @@
     var attempts = 0;
     (function retry() {
       attempts += 1;
-      if (enhanceNearbyFreeSearch() || attempts >= 12) return;
+      if (enhanceNearbyFreeSearch() || attempts >= 30) return;
       window.setTimeout(retry, 120);
     })();
   }
@@ -129,6 +252,9 @@
   window.addEventListener('travelmate:home-auth', scheduleTripProfileHero);
   window.addEventListener('travelmate:profile-change', scheduleTripProfileHero);
   window.addEventListener('travelmate:nearby-ready', scheduleNearbyEnhancement);
+  window.addEventListener('travelmate:viewchange', function (event) {
+    if (event.detail && event.detail.view === 'places') scheduleNearbyEnhancement();
+  });
   document.addEventListener('travelmate:places-updated', scheduleNearbyEnhancement);
 
   // app.js creates the trip avatar after this shell script; observe only until the
@@ -137,7 +263,7 @@
     var avatarObserver = new MutationObserver(function () {
       if (syncTripProfileHero()) avatarObserver.disconnect();
     });
-    avatarObserver.observe(document.body, {childList:true, subtree:true});
+    avatarObserver.observe(document.body, {childList:true,subtree:true});
   }
 
   // Read-only diagnostics: no second source of inset values or persisted state.
