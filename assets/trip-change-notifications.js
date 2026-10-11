@@ -97,8 +97,8 @@
     button.setAttribute('aria-expanded', 'false');
     button.setAttribute('aria-label', label);
     button.hidden = true;
-    button.innerHTML = '<i class="fa-regular fa-bell" aria-hidden="true"></i><span class="trip-notification-label">עדכונים</span><b data-trip-notification-badge hidden aria-hidden="true"></b>';
-    button.addEventListener('click', function () { openPanel(button); });
+    button.innerHTML = '<i class="fa-regular fa-bell" aria-hidden="true"></i><span class="trip-notification-label">עדכונים</span>';
+    button.addEventListener('click', function () { if (state.open) closePanel(); else openPanel(button); });
     return button;
   }
 
@@ -164,8 +164,12 @@
     [ui.desktopButton, ui.mobileButton].forEach(function (button) {
       if (!button) return;
       var badge = button.querySelector('[data-trip-notification-badge]');
-      badge.hidden = count === 0;
-      badge.textContent = count > 99 ? '99+' : String(count);
+      if (!count) { if (badge) badge.remove(); }
+      else {
+        if (!badge) { badge = document.createElement('b'); badge.dataset.tripNotificationBadge = ''; badge.setAttribute('aria-hidden', 'true'); button.appendChild(badge); }
+        badge.hidden = false;
+        badge.textContent = String(count);
+      }
       button.setAttribute('aria-label', count ? 'פתיחת עדכוני הטיול · ' + count + ' לא נקראו' : 'פתיחת עדכוני הטיול · אין עדכונים שלא נקראו');
     });
     ui.readAll.disabled = count === 0;

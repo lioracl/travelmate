@@ -67,7 +67,7 @@
       var title = row.querySelector('.activity-copy strong');
       var details = row.querySelector('.activity-copy small');
       if (title) title.textContent = activity.title;
-      if (details) details.textContent = (activity.category || 'פעילות') + ' · ' + (activity.duration || 60) + ' דק׳';
+      if (details) details.textContent = window.TravelMatePlaceLabels.category(activity.category,'פעילות') + ' · ' + (activity.duration || 60) + ' דק׳';
     });
     enhance();
   }

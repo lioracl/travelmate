@@ -16,7 +16,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (System.getenv('TRAVELMATE_QA_KEYSTORE')) {
+            qa {
+                storeFile file(System.getenv('TRAVELMATE_QA_KEYSTORE'))
+                storePassword System.getenv('TRAVELMATE_QA_STORE_PASSWORD')
+                keyAlias System.getenv('TRAVELMATE_QA_KEY_ALIAS')
+                keyPassword System.getenv('TRAVELMATE_QA_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
+        debug {
+            if (System.getenv('TRAVELMATE_QA_KEYSTORE')) signingConfig signingConfigs.qa
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

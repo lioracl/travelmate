@@ -13,6 +13,12 @@ jobs:
   android-debug:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      TRAVELMATE_QA_KEYSTORE_BASE64: ${{ secrets.TRAVELMATE_QA_KEYSTORE_BASE64 }}
+      TRAVELMATE_QA_STORE_PASSWORD: ${{ secrets.TRAVELMATE_QA_STORE_PASSWORD }}
+      TRAVELMATE_QA_KEY_ALIAS: ${{ secrets.TRAVELMATE_QA_KEY_ALIAS }}
+      TRAVELMATE_QA_KEY_PASSWORD: ${{ secrets.TRAVELMATE_QA_KEY_PASSWORD }}
+      TRAVELMATE_QA_CERT_SHA256: ${{ vars.TRAVELMATE_QA_CERT_SHA256 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,6 +47,24 @@ jobs:
         run: |
           SOURCE_SHA="$(git rev-parse HEAD)" node -e "const fs=require('fs');fs.writeFileSync('android/app/src/main/assets/public/build-info.json',JSON.stringify({sha:process.env.SOURCE_SHA,version:require('./package.json').version,buildType:'debug'}))"
 
+      - name: Test signing certificate identity guard
+        run: python3 tools/test_android_signing.py
+
+      - name: Configure stable QA signing when available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$TRAVELMATE_QA_KEYSTORE_BASE64$TRAVELMATE_QA_STORE_PASSWORD$TRAVELMATE_QA_KEY_ALIAS$TRAVELMATE_QA_KEY_PASSWORD$TRAVELMATE_QA_CERT_SHA256" ]]; then
+            for NAME in TRAVELMATE_QA_KEYSTORE_BASE64 TRAVELMATE_QA_STORE_PASSWORD TRAVELMATE_QA_KEY_ALIAS TRAVELMATE_QA_KEY_PASSWORD TRAVELMATE_QA_CERT_SHA256; do
+              [[ -n "${!NAME}" ]] || { echo "::error::Incomplete QA signing configuration: $NAME"; exit 1; }
+            done
+            umask 077
+            printf '%s' "$TRAVELMATE_QA_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/travelmate-qa.keystore"
+            echo "TRAVELMATE_QA_KEYSTORE=$RUNNER_TEMP/travelmate-qa.keystore" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Stable QA signing is not configured. Ephemeral debug certificate: update compatibility is NOT guaranteed; reinstall required when certificates differ."
+          fi
+
       - name: Run native unit tests and build debug APK
         working-directory: android
         run: |
@@ -52,7 +76,9 @@ jobs:
           set -euo pipefail
           APK="android/app/build/outputs/apk/debug/app-debug.apk"
           BUILD_TOOLS="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
-          "$BUILD_TOOLS/apksigner" verify --verbose "$APK"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK" > /tmp/travelmate-signature.txt
+          cat /tmp/travelmate-signature.txt
+          python3 tools/verify-android-signing.py /tmp/travelmate-signature.txt android/app/build/outputs/apk/debug/signing-certificate.json
           "$BUILD_TOOLS/aapt" dump badging "$APK" > /tmp/travelmate-badging.txt
           grep -q "package: name='com.travelmate.app'.*versionName='2.21.0'" /tmp/travelmate-badging.txt
           "$BUILD_TOOLS/aapt" dump xmltree "$APK" AndroidManifest.xml > /tmp/travelmate-manifest.txt
@@ -60,10 +86,17 @@ jobs:
           python3 tools/verify-android-apk.py "$APK" "$(git rev-parse HEAD)"
           cp "$APK" "android/app/build/outputs/apk/debug/TravelMate-2.21.0-$(git rev-parse --short=12 HEAD)-debug.apk"
 
+      - name: Remove temporary QA keystore
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/travelmate-qa.keystore"
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: travelmate-v2.21-debug-${{ github.event.pull_request.head.sha || github.sha }}
-          path: android/app/build/outputs/apk/debug/TravelMate-*-debug.apk
+          path: |
+            android/app/build/outputs/apk/debug/TravelMate-*-debug.apk
+            android/app/build/outputs/apk/debug/signing-certificate.json
           if-no-files-found: error
           retention-days: 7
