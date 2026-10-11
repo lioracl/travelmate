@@ -11,6 +11,8 @@ OUTPUT = "Signer #1 certificate SHA-256 digest: " + FP
 class SigningIdentityTests(unittest.TestCase):
     def test_ephemeral_is_explicit(self):
         self.assertFalse(module.certificate_report(OUTPUT)["stableQaCertificateVerified"])
+    def test_current_build_tools_v2_output(self):
+        self.assertEqual(module.certificate_report("V2 Signer: certificate SHA-256 digest: " + FP)["certificateSha256"], FP)
     def test_matching_identity(self):
         self.assertTrue(module.certificate_report(OUTPUT, FP)["stableQaCertificateVerified"])
     def test_colon_normalization(self):

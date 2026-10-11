@@ -7,7 +7,11 @@ import sys
 
 
 def certificate_report(output, expected=""):
-    matches = re.findall(r"Signer #\d+ certificate SHA-256 digest:\s*([0-9a-fA-F:]+)", output)
+    matches = []
+    for line in output.splitlines():
+        owner, marker, digest = line.partition("certificate SHA-256 digest:")
+        if marker and re.fullmatch(r"(?:Signer #\d+|V\d+ Signer):?", owner.strip()):
+            matches.append(digest.strip())
     if len(matches) != 1:
         raise ValueError("Expected exactly one APK signing certificate")
     actual = matches[0].replace(":", "").lower()
