@@ -61,3 +61,14 @@ html body :is(.modal-backdrop,.cloud-account-backdrop,.security-center-backdrop,
  html body.home-page:not(.is-authenticated):not(.has-cached-trips) .destination-carousel{top:calc(210px + var(--tm-safe-top));bottom:calc(24px + var(--tm-safe-bottom))}
  html body.home-page:not(.is-authenticated):not(.has-cached-trips) .carousel-track{min-height:500px}
 }
+
+@media(max-width:1000px){
+ html body:not(.home-page) .mobile-header{gap:5px;padding-inline:8px;box-sizing:border-box}
+ html body:not(.home-page) .mobile-header>strong{flex:1;min-width:0;gap:5px}
+ html body:not(.home-page) .mobile-header [data-country]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+ html body:not(.home-page) .mobile-header .trip-profile-avatar-button{display:grid;flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;margin:0;padding:2px;position:static;border-radius:50%}
+ html body:not(.home-page) .mobile-header .trip-profile-avatar-button[hidden]{display:none}
+ html body:not(.home-page) .mobile-header .trip-profile-avatar-button>[data-trip-profile-avatar-image]{width:38px;height:38px;background-size:cover;border-radius:50%}
+ html body:not(.home-page) .mobile-header :is(.mobile-destination-map,.mobile-trip-whatsapp,.mobile-trip-back,.mobile-menu-toggle,.trip-notification-launcher){min-width:44px;min-height:44px;width:44px;height:44px;flex-basis:44px}
+ html body:not(.home-page) .mobile-header .mobile-country-flag{font-size:20px}
+}

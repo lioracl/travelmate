@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '2.21.0',
+    version: '2.21.1',
     label: 'Native Widgets & Release Hardening - 2.21.0',
     date: '11 באוקטובר 2026',
     highlights: [
+      'עדכוני PWA: פרסום Preview מזהה את גרסת הווב לפי SHA. עדכון מוכן מוצג עם רענון מפורש, בלי להתקין APK ובלי למחוק נתונים מקומיים.',
       'בדיקת Samsung נוספת: לחיצה חוזרת על פעמון סוגרת עדכונים, כפתור הסגירה ממוקם מתחת לכותרת, תג אפס אינו נוצר, וקטגוריות פעילות מוצגות בעברית. נוסף אימות זהות תעודת חתימת APK.',
       'תיקוני בדיקת Samsung: מסך הכניסה מכבד את שולי המערכת גם במסך נמוך, הפעמון מוסתר בטיול סולו ותג אפס אינו מוצג. הוסרה כפילות קישור הביקורות, שמות קטגוריות מוצגים בעברית וכפתור החזרה שומר על העיצוב הקיים.',
       'עדכון RC לבדיקת Samsung: אייקון הנוף עם המטוס ו־AI שוחזר, נוספה בעלות מרכזית על שולי המערכת, תוקנו שבירת מילים בעברית ומיקום Mate בזמן הקלדה. סגירה, שגיאה או פקיעת זמן מבטלות את ניסיון האימות, וכפתור שליחה חוזרת מתאושש מכישלון.',
@@ -476,6 +477,19 @@
   ];
   window.TravelMateRelease = release;
 
+  function webBuildHtml() {
+    var build=window.TravelMateWebBuild;
+    if(build&&window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())return '<p>Web SHA: <code dir="ltr" style="overflow-wrap:anywhere">'+build.sha+'</code></p><p>Android OTA · API '+(build.nativeApiLevel||1)+'</p>';
+    if(!build||!/^[a-f0-9]{40}$/.test(build.sha))return '<p>Web build: local / unstamped</p>';
+    return '<p>Web SHA: <code dir="ltr" style="overflow-wrap:anywhere">'+build.sha+'</code></p><p>Asset cache: <code dir="ltr" style="overflow-wrap:anywhere">'+build.cacheRevision+'</code></p><p>Active SW cache: <code data-about-worker-cache dir="ltr" style="overflow-wrap:anywhere"></code></p>';
+  }
+
+  function refreshWorkerDiagnostic() {
+    var node=document.querySelector('[data-about-worker-cache]');
+    if(node)node.textContent=window.TravelMateWebDiagnostics&&window.TravelMateWebDiagnostics.activeCacheRevision||'טרם התקבל';
+  }
+  window.addEventListener('travelmate:web-build-diagnostics',refreshWorkerDiagnostic);
+
   function releaseGroupsHtml() {
     return release.categories.map(function (group) {
       return '<li class="about-release-category"><div><i class="fa-solid ' + group.icon + '"></i><strong>' + group.title + '</strong></div><ul>' + group.items.map(function (item) { return '<li><i class="fa-solid fa-circle-check"></i><span>' + item + '</span></li>'; }).join('') + '</ul></li>';
@@ -483,10 +497,11 @@
   }
 
   function modalHtml() {
-    return '<section class="about-backdrop" data-about-modal aria-hidden="true"><div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"><header><div class="about-brand"><span><i class="fa-solid fa-route"></i></span><div><small>TravelMate</small><h2 id="about-title">אודות האפליקציה</h2></div></div><button class="about-close" type="button" data-about-close aria-label="סגירת אודות"><i class="fa-solid fa-xmark"></i></button></header><div class="about-content"><div class="about-version"><span>גרסה</span><strong>' + release.version + '</strong><small>' + release.label + ' · ' + release.date + '</small></div><section><h3>הטיול שלך, במקום אחד</h3><p>TravelMate מרכזת את תכנון הטיול, המסלול, המקומות, התחבורה, המסמכים, התקציב והשיחה הקבוצתית בחוויה אחת שמסתנכרנת בין המכשירים.</p></section><section><h3>מה כלול בגרסה הזו?</h3><ul>' + releaseGroupsHtml() + '</ul></section><section class="about-rights"><h3><i class="fa-solid fa-copyright"></i> בעלות וזכויות שימוש</h3><p>© 2026 TravelMate. כל הזכויות שמורות לבעלי האפליקציה: <strong>ליאור אחלאו</strong> ו־<strong>נטלי ציינ׳י</strong>.</p><p>אין להעתיק, לשכפל, להפיץ, לפרסם, לשנות, למסחר או לעשות שימוש בקוד, בעיצוב, בתוכן, במאגרי המידע או במותג ללא אישור מראש ובכתב מבעלי האפליקציה. השימוש באפליקציה מותר בהתאם להרשאה ולתנאים שניתנו על ידי הבעלים.</p><p class="about-third-party">שמות, סמלים ושירותים של ספקים חיצוניים המופיעים באפליקציה שייכים לבעליהם, והשימוש בהם כפוף לתנאים של אותם ספקים.</p></section><section class="about-versioning"><h3>איך מספר הגרסה מתעדכן?</h3><div><span><b>1.0.1</b> תיקון נקודתי</span><span><b>1.1</b> פיצ׳ר או שיפור משמעותי</span><span><b>2.0</b> שינוי עמוק באפליקציה</span></div></section></div><footer><span><i class="fa-solid fa-shield-halved"></i> נבנה כדי לשמור את הטיול פרטי, נגיש ומסודר.</span><button type="button" data-about-close aria-label="סגירת אודות">סגירה</button></footer></div></section>';
+    return '<section class="about-backdrop" data-about-modal aria-hidden="true"><div class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"><header><div class="about-brand"><span><i class="fa-solid fa-route"></i></span><div><small>TravelMate</small><h2 id="about-title">אודות האפליקציה</h2></div></div><button class="about-close" type="button" data-about-close aria-label="סגירת אודות"><i class="fa-solid fa-xmark"></i></button></header><div class="about-content"><div class="about-version"><span>גרסה</span><strong>' + release.version + '</strong><small>' + release.label + ' · ' + release.date + '</small>' + webBuildHtml() + '</div><section><h3>הטיול שלך, במקום אחד</h3><p>TravelMate מרכזת את תכנון הטיול, המסלול, המקומות, התחבורה, המסמכים, התקציב והשיחה הקבוצתית בחוויה אחת שמסתנכרנת בין המכשירים.</p></section><section><h3>מה כלול בגרסה הזו?</h3><ul>' + releaseGroupsHtml() + '</ul></section><section class="about-rights"><h3><i class="fa-solid fa-copyright"></i> בעלות וזכויות שימוש</h3><p>© 2026 TravelMate. כל הזכויות שמורות לבעלי האפליקציה: <strong>ליאור אחלאו</strong> ו־<strong>נטלי ציינ׳י</strong>.</p><p>אין להעתיק, לשכפל, להפיץ, לפרסם, לשנות, למסחר או לעשות שימוש בקוד, בעיצוב, בתוכן, במאגרי המידע או במותג ללא אישור מראש ובכתב מבעלי האפליקציה. השימוש באפליקציה מותר בהתאם להרשאה ולתנאים שניתנו על ידי הבעלים.</p><p class="about-third-party">שמות, סמלים ושירותים של ספקים חיצוניים המופיעים באפליקציה שייכים לבעליהם, והשימוש בהם כפוף לתנאים של אותם ספקים.</p></section><section class="about-versioning"><h3>איך מספר הגרסה מתעדכן?</h3><div><span><b>1.0.1</b> תיקון נקודתי</span><span><b>1.1</b> פיצ׳ר או שיפור משמעותי</span><span><b>2.0</b> שינוי עמוק באפליקציה</span></div></section></div><footer><span><i class="fa-solid fa-shield-halved"></i> נבנה כדי לשמור את הטיול פרטי, נגיש ומסודר.</span><button type="button" data-about-close aria-label="סגירת אודות">סגירה</button></footer></div></section>';
   }
   var aboutReturnFocus = null;
   function openAbout() {
+    refreshWorkerDiagnostic();
     var modal = document.querySelector('[data-about-modal]');
     if (!modal) return;
     aboutReturnFocus = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;

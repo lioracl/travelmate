@@ -15,6 +15,14 @@ import org.json.JSONObject;
 
 @CapacitorPlugin(name = "TravelMateWidgetBridge")
 public class TravelMateWidgetBridgePlugin extends Plugin {
+    @PluginMethod
+    public void getRuntimeContract(PluginCall call) {
+        JSObject result = new JSObject();
+        result.put("nativeApiLevel", 1);
+        result.put("publicKey", getBridge().getConfig().getPluginConfiguration("LiveUpdate").getString("publicKey", ""));
+        call.resolve(result);
+    }
+
     static final String PREFS_NAME = "travelmate_widget";
     static final String ACTIVE_SNAPSHOT_KEY = "active_snapshot_key";
     private static final String SNAPSHOT_PREFIX = "snapshot_json:";

@@ -6,6 +6,13 @@
     "SystemBars": {
       "insetsHandling": "css",
       "initialViewportFitValueHint": "cover"
+    },
+    "LiveUpdate": {
+      "publicKey": "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2JNCn0ti7WgjPy+77nWY\nfBjXdZ8VeJ/aXNFfbZU2jp3v9x5L6FQohOHsueVAsI56hoGlQeDWZqawNgcQ3AYS\nApMOoH0neoRnjM+ULGrjw4wTpdIwa6d2SvdXcBdWbmg7VcrIi3MQf6WSZpzoRYC0\n3nwCllMUmeBrN/DVy5nhpW0xYoj1n/1439LS4hWZl5O6jODVTnW6UNGwsw/3RqCL\nj0A/+3OVtGNAxhqtril53PA/Yd33O5uZNo45RBx5gQUC+b6F+VSrY7FRMp6xKTJn\n5l6pwjExy6OcnvI9YlOUfqT6Ssnj6We41m5DzLauAMMSy1yepbvNi3wBlvlO4DJZ\nhdO3srCSF9qbiEh41hc8UVf6uRjqozgbjPxWCQLu39EL2FJ0+8FyP2Z5rV/5qb2q\n+pJV4PUkryNyPosR4xiEPfqtS8UX/ter0YiBJChzlhbRXpjXnXb6vMKAqgbcjadl\n1nfWUnxEP8j5OUJm7kocRrcsH2tnhVBNbEcfuEtKAwengtC876O7RGvMlB3+pPD3\nIlkogJxqP6GK1KALjuN9LO8yxXwJndZMzTod49lXiK2g9nmbHKiy4wBON8fiCMPw\nRzX6qdfAtaFKzCfS580KD43aJ2hvxcsdVOoLEczVQiw6a8B2Nj7/0tyIS58T4wx1\nscTgCzFyQktPLC0X2E9zL2UCAwEAAQ==\n-----END PUBLIC KEY-----\n",
+      "readyTimeout": 20000,
+      "autoBlockRolledBackBundles": true,
+      "autoDeleteBundles": false,
+      "autoUpdateStrategy": "none"
     }
   }
 }

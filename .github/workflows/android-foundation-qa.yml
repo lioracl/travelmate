@@ -62,7 +62,8 @@ jobs:
             printf '%s' "$TRAVELMATE_QA_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/travelmate-qa.keystore"
             echo "TRAVELMATE_QA_KEYSTORE=$RUNNER_TEMP/travelmate-qa.keystore" >> "$GITHUB_ENV"
           else
-            echo "::warning::Stable QA signing is not configured. Ephemeral debug certificate: update compatibility is NOT guaranteed; reinstall required when certificates differ."
+            echo "::error::Permanent QA signing must be configured before building a distributable APK."
+            exit 1
           fi
 
       - name: Run native unit tests and build debug APK
@@ -80,11 +81,11 @@ jobs:
           cat /tmp/travelmate-signature.txt
           python3 tools/verify-android-signing.py /tmp/travelmate-signature.txt android/app/build/outputs/apk/debug/signing-certificate.json
           "$BUILD_TOOLS/aapt" dump badging "$APK" > /tmp/travelmate-badging.txt
-          grep -q "package: name='com.travelmate.app'.*versionName='2.21.0'" /tmp/travelmate-badging.txt
+          grep -q "package: name='com.travelmate.app'.*versionName='2.21.1'" /tmp/travelmate-badging.txt
           "$BUILD_TOOLS/aapt" dump xmltree "$APK" AndroidManifest.xml > /tmp/travelmate-manifest.txt
           for ENTRY in TravelMateWidgetProvider TravelMateLiveTodayWidgetProvider travelmate LAUNCHER; do grep -q "$ENTRY" /tmp/travelmate-manifest.txt; done
           python3 tools/verify-android-apk.py "$APK" "$(git rev-parse HEAD)"
-          cp "$APK" "android/app/build/outputs/apk/debug/TravelMate-2.21.0-$(git rev-parse --short=12 HEAD)-debug.apk"
+          cp "$APK" "android/app/build/outputs/apk/debug/TravelMate-2.21.1-$(git rev-parse --short=12 HEAD)-debug.apk"
 
       - name: Remove temporary QA keystore
         if: always()

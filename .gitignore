@@ -41,3 +41,8 @@ Thumbs.db
 .codex/
 .agents/
 
+
+# Local signing credentials and QA evidence
+*.dpapi
+.signing/
+test-results/

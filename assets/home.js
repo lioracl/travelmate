@@ -642,7 +642,7 @@
     if (user && profile.avatarUrl && typeof window.Image === 'function') {
       var expected = profile.avatarUrl;
       var probe = new window.Image();
-      probe.onerror = function () { if (avatar.dataset.avatarGeneration === renderGeneration && avatar.dataset.avatarUrl === expected) { avatar.classList.remove('has-image'); avatar.style.backgroundImage = ''; avatar.dataset.avatarUrl = ''; } };
+      probe.onerror = function () { if (avatar.dataset.avatarGeneration === renderGeneration && avatar.dataset.avatarUrl === expected) { avatar.classList.remove('has-image'); avatar.style.backgroundImage = ''; avatar.dataset.avatarUrl = ''; avatar.textContent = profile.initials || ''; } };
       probe.src = expected;
     }
   }
