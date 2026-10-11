@@ -151,6 +151,14 @@
     if (!visible) closePanel(false);
   }
 
+  root.TravelMateTripChangeContext = Object.freeze({ snapshot: function () {
+    return Object.freeze({ ready: Boolean(state.session && state.members.length > 1), unreadCount: unreadCount(state.events, currentUserId(), state.lastReadId) });
+  }});
+
+  function publishContext(count) {
+    root.dispatchEvent(new CustomEvent('travelmate:trip-change-context', { detail: { ready: Boolean(state.session && state.members.length > 1), unreadCount: Number(count || 0) } }));
+  }
+
   function updateBadges() {
     var count = unreadCount(state.events, currentUserId(), state.lastReadId);
     [ui.desktopButton, ui.mobileButton].forEach(function (button) {
@@ -161,6 +169,7 @@
       button.setAttribute('aria-label', count ? 'פתיחת עדכוני הטיול · ' + count + ' לא נקראו' : 'פתיחת עדכוני הטיול · אין עדכונים שלא נקראו');
     });
     ui.readAll.disabled = count === 0;
+    publishContext(count);
   }
 
   function render() {

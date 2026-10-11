@@ -1,4 +1,4 @@
-const ASSET_VERSION='20261008-02';
+const ASSET_VERSION='20261009-02';
 const CACHE_SCHEMA='v266';
 const CACHE_NAME='travelmate-smart-'+CACHE_SCHEMA+'-'+ASSET_VERSION;
 const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-20\d{6}-\d+)?$/;
@@ -53,6 +53,13 @@ const CORE_PATHS=[
   './assets/today-activities.css',
   './assets/today-activities.js',
   './assets/app-icon.svg',
+  './assets/icons/travelmate-48.png',
+  './assets/icons/travelmate-72.png',
+  './assets/icons/travelmate-180.png',
+  './assets/icons/travelmate-192.png',
+  './assets/icons/travelmate-512.png',
+  './assets/icons/travelmate-maskable-192.png',
+  './assets/icons/travelmate-maskable-512.png',
   './manifest.webmanifest'
 ];
 const CORE=CORE_PATHS.map(path=>/\.(?:js|css|json)$/i.test(path)?path+'?v='+ASSET_VERSION:path);
