@@ -310,3 +310,33 @@ test('Plan upgrades a supported transition to live routing without persisting it
   expect(saved).not.toHaveProperty('travelDistanceKmBefore');
   expect(saved).not.toHaveProperty('travelSourceBefore');
 });
+
+test('Plan opening-hours warns on factual OSM schedule risk without persisting derived status', async ({ page }) => {
+  const date = localDateKey(0);
+  const dayToken = ['Su','Mo','Tu','We','Th','Fr','Sa'][new Date(date + 'T12:00:00').getDay()];
+  const trip = {
+    id: 'qa-opening-hours-plan', country: 'Israel', city: 'Tel Aviv', start: date, end: localDateKey(1), days: 2,
+    type: 'solo', budget: 1000, planInitialized: true, dayNotes: {}, savedPlaces: [],
+    activities: [
+      { id:'closed', date, time:'09:00', title:'Closed Museum', category:'museum', duration:60, scheduleMode:'fixed', openingHours:dayToken+' 12:00-13:00', done:false },
+      { id:'closing', date, time:'12:30', title:'Closing Gallery', category:'museum', duration:60, scheduleMode:'fixed', openingHours:dayToken+' 12:00-13:00', done:false }
+    ]
+  };
+  await page.addInitScript(value => {
+    localStorage.setItem('travelmate-trips', JSON.stringify([value]));
+    localStorage.removeItem('travelmate-active-user');
+    localStorage.setItem('travelmate-theme', 'light');
+  }, trip);
+  await page.goto('/trip/custom/index.html?id=qa-opening-hours-plan&view=plan', { waitUntil: 'domcontentloaded' });
+  const closed = page.locator('.planned-activity').filter({ hasText: 'Closed Museum' });
+  const closing = page.locator('.planned-activity').filter({ hasText: 'Closing Gallery' });
+  await expect(closed).toHaveAttribute('data-plan-opening-status', 'closed');
+  await expect(closed.locator('.tm-plan-opening-status')).toContainText('צפוי להיות סגור בזמן ההגעה');
+  await expect(closing).toHaveAttribute('data-plan-opening-status', 'closing');
+  await expect(closing.locator('.tm-plan-opening-status')).toContainText('עשוי להיסגר במהלך הפעילות');
+  const saved = await page.evaluate(() => window.TravelMateTripStore.getTrip('qa-opening-hours-plan').activities);
+  for (const item of saved) {
+    expect(item).not.toHaveProperty('openingStatus');
+    expect(item).not.toHaveProperty('openingWarning');
+  }
+});

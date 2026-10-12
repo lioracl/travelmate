@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var scheduled=0,observer=null,preparedDays=Object.create(null),liveTransitionMap=Object.create(null),liveTransitionTripId='';
+var scheduled=0,observer=null,preparedDays=Object.create(null),liveTransitionMap=Object.create(null),liveTransitionTripId='',openingStatusMap=Object.create(null),openingStatusTripId='';
 function context(){return window.TravelMateTripContext||null}
 function currentTrip(){
   var store=window.TravelMateTripStore,id=new URLSearchParams(location.search).get('id');
@@ -191,6 +191,15 @@ function addTransition(row,transition){
   line.querySelector('span').textContent=text;
   host.appendChild(line)
 }
+function addOpeningStatus(row,status){
+  var host=row.querySelector('.activity-copy,.saved-place-content'),existing=row.querySelector('.tm-plan-opening-status');if(existing)existing.remove();
+  row.removeAttribute('data-plan-opening-status');if(!host||!status)return;row.dataset.planOpeningStatus=status.state||'unknown';
+  if(status.state!=='closed'&&status.state!=='closing')return;
+  var line=document.createElement('span');line.className='tm-plan-opening-status '+(status.state==='closed'?'is-closed':'is-closing');
+  line.innerHTML='<i class="fa-solid '+(status.state==='closed'?'fa-door-closed':'fa-clock')+'" aria-hidden="true"></i><span></span>';
+  line.querySelector('span').textContent=status.state==='closed'?'\u05dc\u05e4\u05d9 OpenStreetMap: \u05e6\u05e4\u05d5\u05d9 \u05dc\u05d4\u05d9\u05d5\u05ea \u05e1\u05d2\u05d5\u05e8 \u05d1\u05d6\u05de\u05df \u05d4\u05d4\u05d2\u05e2\u05d4':'\u05dc\u05e4\u05d9 OpenStreetMap: \u05e2\u05e9\u05d5\u05d9 \u05dc\u05d4\u05d9\u05e1\u05d2\u05e8 \u05d1\u05de\u05d4\u05dc\u05da \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea';
+  host.appendChild(line)
+}
 function enhanceRow(row,trip,statuses,transitions){
   var record=recordFor(row,trip),actions=row.querySelector('.activity-buttons,.saved-place-actions');if(!record||!actions)return;
   if(row.dataset.planUxEnhanced!=='true'){
@@ -202,7 +211,8 @@ function enhanceRow(row,trip,statuses,transitions){
   row.dataset.planScheduleMode=scheduleMode(record);
   syncDone(row);
   var key=recordKind(row)+':'+record.id,status=statuses[key];addStatus(row,status&&status.label,status&&status.type);
-  addTransition(row,transitions&&transitions[key])
+  addTransition(row,transitions&&transitions[key]);
+  addOpeningStatus(row,String(trip.id||'')===String(openingStatusTripId||'')&&openingStatusMap&&openingStatusMap[key])
 }
 function dayRecords(trip,date){
   var list=[];
@@ -334,6 +344,7 @@ document.addEventListener('click',function(event){
   if(dayToggle)setTimeout(function(){collapseOtherOpenDays(dayToggle.dataset.toggleDay)},0)
 });
 window.addEventListener('travelmate:plan-live-routing',function(event){var detail=event.detail||{},trip=currentTrip();if(!trip||String(detail.tripId||'')!==String(trip.id||''))return;liveTransitionTripId=String(detail.tripId||'');liveTransitionMap=detail.transitions||Object.create(null);schedule()});
+window.addEventListener('travelmate:plan-opening-hours',function(event){var detail=event.detail||{},trip=currentTrip();if(!trip||String(detail.tripId||'')!==String(trip.id||''))return;openingStatusTripId=String(detail.tripId||'');openingStatusMap=detail.statuses||Object.create(null);schedule()});
 document.addEventListener('travelmate:planner-rendered',schedule);
 document.addEventListener('travelmate:places-updated',schedule);
 window.addEventListener('travelmate:viewchange',schedule);

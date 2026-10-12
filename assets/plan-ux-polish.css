@@ -518,3 +518,9 @@ body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next :is(small,span){fo
 body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next button{min-height:44px;padding:6px 10px;border:1px solid var(--tm-card-control-border);border-radius:10px;background:var(--tm-card-control);color:var(--tm-card-control-text);font:inherit;font-size:12px}
 body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next.is-pinned{position:sticky;top:12px;z-index:5}
 @media(max-width:700px){body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next.is-pinned{top:calc(var(--tm-safe-top,0px) + var(--tm-shell-header-height,76px) + 8px)}}
+
+/* Opening-hours intelligence is advisory and only surfaces actionable risk. */
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-opening-status{display:flex;align-items:flex-start;gap:6px;width:fit-content;max-width:100%;margin-top:6px;padding:5px 8px;border:1px solid color-mix(in srgb,var(--tm-warning) 44%,var(--tm-card-border));border-radius:10px;background:color-mix(in srgb,var(--tm-warning) 11%,var(--tm-card-control));color:var(--tm-card-text);font-size:11px;font-weight:700;line-height:1.35}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-opening-status.is-closed{border-color:color-mix(in srgb,var(--tm-error) 40%,var(--tm-card-border));background:color-mix(in srgb,var(--tm-error) 8%,var(--tm-card-control));color:var(--tm-card-text)}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-opening-status i{flex:0 0 auto;margin-top:1px;color:var(--tm-warning)}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-opening-status.is-closed i{color:var(--tm-error)}
