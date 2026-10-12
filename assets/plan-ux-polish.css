@@ -508,3 +508,13 @@ html body.tm-new-design[data-trip-view="plan"] #plan .generated-day.past-trip-da
 @media(max-width:700px){
   body.tm-new-design[data-trip-view="plan"] main.content #plan :is(.activity-buttons,.saved-place-actions){padding-inline-end:48px}
 }
+
+/* Compact next commitment reuses Today and stays in the Plan flow. */
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--tm-card-border);border-radius:12px;background:var(--tm-card-bg);color:var(--tm-text-primary);grid-column:1/-1}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next[hidden]{display:none}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next>div{flex:1;min-width:0;display:grid;gap:3px}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next strong{overflow-wrap:break-word;word-break:normal;font-size:14px}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next :is(small,span){font-size:11px;color:var(--tm-text-secondary)}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next button{min-height:44px;padding:6px 10px;border:1px solid var(--tm-card-control-border);border-radius:10px;background:var(--tm-card-control);color:var(--tm-card-control-text);font:inherit;font-size:12px}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next.is-pinned{position:sticky;top:12px;z-index:5}
+@media(max-width:700px){body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-next.is-pinned{top:calc(var(--tm-safe-top,0px) + var(--tm-shell-header-height,76px) + 8px)}}

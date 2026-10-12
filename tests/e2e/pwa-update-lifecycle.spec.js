@@ -3,6 +3,8 @@ const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),
 const {execFileSync}=require('node:child_process');
 test.use({serviceWorkers:'allow'});
 for(const legacy of [false,true])test((legacy?'actual Preview migration':'future deployment')+' moves A to B by consent; keeps data and works offline',async({page,context},info)=>{
+ // Keep the fixed calendar fixture current while native timers continue normally.
+ await page.clock.setFixedTime(new Date('2026-10-11T12:00:00+03:00'));
  test.setTimeout(120000);await page.setViewportSize({width:390,height:568});
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'travelmate-pwa-test-'));
  const A=legacy?'7edd763b9132fac91b3287aaa593d2f107e4dbe6':'a'.repeat(40),B='b'.repeat(40),root=process.cwd();

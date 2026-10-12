@@ -245,7 +245,7 @@
 
   function init() {
     detectAdmin();
-    if (cloud && cloud.onAuthChange) cloud.onAuthChange(function () { setTimeout(detectAdmin, 0); });
+    if (cloud && cloud.onAuthChange) Promise.resolve(cloud.onAuthChange(function () { setTimeout(detectAdmin, 0); })).catch(function () { closeAdmin(); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

@@ -217,6 +217,7 @@
     state.rateStale = Boolean(stale);
   }
   async function loadRate() {
+    state.rateUnavailable = false;
     var cacheKey = 'travelmate-eur-rates:' + state.localCurrency;
     var cached = readJson(cacheKey, null);
     if (cached && Number(cached.rate) > 0 && Date.now() - Number(cached.savedAt || 0) < 43200000) { applyCachedRates(cached, false); renderCurrency(); renderCurrencyConverter(); return; }
@@ -249,12 +250,14 @@
         renderCurrency();
         renderCurrencyConverter();
       } else if (!state.rate) {
+        state.rateUnavailable = true;
         renderCurrency(true);
+        renderCurrencyConverter();
       }
     }
   }
   function currencyRateInIls(code) { if (code === 'ILS') return 1; if (state.ilsRates[code]) return Number(state.ilsRates[code]); if (code === 'EUR') return Number(state.rate || 0); return state.rate && state.rates[code] ? Number(state.rate) / Number(state.rates[code]) : 0; }
-  function convertCurrency(amount, from, to) { var fromRate = currencyRateInIls(from); var toRate = currencyRateInIls(to); return fromRate && toRate ? Number(amount || 0) * fromRate / toRate : 0; }
+  function convertCurrency(amount, from, to) { if (from === to) return Number(amount || 0); var fromRate = currencyRateInIls(from); var toRate = currencyRateInIls(to); return fromRate && toRate ? Number(amount || 0) * fromRate / toRate : 0; }
   function currencyConversionReady(from, to) { return from === to || Boolean(currencyRateInIls(from) && currencyRateInIls(to)); }
   function secondaryMoneyFromEuros(euros) {
     var converted = convertCurrency(Number(euros || 0), 'EUR', state.secondaryCurrency);
@@ -366,16 +369,16 @@
   function renderCurrencyConverter() {
     var card = document.querySelector('[data-currency-converter]'); if (!card) return;
     var amount = Number(card.querySelector('[data-converter-amount]').value || 0); var from = card.querySelector('[data-converter-from]').value; var to = card.querySelector('[data-converter-to]').value; var converted = convertCurrency(amount, from, to); var result = card.querySelector('[data-converter-result]');
-    result.innerHTML = currencyConversionReady(from, to) ? '<small>' + money(amount, from) + ' שווה בקירוב</small><strong>' + money(converted, to) + '</strong><span>לפי שער יציג, לפני עמלת חברת האשראי</span>' : '<span>מעדכן את שערי המטבע…</span>';
-    var source = card.querySelector('[data-converter-source]'); if (source) source.textContent = 'מקור: ' + (state.rateSource || 'ECB דרך Frankfurter') + (state.rateDate ? ' · ' + formatRateDate(state.rateDate) : '');
-    var sourceLink = card.querySelector('footer a'); if (sourceLink) { sourceLink.href = state.rateSourceUrl || 'https://frankfurter.dev/'; sourceLink.textContent = 'מידע על מקור השערים'; }
+    result.innerHTML = currencyConversionReady(from, to) ? '<small>' + money(amount, from) + ' שווה בקירוב</small><strong>' + money(converted, to) + '</strong><span>לפי שער יציג, לפני עמלת חברת האשראי</span>' : '<span>' + (state.rateUnavailable || state.rate ? 'אין שער זמין להמרה הזאת כרגע. אפשר לנסות שוב עם חיבור לרשת.' : 'מעדכן את שערי המטבע…') + '</span>';
+    var source = card.querySelector('[data-converter-source]'); if (source) source.textContent = (state.rateStale ? 'שער שמור מהמכשיר · ' : '') + 'מקור: ' + (state.rateSource || (state.rateUnavailable ? 'שערים אינם זמינים' : 'מעדכן מקור שערים…')) + (state.rateDate ? ' · ' + formatRateDate(state.rateDate) : '');
+    var sourceLink = card.querySelector('footer a'); if (sourceLink) { sourceLink.hidden = !state.rateSourceUrl; sourceLink.href = state.rateSourceUrl || 'https://frankfurter.dev/'; sourceLink.textContent = 'מידע על מקור השערים'; }
   }
 
   function createBudgetTools() {
     var section = document.getElementById('budget'); if (!section || section.querySelector('[data-expense-workspace]')) return;
     var legacyExpenses = section.querySelector('[data-expenses],.expense-list'); if (legacyExpenses) legacyExpenses.hidden = true;
     var panel = document.createElement('div'); panel.className = 'expense-workspace'; panel.dataset.expenseWorkspace = '';
-    panel.innerHTML = '<div class="expense-workspace-head"><div><small>מעקב מדויק</small><h2>הוצאות וקבלות</h2><p>צלם קבלה, סרוק אותה, בחר קטגוריה והוסף אותה ישירות לתקציב.</p></div><button type="button" data-expense-toggle><i class="fa-solid fa-camera"></i> צילום קבלה / הוצאה</button></div><div class="budget-columns-editor"><div><strong>עמודות התקציב</strong><small>אפשר לשנות שם וסכום, למחוק או להוסיף קטגוריה.</small></div><div data-budget-columns></div><button type="button" data-budget-column-add><i class="fa-solid fa-plus"></i> קטגוריה חדשה</button></div><form class="receipt-form" data-receipt-form hidden><div class="receipt-source-actions"><label class="receipt-source receipt-source-camera"><input name="receiptCamera" type="file" accept="image/*" capture="environment"><i class="fa-solid fa-camera"></i><span><strong>צילום במצלמה</strong><small>פתח את מצלמת הטלפון וצלם את הקבלה.</small></span></label><label class="receipt-source receipt-source-file"><input name="receiptFile" type="file" accept="image/*,application/pdf"><i class="fa-solid fa-file-arrow-up"></i><span><strong>העלאה מקובץ</strong><small>בחר תמונה או PDF שכבר שמורים במכשיר.</small></span></label></div><div class="receipt-preview" data-receipt-preview hidden></div><div class="receipt-grid"><label>כמה שולם?<input name="amount" type="number" min="0.01" step="0.01" required></label><label>מטבע<select name="currency"><option value="EUR">אירו (€)</option><option value="ILS">שקל (₪)</option><option value="USD">דולר ($)</option><option value="GBP">ליש״ט (£)</option></select></label><label>קטגוריה<select name="category" data-expense-category></select></label><label>תאריך<input name="date" type="date"></label><label class="wide">מה נקנה / בית עסק<input name="note" maxlength="160" required placeholder="לדוגמה: ארוחת ערב במסעדה"></label></div><p class="receipt-scan-status" data-receipt-status></p><div class="receipt-actions"><button type="button" data-receipt-scan><i class="fa-solid fa-wand-magic-sparkles"></i> סריקה חכמה</button><button type="submit"><i class="fa-solid fa-wallet"></i> הוסף לתקציב בקטגוריה</button></div></form><div class="expense-live-summary" data-expense-summary></div><section class="expense-records" data-expense-records aria-label="הוצאות וקבלות שנשמרו"></section>';
+    panel.innerHTML = '<div class="expense-workspace-head"><div><small>מעקב מדויק</small><h2>הוצאות וקבלות</h2><p>צלם קבלה, סרוק אותה, בחר קטגוריה והוסף אותה ישירות לתקציב.</p></div><button type="button" data-expense-toggle><i class="fa-solid fa-camera"></i> צילום קבלה / הוצאה</button></div><div class="budget-columns-editor"><div><strong>עמודות התקציב</strong><small>אפשר לשנות שם וסכום, למחוק או להוסיף קטגוריה.</small></div><div data-budget-columns></div><button type="button" data-budget-column-add><i class="fa-solid fa-plus"></i> קטגוריה חדשה</button></div><form class="receipt-form" data-receipt-form hidden><div class="receipt-source-actions"><label class="receipt-source receipt-source-camera"><input name="receiptCamera" type="file" accept="image/*" capture="environment"><i class="fa-solid fa-camera"></i><span><strong>צילום במצלמה</strong><small>פתח את מצלמת הטלפון וצלם את הקבלה.</small></span></label><label class="receipt-source receipt-source-file"><input name="receiptFile" type="file" accept="image/*,application/pdf"><i class="fa-solid fa-file-arrow-up"></i><span><strong>העלאה מקובץ</strong><small>בחר תמונה או PDF שכבר שמורים במכשיר.</small></span></label></div><div class="receipt-preview" data-receipt-preview hidden></div><div class="receipt-grid"><label>כמה שולם?<input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label>מטבע<select name="currency"><option value="EUR">אירו (€)</option><option value="ILS">שקל (₪)</option><option value="USD">דולר ($)</option><option value="GBP">ליש״ט (£)</option></select></label><label>קטגוריה<select name="category" data-expense-category></select></label><label>תאריך<input name="date" type="date"></label><label class="wide">מה נקנה / בית עסק<input name="note" maxlength="160" required placeholder="לדוגמה: ארוחת ערב במסעדה"></label></div><p class="receipt-scan-status" data-receipt-status></p><div class="receipt-actions"><button type="button" data-receipt-scan><i class="fa-solid fa-wand-magic-sparkles"></i> סריקה חכמה</button><button type="submit"><i class="fa-solid fa-wallet"></i> הוסף לתקציב בקטגוריה</button></div></form><div class="expense-live-summary" data-expense-summary></div><section class="expense-records" data-expense-records aria-label="הוצאות וקבלות שנשמרו"></section>';
     section.appendChild(panel);
     var charts = document.createElement('section');
     charts.className = 'budget-charts';
@@ -413,17 +416,26 @@
       currencySelect.prepend(localOption);
     }
     currencySelect.value = state.localCurrency; renderBudgetColumns();
-    function toggleForm() { var opening = form.hidden; form.hidden = !form.hidden; if (opening) { form.reset(); delete form.dataset.editingId; form.date.value = localDateValue(); form.currency.value = state.localCurrency; var status = panel.querySelector('[data-receipt-status]'); if (status) status.textContent = ''; panel.querySelector('[data-receipt-preview]').hidden = true; form.amount.focus(); } }
+    function toggleForm() { if (expenseSavePending) return; var opening = form.hidden; form.hidden = !form.hidden; if (opening) { form.reset(); delete form.dataset.editingId; form.date.value = localDateValue(); form.currency.value = state.localCurrency; var status = panel.querySelector('[data-receipt-status]'); if (status) status.textContent = ''; panel.querySelector('[data-receipt-preview]').hidden = true; form.amount.focus(); } }
     panel.querySelector('[data-expense-toggle]').onclick = toggleForm; var legacyButton = section.querySelector('.section-head .pill-btn'); if (legacyButton) legacyButton.onclick = toggleForm; form.date.value = localDateValue();
     form.receiptCamera.onchange = function () { if (form.receiptCamera.files[0]) { form.receiptFile.value = ''; } previewReceipt(form.receiptCamera.files[0], panel); };
     form.receiptFile.onchange = function () { if (form.receiptFile.files[0]) { form.receiptCamera.value = ''; } previewReceipt(form.receiptFile.files[0], panel); };
     panel.querySelector('[data-receipt-scan]').onclick = function () { scanReceipt(form, panel); };
     panel.querySelector('[data-budget-column-add]').onclick = function () { state.budgetCategories.push({ id: Date.now(), name: 'קטגוריה חדשה', amount: 0 }); persistBudgetColumns(); };
+    var expenseSavePending = false;
     form.onsubmit = async function (event) {
       event.preventDefault();
+      if (expenseSavePending || form.hidden || !form.reportValidity()) return;
+      var amount = Number(form.amount.value);
+      if (!Number.isFinite(amount) || amount <= 0 || !form.note.value.trim()) return;
       var context = experienceContext(); if (!experienceIsCurrent(context)) return;
       var file = selectedReceiptFile(form); var status = panel.querySelector('[data-receipt-status]'); var editing = expenseById(form.dataset.editingId);
       if (file && file.size > 5 * 1024 * 1024) { status.textContent = 'כדי לשמור את הקבלה בענן יש לבחור קובץ עד 5MB.'; return; }
+      var expenseInput = { amount: amount, currency: form.currency.value, category: form.category.value, date: form.date.value, note: form.note.value.trim() };
+      expenseSavePending = true;
+      var submitButton = form.querySelector('button[type="submit"]');
+      submitButton.disabled = true; form.setAttribute('aria-busy', 'true');
+      try {
       status.textContent = file ? 'שומר את הקבלה…' : '';
       var expenseId = editing ? editing.id : Date.now();
       var receiptPathValue = editing && editing.receiptPath || '';
@@ -451,11 +463,14 @@
         }
       }
       if (!experienceIsCurrent(context)) return;
-      var saved = { id: expenseId, amount: Number(form.amount.value), currency: form.currency.value, category: form.category.value, date: form.date.value, note: form.note.value.trim(), receiptName: file ? file.name : editing && editing.receiptName || '', receiptType: file ? file.type : editing && editing.receiptType || '', receiptSize: file ? file.size : editing && editing.receiptSize || 0, receiptPath: receiptPathValue, receiptPending: receiptPendingValue };
+      var saved = { id: expenseId, amount: expenseInput.amount, currency: expenseInput.currency, category: expenseInput.category, date: expenseInput.date, note: expenseInput.note, receiptName: file ? file.name : editing && editing.receiptName || '', receiptType: file ? file.type : editing && editing.receiptType || '', receiptSize: file ? file.size : editing && editing.receiptSize || 0, receiptPath: receiptPathValue, receiptPending: receiptPendingValue };
       if (receiptLocalKeyValue) saved.receiptLocalKey = receiptLocalKeyValue;
       if (legacyReceiptData && !receiptPathValue) saved.receiptData = legacyReceiptData;
       if (editing) state.expenses[state.expenses.indexOf(editing)] = saved; else state.expenses.push(saved);
       writeJson(storageKey('expenses'), state.expenses); saveTripData(); form.reset(); delete form.dataset.editingId; form.date.value = localDateValue(); form.hidden = true; panel.querySelector('[data-receipt-preview]').hidden = true; status.textContent = ''; renderExpenseList(); renderBudgetColumns(); renderSummary(); toast(saved.receiptPending ? 'ההוצאה נשמרה. הקבלה שמורה במכשיר וממתינה לסנכרון פרטי.' : editing ? 'ההוצאה עודכנה.' : 'ההוצאה והקבלה נוספו לקטגוריית ' + saved.category + '.');
+      } finally {
+        expenseSavePending = false; submitButton.disabled = false; form.removeAttribute('aria-busy');
+      }
     };
     renderExpenseList();
     renderBudgetCharts();
@@ -559,6 +574,7 @@
       var hero = section.querySelector('.budget-hero');
       if (hero) hero.insertAdjacentElement('afterend', host); else section.prepend(host);
     }
+    if (pendingExpenseConversions()) { host.innerHTML = '<header><h2>סיכום התקציב ממתין לשער</h2></header><p role="status">' + state.expenses.length + ' הוצאות נשמרו במטבע המקורי. סיכום מלא, יתרה וקצב הוצאות יהיו זמינים לאחר טעינת שערי המטבע.</p>'; return; }
     var metrics = budgetSmartMetrics();
     var unlimited = state.budgetUnlimited;
     var count = state.expenses.length;
@@ -609,6 +625,12 @@
     var bars = document.querySelector('[data-budget-chart-bars]');
     var summary = document.querySelector('[data-budget-chart-summary]');
     if (!bars || !summary) return;
+    if (pendingExpenseConversions()) {
+      bars.innerHTML = ''; summary.innerHTML = '<p role="status">סיכום ההוצאות והיתרה ממתינים לשער. ההוצאות נשמרו במטבע המקורי.</p>';
+      var pendingMeter = document.querySelector('[data-budget-chart-meter]');
+      if (pendingMeter) { var value = pendingMeter.querySelector('strong'),track = pendingMeter.querySelector('i'); if (value) value.textContent = '—'; if (track) track.style.width = '0%'; }
+      renderBudgetSmartSummary(); return;
+    }
     var totals = budgetExpenseTotals();
     var palette = ['#2f9a72', '#e29b52', '#6688c8', '#b16fa5', '#d46b64', '#6f9ca8', '#8a7bc2'];
     var totalPlanned = Number(state.trip && state.trip.budget || 0);
@@ -677,7 +699,7 @@
       item.color = color;
       var spentLocal = state.localCurrency === 'EUR' ? expenseTotal : localFromEuros(expenseTotal);
       var plannedLocal = state.localCurrency === 'EUR' ? planned : localFromEuros(planned);
-      return '<article class="budget-chart-row' + (categoryOverrun ? ' is-over-budget' : '') + '"><div class="budget-chart-label"><span class="budget-chart-dot" style="--chart-color:' + escapeHtml(color) + '"></span><strong>' + escapeHtml(item.name) + '</strong><small>' + (unlimited ? money(spentLocal, state.localCurrency) + ' · ' + percent + '% מההוצאות' : money(spentLocal, state.localCurrency) + ' מתוך ' + money(plannedLocal, state.localCurrency) + (categoryOverrun ? ' · חריגה' : '')) + '</small></div><div class="budget-chart-track"><i style="width:' + meterWidth + '%;--chart-color:' + escapeHtml(color) + '"></i></div><b>' + percent + '%</b><label class="budget-chart-color" title="צבע הקטגוריה"><input type="color" value="' + escapeHtml(color) + '" data-budget-chart-color="' + escapeHtml(item.id) + '"><span>צבע</span></label></article>';
+      return '<article class="budget-chart-row' + (categoryOverrun ? ' is-over-budget' : '') + '"><div class="budget-chart-label"><span class="budget-chart-dot" style="--chart-color:' + escapeHtml(color) + '"></span><strong>' + escapeHtml(item.name) + '</strong><small>' + (unlimited ? (pendingExpenseConversions(state.expenses.filter(function (expense) { return expenseCategoryParts(expense.category).category === item.name; })) ? 'ממתין לשער' : money(spentLocal, state.localCurrency)) + ' · ' + percent + '% מההוצאות' : money(spentLocal, state.localCurrency) + ' מתוך ' + money(plannedLocal, state.localCurrency) + (categoryOverrun ? ' · חריגה' : '')) + '</small></div><div class="budget-chart-track"><i style="width:' + meterWidth + '%;--chart-color:' + escapeHtml(color) + '"></i></div><b>' + percent + '%</b><label class="budget-chart-color" title="צבע הקטגוריה"><input type="color" value="' + escapeHtml(color) + '" data-budget-chart-color="' + escapeHtml(item.id) + '"><span>צבע</span></label></article>';
     }).join('') : '<div class="budget-chart-empty"><i class="fa-solid fa-chart-pie"></i><strong>הגרף עדיין ריק</strong><span>לאחר הוספת הוצאה או קבלה, הקטגוריה המתאימה תופיע כאן אוטומטית.</span></div>';
     bars.querySelectorAll('[data-budget-chart-color]').forEach(function (input) {
       input.onchange = function () {
@@ -740,6 +762,7 @@
       } catch (localError) { if (experienceIsCurrent(context)) status.textContent = 'הסריקה החכמה לא זמינה כרגע. אפשר לראות את הקבלה ולהקליד את הפרטים ידנית.'; }
     }
   }
+  function pendingExpenseConversions(expenses) { return (expenses || state.expenses).some(function (expense) { return Number(expense.amount || 0) !== 0 && expense.currency && expense.currency !== 'EUR' && !(Number(state.rates[expense.currency]) > 0); }); }
   function expenseInEuros(expense) { if (expense.currency === 'EUR' || !expense.currency) return Number(expense.amount || 0); var rate = Number(state.rates[expense.currency] || 0); return rate ? Number(expense.amount || 0) / rate : 0; }
   function renderExpenseList() {
     var summary = document.querySelector('[data-expense-summary]'); if (!summary) return; var total = state.expenses.reduce(function (sum, expense) { return sum + expenseInEuros(expense); }, 0);
@@ -748,6 +771,7 @@
     var summaryConversion = summary.querySelector('span');
     var secondaryTotal = convertCurrency(total, 'EUR', state.secondaryCurrency);
     if (summaryConversion) summaryConversion.textContent = currencyConversionReady('EUR', state.secondaryCurrency) ? 'כ־' + money(secondaryTotal, state.secondaryCurrency) + ' לפי שער עדכני' : 'שערי המטבע מתעדכנים…';
+    if (pendingExpenseConversions()) { summary.querySelector('strong').textContent = 'ממתין לשער'; if (summaryConversion) summaryConversion.textContent = 'ההוצאות נשמרו במטבע המקורי; הסכום הכולל עדיין אינו זמין.'; }
     var records = document.querySelector('[data-expense-records]');
     if (records) {
       var codes = [state.secondaryCurrency, 'ILS', 'EUR', 'USD', 'GBP', state.localCurrency].filter(function (code, index, list) { return code && list.indexOf(code) === index; });
@@ -759,7 +783,7 @@
           var secondaryText = secondary && state.secondaryCurrency !== (expense.currency || 'EUR') ? '<small class="expense-secondary">כ־' + money(secondary, state.secondaryCurrency) + '</small>' : '';
           return '<details class="expense-record" data-expense-id="' + escapeHtml(expense.id) + '"><summary><span class="expense-record-icon"><i class="fa-solid ' + (hasReceipt ? 'fa-receipt' : 'fa-wallet') + '"></i></span><span class="expense-record-title"><strong>' + escapeHtml(expense.note || 'הוצאה') + '</strong><small>' + escapeHtml(parts.subcategory || parts.category) + ' · ' + escapeHtml(expense.date || 'ללא תאריך') + '</small></span><span class="expense-record-price"><b>' + money(expense.amount, expense.currency || 'EUR') + '</b>' + secondaryText + '</span><i class="fa-solid fa-chevron-down expense-record-chevron"></i></summary><div class="expense-record-body"><dl><div><dt>מחיר כולל</dt><dd>' + money(expense.amount, expense.currency || 'EUR') + secondaryText + '</dd></div><div><dt>מטבע</dt><dd>' + escapeHtml(expense.currency || 'EUR') + '</dd></div><div><dt>קטגוריה</dt><dd>' + escapeHtml(expense.category || 'אחר') + '</dd></div><div><dt>תאריך</dt><dd>' + escapeHtml(expense.date || 'לא הוזן') + '</dd></div><div class="wide"><dt>קובץ קבלה</dt><dd class="expense-receipt-name">' + escapeHtml(receiptLabel) + (expense.receiptPending ? '<small> שמור במכשיר · ממתין לסנכרון פרטי</small>' : '') + '</dd></div></dl>' + (!hasReceipt && expense.receiptName ? '<p class="expense-receipt-warning">שם הקובץ הישן נשמר, אך תוכן הקבלה לא נשמר בעבר. יש לצרף אותה מחדש כדי לצפות או להוריד.</p>' : '') + '<div class="expense-record-actions"><button type="button" data-expense-edit="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-pen"></i> עריכת הוצאה</button>' + (hasReceipt ? '<button type="button" data-expense-view="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-eye"></i> צפייה בקבלה</button><button type="button" data-expense-download="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-download"></i> הורדת קבלה</button>' : '') + '<button type="button" class="danger" data-expense-delete="' + escapeHtml(expense.id) + '"><i class="fa-solid fa-trash"></i> מחיקת הוצאה</button></div></div></details>';
         }).join('');
-        return '<details class="expense-category-group"><summary><span><i class="fa-solid fa-chevron-down"></i><strong>' + escapeHtml(category) + '</strong><small>' + items.length + ' הוצאות</small></span><b>' + money(categoryLocal, state.localCurrency) + '</b></summary><div class="expense-category-items">' + rows + '</div></details>';
+        return '<details class="expense-category-group"><summary><span><i class="fa-solid fa-chevron-down"></i><strong>' + escapeHtml(category) + '</strong><small>' + items.length + ' הוצאות</small></span><b>' + (pendingExpenseConversions(items) ? 'ממתין לשער' : money(categoryLocal, state.localCurrency)) + '</b></summary><div class="expense-category-items">' + rows + '</div></details>';
       }).join('');
       records.innerHTML = state.expenses.length ? '<header><div><small>מתחת לתכנון מול ביצוע</small><strong>הוצאות וקבלות לפי קטגוריה</strong></div><label class="expense-secondary-picker"><span>מטבע משני</span><select data-expense-secondary-currency>' + codes.map(function (code) { return '<option value="' + code + '"' + (code === state.secondaryCurrency ? ' selected' : '') + '>' + code + '</option>'; }).join('') + '</select></label></header>' + categoryHtml : '<div class="expense-record-empty"><i class="fa-solid fa-receipt"></i><strong>עדיין אין קבלות</strong><span>קבלה שתסרוק ותשמור תופיע כאן לפי הקטגוריה שלה.</span></div>';
       var secondarySelect = records.querySelector('[data-expense-secondary-currency]'); if (secondarySelect) secondarySelect.onchange = function () { state.secondaryCurrency = secondarySelect.value; writeJson(storageKey('secondary-currency'), state.secondaryCurrency); saveTripData(); renderExpenseList(); };

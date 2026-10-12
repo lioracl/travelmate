@@ -100,7 +100,7 @@ html body [data-contextual-nearby] .tm-nearby-time-fit-action,
 html body [data-contextual-nearby] .tm-nearby-time-fit-run{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;font-weight:700}
 html body [data-contextual-nearby]:not(.is-time-fit-open) [data-contextual-window-label],
 html body [data-contextual-nearby]:not(.is-time-fit-open) [data-contextual-mini-route],
-html body [data-contextual-nearby]:not(.is-time-fit-open) [data-nearby-time-fit-run]{display:none!important}
+html body [data-contextual-nearby]:not(.is-time-fit-open) [data-nearby-time-fit-run]{display:none}
 html body [data-contextual-nearby].is-time-fit-open [data-contextual-window-label]{display:grid}
 @media(max-width:600px){
  html body [data-contextual-nearby] .tm-nearby-time-fit-action,

@@ -373,7 +373,10 @@
       await cloud.clearDeviceData();
       location.replace(location.pathname.indexOf('/trip/') >= 0 ? '../../index.html' : 'index.html');
     };
-    if (cloud && cloud.onAuthChange) cloud.onAuthChange(function () { refresh(); });
+    if (cloud && cloud.onAuthChange) Promise.resolve(cloud.onAuthChange(function () { refresh(); })).catch(function () {
+      var host = document.querySelector('[data-security-status]');
+      if (host) host.textContent = 'חיבור הענן אינו זמין כרגע. העדפות התצוגה המקומיות נשארות זמינות.';
+    });
   }
 
   function setupCaptcha() {

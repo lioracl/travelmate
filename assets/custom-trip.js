@@ -391,7 +391,12 @@
     var spentDisplay = overviewBudgetMoney(spent, trip);
     var budgetTitle = root.querySelector('[data-overview-budget-title]');
     var budgetMeta = root.querySelector('[data-overview-budget-meta]');
-    if (trip.budgetUnlimited === true) {
+    var rates = cachedCurrencyRates(),conversionPending = expenses.some(function (expense) { return Number(expense.amount || 0) !== 0 && expense.currency && expense.currency !== 'EUR' && !(Number(rates[expense.currency]) > 0); });
+    if (conversionPending) {
+      budgetTitle.textContent = trip.budgetUnlimited === true ? 'ללא הגבלה' : 'יתרה ממתינה לשער';
+      budgetMeta.textContent = expenses.length + ' הוצאות נשמרו · סיכום מלא יתעדכן לאחר טעינת שער';
+      var pendingBudgetCard = budgetTitle.closest('.budget-card'); if (pendingBudgetCard) pendingBudgetCard.classList.remove('is-over-budget');
+    } else if (trip.budgetUnlimited === true) {
       budgetTitle.textContent = 'ללא הגבלה';
       budgetMeta.textContent = expenses.length
         ? expenses.length + ' הוצאות נרשמו' + (spentDisplay ? ' · כ־' + spentDisplay : '')

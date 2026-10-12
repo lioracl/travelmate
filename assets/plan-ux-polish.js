@@ -26,8 +26,8 @@ function navigationUrl(record,trip){
   if(!record)return'';
   var direct=safeUrl(record.maps||record.googleMapsUrl||record.directionsUrl);
   if(direct)return direct;
-  var lat=Number(record.lat),lon=Number(record.lon),destination='';
-  if(Number.isFinite(lat)&&Number.isFinite(lon))destination=lat+','+lon;
+  var helper=context(),point=helper&&helper.coordinates?helper.coordinates(record):null,destination='';
+  if(point)destination=point.lat+','+point.lon;
   else destination=[record.address,record.locationName,record.name||record.title,trip&&trip.city,trip&&trip.country].filter(Boolean).join(', ');
   return destination?'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination):''
 }
@@ -265,10 +265,40 @@ function enhancePastStrip(plan,trip){
     button.dataset.progress=records.length?(done+'/'+records.length+' הושלמו'):'אין פעילויות'
   })
 }
+function nextPlanItem(trip,now){
+  var today=window.TravelMateToday;if(!today||!trip)return null;
+  var date=today.localDateKey(now),focus=today.currentOrNext(today.agenda(trip,date),now);
+  if(focus)return focus;
+  var dates=[].concat(trip.activities||[],trip.savedPlaces||[]).map(function(item){return String(item.date||'')}).filter(function(value){return value>date}).sort();
+  for(var index=0;index<dates.length;index+=1){
+    if(index&&dates[index]===dates[index-1])continue;
+    focus=today.currentOrNext(today.agenda(trip,dates[index]),0);if(focus)return focus
+  }
+  return null
+}
+function ensureNextBanner(plan,trip){
+  var focus=nextPlanItem(trip,new Date()),banner=plan.querySelector('[data-plan-next]');
+  if(!banner){
+    banner=document.createElement('section');banner.className='tm-plan-next';banner.dataset.planNext='';banner.setAttribute('aria-label','עכשיו והבא בתוכנית');
+    banner.innerHTML='<div><small data-plan-next-label></small><strong data-plan-next-title></strong><span data-plan-next-time></span></div><button type="button" data-plan-next-open>פרטים</button><button type="button" data-plan-next-pin aria-pressed="false" aria-label="הצמדת הפעילות הבאה">הצמדה</button>';
+    var toolbar=plan.querySelector('.planner-toolbar');if(toolbar)toolbar.insertAdjacentElement('afterend',banner);else plan.prepend(banner);
+    banner.querySelector('[data-plan-next-pin]').onclick=function(){var pinned=banner.classList.toggle('is-pinned');this.setAttribute('aria-pressed',String(pinned));this.textContent=pinned?'ביטול הצמדה':'הצמדה'};
+    banner.querySelector('[data-plan-next-open]').onclick=function(){
+      var item=banner._planFocus;if(!item)return;
+      if(window.TravelMatePlanner)window.TravelMatePlanner.openDay(item.date);
+      var rows=plan.querySelectorAll(item.kind==='place'?'[data-saved-place-id]':'[data-activity-id]'),row=[].slice.call(rows).find(function(node){return String(item.kind==='place'?node.dataset.savedPlaceId:node.dataset.activityId)===String(item.id)});
+      if(!row)return;apply();setExpanded(row,true);row.scrollIntoView({behavior:'smooth',block:'center'});var toggle=row.querySelector('[data-plan-details-toggle]');if(toggle)toggle.focus({preventScroll:true})
+    }
+  }
+  banner.hidden=!focus;banner._planFocus=focus;if(!focus)return;
+  var label=focus.state==='current'?'עכשיו':'הבא בתוכנית',time=focus.date+' · '+(focus.time==='23:59'?'ללא שעה':focus.time),signature=[focus.kind,focus.id,label,focus.title,time].join('|');
+  if(banner.dataset.signature===signature)return;banner.dataset.signature=signature;
+  banner.querySelector('[data-plan-next-label]').textContent=label;banner.querySelector('[data-plan-next-title]').textContent=focus.title;banner.querySelector('[data-plan-next-time]').textContent=time
+}
 function apply(){
   if(document.body.dataset.tripView!=='plan')return;
   var plan=document.getElementById('plan'),trip=currentTrip();if(!plan||!trip)return;
-  plan.dataset.planUxReady='true';ensureToolbar(plan,trip);
+  plan.dataset.planUxReady='true';ensureToolbar(plan,trip);ensureNextBanner(plan,trip);
   var today=localDateKey(new Date()),statuses=statusMap(trip),transitions=transitionMap(trip);
   [].slice.call(plan.querySelectorAll('.generated-day')).forEach(function(card,index){enhanceDay(card,index,trip,today)});
   plan.querySelectorAll('.planned-activity,.saved-place').forEach(function(row){enhanceRow(row,trip,statuses,transitions)});
@@ -306,6 +336,7 @@ document.addEventListener('travelmate:planner-rendered',schedule);
 document.addEventListener('travelmate:places-updated',schedule);
 window.addEventListener('travelmate:viewchange',schedule);
 window.addEventListener('focus',schedule);
+setInterval(function(){if(document.visibilityState==='visible'&&document.body.dataset.tripView==='plan')schedule()},60000);
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')schedule()});
 function start(){
   schedule();var plan=document.getElementById('plan');if(plan&&window.MutationObserver){observer=new MutationObserver(schedule);observer.observe(plan,{childList:true,subtree:true})}
