@@ -9,11 +9,20 @@
 
 ## Git workflow
 
-- Use `preview` as the automatic integration and deployment branch.
-- After completing a user-requested change and passing verification, create a concise descriptive commit and push it to `preview` unless the user explicitly asks not to push.
-- Never push directly to `main` without the user's explicit approval.
-- Never force-push or rewrite published history.
-- Preserve unrelated user changes and do not commit files outside the requested scope.
+- `origin/preview` is the source-of-truth integration base; `preview` is the automatic integration and deployment branch.
+- Before each new task, inspect user changes, fetch `origin preview`, and verify the task base against the exact `origin/preview` SHA. Never start from a stale local `preview`.
+- If freshness cannot be verified, report the limitation before dependent work. Reconcile without reset, clean, force-push, overwrite, or discarding user changes.
+- Preserve unrelated user changes and do not include them in task commits.
+- After a user-requested change passes verification, create a concise descriptive commit and push it to `preview` unless the user explicitly asks not to push.
+- Never push directly to `main` without the user's explicit approval. Never force-push or rewrite published history.
+
+## Distribution
+
+- Ordinary HTML/CSS/JavaScript, PWA/service-worker, tests, documentation, and backend work is OTA-first. Do not rebuild or reinstall the native shell for routine web work.
+- Run `node tools/classify-distribution.mjs` before release. `OTA_ONLY` may use the existing signed Preview OTA path; `APK_REQUIRED` must remain blocked from OTA publication.
+- Do not edit Android/iOS projects, Capacitor/native configuration, native bridges/plugins, permissions, resources, or native compatibility metadata unless the task explicitly requires native work.
+- A native-shell release is a separate explicit task. Only after its compatibility acceptance may the classifier OTA baseline be advanced.
+- Preserve the existing OTA contract: signed immutable bundles, exact SHA stamping, safe next-launch/explicit refresh, no unsolicited mid-session reload, and no local-data clearing.
 
 ## Sensitive data
 
@@ -29,5 +38,5 @@
 ## App versioning
 
 - Keep the user-facing version and release notes in `assets/about.js` current for every user-facing release.
-- Use semantic-style numbering: patch fixes increment the third number (for example `1.0.1`), meaningful features increment the minor number (for example `1.1`), and deep or incompatible product changes increment the major number (for example `2.0`).
+- Use semantic-style numbering: patch fixes increment the third number, meaningful features increment the minor number, and deep or incompatible product changes increment the major number.
 - Update the About highlights when a release materially changes the product.

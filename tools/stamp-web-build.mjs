@@ -13,7 +13,7 @@ const worker=path.join(site,'sw.js');
 const originalWorker=fs.readFileSync(worker,'utf8');
 const schema=originalWorker.match(/const CACHE_SCHEMA='([^']+)'/)[1];
 const originalRevision=originalWorker.match(/const ASSET_VERSION='([^']+)'/)[1];
-const build={version,sha,cacheRevision:'travelmate-smart-'+schema+'-'+sha};
+const build={version,sha,...(process.env.TRAVELMATE_WEB_CHANNEL==='preview'?{channel:'preview'}:{}),cacheRevision:'travelmate-smart-'+schema+'-'+sha};
 
 function walk(dir){
   for(const entry of fs.readdirSync(dir,{withFileTypes:true})){

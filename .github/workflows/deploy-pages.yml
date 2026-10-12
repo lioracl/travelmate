@@ -26,9 +26,12 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Classify cumulative distribution (fail closed)
+        run: node tools/classify-distribution.mjs "${{ github.event.pull_request.head.sha || github.sha }}"
+
       - name: Verify JavaScript syntax
         run: |
-          find assets -name '*.js' -print0 | xargs -0 -n1 node --check
+          find assets tools tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | xargs -0 -n1 node --check
 
       - name: Run regression tests
         run: node --test tests/*.test.js
@@ -48,9 +51,14 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    env:
+      TRAVELMATE_WEB_CHANNEL: preview
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
 
       - name: Prepare static site
         run: |

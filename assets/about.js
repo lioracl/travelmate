@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '2.22.0',
-    label: 'Plan Focus & Recovery - 2.22.0',
+    version: '2.22.1',
+    label: 'מצב מערכת ועדכונים - 2.22.1',
     date: '12 באוקטובר 2026',
     highlights: [
+      'מצב המערכת באודות מציג את גרסת האפליקציה, בניית הווב, ערוץ העדכון וסביבת ההרצה לפי המידע הזמין בלבד.',
       'Plan Focus 2.22.0: פס קומפקטי של עכשיו או הפעילות הבאה עם הצמדה לפי בחירה, המבוסס על Today הקיים ופותח את פרטי הפעילות הקיימים. תוקן ניווט כשקואורדינטות ריקות.',
       'תיקוני Nearby ותקציב: בקשות GPS חוזרות מוגנות בזמן הסכמה וחיפוש; שמירת הוצאה מוגנת מפני שליחה כפולה בזמן העלאת קבלה ושומרת את הערכים שהוזנו בתחילת הפעולה. סיכומי הוצאות במטבע זר ממתינים לשער במקום להציג אפס כששער חסר. הממיר מסמן שער שמור או לא זמין והמרה לאותו מטבע אינה דורשת שער. הגדרות מקומיות זמינות גם בכשל טעינת ספריית הענן. ללא שינוי בסכומים, במטבע הבסיס או במקורות השערים.',
       'עדכוני PWA: פרסום Preview מזהה את גרסת הווב לפי SHA. עדכון מוכן מוצג עם רענון מפורש, בלי להתקין APK ובלי למחוק נתונים מקומיים.',
@@ -479,11 +480,36 @@
   ];
   window.TravelMateRelease = release;
 
+  function systemStatus() {
+    var build = window.TravelMateWebBuild || {};
+    var native = false;
+    try { native = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()); } catch (_) {}
+    var standalone = false;
+    try { standalone = !!((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator && window.navigator.standalone); } catch (_) {}
+    return {
+      version: release.version,
+      sha: /^[a-f0-9]{40}$/.test(build.sha) ? build.sha : null,
+      channel: build.channel === 'preview' ? 'Preview' : null,
+      runtime: native ? 'מעטפת Native' : standalone ? 'PWA מותקנת' : 'דפדפן',
+      nativeApiLevel: native && Number.isInteger(build.nativeApiLevel) && build.nativeApiLevel > 0 ? build.nativeApiLevel : null,
+      cacheRevision: typeof build.cacheRevision === 'string' ? build.cacheRevision : null
+    };
+  }
+  window.TravelMateSystemStatus = systemStatus;
+
+  function diagnosticValue(value) {
+    return String(value).replace(/[&<>"']/g, function (char) { return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[char]; });
+  }
   function webBuildHtml() {
-    var build=window.TravelMateWebBuild;
-    if(build&&window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())return '<p>Web SHA: <code dir="ltr" style="overflow-wrap:anywhere">'+build.sha+'</code></p><p>Android OTA · API '+(build.nativeApiLevel||1)+'</p>';
-    if(!build||!/^[a-f0-9]{40}$/.test(build.sha))return '<p>Web build: local / unstamped</p>';
-    return '<p>Web SHA: <code dir="ltr" style="overflow-wrap:anywhere">'+build.sha+'</code></p><p>Asset cache: <code dir="ltr" style="overflow-wrap:anywhere">'+build.cacheRevision+'</code></p><p>Active SW cache: <code data-about-worker-cache dir="ltr" style="overflow-wrap:anywhere"></code></p>';
+    var status = systemStatus();
+    var html = '<h3>מצב המערכת</h3><p>סביבת הרצה: ' + status.runtime + '</p>';
+    html += '<p>בניית ווב (SHA): <code dir="ltr" style="overflow-wrap:anywhere">' + (status.sha || 'מקומית / ללא חותמת') + '</code></p>';
+    html += '<p>ערוץ עדכון: ' + (status.channel || 'לא ידוע') + '</p>';
+    if (status.nativeApiLevel !== null) html += '<p>רמת API של Native: ' + status.nativeApiLevel + '</p>';
+    // No shell version is exposed by the current runtime; never infer it from the web version.
+    if (status.cacheRevision) html += '<p>מטמון נכסים: <code dir="ltr" style="overflow-wrap:anywhere">' + diagnosticValue(status.cacheRevision) + '</code></p>';
+    if (status.runtime !== 'מעטפת Native' && status.sha) html += '<p>מטמון Service Worker פעיל: <code data-about-worker-cache dir="ltr" style="overflow-wrap:anywhere"></code></p>';
+    return html;
   }
 
   function refreshWorkerDiagnostic() {
