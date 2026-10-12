@@ -622,3 +622,8 @@ body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-item.tm-plan-travel-ris
   .auto-plan-option,.auto-plan-option i{transition:none}
   .auto-plan-option:hover{transform:none}
 }
+
+/* Arrival buffer stays inside advanced details and follows the editor grid. */
+.planner-composer .planner-arrival-buffer{display:grid;gap:5px;min-width:0;font-size:12px}
+.planner-composer .planner-arrival-buffer[hidden],
+.trip-calendar-editor .planner-arrival-buffer[hidden]{display:none}

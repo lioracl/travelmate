@@ -162,3 +162,48 @@ test('Travel Time UI remains advisory and introduces no important escalation', (
   const featureCss = css.slice(css.indexOf('/* 2.2 Travel Time + Smart Conflicts'));
   assert.doesNotMatch(featureCss, /!important/);
 });
+
+test('Arrival buffer persists numerically on fixed creation and edits, defaults and removes on other modes', () => {
+  const source = read('assets/auto-planner.js');
+  const sandbox = {};
+  const extract = (start, end) => source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start)));
+  vm.runInNewContext(extract('function arrivalBufferValue(', 'function syncArrivalBuffer(') + extract('function applyScheduleFields(', 'function applyTravelFields(') + extract('function makeActivity(', 'function escape('), sandbox);
+  const form = (mode, value) => ({ elements: { scheduleMode: { value: mode }, arrivalBufferMinutes: { value } } });
+  const record = sandbox.makeActivity('2026-10-12', '12:00', 'Tour', 'Tour', 60, 'fixed');
+  assert.equal(record.arrivalBufferMinutes, 10);
+  for (const value of ['0', '5', '10', '15', '20', '30', '45']) {
+    sandbox.applyScheduleFields(record, form('fixed', value));
+    assert.equal(record.arrivalBufferMinutes, Number(value));
+    assert.equal(JSON.parse(JSON.stringify(record)).arrivalBufferMinutes, Number(value));
+    assert.equal(sandbox.makeActivity('2026-10-12', '12:00', 'Tour', 'Tour', 60, 'fixed', '', '', 'auto', value).arrivalBufferMinutes, Number(value));
+  }
+  for (const value of [undefined, null, '', 'bad', -1]) {
+    sandbox.applyScheduleFields(record, form('fixed', value));
+    assert.equal(record.arrivalBufferMinutes, 10);
+  }
+  for (const mode of ['flexible', 'window']) {
+    record.arrivalBufferMinutes = 30;
+    sandbox.applyScheduleFields(record, form(mode, '45'));
+    assert.equal(Object.hasOwn(record, 'arrivalBufferMinutes'), false);
+    assert.equal(Object.hasOwn(sandbox.makeActivity('', '', '', '', 60, mode, '', '', 'auto', '45'), 'arrivalBufferMinutes'), false);
+  }
+});
+
+test('Custom arrival buffer changes existing transition math including zero and legacy default', () => {
+  const sandbox = { window: {} };
+  vm.runInNewContext(read('assets/trip-context.js'), sandbox);
+  const api = sandbox.window.TravelMateTripContext;
+  const previous = { time:'10:00', duration:60, lat:32.0853, lon:34.7818 };
+  const next = { time:'12:00', lat:32.1093, lon:34.8555 };
+  const legacy = api.transitionAssessment(previous, next);
+  assert.equal(legacy.bufferMinutes, 10);
+  for (const buffer of [0, 30, 45]) {
+    next.arrivalBufferMinutes = buffer;
+    const result = api.transitionAssessment(previous, next);
+    assert.equal(result.bufferMinutes, buffer);
+    assert.equal(result.requiredMinutes, result.travelMinutes + buffer);
+    assert.equal(result.shortfallMinutes, Math.max(0, result.requiredMinutes - result.gapMinutes));
+    const clock = value => value.split(':').map(Number).reduce((h, m) => h * 60 + m);
+    assert.equal(clock(result.latestDepartureTime), clock(legacy.latestDepartureTime) + 10 - buffer);
+  }
+});

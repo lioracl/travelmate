@@ -239,5 +239,45 @@ test('Travel Time warns about an estimated transition risk without creating a ha
   await expect(advisory).toContainText('חסרות');
   await expect(page.locator('.generated-day[data-day-date="'+date+'"] .tm-plan-day-travel-risk')).toHaveText('סיכון מעבר · 1');
 
+  await row.locator('[data-plan-details-toggle]').click();
+  await row.locator('[data-edit]').click();
+  const editor = page.locator('.planner-composer');
+  await expect(editor.locator('[name="arrivalBufferMinutes"]')).toHaveValue('10');
+  await editor.locator('[name="arrivalBufferMinutes"]').selectOption('30');
+  await editor.locator('button[type="submit"]').click();
+  await expect(advisory).toContainText('30');
   expect(pageErrors, pageErrors.join('\n')).toEqual([]);
+});
+
+test('Fixed arrival buffer saves and reopens in Quick Add and calendar at mobile width', async ({ page }) => {
+  await seed(page);
+  await page.goto('/trip/custom/index.html?id=qa-flexible&view=plan', { waitUntil: 'domcontentloaded' });
+  await addActivity(page, { title: 'Buffer Tour', time: '16:00', mode: 'fixed' });
+  const row = page.locator('.planned-activity').filter({ hasText: 'Buffer Tour' });
+  await row.locator('[data-plan-details-toggle]').click();
+  await row.locator('[data-edit]').click();
+  const form = page.locator('.planner-composer');
+  const buffer = form.locator('[name="arrivalBufferMinutes"]');
+  await expect(buffer).toHaveValue('10');
+  await buffer.selectOption('30');
+  await form.locator('button[type="submit"]').click();
+  await row.locator('[data-plan-details-toggle]').click();
+  await row.locator('[data-edit]').click();
+  await expect(buffer).toHaveValue('30');
+  await form.locator('button[type="submit"]').click();
+  await page.locator('.planner-more summary').click();
+  await page.locator('[data-open-trip-calendar]').click();
+  const event = page.locator('[data-calendar-event]').filter({ hasText: 'Buffer Tour' });
+  await event.locator('[data-calendar-edit]').click();
+  const calendar = page.locator('[data-calendar-editor]');
+  await expect(calendar.locator('[name="arrivalBufferMinutes"]')).toHaveValue('30');
+  await calendar.locator('[name="arrivalBufferMinutes"]').selectOption('0');
+  await calendar.locator('button[type="submit"]').click();
+  await event.locator('[data-calendar-edit]').click();
+  await expect(calendar.locator('[name="arrivalBufferMinutes"]')).toHaveValue('0');
+  await calendar.locator('[name="scheduleMode"]').selectOption('flexible');
+  await expect(calendar.locator('[data-arrival-buffer]')).toBeHidden();
+  await calendar.locator('button[type="submit"]').click();
+  const saved = await page.evaluate(() => window.TravelMateTripStore.getTrips().find(t => t.id === 'qa-flexible').activities.find(a => a.title === 'Buffer Tour'));
+  expect(saved).not.toHaveProperty('arrivalBufferMinutes');
 });
