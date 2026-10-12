@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var scheduled=0,observer=null,preparedDays=Object.create(null);
+var scheduled=0,observer=null,preparedDays=Object.create(null),liveTransitionMap=Object.create(null),liveTransitionTripId='';
 function context(){return window.TravelMateTripContext||null}
 function currentTrip(){
   var store=window.TravelMateTripStore,id=new URLSearchParams(location.search).get('id');
@@ -167,6 +167,7 @@ function transitionMap(trip){
     var current=helper.transitionAssessmentsForDate(trip,date);
     Object.keys(current||{}).forEach(function(key){map[key]=current[key]})
   });
+  if(String(trip.id||'')===String(liveTransitionTripId||''))Object.keys(liveTransitionMap||{}).forEach(function(key){map[key]=liveTransitionMap[key]});
   return map
 }
 function travelModeLabel(mode){
@@ -181,7 +182,7 @@ function addTransition(row,transition){
   var line=document.createElement('span');
   line.className='tm-plan-transition'+(transition.risk?' is-risk':' is-ok');
   line.dataset.transitionSource=transition.source||'estimate';
-  var prefix=transition.source==='manual'?'זמן מעבר':'הערכת מעבר';
+  var prefix=transition.source==='live'?'\u05de\u05e1\u05dc\u05d5\u05dc \u05d7\u05d9':transition.source==='manual'?'זמן מעבר':'הערכת מעבר';
   var text=prefix+' · כ־'+transition.travelMinutes+' דק׳ · '+travelModeLabel(transition.mode)+(transition.bufferMinutes?' + '+transition.bufferMinutes+' דק׳ מרווח':'');
   if(transition.risk)text+=' · חסרות כ־'+transition.shortfallMinutes+' דק׳';
   else if(transition.latestDepartureTime)text+=' · כדאי לצאת עד '+transition.latestDepartureTime;
@@ -209,7 +210,7 @@ function dayRecords(trip,date){
   (trip.savedPlaces||[]).forEach(function(record){if(String(record.date||'')===date)list.push(record)});
   return list
 }
-function enhanceDay(card,index,trip,today){
+function enhanceDay(card,index,trip,today,transitions){
   var date=String(card.dataset.dayDate||card.dataset.tripDate||'');if(!date)return;
   var records=dayRecords(trip,date),done=records.filter(function(record){return !!record.done}).length,total=records.length;
   card.classList.toggle('tm-plan-day-current',date===today&&String(trip.start||'')<=today&&String(trip.end||'')>=today);
@@ -236,7 +237,7 @@ function enhanceDay(card,index,trip,today){
       heading.appendChild(modeSelect)
     }
     modeSelect.value=dayModeOverride(trip,date)||'auto';
-    var helper=context(),dayTransitions=helper&&helper.transitionAssessmentsForDate?helper.transitionAssessmentsForDate(trip,date):{},riskCount=Object.keys(dayTransitions||{}).filter(function(key){return dayTransitions[key]&&dayTransitions[key].risk}).length;
+    var dayTransitions=transitions||{},riskCount=Object.keys(dayTransitions).filter(function(key){return dayTransitions[key]&&dayTransitions[key].date===date&&dayTransitions[key].risk}).length;
     var riskBadge=heading.querySelector('.tm-plan-day-travel-risk');
     if(riskCount){
       if(!riskBadge){riskBadge=document.createElement('span');riskBadge.className='tm-plan-day-travel-risk';heading.querySelector('div').appendChild(riskBadge)}
@@ -300,7 +301,7 @@ function apply(){
   var plan=document.getElementById('plan'),trip=currentTrip();if(!plan||!trip)return;
   plan.dataset.planUxReady='true';ensureToolbar(plan,trip);ensureNextBanner(plan,trip);
   var today=localDateKey(new Date()),statuses=statusMap(trip),transitions=transitionMap(trip);
-  [].slice.call(plan.querySelectorAll('.generated-day')).forEach(function(card,index){enhanceDay(card,index,trip,today)});
+  [].slice.call(plan.querySelectorAll('.generated-day')).forEach(function(card,index){enhanceDay(card,index,trip,today,transitions)});
   plan.querySelectorAll('.planned-activity,.saved-place').forEach(function(row){enhanceRow(row,trip,statuses,transitions)});
   enhancePastStrip(plan,trip)
 }
@@ -332,6 +333,7 @@ document.addEventListener('click',function(event){
   var dayToggle=event.target.closest('[data-toggle-day]');
   if(dayToggle)setTimeout(function(){collapseOtherOpenDays(dayToggle.dataset.toggleDay)},0)
 });
+window.addEventListener('travelmate:plan-live-routing',function(event){var detail=event.detail||{},trip=currentTrip();if(!trip||String(detail.tripId||'')!==String(trip.id||''))return;liveTransitionTripId=String(detail.tripId||'');liveTransitionMap=detail.transitions||Object.create(null);schedule()});
 document.addEventListener('travelmate:planner-rendered',schedule);
 document.addEventListener('travelmate:places-updated',schedule);
 window.addEventListener('travelmate:viewchange',schedule);

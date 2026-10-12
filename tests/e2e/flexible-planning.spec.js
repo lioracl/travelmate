@@ -281,3 +281,32 @@ test('Fixed arrival buffer saves and reopens in Quick Add and calendar at mobile
   const saved = await page.evaluate(() => window.TravelMateTripStore.getTrips().find(t => t.id === 'qa-flexible').activities.find(a => a.title === 'Buffer Tour'));
   expect(saved).not.toHaveProperty('arrivalBufferMinutes');
 });
+
+test('Plan upgrades a supported transition to live routing without persisting it as actual travel', async ({ page }) => {
+  const date = localDateKey(0);
+  const liveTrip = {
+    id: 'qa-live-plan-routing', country: 'Israel', city: 'Tel Aviv', start: date, end: localDateKey(1), days: 2,
+    type: 'solo', budget: 1000, planInitialized: true, dayNotes: {}, savedPlaces: [],
+    activities: [
+      { id:'from', date, time:'10:00', title:'Start', category:'test', duration:60, scheduleMode:'fixed', lat:32.0853, lon:34.7818, done:false },
+      { id:'to', date, time:'11:20', title:'Live Route Target', category:'test', duration:60, scheduleMode:'fixed', travelMode:'walk', arrivalBufferMinutes:10, lat:32.1093, lon:34.8555, done:false }
+    ]
+  };
+  await page.route('**/table/v1/driving/**', async route => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ code:'Ok', durations:[[0,300],[300,0]], distances:[[0,500],[500,0]] }) });
+  });
+  await page.addInitScript(value => {
+    localStorage.setItem('travelmate-trips', JSON.stringify([value]));
+    localStorage.removeItem('travelmate-active-user');
+    localStorage.setItem('travelmate-theme', 'light');
+  }, liveTrip);
+  await page.goto('/trip/custom/index.html?id=qa-live-plan-routing&view=plan', { waitUntil: 'domcontentloaded' });
+  const row = page.locator('.planned-activity').filter({ hasText: 'Live Route Target' });
+  const transition = row.locator('.tm-plan-transition');
+  await expect(transition).toHaveAttribute('data-transition-source', 'live');
+  await expect(row).not.toHaveClass(/tm-plan-travel-risk/);
+  const saved = await page.evaluate(() => window.TravelMateTripStore.getTrip('qa-live-plan-routing').activities.find(item => item.id === 'to'));
+  expect(saved).not.toHaveProperty('travelMinutesBefore');
+  expect(saved).not.toHaveProperty('travelDistanceKmBefore');
+  expect(saved).not.toHaveProperty('travelSourceBefore');
+});

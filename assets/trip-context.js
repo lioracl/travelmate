@@ -83,7 +83,11 @@ function transitionAssessment(previous,next,options){
   if(previousStart===null||nextStart===null)return null;
   var duration=Math.max(0,Number(previous&&previous.duration||60));
   var gap=nextStart-(previousStart+duration);
-  var estimate=estimateTravelMinutes(previous,next);
+  var fallback=estimateTravelMinutes(previous,next),supplied=options.travelEstimate,estimate=null;
+  if(supplied&&Number.isFinite(Number(supplied.minutes))&&Number(supplied.minutes)>0){
+    var suppliedDistance=Number(supplied.distanceKm);
+    estimate=Object.freeze({minutes:Math.max(1,Math.round(Number(supplied.minutes))),mode:normalizeTravelMode(supplied.mode)||(fallback&&fallback.mode)||'transit',modeSource:String(supplied.modeSource||(fallback&&fallback.modeSource)||'inferred'),source:String(supplied.source||'live'),distanceKm:Number.isFinite(suppliedDistance)&&suppliedDistance>=0?suppliedDistance:(fallback&&fallback.distanceKm),provider:String(supplied.provider||'')})
+  }else estimate=fallback;
   if(!estimate)return null;
   var configured=Number(next&&next.arrivalBufferMinutes),buffer=Number.isFinite(configured)&&configured>=0?configured:Number.isFinite(Number(options.bufferMinutes))?Math.max(0,Number(options.bufferMinutes)):10;
   var required=estimate.minutes+buffer,shortfall=Math.max(0,required-gap),leaveBy=nextStart-required;
@@ -99,10 +103,12 @@ function transitionAssessment(previous,next,options){
     mode:estimate.mode,
     modeSource:estimate.modeSource,
     source:estimate.source,
-    distanceKm:estimate.distanceKm
+    distanceKm:estimate.distanceKm,
+    provider:estimate.provider||''
   })
 }
 function transitionAssessmentsForDate(trip,date,options){
+  options=options||{};
   var entries=recordsForDate(trip,date).map(function(entry){
     return{kind:entry.kind,record:entry.record,start:minutes(entry.record.time)}
   }).filter(function(entry){
@@ -111,9 +117,10 @@ function transitionAssessmentsForDate(trip,date,options){
   }).sort(function(a,b){return a.start-b.start});
   var map=Object.create(null);
   for(var index=1;index<entries.length;index+=1){
-    var previous=entries[index-1],next=entries[index],assessment=transitionAssessment(previous.record,next.record,options);
+    var previous=entries[index-1],next=entries[index],live=typeof options.travelLookup==='function'?options.travelLookup(previous.record,next.record):null,assessment=transitionAssessment(previous.record,next.record,live?Object.assign({},options,{travelEstimate:live}):options);
     if(!assessment||assessment.overlap)continue;
     map[next.kind+':'+String(next.record.id)]=Object.freeze({
+      date:String(date),
       fromKind:previous.kind,
       fromId:String(previous.record.id),
       fromTitle:String(previous.record.title||previous.record.name||'הפעילות הקודמת'),
@@ -129,6 +136,7 @@ function transitionAssessmentsForDate(trip,date,options){
       mode:assessment.mode,
       modeSource:assessment.modeSource,
       source:assessment.source,
+      provider:assessment.provider||'',
       distanceKm:assessment.distanceKm
     })
   }

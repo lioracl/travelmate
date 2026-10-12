@@ -13,7 +13,7 @@ if (/\/trip\//.test(location.pathname)) window.addEventListener('travelmate:acco
   if (!id || nextTrip) location.reload();
   else location.replace(new URL('../../index.html', location.href).href);
 });
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261012-01'}catch(error){return'20261012-01'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261012-02'}catch(error){return'20261012-02'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
@@ -62,6 +62,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     return new Promise(function(resolve){var deadline=Date.now()+2500;(function check(){if(document.getElementById(view)){resolve(true);return}if(Date.now()>=deadline){resolve(false);return}requestAnimationFrame(check)})()})
   }
   function loadTodayActivities(){return Promise.all([loadStyle('today-activities.css'),loadScript('today-activities.js')])}
+  function loadPlanLiveRouting(){return loadScript('live-routing.js').then(function(ready){return ready===false?false:loadScript('plan-live-routing.js')}).catch(function(){return false})}
   function loadFeature(view){
     var feature=features[view];if(!feature)return Promise.resolve(true);
     if(readyFeatures[view])return Promise.resolve(true);
@@ -75,6 +76,7 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     }).then(function(ready){
       if(ready===false)return false;
       window.dispatchEvent(new CustomEvent('travelmate:feature-ready',{detail:{view:view}}));
+      if(view==='plan')loadPlanLiveRouting();
       return true
     }).then(function(ready){
       delete featureLoads[view];

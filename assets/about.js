@@ -2,10 +2,11 @@
   'use strict';
 
   var release = {
-    version: '2.22.2',
-    label: 'מצב מערכת ועדכונים - 2.22.2',
+    version: '2.23.0',
+    label: 'מצב מערכת ועדכונים - 2.23.0',
     date: '12 באוקטובר 2026',
     highlights: [
+      'Live Travel Intelligence 2.0: Plan \u05de\u05e9\u05d3\u05e8\u05d2 \u05d6\u05de\u05e0\u05d9 \u05de\u05e2\u05d1\u05e8 \u05dc\u05e0\u05ea\u05d5\u05e0\u05d9 \u05e0\u05d9\u05d5\u05d5\u05d8 \u05d7\u05d9\u05d9\u05dd \u05db\u05d0\u05e9\u05e8 \u05d9\u05e9 \u05e7\u05d5\u05d0\u05d5\u05e8\u05d3\u05d9\u05e0\u05d8\u05d5\u05ea \u05d5\u05d0\u05de\u05e6\u05e2\u05d9 \u05ea\u05e0\u05d5\u05e2\u05d4 \u05e0\u05ea\u05de\u05da, \u05d5\u05e0\u05e9\u05d0\u05e8 \u05e2\u05dc \u05d4\u05e2\u05e8\u05db\u05d4 \u05d1\u05d0\u05d5\u05e4\u05dc\u05d9\u05d9\u05df, Save-Data, \u05ea\u05d7\u05d1\u05d5\u05e8\u05d4 \u05dc\u05dc\u05d0 \u05e1\u05e4\u05e7 \u05d7\u05d9 \u05d0\u05d5 \u05db\u05e9\u05dc \u05e8\u05e9\u05ea. \u05d4\u05e0\u05ea\u05d5\u05df \u05de\u05e1\u05d5\u05de\u05df \u05db\u05de\u05e1\u05dc\u05d5\u05dc \u05d7\u05d9 \u05d5\u05d0\u05d9\u05e0\u05d5 \u05e0\u05e8\u05e9\u05dd \u05db\u05de\u05e1\u05dc\u05d5\u05dc \u05e9\u05d1\u05d5\u05e6\u05e2 \u05d1-Trip Summary.',
       'מרווח הגעה: אפשר לבחור כמה דקות להקדים לפעילות בשעה קבועה בתוכנית וביומן.',
       'מצב המערכת באודות מציג את גרסת האפליקציה, בניית הווב, ערוץ העדכון וסביבת ההרצה לפי המידע הזמין בלבד.',
       'Plan Focus 2.22.0: פס קומפקטי של עכשיו או הפעילות הבאה עם הצמדה לפי בחירה, המבוסס על Today הקיים ופותח את פרטי הפעילות הקיימים. תוקן ניווט כשקואורדינטות ריקות.',
