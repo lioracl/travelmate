@@ -5,6 +5,7 @@
 
   var cloud = window.TravelMateCloud;
   var lifecycleGeneration = 0;
+  var experienceAccountId = String(localStorage.getItem('travelmate-active-user') || '');
   var experienceAvailable = true;
   var state = { trip: null, rate: null, rates: {}, ilsRates: { ILS: 1 }, rateDate: '', rateSource: '', rateSourceUrl: '', rateStale: false, fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR', secondaryCurrency: 'ILS', budgetUnlimited: false };
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
@@ -332,6 +333,16 @@
     var section = document.getElementById('budget'); if (section && !section.querySelector(':scope > [data-currency-insight]')) { var host = document.createElement('div'); host.className = 'currency-insight'; host.dataset.currencyInsight = ''; host.dataset.euros = String(budget); var head = section.querySelector('.section-head'); if (head) head.insertAdjacentElement('afterend', host); else section.prepend(host); } renderCurrency(); createTotalBudgetEditor();
   }
 
+  function budgetEditorEuros(localValue) {
+    if (String(localValue).trim() === '') return null;
+    var amount = Number(localValue);
+    if (!Number.isFinite(amount) || amount < 0) return null;
+    if (state.localCurrency === 'EUR') return amount;
+    var rate = Number(state.rates[state.localCurrency]);
+    if (!Number.isFinite(rate) || rate <= 0 || !String(state.rateDate || '').trim() || !Number.isFinite(Date.parse(state.rateDate)) || !String(state.rateSource || '').trim()) return null;
+    var euros = amount / rate;
+    return Number.isFinite(euros) ? euros : null;
+  }
   function createTotalBudgetEditor() {
     var section = document.getElementById('budget'); var hero = section && section.querySelector('.budget-hero');
     if (!hero || hero.querySelector('[data-total-budget-form]')) return;
@@ -347,7 +358,38 @@
     function applyBudgetMode() { var unlimited = form.elements.budgetMode.value === 'unlimited'; form.classList.toggle('is-unlimited', unlimited); form.total.disabled = unlimited; form.total.required = !unlimited; }
     form.elements.budgetMode.value = state.budgetUnlimited ? 'unlimited' : 'limited'; applyBudgetMode();
     form.addEventListener('change', function (event) { if (event.target.name === 'budgetMode') applyBudgetMode(); });
-    form.onsubmit = function (event) { event.preventDefault(); var unlimited = form.elements.budgetMode.value === 'unlimited'; state.budgetUnlimited = unlimited; if (!unlimited) { var localValue = Math.max(0, Number(form.total.value || 0)); var euroValue = state.localCurrency === 'EUR' ? localValue : (Number(state.rates[state.localCurrency] || 0) ? localValue / Number(state.rates[state.localCurrency]) : localValue); state.trip.budget = euroValue; document.querySelectorAll('[data-budget]').forEach(function (node) { node.dataset.euroAmount = String(euroValue); }); document.querySelectorAll('[data-currency-insight]').forEach(function (node) { node.dataset.euros = String(euroValue); }); } saveTripData(); renderLocalBudgetTotals(); renderCurrency(); renderBudgetCharts(); toast(unlimited ? '\u05d4\u05ea\u05e7\u05e6\u05d9\u05d1 \u05d4\u05d5\u05d2\u05d3\u05e8 \u05dc\u05dc\u05d0 \u05d4\u05d2\u05d1\u05dc\u05d4.' : '\u05d4\u05ea\u05e7\u05e6\u05d9\u05d1 \u05d4\u05db\u05d5\u05dc\u05dc \u05e0\u05e9\u05de\u05e8.'); };
+    form.onsubmit = function (event) {
+      event.preventDefault();
+      if (!experienceAvailable || !state.trip || experienceAccountId !== String(localStorage.getItem('travelmate-active-user') || '')) return;
+      var unlimited = form.elements.budgetMode.value === 'unlimited';
+      var euroValue = unlimited ? null : budgetEditorEuros(form.total.value);
+      if (!unlimited && euroValue === null) {
+        toast('לא ניתן לשמור תקציב במטבע המקומי בלי שער המרה ומקור מתוארך. התקציב הקודם לא השתנה.');
+        return;
+      }
+      state.budgetUnlimited = unlimited;
+      if (!unlimited) {
+        state.trip.budget = euroValue;
+        state.trip.budgetFx = {
+          enteredAmount: Number(form.total.value),
+          enteredCurrency: state.localCurrency,
+          storedCurrency: 'EUR',
+          eurToEnteredCurrencyRate: state.localCurrency === 'EUR' ? 1 : Number(state.rates[state.localCurrency]),
+          rateDate: state.localCurrency === 'EUR' ? null : state.rateDate,
+          source: state.localCurrency === 'EUR' ? 'identity' : state.rateSource,
+          sourceUrl: state.localCurrency === 'EUR' ? null : state.rateSourceUrl || null,
+          stale: state.localCurrency !== 'EUR' && Boolean(state.rateStale),
+          rounding: 'entered numeric local amount; stored EUR unrounded'
+        };
+        document.querySelectorAll('[data-budget]').forEach(function (node) { node.dataset.euroAmount = String(euroValue); });
+        document.querySelectorAll('[data-currency-insight]').forEach(function (node) { node.dataset.euros = String(euroValue); });
+      }
+      saveTripData();
+      renderLocalBudgetTotals();
+      renderCurrency();
+      renderBudgetCharts();
+      toast(unlimited ? 'התקציב הוגדר ללא הגבלה.' : 'התקציב הכולל נשמר.');
+    };
   }
   function updateTotalBudgetEditor() { var form = document.querySelector('[data-total-budget-form]'); if (!form || document.activeElement === form.total) return; if (form.elements.budgetMode) form.elements.budgetMode.value = state.budgetUnlimited ? 'unlimited' : 'limited'; form.classList.toggle('is-unlimited', state.budgetUnlimited); form.total.disabled = state.budgetUnlimited; form.total.required = !state.budgetUnlimited; var euros = Number(state.trip && state.trip.budget || 0); var value = state.localCurrency === 'EUR' ? euros : localFromEuros(euros); if (value || !form.total.value) form.total.value = Math.round(value || euros); }
 
@@ -978,6 +1020,7 @@
     state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readExperienceJson('memories', []);
     state.albumUrl = typeof state.trip.photoAlbumUrl === 'string' ? state.trip.photoAlbumUrl : readExperienceJson('album-url', '');
     state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readExperienceJson('currency-fee', 2.5));
+    experienceAccountId = activeOwner;
     experienceAvailable = true;
     document.querySelectorAll('[data-budget]').forEach(function (node) { node.dataset.euroAmount = String(Number(incoming.budget || 0)); });
     document.querySelectorAll('[data-currency-insight]').forEach(function (node) { node.dataset.euros = String(Number(incoming.budget || 0)); });
