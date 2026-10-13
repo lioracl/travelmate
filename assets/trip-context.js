@@ -113,7 +113,7 @@ function transitionAssessmentsForDate(trip,date,options){
     return{kind:entry.kind,record:entry.record,start:minutes(entry.record.time)}
   }).filter(function(entry){
     var mode=scheduleMode(entry.record);
-    return entry.start!==null&&mode!=='flexible'&&mode!=='window'
+    return entry.record.done!==true&&entry.start!==null&&mode!=='flexible'&&mode!=='window'
   }).sort(function(a,b){return a.start-b.start});
   var map=Object.create(null);
   for(var index=1;index<entries.length;index+=1){

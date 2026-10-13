@@ -35,6 +35,16 @@ test('Smart Trip delegates free-window suitability to the shared Nearby classifi
  const result=build(value,ctx);assert.equal(called,1);assert.equal(result.kind,'free-window');assert.equal(result.anchorId,'late');
  assert.equal(canonical.classifyNearbyTimeFit({availableMinutes:270,outboundMinutes:0}).status,'green');
 });
+test('completed activities cannot create a transition risk for a later commitment',()=>{
+ const ctx=context(),value=trip([
+  {id:'completed',date:'2026-10-13',time:'12:00',duration:90,scheduleMode:'fixed',done:true,lat:32.08,lon:34.78},
+  {id:'next',date:'2026-10-13',time:'14:00',duration:60,scheduleMode:'fixed',lat:32.30,lon:34.90}
+ ]);
+ const transitions=ctx.transitionAssessmentsForDate(value,'2026-10-13');
+ assert.equal(Object.hasOwn(transitions,'activity:next'),false);
+ const decisions=require('../assets/smart-trip-decisions.js').analyze({trip:value,now:now(),date:'2026-10-13',context:ctx});
+ assert.ok(!decisions.recommendations.some(item=>item.key==='transition:activity:next'));
+});
 test('completed future blocks no longer split the canonical free-time window',()=>{
  const value=trip([{id:'done',date:'2026-10-13',time:'13:00',duration:60,scheduleMode:'fixed',done:true}]);
  const windows=context().freeTimeWindowsForDate(value,'2026-10-13',{startTime:'12:00',endTime:'16:00'});

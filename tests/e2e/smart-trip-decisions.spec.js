@@ -6,6 +6,8 @@ for(const width of [360,390,430])for(const theme of ['light','dark'])test(width+
  await page.goto('/trip/custom/index.html?id=decision-qa&view=plan',{waitUntil:'domcontentloaded'});
  const check=page.locator('[data-smart-check]');await expect(check).toBeVisible();await check.click();
  const panel=page.locator('[data-smart-decisions]');await expect(panel).toBeVisible();
+ await expect(check).toHaveAttribute('aria-controls','smart-trip-decisions-panel');
+ await expect(panel).toHaveAttribute('id','smart-trip-decisions-panel');
  await expect(panel.locator('select')).toBeFocused();expect(await panel.locator('select option').count()).toBe(1);
  const read=()=>page.evaluate(()=>JSON.stringify(TravelMateTripStore.getTrip('decision-qa')));
  const before=await read();await panel.locator('input[type=time]').fill('16:00');await page.evaluate(()=>dispatchEvent(new Event('travelmate:weather-context-change')));await expect(panel.locator('input[type=time]')).toHaveValue('16:00');
