@@ -2,10 +2,15 @@
   'use strict';
 
   var release = {
-    version: '2.24.0',
-    label: 'מצב מערכת ועדכונים - 2.24.0',
-    date: '12 באוקטובר 2026',
+    version: '2.26.0',
+    label: 'מצב מערכת ועדכונים - 2.26.0',
+    date: '13 באוקטובר 2026',
     highlights: [
+      'Calendar Export: הוספה ל־Google Calendar או הורדת ICS שפועלת גם ללא רשת, מתוך פרטי הפעילות. רק תאריך ושעה מדויקים מיוצאים, ללא הערות ומסמכים. השעה מקומית כפי שהוזנה; יש לאשר את אזור הזמן ביומן.',
+      'Smart Trip: בדיקת יום מייעצת בתוכנית ושינוי שעה לפעילות גמישה דרך תצוגה מקדימה, אישור, החלה וביטול מוגן. אין חיפוש GPS אוטומטי.',
+      'Smart Trip משתמש בסיווג הזמן המשותף של Nearby; פעילויות גמישות, חלונות ופעילויות שהושלמו אינם יוצרים מחויבות קבועה חדשה. ההצעה נשארת מייעצת וללא חיפוש אוטומטי.',
+      'Nearby: חיפוש קרוב בלחיצה אחת; הזמן ושעות הפתיחה מסומנים כהכוונה בלבד בירוק, צהוב ואדום. כל המקומות נשארים זמינים ברשימה ובמפה, גם כשאין התאמה ירוקה.',
+      'שמירת תקציב במטבע זר דורשת שער חיובי, מקור ותאריך; ללא שער התקציב הקודם נשמר. פרטי ההמרה נשמרים עם הטיול.',
       'Opening Hours + Routing: Plan \u05de\u05e6\u05d9\u05d2 \u05d4\u05ea\u05e8\u05d0\u05d4 \u05e9\u05de\u05e8\u05e0\u05d9\u05ea \u05db\u05d0\u05e9\u05e8 \u05de\u05e7\u05d5\u05dd \u05e2\u05dd \u05e9\u05e2\u05d5\u05ea OpenStreetMap \u05e6\u05e4\u05d5\u05d9 \u05dc\u05d4\u05d9\u05d5\u05ea \u05e1\u05d2\u05d5\u05e8 \u05d1\u05d6\u05de\u05df \u05d4\u05d4\u05d2\u05e2\u05d4 \u05d0\u05d5 \u05dc\u05d4\u05d9\u05e1\u05d2\u05e8 \u05d1\u05de\u05d4\u05dc\u05da \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea. \u05e9\u05e2\u05d5\u05ea \u05dc\u05d0-\u05d7\u05d3-\u05de\u05e9\u05de\u05e2\u05d9\u05d5\u05ea \u05e0\u05e9\u05d0\u05e8\u05d5\u05ea Unknown, \u05d1\u05dc\u05d9 GPS \u05d5\u05d1\u05dc\u05d9 \u05db\u05ea\u05d9\u05d1\u05d4 \u05dc-Trip Summary.',
       'Live Travel Intelligence 2.0: Plan \u05de\u05e9\u05d3\u05e8\u05d2 \u05d6\u05de\u05e0\u05d9 \u05de\u05e2\u05d1\u05e8 \u05dc\u05e0\u05ea\u05d5\u05e0\u05d9 \u05e0\u05d9\u05d5\u05d5\u05d8 \u05d7\u05d9\u05d9\u05dd \u05db\u05d0\u05e9\u05e8 \u05d9\u05e9 \u05e7\u05d5\u05d0\u05d5\u05e8\u05d3\u05d9\u05e0\u05d8\u05d5\u05ea \u05d5\u05d0\u05de\u05e6\u05e2\u05d9 \u05ea\u05e0\u05d5\u05e2\u05d4 \u05e0\u05ea\u05de\u05da, \u05d5\u05e0\u05e9\u05d0\u05e8 \u05e2\u05dc \u05d4\u05e2\u05e8\u05db\u05d4 \u05d1\u05d0\u05d5\u05e4\u05dc\u05d9\u05d9\u05df, Save-Data, \u05ea\u05d7\u05d1\u05d5\u05e8\u05d4 \u05dc\u05dc\u05d0 \u05e1\u05e4\u05e7 \u05d7\u05d9 \u05d0\u05d5 \u05db\u05e9\u05dc \u05e8\u05e9\u05ea. \u05d4\u05e0\u05ea\u05d5\u05df \u05de\u05e1\u05d5\u05de\u05df \u05db\u05de\u05e1\u05dc\u05d5\u05dc \u05d7\u05d9 \u05d5\u05d0\u05d9\u05e0\u05d5 \u05e0\u05e8\u05e9\u05dd \u05db\u05de\u05e1\u05dc\u05d5\u05dc \u05e9\u05d1\u05d5\u05e6\u05e2 \u05d1-Trip Summary.',
       'מרווח הגעה: אפשר לבחור כמה דקות להקדים לפעילות בשעה קבועה בתוכנית וביומן.',
