@@ -27,15 +27,15 @@ test('Contextual mood shortcuts reuse Places categories and remain explicit',()=
   assert.match(app,/categories:preset\?preset\.categories:\[\]/);
   assert.match(nearby,/categories=contextualRequest&&Array\.isArray\(contextualRequest\.categories\)\?normalizeCategoryKeys/);
   assert.match(nearby,/freeTerm=contextualRequest\?'':placeNameSearchInput\.value\.trim\(\)/);
-  assert.match(nearby,/kosher=contextualRequest\?false:/);assert.match(nearby,/radius=contextualRequest\?contextualRadius:selectedRadius/);
+  assert.match(nearby,/kosher=contextualRequest\?false:/);assert.match(nearby,/radius=selectedRadius/);
   assert.doesNotMatch(nearby,/if\(requestedCategories\)\{selectedCategoryKeys=requestedCategories/);assert.match(nearby,/mood:detail\.mood\|\|''/);
   assert.match(assistant,/categories: Array\.isArray\(action\.intent\.categories\)/);
   assert.doesNotMatch(assistant,/navigator\.geolocation|getCurrentPosition\s*\(/);assert.match(css,/contextual-nearby__moods button\{min-height:44px/);
 });
-test('Contextual results are time-feasible, bounded and keep explicit save/add actions',()=>{
+test('Contextual results keep all places and expose advisory time-fit with explicit actions',()=>{
   const app=read('assets/app.js'),nearby=read('assets/nearby.js');
   assert.match(nearby,/estimateTravelMinutes\(origin,place\)/);assert.match(nearby,/estimateTravelMinutes\(place,next\)/);
-  assert.match(nearby,/usable<30/);assert.match(nearby,/slice\(0,6\)/);assert.match(nearby,/contextualSuggestedTime/);
+  assert.match(nearby,/helper\.classifyNearbyTimeFit/);assert.match(nearby,/return places;/);assert.doesNotMatch(nearby,/card\.remove\(\);return/);assert.match(nearby,/contextualSuggestedTime/);
   assert.match(nearby,/deferEnhance/);assert.match(nearby,/data\.contextualNearby|dataset\.contextualNearby/);
   assert.match(app,/contextualTodayValid/);assert.match(app,/scheduleButton\.addEventListener\('click'/);
   assert.match(app,/savePlace\(true\)/);assert.match(app,/trip\.savedPlaces\.push\(placeData\)/);
@@ -56,6 +56,6 @@ test('Mini Route chooses a compact 2-3 stop sequence only when it fits',()=>{
 test('Mini Route stays explicit and reuses Contextual Nearby without automatic persistence',()=>{
   const app=read('assets/app.js'),nearby=read('assets/nearby.js');
   assert.match(app,/data-contextual-mini-route/);assert.match(app,/aria-pressed=\"false\"/);assert.match(app,/miniRoute:contextualMiniRoute/);
-  assert.match(nearby,/buildMiniRoute\(assessed\.map/);assert.match(nearby,/data-contextual-mini-route-result/);
+  assert.match(nearby,/buildMiniRoute\(assessed\.filter/);assert.match(nearby,/data-contextual-mini-route-result/);
   assert.match(nearby,/requestGpsConsent\(panel\)/);assert.doesNotMatch(nearby,/buildMiniRoute[\s\S]{0,500}saveTrip|buildMiniRoute[\s\S]{0,500}savedPlaces\.push/);
 });
