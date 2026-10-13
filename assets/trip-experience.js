@@ -5,6 +5,7 @@
 
   var cloud = window.TravelMateCloud;
   var lifecycleGeneration = 0;
+  var experienceAccountId = String(localStorage.getItem('travelmate-active-user') || '');
   var experienceAvailable = true;
   var state = { trip: null, rate: null, rates: {}, ilsRates: { ILS: 1 }, rateDate: '', rateSource: '', rateSourceUrl: '', rateStale: false, fee: 2.5, expenses: [], budgetCategories: [], memories: [], albumUrl: '', localCurrency: 'EUR', secondaryCurrency: 'ILS', budgetUnlimited: false };
   function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, function (character) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]; }); }
@@ -359,7 +360,7 @@
     form.addEventListener('change', function (event) { if (event.target.name === 'budgetMode') applyBudgetMode(); });
     form.onsubmit = function (event) {
       event.preventDefault();
-      if (!experienceAvailable || !state.trip || (state.trip.ownerId && String(state.trip.ownerId) !== String(localStorage.getItem('travelmate-active-user') || ''))) return;
+      if (!experienceAvailable || !state.trip || experienceAccountId !== String(localStorage.getItem('travelmate-active-user') || '')) return;
       var unlimited = form.elements.budgetMode.value === 'unlimited';
       var euroValue = unlimited ? null : budgetEditorEuros(form.total.value);
       if (!unlimited && euroValue === null) {
@@ -1019,6 +1020,7 @@
     state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readExperienceJson('memories', []);
     state.albumUrl = typeof state.trip.photoAlbumUrl === 'string' ? state.trip.photoAlbumUrl : readExperienceJson('album-url', '');
     state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readExperienceJson('currency-fee', 2.5));
+    experienceAccountId = activeOwner;
     experienceAvailable = true;
     document.querySelectorAll('[data-budget]').forEach(function (node) { node.dataset.euroAmount = String(Number(incoming.budget || 0)); });
     document.querySelectorAll('[data-currency-insight]').forEach(function (node) { node.dataset.euros = String(Number(incoming.budget || 0)); });

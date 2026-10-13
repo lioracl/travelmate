@@ -32,7 +32,7 @@ function submitBudget(state, mode, value) {
   const calls = { saves: 0, toasts: [] };
   const form = { elements: { budgetMode: { value: mode } }, total: { value } };
   const context = {
-    state, form, Number, String, Boolean, experienceAvailable: true, localStorage: { getItem: () => null },
+    state, form, Number, String, Boolean, experienceAvailable: true, experienceAccountId: '', localStorage: { getItem: () => null },
     document: { querySelectorAll: () => [] },
     saveTripData: () => { calls.saves += 1; },
     renderLocalBudgetTotals: () => {}, renderCurrency: () => {}, renderBudgetCharts: () => {},
@@ -70,8 +70,8 @@ test('unlimited mode can be saved offline without a currency quote', () => {
 });
 
 // Controlled mocks; executes full repository module and actual editor creation/save path.
-function editorHarness(currency = 'CZK', cloudEnabled = true) {
-  const data = new Map([['travelmate-active-user', 'A']]);
+function editorHarness(currency = 'CZK', cloudEnabled = true, account = 'A', owner = account) {
+  const data = new Map([['travelmate-active-user', account]]);
   const localStorage = { getItem: key => data.get(key) ?? null, setItem: (key, value) => data.set(key, String(value)) };
   const events = {}, queued = [], nodes = [];
   let rows = [];
@@ -94,7 +94,7 @@ function editorHarness(currency = 'CZK', cloudEnabled = true) {
   })();`);
   vm.runInContext(fullSource, context);
   const state = window.harness.state;
-  Object.assign(state, { trip: { id: 'same', ownerId: 'A', budget: 500, budgetUnlimited: true, budgetFx: { previous: true } }, localCurrency: currency, budgetUnlimited: true });
+  Object.assign(state, { trip: { id: 'same', ownerId: owner, budget: 500, budgetUnlimited: true, budgetFx: { previous: true } }, localCurrency: currency, budgetUnlimited: true });
   window.harness.create();
   return { state, form, queued, localStorage, window, submit(mode, value) { form.elements.budgetMode.value = mode; form.total.value = value; form.onsubmit({ preventDefault() {} }); }, roundtrip() { return JSON.parse(JSON.stringify(window.TravelMateTripStore.getTrip('same', 'A'))); }, switchAccount(user, trips = []) { localStorage.setItem('travelmate-active-user', user); events['travelmate:account-context-changed']({ detail: { trips } }); } };
 }
@@ -143,7 +143,7 @@ test('account switch without matching trip cannot save through retained editor',
   const h = editorHarness('EUR'); h.switchAccount('B'); h.submit('limited', '100');
   assert.equal(h.queued.length, 0); assert.equal(h.state.trip, null);
 });
-test('changed active owner cannot mutate previous owner budget or metadata', () => {
+test('changed active account cannot mutate previous owner budget or metadata', () => {
   const h = editorHarness('EUR'); const before = JSON.stringify(h.state.trip);
   h.localStorage.setItem('travelmate-active-user', 'B'); h.submit('limited', '100');
   assert.equal(JSON.stringify(h.state.trip), before); assert.equal(h.queued.length, 0);
@@ -178,4 +178,14 @@ test('actual Cloud Sync RPC stub preserves budgetFx through save and remote cano
   assert.deepEqual(JSON.parse(JSON.stringify(remote.budgetFx)), trip.budgetFx);
   assert.equal(remote.budget, 10);
   assert.equal(remote.budgetUnlimited, false);
+});
+
+test('authorized collaborator can save a shared-owner budget in the loaded account context', () => {
+  const h = editorHarness('EUR', true, 'B', 'A');
+  h.submit('limited', '125');
+  assert.equal(h.state.trip.ownerId, 'A');
+  assert.equal(h.roundtrip().budget, 125);
+  assert.equal(h.roundtrip().budgetFx.source, 'identity');
+  assert.equal(h.queued.length, 1);
+  assert.equal(h.queued[0].ownerId, 'A');
 });
