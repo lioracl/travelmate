@@ -115,21 +115,8 @@
       setStatus(panel, 'מצב התאמה לזמן עדיין נטען. נסה שוב בעוד רגע.', true);
       return;
     }
-    setStatus(panel, 'מחפש התאמה לחלון הזמן שבחרת…');
+    setStatus(panel, 'מחפש מקומות ומוסיף הכוונה לחלון הזמן שבחרת…');
     waitForNearbyReady(panel, function () {
-      var results = panel.querySelector('[data-nearby-results]');
-      var status = panel.querySelector('[data-nearby-status]');
-      if (results) {
-        results.addEventListener('travelmate:nearby-results-rendered', function () {
-          window.setTimeout(function () {
-            var text = String(status && status.textContent || '');
-            if (/לא נמצאו מקומות קרובים|מסומנים כסגורים/.test(text)) {
-              setStatus(panel, 'לא נמצאה התאמה מלאה לחלון הזמן. מציג מקומות קרובים ללא סינון זמן.', true);
-              runFreeNearbySearch(panel, contextual);
-            }
-          }, 0);
-        }, {once:true});
-      }
       panel.dispatchEvent(new CustomEvent('travelmate:contextual-nearby', {detail:{
         trip:trip,
         now:new Date(),
@@ -154,7 +141,7 @@
     var heading = contextual.querySelector(':scope > div strong');
     var copy = contextual.querySelector(':scope > div small');
     if (heading) heading.textContent = 'מה יש קרוב אליי?';
-    if (copy) copy.textContent = 'חיפוש חופשי לפי GPS. מסגרת זמן זמינה כאפשרות נפרדת.';
+    if (copy) copy.textContent = 'חיפוש לפי GPS. הזמן הוא הכוונה בלבד; כל המקומות זמינים לבחירה.';
 
     var windowLabel = contextual.querySelector('[data-contextual-window-label]');
     if (windowLabel) {
@@ -183,7 +170,7 @@
       timeFit.className = 'tm-nearby-time-fit-action';
       timeFit.dataset.nearbyTimeFit = '';
       timeFit.setAttribute('aria-expanded', 'false');
-      timeFit.innerHTML = '<i class="fa-regular fa-clock" aria-hidden="true"></i><span>התאמה לזמן פנוי</span>';
+      timeFit.innerHTML = '<i class="fa-regular fa-clock" aria-hidden="true"></i><span>הכוונה לזמן פנוי</span>';
       primary.insertAdjacentElement('afterend', timeFit);
       timeFit.addEventListener('click', function () {
         var open = !contextual.classList.contains('is-time-fit-open');
@@ -203,7 +190,7 @@
       runTimeFit.type = 'button';
       runTimeFit.className = 'tm-nearby-time-fit-run';
       runTimeFit.dataset.nearbyTimeFitRun = '';
-      runTimeFit.innerHTML = '<i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>חפש לפי הזמן</span>';
+      runTimeFit.innerHTML = '<i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>חפש עם הכוונת זמן</span>';
       var route = contextual.querySelector('[data-contextual-mini-route]');
       if (route) route.insertAdjacentElement('afterend', runTimeFit);
       else contextual.appendChild(runTimeFit);
@@ -221,7 +208,7 @@
         var note = document.createElement('small');
         note.className = 'tm-nearby-free-note';
         note.dataset.nearbyFreeNote = '';
-        note.textContent = 'חיפוש חופשי לפי המיקום הנוכחי — בלי מסגרת זמן ובלי סינון לפי התוכנית.';
+        note.textContent = 'חיפוש לפי המיקום הנוכחי. זמן ושעות פתיחה מוצגים כהכוונה בלבד ואינם מסתירים מקומות.';
         form.appendChild(note);
       }
     }
