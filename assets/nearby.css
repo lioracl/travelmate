@@ -569,3 +569,12 @@ body.tm-new-design[data-trip-view="places"] main.content #places .nearby-control
 }
 #places .nearby-category-chips button i{flex-shrink:0}
 @media(max-width:760px){#places .nearby-category-chips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+.nearby-result[data-contextual-time-fit="green"] .contextual-nearby__reason{border-inline-start:4px solid var(--tm-success);padding-inline-start:8px}
+.nearby-result[data-contextual-time-fit="yellow"] .contextual-nearby__reason{border-inline-start:4px solid var(--tm-warning);padding-inline-start:8px}
+.nearby-result[data-contextual-time-fit="red"] .contextual-nearby__reason{border-inline-start:4px solid var(--tm-error);padding-inline-start:8px}
+
+.tm-poi-marker[data-contextual-time-fit="green"]{border-color:var(--tm-success)}
+.tm-poi-marker[data-contextual-time-fit="yellow"]{border-color:var(--tm-warning)}
+.tm-poi-marker[data-contextual-time-fit="red"]{border-color:var(--tm-error)}

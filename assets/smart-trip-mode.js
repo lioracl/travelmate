@@ -94,7 +94,8 @@
     if(fixedFree!==null&&fixedFree!==undefined&&Number.isFinite(Number(fixedFree)))freeCandidates.push(Number(fixedFree));
     if(windowFree&&Number.isFinite(Number(windowFree.durationMinutes)))freeCandidates.push(Number(windowFree.durationMinutes));
     var freeMinutes=freeCandidates.length?Math.max(0,Math.min.apply(Math,freeCandidates)):null;
-    if(freeMinutes!==null&&freeMinutes>=45){
+    var freeFit=context&&typeof context.classifyNearbyTimeFit==='function'?context.classifyNearbyTimeFit({availableMinutes:freeMinutes,outboundMinutes:0}):null;
+    if(freeMinutes!==null&&(freeFit?freeFit.status==='green':freeMinutes>=45)){
       signals.push(signal('fa-hourglass-half',roundWindow(freeMinutes)+' פנויות'));
       if(weather.kind!=='unknown')signals.push(signal(weather.icon,weather.label));
       if(interest)signals.push(signal(interest.source==='learned'?'fa-check':'fa-heart',interest.label));
