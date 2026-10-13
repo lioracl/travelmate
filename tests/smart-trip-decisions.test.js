@@ -45,7 +45,7 @@ test('fixed reservations overlap but flexible/window and completed activities ne
 test('late warning requires a supplied travel estimate and marks its provenance', () => {
   const value = trip([item('dinner', '12:30')]);
   assert.ok(!keys(evaluate(value)).some(key => key.startsWith('late:')));
-  const estimated = evaluate(value, { routingById: { dinner: { minutes: 25, source: 'estimate' } } });
+  const estimated = evaluate(value, { routingById: { dinner: { minutes: 15, source: 'estimate' } } });
   assert.ok(keys(estimated).includes('late:dinner') === false);
   const late = evaluate(value, { routingById: { dinner: { minutes: 35, source: 'live' } } });
   assert.equal(late.recommendations[0].key, 'late:dinner');
