@@ -301,7 +301,7 @@ function classifyNearbyTimeFit(options){
   options=options||{};
   var available=options.availableMinutes===null||options.availableMinutes===undefined?null:Number(options.availableMinutes),outbound=Number(options.outboundMinutes),onward=Number(options.onwardMinutes||0),known=options.travelKnown!==false&&Number.isFinite(outbound)&&outbound>=0&&Number.isFinite(onward)&&onward>=0;
   var usable=available!==null&&Number.isFinite(available)&&known?Math.max(0,available-outbound-onward):null;
-  var status=options.openingState==='closed'?'red':!known?'yellow':usable===null?'green':usable<30?'red':usable<45?'yellow':'green';
+  var status=options.openingState==='closed'?'red':known&&usable!==null&&usable<30?'red':!known||options.openingState==='unknown'?'yellow':usable===null?'green':usable<45?'yellow':'green';
   return Object.freeze({status:status,usableMinutes:usable,constrained:available!==null&&Number.isFinite(available),travelKnown:known})
 }
 function buildNearbyRequest(options){

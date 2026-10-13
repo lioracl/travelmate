@@ -6,9 +6,9 @@ const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-function harness({closed = [], minutes = {}, live = null} = {}) {
+function harness({closed = [], unknown = [], minutes = {}, live = null} = {}) {
   const document = {querySelectorAll: () => [], documentElement: {}, createElement: () => ({})};
-  const window = {dispatchEvent() {}, TravelMateOpeningHours: {statusAtMinutes: hours => ({state: closed.includes(hours) ? 'closed' : 'unknown'})}};
+  const window = {dispatchEvent() {}, TravelMateOpeningHours: {statusAtMinutes: hours => ({state: closed.includes(hours) ? 'closed' : unknown.includes(hours) ? 'unknown' : 'open'})}};
   vm.runInNewContext(read('assets/trip-context.js'), {window, Date});
   window.TravelMateTripContext = {...window.TravelMateTripContext,
     estimateTravelMinutes: (from, to) => ({minutes: minutes[to.id] || 5, source: 'estimate'})};
@@ -133,4 +133,51 @@ test('unknown onward travel keeps a fixed-window warning instead of claiming an 
  assert.equal(card.dataset.contextualTimeFit,'yellow');
  assert.match(reasonText,/זמן הביקור לא אומת בחלון של 90 דק׳/);
  assert.doesNotMatch(reasonText,/ללא מגבלת זמן קבועה/);
+});
+
+test('unknown opening hours are advisory uncertainty and retain all places', async () => {
+ const {window,results}=harness({unknown:['0']});
+ const found=await window.TravelMateNearbyTest.applyContextualResults(results,places(2),request());
+ assert.equal(found.length,2);assert.equal(results.dataset.contextualYellowCount,'1');assert.equal(results.dataset.contextualGreenCount,'1');
+ const classify=window.TravelMateTripContext.classifyNearbyTimeFit;
+ assert.equal(classify({availableMinutes:60,outboundMinutes:5,openingState:'unknown'}).status,'yellow');
+ assert.equal(classify({availableMinutes:20,outboundMinutes:5,openingState:'unknown'}).status,'red');
+});
+test('late aborted guidance cannot overwrite the newer search canonical result list', async () => {
+ const source=read('assets/nearby.js'),start=source.indexOf('    async function searchAt('),end=source.indexOf('    async function executeGpsSearch',start);
+ let finishOld;const oldGate=new Promise(resolve=>{finishOld=resolve;});
+ const oldPlaces=[{id:'old'}],newPlaces=[{id:'new'}];
+ const sandbox={searchSequence:0,currentSearchController:null,AbortController,gpsButton:{},mapSearch:{},
+ controls:{executeButton:{},resetResults:{}},placeNameSearchInput:{value:''},status:{classList:{remove(){},add(){}},textContent:''},
+ results:{dataset:{contextualGreenCount:'1',contextualYellowCount:'0',contextualRedCount:'0'},dispatchEvent(){}},
+ panel:{dataset:{},querySelector:()=>({value:'1000',checked:false})},selectedCategoryKeys:[],searchLocationContext:{type:'destination'},window:{},
+ queryFor:(_,__,lat)=>lat,overpassPlaces:async lat=>({lat}),normalizeCategoryKeys:x=>x,
+ renderPlaces:data=>data.lat===1?oldPlaces:newPlaces,
+ applyContextualResults:async(_,items)=>{if(items===oldPlaces)await oldGate;return items;},
+ renderMapMarkers(){},selectedPoint:null,isAbortError:error=>error.name==='AbortError',CustomEvent:class {}};
+ vm.runInNewContext(source.slice(start,end),sandbox);
+ const old=sandbox.searchAt(1,34,5,request());await new Promise(resolve=>setImmediate(resolve));
+ await sandbox.searchAt(2,34,5,request());assert.equal(sandbox.currentPlaces,newPlaces);
+ finishOld();await old;assert.equal(sandbox.currentPlaces,newPlaces);
+});
+test('GPS result arriving after a newer map search is ignored', async () => {
+ const source=read('assets/nearby.js'),start=source.indexOf('    async function executeGpsSearch'),end=source.indexOf('    async function executePlacesSearch',start);
+ let resolveGps,searches=0;const sandbox={gpsRequestPending:false,searchSequence:1,requestGpsConsent:async()=> 'once',
+ panel:{dataset:{}},status:{classList:{remove(){},add(){}},textContent:''},gpsButton:{setAttribute(){},removeAttribute(){}},controls:{executeButton:{}},results:{},
+ currentPosition:()=>new Promise(resolve=>{resolveGps=resolve;}),navigator:{onLine:true},map:null,searchAt:async()=>{searches++;}};
+ vm.runInNewContext(source.slice(start,end),sandbox);
+ const pending=sandbox.executeGpsSearch();await new Promise(resolve=>setImmediate(resolve));sandbox.searchSequence++;
+ resolveGps({coords:{latitude:32,longitude:34,accuracy:5}});await pending;
+ assert.equal(searches,0);assert.equal(sandbox.gpsRequestPending,false);
+});
+
+test('GPS rejection arriving after a newer map search is ignored', async () => {
+ const source=read('assets/nearby.js'),start=source.indexOf('    async function executeGpsSearch'),end=source.indexOf('    async function executePlacesSearch',start);
+ let rejectGps,searches=0;const sandbox={gpsRequestPending:false,searchSequence:1,requestGpsConsent:async()=> 'once',
+ panel:{dataset:{}},status:{classList:{remove(){},add(){}},textContent:''},gpsButton:{setAttribute(){},removeAttribute(){}},controls:{executeButton:{}},results:{},
+ currentPosition:()=>new Promise((_,reject)=>{rejectGps=reject;}),navigator:{onLine:true},map:null,searchAt:async()=>{searches++;}};
+ vm.runInNewContext(source.slice(start,end),sandbox);
+ const pending=sandbox.executeGpsSearch();await new Promise(resolve=>setImmediate(resolve));sandbox.searchSequence++;
+ sandbox.status.textContent="New map results";rejectGps(new Error("Old GPS denied"));await pending;
+ assert.equal(sandbox.status.textContent,"New map results");assert.equal(searches,0);assert.equal(sandbox.gpsRequestPending,false);
 });
