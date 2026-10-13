@@ -8,7 +8,7 @@ const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8').replaceA
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b});return{promise,resolve,reject};}
 function gpsHarness(){
   const consent=deferred(),status={classList:{remove(){},add(){}},textContent:''};
-  const context={gpsRequestPending:false,gpsButton:{setAttribute(){},removeAttribute(){}},controls:{executeButton:{}},status,results:{},navigator:{onLine:true},panel:{dataset:{}},map:null,lastGps:null,lastPoint:null,searchLocationContext:null,calls:0,searches:0,
+  const context={searchSequence:0,gpsRequestPending:false,gpsButton:{setAttribute(){},removeAttribute(){}},controls:{executeButton:{}},status,results:{},navigator:{onLine:true},panel:{dataset:{}},map:null,lastGps:null,lastPoint:null,searchLocationContext:null,calls:0,searches:0,
     requestGpsConsent:()=>consent.promise,currentPosition:async()=>{context.calls++;return{coords:{latitude:32.1,longitude:34.8,accuracy:15}}},searchAt:async()=>{context.searches++;}};
   const source=read('assets/nearby.js').split(String.fromCharCode(10)).find(line=>line.includes('async function executeGpsSearch()'));
   vm.runInNewContext(source+'; run=executeGpsSearch;',context);return{context,consent};
