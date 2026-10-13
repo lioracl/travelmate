@@ -296,17 +296,26 @@ function buildMiniRoute(places,request,travelLookup){
   for(var count=target;count>=2;count-=1){var best=bestFor(count);if(!best)continue;return Object.freeze({stops:Object.freeze(best.sequence.map(function(place,index){return Object.freeze({place:place,travelMinutes:best.legs[index],visitMinutes:best.visitMinutes})})),onwardMinutes:best.onwardMinutes,totalTravelMinutes:best.totalTravelMinutes,totalVisitMinutes:best.visitMinutes*count,totalEstimatedMinutes:best.totalEstimatedMinutes,availableMinutes:available,requestedStops:target,source:best.live?'live':'estimate'})}
   return null
 }
+
+function classifyNearbyTimeFit(options){
+  options=options||{};
+  var available=options.availableMinutes===null||options.availableMinutes===undefined?null:Number(options.availableMinutes),outbound=Number(options.outboundMinutes),onward=Number(options.onwardMinutes||0),known=options.travelKnown!==false&&Number.isFinite(outbound)&&outbound>=0&&Number.isFinite(onward)&&onward>=0;
+  var usable=available!==null&&Number.isFinite(available)&&known?Math.max(0,available-outbound-onward):null;
+  var status=options.openingState==='closed'?'red':!known?'yellow':usable===null?'green':usable<30?'red':usable<45?'yellow':'green';
+  return Object.freeze({status:status,usableMinutes:usable,constrained:available!==null&&Number.isFinite(available),travelKnown:known})
+}
 function buildNearbyRequest(options){
   options=options||{};var position=options.position||{},lat=Number(position.lat),lon=Number(position.lon);
   if(!Number.isFinite(lat)||!Number.isFinite(lon))return null;
   var now=options.now instanceof Date?options.now:new Date(options.now||Date.now()),trip=options.trip||null,miniRoute=Boolean(options.miniRoute),routeStops=miniRoute?Math.min(3,Math.max(2,Math.round(Number(options.routeStops||3)))):0;
-  var untilFixed=availableMinutesUntilNextFixed(trip,now,options.bufferMinutes),available=Number.isFinite(Number(options.availableMinutes))?Number(options.availableMinutes):untilFixed;
+  var untilFixed=availableMinutesUntilNextFixed(trip,now,options.bufferMinutes),available=options.availableMinutes!==null&&options.availableMinutes!==undefined&&options.availableMinutes!==''&&Number.isFinite(Number(options.availableMinutes))?Number(options.availableMinutes):untilFixed;
   if(untilFixed!==null&&Number.isFinite(Number(untilFixed))&&Number.isFinite(Number(available)))available=Math.min(Number(available),Number(untilFixed));
   return Object.freeze({
     userInvoked:true,
     lat:lat,
     lon:lon,
     requestedAt:now.toISOString(),
+    timeFit:miniRoute||options.timeFit!==false,
     availableMinutes:available,
     mood:String(options.mood||'').trim(),
     categories:Array.isArray(options.categories)?options.categories.slice():[],
@@ -340,6 +349,7 @@ window.TravelMateTripContext=Object.freeze({
   nearbyPreferencePreset:nearbyPreferencePreset,
   requestedMiniRouteStops:requestedMiniRouteStops,
   parseMateNearbyIntent:parseMateNearbyIntent,
+  classifyNearbyTimeFit:classifyNearbyTimeFit,
   buildNearbyRequest:buildNearbyRequest,
   buildMiniRoute:buildMiniRoute
 })
