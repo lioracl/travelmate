@@ -152,7 +152,7 @@ function freeTimeWindowsForDate(trip,date,options){
     var start=minutes(entry.record.time),mode=scheduleMode(entry.record);
     return{kind:entry.kind,record:entry.record,start:start,end:start===null?null:start+Math.max(0,Number(entry.record.duration||60)),mode:mode}
   }).filter(function(entry){
-    return entry.start!==null&&entry.mode!=='flexible'&&entry.mode!=='window'
+    return entry.record.done!==true&&entry.start!==null&&entry.mode!=='flexible'&&entry.mode!=='window'
   }).sort(function(a,b){return a.start-b.start});
   var windows=[],cursor=dayStart,previous=null;
   entries.forEach(function(entry){
@@ -195,7 +195,7 @@ function nextFixedActivity(trip,now){
     var start=minutes(entry.record.time);
     return{kind:entry.kind,record:entry.record,start:start}
   }).filter(function(entry){
-    return scheduleMode(entry.record)==='fixed'&&entry.start!==null&&entry.start>=current
+    return entry.record.done!==true&&scheduleMode(entry.record)==='fixed'&&entry.start!==null&&entry.start>=current
   }).sort(function(a,b){return a.start-b.start})[0]||null
 }
 function availableMinutesUntilNextFixed(trip,now,bufferMinutes){
