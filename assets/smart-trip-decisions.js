@@ -62,12 +62,13 @@
     if (nextFixed) {
       var route = options.routingById && options.routingById[String(nextFixed.record.id)] || null;
       var routeMinutes = finite(route && route.minutes);
+      if (routeMinutes !== null && routeMinutes < 0) routeMinutes = null;
       var buffer = Math.max(0, finite(nextFixed.record.arrivalBufferMinutes) === null ? 10 : finite(nextFixed.record.arrivalBufferMinutes));
-      if (routeMinutes !== null && routeMinutes > 0 && nextFixed.start - current < routeMinutes + buffer) {
+      if (routeMinutes !== null && routeMinutes >= 0 && nextFixed.start - current < routeMinutes + buffer) {
         add('late:' + String(nextFixed.record.id), 95, 'ייתכן איחור להתחייבות הקרובה', 'נשארו ' + Math.max(0, nextFixed.start - current) + ' דקות, לעומת ' + Math.round(routeMinutes + buffer) + ' דקות למעבר ולמרווח הגעה.', 'routing:' + String(route.source || 'estimate'), route.source === 'live' ? 'high' : 'medium', { type: 'open-plan', href: '#plan' }, nextFixed.record.id);
       }
-      if (options.offline === true && routeMinutes === null) {
-        add('routing-unknown:' + String(nextFixed.record.id), 50, 'זמן ההגעה אינו ידוע כרגע', 'אין מסלול זמין במצב לא מקוון. לא ניתן לקבוע אם תספיק בזמן.', 'device:offline-no-route', 'low', { type: 'open-plan', href: '#plan' }, nextFixed.record.id);
+      if (routeMinutes === null) {
+        add('routing-unknown:' + String(nextFixed.record.id), 50, 'זמן ההגעה אינו ידוע כרגע', (options.offline === true ? 'אין מסלול זמין במצב לא מקוון. ' : 'זמן הדרך לא אומת. ') + 'לא ניתן לקבוע אם תספיק בזמן.', options.offline === true ? 'device:offline-no-route' : 'routing:unknown', 'low', { type: 'open-plan', href: '#plan' }, nextFixed.record.id);
       }
     }
     var opening = options.openingById || {};
@@ -104,19 +105,21 @@
     var top = Object.freeze(findings.slice(0, 3));
     return Object.freeze({ date: date, recommendations: top, alternatives: Object.freeze(top.map(function (item) { return item.action; })) });
   }
+  function scheduleFingerprint(trip) { return JSON.stringify([trip.activities || [], trip.savedPlaces || []]); }
   function ensureTrip(trip, token) {
     if (!trip || String(trip.id) !== String(token.tripId) || String(trip.ownerId || '') !== String(token.ownerId || '')) throw new Error('SMART_TRIP_ACCOUNT_OR_TRIP_CHANGED');
   }
   function activity(trip, id) {
-    return (trip.activities || []).find(function (item) { return item && String(item.id) === String(id); }) || null;
+    var matches = (trip.activities || []).filter(function (item) { return item && String(item.id) === String(id); });
+    return matches.length === 1 ? matches[0] : null;
   }
   function previewMove(trip, activityId, newTime, options) {
     options = options || {};
     if (!trip || !trip.id || (trip.ownerId && String(options.ownerId || '') !== String(trip.ownerId))) throw new Error('SMART_TRIP_ACCOUNT_OR_TRIP_CHANGED');
     var record = activity(trip, activityId);
-    if (!record || record.done === true || mode(record, options.context) === 'fixed') throw new Error('SMART_TRIP_ACTIVITY_NOT_MOVABLE');
+    if (!record || record.done === true || /^(fixed|window)$/.test(mode(record, options.context))) throw new Error('SMART_TRIP_ACTIVITY_NOT_MOVABLE');
     if (minute(newTime) === null || minute(record.time) === null || String(newTime) === String(record.time)) throw new Error('SMART_TRIP_INVALID_TIME');
-    return Object.freeze({ state: 'preview', tripId: String(trip.id), ownerId: String(trip.ownerId || ''), activityId: String(activityId), oldTime: String(record.time), newTime: String(newTime), fingerprint: JSON.stringify(record) });
+    return Object.freeze({ state: 'preview', tripId: String(trip.id), ownerId: String(trip.ownerId || ''), activityId: String(activityId), oldTime: String(record.time), newTime: String(newTime), fingerprint: JSON.stringify(record), scheduleFingerprint: scheduleFingerprint(trip) });
   }
   function confirmMove(preview) {
     if (!preview || preview.state !== 'preview') throw new Error('SMART_TRIP_CONFIRM_REQUIRED');
@@ -126,16 +129,16 @@
     if (!confirmed || confirmed.state !== 'confirmed') throw new Error('SMART_TRIP_CONFIRM_REQUIRED');
     ensureTrip(trip, confirmed);
     var record = activity(trip, confirmed.activityId);
-    if (!record || JSON.stringify(record) !== confirmed.fingerprint || mode(record) === 'fixed') throw new Error('SMART_TRIP_STALE_PREVIEW');
+    if (scheduleFingerprint(trip) !== confirmed.scheduleFingerprint || !record || JSON.stringify(record) !== confirmed.fingerprint || mode(record) === 'fixed') throw new Error('SMART_TRIP_STALE_PREVIEW');
     var updated = Object.assign({}, record, { time: confirmed.newTime });
     var next = Object.assign({}, trip, { activities: trip.activities.map(function (item) { return item === record ? updated : item; }) });
-    return Object.freeze({ state: 'applied', trip: next, undoToken: Object.freeze({ state: 'undoable', tripId: confirmed.tripId, ownerId: confirmed.ownerId, activityId: confirmed.activityId, oldTime: confirmed.oldTime, newTime: confirmed.newTime, fingerprint: JSON.stringify(updated) }) });
+    return Object.freeze({ state: 'applied', trip: next, undoToken: Object.freeze({ state: 'undoable', tripId: confirmed.tripId, ownerId: confirmed.ownerId, activityId: confirmed.activityId, oldTime: confirmed.oldTime, newTime: confirmed.newTime, fingerprint: JSON.stringify(updated), scheduleFingerprint: scheduleFingerprint(next) }) });
   }
   function undoMove(trip, token) {
     if (!token || token.state !== 'undoable') throw new Error('SMART_TRIP_UNDO_UNAVAILABLE');
     ensureTrip(trip, token);
     var record = activity(trip, token.activityId);
-    if (!record || JSON.stringify(record) !== token.fingerprint) throw new Error('SMART_TRIP_UNDO_CONFLICT');
+    if (scheduleFingerprint(trip) !== token.scheduleFingerprint || !record || JSON.stringify(record) !== token.fingerprint) throw new Error('SMART_TRIP_UNDO_CONFLICT');
     var restored = Object.assign({}, record, { time: token.oldTime });
     return Object.freeze({ state: 'undone', trip: Object.assign({}, trip, { activities: trip.activities.map(function (item) { return item === record ? restored : item; }) }) });
   }

@@ -24,11 +24,11 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   var dynamicSectionViews={transport:true,getaways:true,group:true,memories:true};
   var features={
     overview:{styles:['weather-widget.css','trip-intelligence.css'],scripts:['weather-widget.js']},
-    intelligence:{styles:['smart-trip-mode.css'],scripts:['trip-context.js','learned-preferences.js','learned-profile.js','personalized-suggestions.js','smart-trip-mode.js','trip-intelligence.js']},
+    intelligence:{styles:['smart-trip-mode.css'],scripts:['trip-context.js','learned-preferences.js','learned-profile.js','personalized-suggestions.js','smart-trip-decisions.js','smart-trip-mode.js','smart-trip-actions.js','trip-intelligence.js']},
     assistant:{styles:['smart-hub.css'],scripts:['trip-context.js','ai-assistant.js','smart-hub.js']},
     account:{styles:['profile-wizard.css','security-center.css','admin-center.css'],scripts:['learned-preferences.js','learned-profile.js','learned-profile-ui.js','profile-wizard.js','security-center.js','admin-center.js']},
     places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['trip-context.js','learned-preferences.js','learned-profile.js','personalized-suggestions.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
-    plan:{styles:['auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','plan-ux-polish.css','free-time-finder.css'],scripts:['trip-context.js','auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js','plan-ux-polish.js','free-time-finder.js']},
+    plan:{styles:['smart-trip-mode.css','auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','plan-ux-polish.css','free-time-finder.css'],scripts:['trip-context.js','auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js','plan-ux-polish.js','free-time-finder.js','smart-trip-decisions.js','smart-trip-mode.js','smart-trip-actions.js']},
     documents:{styles:['document-vault.css'],scripts:['document-vault.js']},
     budget:{styles:['trip-experience.css'],scripts:['trip-experience.js']},
     memories:{styles:['trip-experience.css','trip-replay.css'],scripts:['trip-context.js','trip-analytics.js','trip-experience.js','trip-replay.js']},

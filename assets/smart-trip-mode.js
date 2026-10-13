@@ -127,6 +127,7 @@
   function escapeHtml(value){return String(value||'').replace(/[&<>"']/g,function(character){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]})}
   function render(card,suggestion){
     if(!card||!suggestion)return;
+    if(card.dataset.smartDecisionActive!==undefined&&card.contains(win.document.activeElement))return;
     card.dataset.profileReason=suggestion.profileReason||'';card.dataset.smartTripKind=suggestion.kind;card.dataset.smartTripSignature=suggestion.signature;
     var dismissed='';try{dismissed=win.sessionStorage.getItem('travelmate-smart-trip-dismiss:'+String(currentTrip()&&currentTrip().id||''))||''}catch(error){}
     if(dismissed===suggestion.signature){card.hidden=true;return}

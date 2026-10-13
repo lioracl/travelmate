@@ -1,0 +1,26 @@
+const {test,expect}=require('@playwright/test');
+for(const width of [360,390,430])for(const theme of ['light','dark'])test(width+' RTL '+theme+' preview confirm apply bounded undo offline and keyboard',async({page,context})=>{
+ await page.setViewportSize({width,height:568});await page.clock.setFixedTime(new Date('2026-10-13T09:00:00Z'));
+ let searches=0;await page.route('**/*',route=>{const url=new URL(route.request().url());if(url.hostname==='127.0.0.1')return route.continue();if(/overpass|nominatim/.test(url.hostname))searches++;return route.abort();});
+ await page.addInitScript(theme=>{localStorage.setItem('travelmate-theme',theme);localStorage.setItem('travelmate-trips',JSON.stringify([{id:'decision-qa',city:'QA',country:'Italy',start:'2026-10-13',end:'2026-10-15',days:3,type:'סולו',planInitialized:true,expenses:[],savedPlaces:[],activities:[{id:'flex',title:'גמיש',date:'2026-10-13',time:'15:00',duration:30,scheduleMode:'flexible'},{id:'fixed',title:'קבוע',date:'2026-10-13',time:'18:00',duration:60,scheduleMode:'fixed'}]}]));window.gpsCalls=0;Object.defineProperty(navigator,'geolocation',{value:{getCurrentPosition(){window.gpsCalls++;throw Error('Automatic GPS');}}});},theme);
+ await page.goto('/trip/custom/index.html?id=decision-qa&view=plan',{waitUntil:'domcontentloaded'});
+ const check=page.locator('[data-smart-check]');await expect(check).toBeVisible();await check.click();
+ const panel=page.locator('[data-smart-decisions]');await expect(panel).toBeVisible();
+ await expect(panel.locator('select')).toBeFocused();expect(await panel.locator('select option').count()).toBe(1);
+ const read=()=>page.evaluate(()=>JSON.stringify(TravelMateTripStore.getTrip('decision-qa')));
+ const before=await read();await panel.locator('input[type=time]').fill('16:00');await page.evaluate(()=>dispatchEvent(new Event('travelmate:weather-context-change')));await expect(panel.locator('input[type=time]')).toHaveValue('16:00');
+ await panel.getByRole('button',{name:'תצוגה מקדימה',exact:true}).press('Enter');expect(await read()).toBe(before);
+ const confirm=panel.locator('[data-smart-step=confirm]');await expect(confirm).toBeFocused();await confirm.press('Enter');expect(await read()).toBe(before);
+ await expect(panel.locator('[data-smart-step=apply]')).toBeFocused();await context.setOffline(true);await panel.locator('[data-smart-step=apply]').press('Enter');
+ expect(await page.evaluate(()=>TravelMateTripStore.getTrip('decision-qa').activities[0].time)).toBe('16:00');
+ await expect(panel.locator('[data-smart-step=undo]')).toBeFocused();await panel.locator('[data-smart-step=undo]').press('Enter');
+ expect(await page.evaluate(()=>TravelMateTripStore.getTrip('decision-qa').activities.map(x=>x.time))).toEqual(['15:00','18:00']);
+ expect(await page.evaluate(()=>window.gpsCalls)).toBe(0);expect(searches).toBe(0);
+ await expect(page.locator('html')).toHaveAttribute('dir','rtl');await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
+ await panel.locator('input[type=time]').fill('17:00');await panel.getByRole('button',{name:'תצוגה מקדימה',exact:true}).click();await panel.locator('[data-smart-step=confirm]').click();
+ await page.evaluate(()=>{const trip=TravelMateTripStore.getTrip('decision-qa');trip.activities[1].time='17:15';TravelMateTripStore.saveTrip(trip);});
+ await panel.locator('[data-smart-step=apply]').click();await expect(panel.locator('[data-smart-status]')).toContainText('הפעולה לא נשמרה');
+ expect(await page.evaluate(()=>TravelMateTripStore.getTrip('decision-qa').activities.map(x=>x.time))).toEqual(['15:00','17:15']);
+ await check.click();await expect(panel).toBeHidden();
+});
