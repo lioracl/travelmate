@@ -122,3 +122,15 @@ test('aborted guidance cannot alter the current rendered result set', async () =
   const found = await window.TravelMateNearbyTest.applyContextualResults(results, input, request(), {aborted: true});
   assert.equal(found, input); assert.deepEqual(results.dataset, {});
 });
+
+test('unknown onward travel keeps a fixed-window warning instead of claiming an unconstrained day', async () => {
+ const {window,results}=harness();
+ window.TravelMateTripContext.estimateTravelMinutes=(from,to)=>to.id==='next'?null:{minutes:5,source:'estimate'};
+ let reasonText='';
+ const card={dataset:{placeId:'0'},querySelector:selector=>selector==='.tm-place-card__content'?{appendChild(node){reasonText=node.textContent;}}:null};
+ results.querySelectorAll=()=>[card];
+ await window.TravelMateNearbyTest.applyContextualResults(results,places(1),request({nextFixedActivity:{record:{id:'next'}}}));
+ assert.equal(card.dataset.contextualTimeFit,'yellow');
+ assert.match(reasonText,/זמן הביקור לא אומת בחלון של 90 דק׳/);
+ assert.doesNotMatch(reasonText,/ללא מגבלת זמן קבועה/);
+});
