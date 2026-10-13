@@ -58,7 +58,7 @@ test('Places preserves opening-hours data but only makes open-close claims in co
   assert.match(nearby,/async function applyContextualResults/);assert.match(nearby,/routing\.matrix\(points,\{mode:'walk',signal:searchSignal\}\)/);
   assert.match(nearby,/statusAtMinutes\(seed\.place\.openingHours,requested,Number\(outbound\.minutes\|\|0\)\)/);assert.match(nearby,/openingState:openingStatus\.state/);assert.match(context,/options\.openingState==='closed'\?'red'/);
   assert.match(nearby,/var allLive=assessed\.length>0&&assessed\.every/);assert.match(nearby,/contextualRouting=allLive\?'live':'estimate'/);
-  assert.match(nearby,/currentPlaces=await applyContextualResults[\s\S]*if\(requestId!==searchSequence\|\|searchSignal\.aborted\)return/);
+  assert.match(nearby,/var guidedPlaces=await applyContextualResults[\s\S]*if\(requestId!==searchSequence\|\|searchSignal\.aborted\)return;currentPlaces=guidedPlaces/);
   assert.match(context,/function buildMiniRoute\(places,request,travelLookup\)/);assert.match(context,/source:best\.live\?'live':'estimate'/);
 });
 
