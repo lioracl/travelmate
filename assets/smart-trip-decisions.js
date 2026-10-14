@@ -112,9 +112,76 @@
       var available = windows.find(function (window) { return finite(window.durationMinutes) !== null && window.durationMinutes >= 45; });
       if (available) add('free:' + String(available.startTime), 40, 'נפתח חלון זמן פנוי', 'יש כ־' + Math.round(available.durationMinutes) + ' דקות פנויות לפי התוכנית. אפשר לחפש מקום בלי להפעיל מסנן זמן.', 'trip:planned-window', 'medium', { type: 'open-places', href: '#places' }, '');
     }
+    var alternatives = [], alternativeSeen = {};
+    function movable(entry) { return entry && entry.kind === 'activity' && entry.record.done !== true && entry.start >= current && !/^(fixed|window)$/.test(entry.scheduleMode); }
+    function cloneWithTime(entry, newTime) {
+      return Object.assign({}, trip, { activities: (trip.activities || []).map(function (record) { return record === entry.record ? Object.assign({}, record, { time: newTime }) : record; }) });
+    }
+    function riskMap(candidate) {
+      var map = {};
+      if (!context || typeof context.transitionAssessmentsForDate !== 'function') return map;
+      var source = context.transitionAssessmentsForDate(candidate, date, { bufferMinutes: 10 }) || {};
+      Object.keys(source).forEach(function (key) { if (source[key] && source[key].risk) map[key] = true; });
+      return map;
+    }
+    var baselineRisks = riskMap(trip);
+    function collides(entry, newStart) {
+      var duration = Math.max(1, finite(entry.record.duration) === null ? 60 : finite(entry.record.duration));
+      var newEnd = newStart + duration;
+      return entries.some(function (other) {
+        if (other === entry) return false;
+        var otherDuration = Math.max(1, finite(other.record.duration) === null ? 60 : finite(other.record.duration));
+        return newStart < other.start + otherDuration && newEnd > other.start;
+      });
+    }
+    function verifiedMove(entry, newStart, targetRiskKey) {
+      if (!movable(entry) || !Number.isFinite(newStart) || newStart < current || newStart >= 1440 || collides(entry, newStart)) return null;
+      var duration = Math.max(1, finite(entry.record.duration) === null ? 60 : finite(entry.record.duration));
+      if (newStart + duration > 1440) return null;
+      var newTime = clock(newStart);
+      if (newTime === String(entry.record.time || '')) return null;
+      var candidate = cloneWithTime(entry, newTime), after = riskMap(candidate);
+      if (targetRiskKey && after[targetRiskKey]) return null;
+      if (Object.keys(after).some(function (key) { return !baselineRisks[key]; })) return null;
+      return newTime;
+    }
+    function offer(entry, newStart, reason, provenance, confidence, targetRiskKey) {
+      if (alternatives.length >= 3) return;
+      var newTime = verifiedMove(entry, newStart, targetRiskKey), key;
+      if (!newTime) return;
+      key = 'move:' + String(entry.record.id) + ':' + newTime;
+      if (alternativeSeen[key]) return;
+      alternativeSeen[key] = true;
+      alternatives.push(Object.freeze({ key: key, kind: 'move-activity', activityId: String(entry.record.id), title: String(entry.record.title || entry.record.name || 'פעילות'), oldTime: String(entry.record.time), newTime: newTime, reason: reason, provenance: provenance, confidence: confidence, advisory: true }));
+    }
+    if (context && typeof context.transitionAssessmentsForDate === 'function') {
+      var alternativeAssessments = context.transitionAssessmentsForDate(trip, date, { bufferMinutes: 10 }) || {};
+      findings.filter(function (finding) { return finding.key.indexOf('transition:activity:') === 0; }).forEach(function (finding) {
+        var transitionKey = finding.key.slice('transition:'.length), evidence = alternativeAssessments[transitionKey], liveEvidence = typeof liveTransitions === 'object' && liveTransitions && liveTransitions[transitionKey];
+        if (liveEvidence && String(liveEvidence.date || '') === date && liveEvidence.source === 'live') evidence = liveEvidence;
+        if (!evidence || !evidence.risk) return;
+        var entry = entries.find(function (candidate) { return candidate.kind + ':' + String(candidate.record.id) === transitionKey; });
+        var shortfall = Math.max(0, finite(evidence.shortfallMinutes) || 0), shift = Math.max(5, Math.ceil(shortfall / 5) * 5);
+        if (entry) offer(entry, entry.start + shift, 'דחייה של ' + shift + ' דקות מפנה את מרווח המעבר החסר לפי הנתונים הזמינים.', finding.provenance, finding.confidence, transitionKey);
+      });
+    }
+    (Array.isArray(windows) ? windows : []).forEach(function (window) {
+      if (alternatives.length >= 3) return;
+      var windowStart = minute(window.startTime), windowDuration = finite(window.durationMinutes), windowEnd = minute(window.endTime);
+      if (windowStart === null) return;
+      if (windowEnd === null && windowDuration !== null) windowEnd = windowStart + windowDuration;
+      if (windowEnd === null) return;
+      entries.filter(movable).forEach(function (entry) {
+        if (alternatives.length >= 3) return;
+        var duration = Math.max(1, finite(entry.record.duration) === null ? 60 : finite(entry.record.duration));
+        var candidateStart = Math.max(windowStart, Math.ceil((current + 15) / 5) * 5);
+        if (candidateStart + duration > windowEnd || Math.abs(candidateStart - entry.start) < 15) return;
+        offer(entry, candidateStart, 'הפעילות יכולה לעבור לחלון פנוי בתוכנית בלי ליצור סיכון מעבר חדש. מזג האוויר ושעות הפתיחה לשעה החדשה עדיין דורשים אימות.', 'trip:planned-window', 'medium', '');
+      });
+    });
     findings.sort(function (a, b) { return b.priority - a.priority || a.key.localeCompare(b.key); });
     var top = Object.freeze(findings.slice(0, 3));
-    return Object.freeze({ date: date, recommendations: top, alternatives: Object.freeze(top.map(function (item) { return item.action; })) });
+    return Object.freeze({ date: date, recommendations: top, alternatives: Object.freeze(alternatives.slice(0, 3)) });
   }
   function scheduleFingerprint(trip) { return JSON.stringify([trip.activities || [], trip.savedPlaces || []]); }
   function ensureTrip(trip, token) {

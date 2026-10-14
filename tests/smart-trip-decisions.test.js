@@ -90,7 +90,9 @@ test('free time offers Places without time filtering, GPS, or changing the trip'
   const context = { freeTimeWindowsForDate() { return [{ startTime: '12:00', durationMinutes: 90 }]; } };
   const result = evaluate(value, { context });
   assert.equal(result.recommendations[0].key, 'free:12:00');
-  assert.deepEqual(result.alternatives[0], { type: 'open-places', href: '#places' });
+  assert.equal(result.alternatives[0].kind, 'move-activity');
+  assert.equal(result.alternatives[0].activityId, 'flex');
+  assert.equal(result.alternatives[0].newTime, '12:15');
   assert.equal(value.activities[0].time, '15:00');
 });
 
@@ -176,4 +178,43 @@ test('activity-hour weather wins over current conditions', () => {
   assert.equal(warning.provenance, 'weather:Open-Meteo:hourly');assert.equal(warning.confidence, 'medium');
   const futureWithoutHourly = evaluate(value, { weather: { ready: true, weatherCode: 61, source: 'Open-Meteo' } });
   assert.ok(!keys(futureWithoutHourly).includes('weather:park'));
+});
+
+
+test('transition-risk alternative is a real verified itinerary move and never mutates input', () => {
+  const value = trip([item('a', '12:00', 'fixed', {duration:60}), item('b', '13:10', 'planned', {duration:30})]);
+  const context = {
+    scheduleMode(record) { return record.scheduleMode || 'planned'; },
+    transitionAssessmentsForDate(candidate) {
+      const target = candidate.activities.find(record => record.id === 'b');
+      const risk = target.time === '13:10';
+      return {'activity:b': {date, risk, shortfallMinutes:risk ? 20 : 0, source:'estimate'}};
+    }
+  };
+  const before = JSON.stringify(value), result = evaluate(value, {context});
+  const alternative = result.alternatives.find(entry => entry.activityId === 'b');
+  assert.equal(JSON.stringify(value), before);
+  assert.equal(alternative.kind, 'move-activity');
+  assert.equal(alternative.oldTime, '13:10');
+  assert.equal(alternative.newTime, '13:30');
+  assert.match(alternative.reason, /20/);
+  assert.equal(alternative.provenance, 'routing:estimate');
+  assert.equal(alternative.confidence, 'medium');
+  assert.ok(Object.isFrozen(result.alternatives));
+});
+
+test('real alternatives never move fixed window completed or past activities and stay capped at three', () => {
+  const value = trip([
+    item('past', '11:00', 'flexible'),
+    item('fixed', '14:00', 'fixed'),
+    item('window', '15:00', 'window'),
+    item('done', '16:00', 'flexible', {done:true}),
+    item('flex1', '17:00', 'flexible', {duration:30}),
+    item('flex2', '18:00', 'flexible', {duration:30})
+  ]);
+  const context = {freeTimeWindowsForDate() { return [{startTime:'12:30', endTime:'13:45', durationMinutes:75}, {startTime:'19:00', endTime:'21:00', durationMinutes:120}]; }};
+  const result = evaluate(value, {context});
+  assert.ok(result.alternatives.length <= 3);
+  assert.ok(result.alternatives.every(entry => ['flex1','flex2'].includes(entry.activityId)));
+  assert.ok(result.alternatives.every(entry => entry.kind === 'move-activity' && entry.oldTime !== entry.newTime));
 });
