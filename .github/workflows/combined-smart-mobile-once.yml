@@ -1,0 +1,88 @@
+name: Combined Smart Trip and mobile UI QA once
+
+on:
+  push:
+    branches:
+      - integration/combined-smart-mobile-20261014
+
+permissions:
+  contents: write
+
+jobs:
+  combine-verify-commit:
+    if: "${{ github.event.head_commit.message == 'chore: combine Smart Trip and mobile UI for QA' }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: integration/combined-smart-mobile-20261014
+          fetch-depth: 0
+
+      - name: Guard exact Smart Trip parent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "integration/combined-smart-mobile-20261014"
+          test "$(git rev-parse HEAD^)" = "18728b9b5370edd6ce3e030478bf67be02f7de98"
+          git diff --quiet
+
+      - name: Merge exact mobile UI branch without committing
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin codex/mobile-core-ui-fixes-20261014
+          test "$(git rev-parse FETCH_HEAD)" = "b14bcd63dc1b35312610a2749baafd68f001eca4"
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' merge --no-commit --no-ff FETCH_HEAD
+          printf '%s\n' \
+            assets/ai-assistant.css \
+            assets/home-organizer.css \
+            assets/home.js \
+            assets/security-center.css \
+            tests/design-system-debt-contract.test.js \
+            tests/mobile-core-ui-fixes.test.js | sort > /tmp/expected.txt
+          git diff --cached --name-only | sort > /tmp/actual.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+          git diff --check
+
+      - name: Verify JavaScript syntax
+        run: |
+          node --check assets/home.js
+          find assets tools tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | xargs -0 -n1 node --check
+
+      - name: Focused mobile and Smart Trip contracts
+        run: node --test tests/mobile-core-ui-fixes.test.js tests/design-system-debt-contract.test.js tests/smart-trip-decisions.test.js tests/smart-trip-actions.test.js
+
+      - name: Full Node regression
+        run: node --test tests/*.test.js
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/travelmate-http.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/travelmate-http.log
+          exit 1
+
+      - name: Full Integration QA
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e --reporter=line
+
+      - name: Commit clean combined QA snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/combined-smart-mobile-once.yml
+          git commit -m "chore: verify combined Smart Trip and mobile UI"
+          git push origin HEAD:integration/combined-smart-mobile-20261014
