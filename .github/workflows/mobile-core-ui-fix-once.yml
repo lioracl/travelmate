@@ -1,4 +1,4 @@
-name: Mobile core UI fix once
+name: Mobile core UI diagnostic gate
 
 on:
   push:
@@ -6,29 +6,26 @@ on:
       - codex/mobile-core-ui-fixes-20261014
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply-fix:
-    if: "${{ github.event.head_commit.message == 'chore: repair mobile fix workflow' }}"
+  diagnose-node:
+    if: "${{ github.event.head_commit.message == 'chore: diagnose mobile node gate' }}"
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [base, patched]
     steps:
-      - name: Checkout isolated repair branch
+      - name: Checkout exact preview base
         uses: actions/checkout@v4
         with:
-          ref: codex/mobile-core-ui-fixes-20261014
-          fetch-depth: 3
+          ref: 32eadf7f1af38dd952e399868626057e8dc362fc
+          fetch-depth: 1
 
-      - name: Guard exact branch history
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$GITHUB_REF_NAME" = "codex/mobile-core-ui-fixes-20261014"
-          test "$(git rev-parse HEAD^)" = "c81464ccee25cb0fbf5253b2903fa10f27bcca6c"
-          test "$(git rev-parse HEAD^^)" = "32eadf7f1af38dd952e399868626057e8dc362fc"
-
-      - name: Apply surgical mobile UI fixes
+      - name: Apply surgical patch in workspace only
+        if: matrix.variant == 'patched'
         shell: bash
         run: |
           set -euo pipefail
@@ -132,30 +129,43 @@ jobs:
             }
           }
           `);
-
-          fs.writeFileSync('tests/mobile-core-ui-fixes.test.js', `const test = require('node:test');\nconst assert = require('node:assert/strict');\nconst fs = require('node:fs');\n\nfunction read(path){ return fs.readFileSync(path,'utf8'); }\n\ntest('All Trips date editor passes the clicked edit control',()=>{\n  const js=read('assets/home.js');\n  assert.match(js,/editTripDates\\(editTrip, editDates\\)/);\n  assert.doesNotMatch(js,/editTripDates\\(editTrip, editButton\\)/);\n});\n\ntest('Mate owns the full mobile visual viewport when open',()=>{\n  const css=read('assets/ai-assistant.css');\n  assert.match(css,/Mobile full-screen Mate contract — 2026-10-14/);\n  assert.match(css,/height:var\\(--ai-viewport-height,100dvh\\)/);\n  assert.match(css,/body\\.ai-assistant-open \\.ai-orb\\{display:none\\}/);\n});\n\ntest('mobile Settings has an opaque full-screen shell and safe-area padding',()=>{\n  const css=read('assets/security-center.css');\n  assert.match(css,/Mobile settings solid full-screen authority — 2026-10-14/);\n  assert.match(css,/min-height:100dvh/);\n  assert.match(css,/background:#dcebee/);\n  assert.match(css,/background:#10262b/);\n  assert.match(css,/env\\(safe-area-inset-top\\)/);\n});\n\ntest('All Trips mobile action targets meet 44px minimum',()=>{\n  const css=read('assets/home-organizer.css');\n  assert.match(css,/All Trips mobile action touch targets — 2026-10-14/);\n  assert.match(css,/min-height:44px/);\n});\n`);
           NODE
 
-      - name: Validate targeted repair
+      - name: Validate patch shape
+        if: matrix.variant == 'patched'
         shell: bash
         run: |
           set -euo pipefail
           node --check assets/home.js
-          node --test tests/mobile-core-ui-fixes.test.js
           git diff --check
 
-      - name: Run full Node regression
+      - name: Run full Node and capture only diagnostic evidence
+        id: nodegate
         shell: bash
         run: |
-          set -euo pipefail
-          node --test tests/*.test.js
+          set +e
+          node --test tests/*.test.js > node-full.log 2>&1
+          code=$?
+          set -e
+          {
+            echo "VARIANT=${{ matrix.variant }}"
+            echo "NODE_EXIT=$code"
+            echo "HEAD=$(git rev-parse HEAD)"
+            echo "--- likely failure lines ---"
+            grep -E "(^not ok|^# fail|AssertionError|ERR_ASSERTION|Error:|tests/.*\.test\.js|failed|failure)" node-full.log | tail -n 160 || true
+            echo "--- final 100 log lines ---"
+            tail -n 100 node-full.log || true
+          } | tee failure-summary.txt
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
 
-      - name: Commit verified fix
+      - name: Upload compact diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-node-${{ matrix.variant }}
+          path: failure-summary.txt
+          if-no-files-found: error
+          retention-days: 2
+
+      - name: Publish summary
         shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/home.js assets/ai-assistant.css assets/security-center.css assets/home-organizer.css tests/mobile-core-ui-fixes.test.js
-          git commit -m "fix: repair mobile Mate settings and trip dates"
-          git push origin HEAD:codex/mobile-core-ui-fixes-20261014
+        run: cat failure-summary.txt >> "$GITHUB_STEP_SUMMARY"
