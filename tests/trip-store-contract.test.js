@@ -55,11 +55,11 @@ test('high-risk feature writers no longer access travelmate-trips directly', () 
 
 test('migrated writers preserve feature ownership while delegating persistence', () => {
   const app = read('assets/app.js');
-  assert.match(app, /tripStore\.updateTrip\(trip\.id/);
-  assert.match(app, /TravelMateTripStore\.saveTrip\(trip\)/);
+  assert.match(app, /tripStore\.saveTripFields\(trip/);
+  assert.match(app, /store\.saveTripFields\(trip,baseline/);
 
   const planner = read('assets/auto-planner.js');
-  assert.match(planner, /store\.updateTrip\(trip\.id/);
+  assert.match(planner, /store\.saveTripFields\(trip,planBaseline/);
 
   const assistant = read('assets/ai-assistant.js');
   assert.match(assistant, /store\.saveTrip\(trip\)/);

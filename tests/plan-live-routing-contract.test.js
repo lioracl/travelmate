@@ -58,6 +58,7 @@ test('Live Plan routing is OTA-only, non-persistent and never requests device lo
   assert.match(app,/live-routing.js/);
   assert.match(polish,/travelmate:plan-live-routing/);
   assert.match(polish,/transition.source==='live'/);
-  assert.doesNotMatch(source,/geolocation|getCurrentPosition|watchPosition|saveTrip|updateTrip|localStorage|sessionStorage/);
+  assert.match(source,/localStorage\.getItem\('travelmate-active-user'\)/);
+  assert.doesNotMatch(source,/geolocation|getCurrentPosition|watchPosition|saveTrip|updateTrip|localStorage\.(?:setItem|removeItem|clear)|sessionStorage/);
   assert.equal(source.includes('setInterval('),false);
 });

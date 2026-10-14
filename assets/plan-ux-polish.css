@@ -94,7 +94,7 @@ body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-expanded .tm-plan-secon
 body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details{grid-column:2/-1;gap:7px;padding:10px 0 2px;border-top:1px solid var(--tm-card-border);color:var(--tm-card-secondary);font-size:12px}
 body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details p{display:flex;align-items:flex-start;gap:7px;margin:0}
 body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details nav{display:flex;flex-wrap:wrap;gap:7px}
-body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details a{min-height:38px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:1px solid var(--tm-card-control-border);border-radius:10px;background:var(--tm-card-control);color:var(--tm-card-link);font-weight:700;text-decoration:none}
+body.tm-new-design[data-trip-view="plan"] #plan .tm-plan-secondary-details :is(a,button){min-height:38px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:1px solid var(--tm-card-control-border);border-radius:10px;background:var(--tm-card-control);color:var(--tm-card-link);font-weight:700;text-decoration:none}
 
 body.tm-new-design[data-trip-view="plan"] #plan .saved-place.tm-plan-item{grid-template-columns:var(--tm-plan-image) minmax(0,1fr) auto;gap:10px;padding:10px 12px}
 body.tm-new-design[data-trip-view="plan"] #plan .saved-place.tm-plan-item>.saved-place-image{width:var(--tm-plan-image);height:72px;max-width:none;max-height:none;object-fit:cover;border-radius:12px}

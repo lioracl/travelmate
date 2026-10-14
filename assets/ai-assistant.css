@@ -84,3 +84,32 @@ body.tm-new-design .ai-orb-ring{animation:none}
 @media(max-width:600px){
   body.tm-new-design[data-trip-view]:not([data-trip-view="overview"]) .ai-orb{display:none}
 }
+
+/* Mobile full-screen Mate contract — 2026-10-14 */
+@media(max-width:600px){
+  html body.tm-new-design.ai-assistant-open .ai-panel,
+  html body.tm-new-design.ai-keyboard-open .ai-panel{
+    left:0;
+    right:0;
+    top:calc(var(--ai-viewport-top,0px) + var(--safe-area-inset-top,env(safe-area-inset-top)));
+    bottom:auto;
+    width:auto;
+    max-width:none;
+    background:#dcebee;
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+    height:calc(var(--ai-viewport-height,100dvh) - var(--safe-area-inset-top,env(safe-area-inset-top)));
+    max-height:calc(var(--ai-viewport-height,100dvh) - var(--safe-area-inset-top,env(safe-area-inset-top)));
+    border-radius:0;
+    transform-origin:center;
+  }
+  html[data-theme="dark"] body.ai-assistant-open .ai-panel,
+  html[data-theme="dark"] body.ai-keyboard-open .ai-panel{background:#10262b}
+  html body.ai-assistant-open .ai-orb{display:none}
+  html body.ai-assistant-open .ai-panel-header{
+    padding-top:12px;
+  }
+  html body.ai-assistant-open .ai-composer{
+    padding-bottom:max(10px,env(safe-area-inset-bottom));
+  }
+}

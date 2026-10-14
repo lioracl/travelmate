@@ -94,7 +94,8 @@
     if(fixedFree!==null&&fixedFree!==undefined&&Number.isFinite(Number(fixedFree)))freeCandidates.push(Number(fixedFree));
     if(windowFree&&Number.isFinite(Number(windowFree.durationMinutes)))freeCandidates.push(Number(windowFree.durationMinutes));
     var freeMinutes=freeCandidates.length?Math.max(0,Math.min.apply(Math,freeCandidates)):null;
-    if(freeMinutes!==null&&freeMinutes>=45){
+    var freeFit=context&&typeof context.classifyNearbyTimeFit==='function'?context.classifyNearbyTimeFit({availableMinutes:freeMinutes,outboundMinutes:0}):null;
+    if(freeMinutes!==null&&(freeFit?freeFit.status==='green':freeMinutes>=45)){
       signals.push(signal('fa-hourglass-half',roundWindow(freeMinutes)+' פנויות'));
       if(weather.kind!=='unknown')signals.push(signal(weather.icon,weather.label));
       if(interest)signals.push(signal(interest.source==='learned'?'fa-check':'fa-heart',interest.label));
@@ -126,6 +127,7 @@
   function escapeHtml(value){return String(value||'').replace(/[&<>"']/g,function(character){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]})}
   function render(card,suggestion){
     if(!card||!suggestion)return;
+    if(card.dataset.smartDecisionActive!==undefined&&card.contains(win.document.activeElement))return;
     card.dataset.profileReason=suggestion.profileReason||'';card.dataset.smartTripKind=suggestion.kind;card.dataset.smartTripSignature=suggestion.signature;
     var dismissed='';try{dismissed=win.sessionStorage.getItem('travelmate-smart-trip-dismiss:'+String(currentTrip()&&currentTrip().id||''))||''}catch(error){}
     if(dismissed===suggestion.signature){card.hidden=true;return}

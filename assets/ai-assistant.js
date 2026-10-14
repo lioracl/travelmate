@@ -622,7 +622,7 @@
     var userId = event.detail && event.detail.userId;
     applyAccountContext('ACCOUNT_CHANGED', userId ? { user: { id: userId } } : null);
   });
-  if (activeCloud() && activeCloud().onAuthChange) activeCloud().onAuthChange(applyAccountContext);
+  if (activeCloud() && activeCloud().onAuthChange) Promise.resolve(activeCloud().onAuthChange(applyAccountContext)).catch(function () { setStatus('החיבור לחשבון אינו זמין כרגע. אפשר להמשיך להשתמש בכלים המקומיים.'); });
   ui.orb.addEventListener('click', function () { setOpen(!state.open); });
   ui.panel.querySelector('[data-ai-close]').addEventListener('click', function () { setOpen(false); });
   ui.panel.querySelector('[data-ai-clear]').addEventListener('click', function () { state.messages = []; persistMessages(); renderHistory(); setStatus('שיחה חדשה'); });

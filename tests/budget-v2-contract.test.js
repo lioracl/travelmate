@@ -59,7 +59,7 @@ test('currency converter is promoted directly below the smart budget summary', (
 
 test('Budget persistence delegates to the canonical Trip Store', () => {
   assert.match(js, /window\.TravelMateTripStore/);
-  assert.match(js, /store\.saveTrip\(state\.trip\)/);
+  assert.match(js, /store\.saveTripFields\(draft, experienceBaseline/);
 });
 
 test('Budget V2 summary styling stays in the feature stylesheet and uses semantic tokens', () => {

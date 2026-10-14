@@ -1,0 +1,15 @@
+dialog.tm-calendar-export{
+  position:fixed;inset:0;margin:auto;width:min(480px,calc(100vw - 32px));
+  max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);
+  padding:20px;box-sizing:border-box;overflow:auto;overflow-wrap:anywhere;
+  background:var(--tm-overlay-surface);color:var(--tm-overlay-text);text-align:start
+}
+dialog.tm-calendar-export::backdrop{background:var(--tm-overlay-backdrop);backdrop-filter:var(--tm-overlay-backdrop-blur)}
+dialog.tm-calendar-export header{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+.tm-calendar-export h2{margin:0;font-size:1.25rem}
+.tm-calendar-export .action-options{display:flex;flex-wrap:wrap;gap:10px}
+.tm-calendar-export button{min-width:44px;min-height:44px;white-space:normal}
+dialog.tm-calendar-export .action-options button{display:block;flex:1 1 140px;padding:12px;text-align:center;word-break:normal;overflow-wrap:normal}
+.tm-calendar-export button:disabled{opacity:.55;cursor:not-allowed}
+.tm-calendar-export button:focus-visible{outline:3px solid var(--tm-overlay-text);outline-offset:3px}
+body.tm-new-design[data-trip-view="plan"] #plan .saved-calendar-link{min-height:44px;min-width:44px;font:inherit;cursor:pointer}

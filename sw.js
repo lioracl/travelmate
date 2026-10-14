@@ -1,4 +1,4 @@
-const ASSET_VERSION='20261012-03';
+const ASSET_VERSION='20261014-01';
 const CACHE_SCHEMA='v266';
 const CACHE_NAME='travelmate-smart-'+CACHE_SCHEMA+'-'+ASSET_VERSION;
 const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-(?:20\d{6}-\d+|[a-f0-9]{40}))?$/;
@@ -10,6 +10,13 @@ const CORE_PATHS=[
   './trip/japan-2027/index.html',
   './assets/styles.css',
   './assets/app.js',
+  './assets/smart-trip-decisions.js',
+  './assets/smart-trip-actions.js',
+  './assets/smart-trip-mode.js',
+  './assets/smart-trip-mode.css',
+  './assets/calendar-export.js',
+  './assets/calendar-export-ui.js',
+  './assets/calendar-export.css',
   './assets/app-shell.js',
   './assets/app-shell.css',
   './assets/readable-glass.css',

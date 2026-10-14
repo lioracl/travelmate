@@ -103,7 +103,7 @@ test('Plan exposes an optional day-mode override without replacing automatic inf
   assert.match(polish, /value="flexible"/);
   assert.match(polish, /value="balanced"/);
   assert.match(polish, /value="scheduled"/);
-  assert.match(polish, /delete trip\.dayModes\[date\]/);
+  assert.match(polish, /delete draft\.dayModes\[date\]/);
   assert.match(polish, /store&&store\.saveTrip/);
   assert.match(css, /2\.1 Day Mode Control/);
 

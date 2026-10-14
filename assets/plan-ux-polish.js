@@ -45,10 +45,11 @@ function dayModeOverride(trip,date){
 }
 function saveDayMode(trip,date,value){
   if(!trip||!date)return;
-  trip.dayModes=Object.assign({},trip.dayModes||{});
-  if(value==='auto')delete trip.dayModes[date];else trip.dayModes[date]=value;
+  var baseline=JSON.parse(JSON.stringify(trip)),draft=JSON.parse(JSON.stringify(trip));
+  draft.dayModes=Object.assign({},draft.dayModes||{});
+  if(value==='auto')delete draft.dayModes[date];else draft.dayModes[date]=value;
   var store=window.TravelMateTripStore;
-  if(store&&store.saveTrip)store.saveTrip(trip);
+  if(store&&store.saveTripFields)store.saveTripFields(draft,baseline,['dayModes'],{userId:String(localStorage.getItem('travelmate-active-user')||'')});
   schedule()
 }
 function ensureToolbar(plan,trip){
@@ -132,6 +133,12 @@ function addSecondaryDetails(row,record){
   if(ratings&&!row.querySelector('.google-rating-link')){var reviewLink=detailLink('fa-brands fa-google','ציונים וביקורות',ratings);reviewLink.className='google-rating-link';reviewLink.dataset.planSecondaryReviews='';nav.appendChild(reviewLink)}
   if(phone){var tel=document.createElement('a');tel.href='tel:'+phone.replace(/[^+\d]/g,'');tel.innerHTML='<i class="fa-solid fa-phone" aria-hidden="true"></i><span></span>';tel.querySelector('span').textContent=phone;nav.appendChild(tel)}
   if(nav.childNodes.length)details.appendChild(nav);
+  if(!row.matches('.saved-place')){
+    var calendar=document.createElement('button');calendar.type='button';calendar.className='saved-calendar-link';
+    calendar.dataset.calendarExportActivity='';calendar.innerHTML='<i class="fa-solid fa-calendar-plus" aria-hidden="true"></i><span>הוסף ליומן</span>';
+    calendar.addEventListener('click',function(){var exporter=window.TravelMateCalendarExportUI;if(exporter)exporter.open(currentTrip(),record,calendar)});
+    nav.appendChild(calendar);if(!nav.parentNode)details.appendChild(nav)
+  }
   if(!details.childNodes.length)return;
   row.appendChild(details)
 }

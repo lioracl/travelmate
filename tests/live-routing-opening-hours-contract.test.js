@@ -56,9 +56,9 @@ test('Places preserves opening-hours data but only makes open-close claims in co
   assert.match(app,/openingHours:result\.dataset\.placeOpeningHours\|\|''/);
   assert.doesNotMatch(nearby,/openingBadgeHtml/);
   assert.match(nearby,/async function applyContextualResults/);assert.match(nearby,/routing\.matrix\(points,\{mode:'walk',signal:searchSignal\}\)/);
-  assert.match(nearby,/statusAtMinutes\(place\.openingHours,requested,Number\(outbound\.minutes\|\|0\)\)/);assert.match(nearby,/openingStatus\.state==='closed'/);
+  assert.match(nearby,/statusAtMinutes\(seed\.place\.openingHours,requested,Number\(outbound\.minutes\|\|0\)\)/);assert.match(nearby,/openingState:openingStatus\.state/);assert.match(context,/options\.openingState==='closed'\?'red'/);
   assert.match(nearby,/var allLive=assessed\.length>0&&assessed\.every/);assert.match(nearby,/contextualRouting=allLive\?'live':'estimate'/);
-  assert.match(nearby,/currentPlaces=await applyContextualResults[\s\S]*if\(requestId!==searchSequence\|\|searchSignal\.aborted\)return/);
+  assert.match(nearby,/var guidedPlaces=await applyContextualResults[\s\S]*if\(requestId!==searchSequence\|\|searchSignal\.aborted\)return;currentPlaces=guidedPlaces/);
   assert.match(context,/function buildMiniRoute\(places,request,travelLookup\)/);assert.match(context,/source:best\.live\?'live':'estimate'/);
 });
 
@@ -72,4 +72,10 @@ test('Mini Route consumes live leg data when a matrix lookup is available',()=>{
   const places=[{id:'a',lat:32.101,lon:34.801},{id:'b',lat:32.102,lon:34.802}],request={lat:32.1,lon:34.8,availableMinutes:90,routeStops:2};
   const route=helper.buildMiniRoute(places,request,()=>({minutes:5,mode:'walk',source:'live',distanceKm:.4}));
   assert.equal(route.stops.length,2);assert.equal(route.source,'live');assert.equal(route.totalTravelMinutes,10);
+});
+
+test('Plan live routing excludes completed records and exposes a scoped snapshot',()=>{
+  const source=read('assets/plan-live-routing.js');
+  assert.match(source,/entry\.record&&entry\.record\.done!==true&&entry\.record\.time/);
+  assert.match(source,/getSnapshot:function\(\)\{if\(state\.scope&&state\.scope!==scopeKey\(currentTrip\(\)\)\)invalidate\(\);return Object\.freeze\(\{tripId:state\.tripId,updatedAt:state\.updatedAt,transitions:state\.transitions\}\)\}/);
 });
