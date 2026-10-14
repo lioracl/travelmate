@@ -1,0 +1,109 @@
+name: Mobile Mate keyboard safe-area fix once
+
+on:
+  push:
+    branches:
+      - codex/mobile-core-ui-fixes-20261014
+
+permissions:
+  contents: write
+
+jobs:
+  repair-and-verify:
+    if: "${{ github.event.head_commit.message == 'chore: repair Mate safe-area keyboard gate' }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout isolated branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/mobile-core-ui-fixes-20261014
+          fetch-depth: 0
+
+      - name: Guard branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "codex/mobile-core-ui-fixes-20261014"
+          git diff --quiet
+
+      - name: Apply Mate safe-area keyboard repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          function replaceExactlyOnce(path, from, to) {
+            const source = fs.readFileSync(path, 'utf8');
+            const count = source.split(from).length - 1;
+            if (count !== 1) throw new Error(`${path}: expected 1 occurrence of ${JSON.stringify(from)}, found ${count}`);
+            fs.writeFileSync(path, source.replace(from, to));
+          }
+
+          replaceExactlyOnce(
+            'assets/ai-assistant.css',
+            '    top:var(--ai-viewport-top,0px);',
+            '    top:calc(var(--ai-viewport-top,0px) + var(--safe-area-inset-top,env(safe-area-inset-top)));'
+          );
+          replaceExactlyOnce(
+            'assets/ai-assistant.css',
+            '    height:var(--ai-viewport-height,100dvh);',
+            '    height:calc(var(--ai-viewport-height,100dvh) - var(--safe-area-inset-top,env(safe-area-inset-top)));'
+          );
+          replaceExactlyOnce(
+            'assets/ai-assistant.css',
+            '    max-height:var(--ai-viewport-height,100dvh);',
+            '    max-height:calc(var(--ai-viewport-height,100dvh) - var(--safe-area-inset-top,env(safe-area-inset-top)));'
+          );
+          replaceExactlyOnce(
+            'assets/ai-assistant.css',
+            '    padding-top:max(12px,env(safe-area-inset-top));',
+            '    padding-top:12px;'
+          );
+          replaceExactlyOnce(
+            'tests/mobile-core-ui-fixes.test.js',
+            '  assert.match(css,/height:var\\(--ai-viewport-height,100dvh\\)/);',
+            "  assert.match(css,/top:calc\\(var\\(--ai-viewport-top,0px\\) \\+ var\\(--safe-area-inset-top,env\\(safe-area-inset-top\\)\\)\\)/);\n  assert.match(css,/height:calc\\(var\\(--ai-viewport-height,100dvh\\) - var\\(--safe-area-inset-top,env\\(safe-area-inset-top\\)\\)\\)/);"
+          );
+          NODE
+
+      - name: Targeted Node validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/mobile-core-ui-fixes.test.js
+          git diff --check
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/travelmate-http.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/travelmate-http.log
+          exit 1
+
+      - name: Re-run exact failed Mate keyboard contract
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/mate-keyboard-shell.spec.js --reporter=line
+
+      - name: Full Node regression
+        run: node --test tests/*.test.js
+
+      - name: Commit verified repair and remove temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/ai-assistant.css tests/mobile-core-ui-fixes.test.js
+          git rm .github/workflows/mobile-mate-keyboard-fix-once.yml
+          git commit -m "fix: preserve Mate safe area with mobile keyboard"
+          git push origin HEAD:codex/mobile-core-ui-fixes-20261014
