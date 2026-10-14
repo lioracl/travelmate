@@ -194,7 +194,7 @@
     var cacheKey = 'travelmate-weather-forecast:' + place.latitude.toFixed(3) + ',' + place.longitude.toFixed(3);
     var cached = null;
     try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch (error) {}
-    if (!force && cached && Date.now() - cached.savedAt < 900000) return cached.data;
+    if (!force && cached && cached.data && cached.data.hourly && Array.isArray(cached.data.hourly.time) && Date.now() - cached.savedAt < 900000) return cached.data;
     var fields = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,uv_index_max';
     var current = 'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day';
     var hourly = 'weather_code,precipitation_probability,temperature_2m,wind_speed_10m';

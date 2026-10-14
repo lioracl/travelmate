@@ -218,3 +218,8 @@ test('weather context exposes exact hourly evidence without new GPS', () => {
   assert.match(js, /TravelMateWeatherContext=Object\.freeze\(\{snapshot:contextSnapshot,at:contextAt\}\)/);
   const start=js.indexOf('function hourlySnapshot('),end=js.indexOf('function contextSnapshot(',start),block=js.slice(start,end);assert.doesNotMatch(block,/geolocation|fetch\s*\(|localStorage|currentPosition/);
 });
+
+
+test('legacy forecast cache without hourly data is refreshed', () => {
+  assert.ok(js.includes('cached && cached.data && cached.data.hourly && Array.isArray(cached.data.hourly.time)'));
+});
