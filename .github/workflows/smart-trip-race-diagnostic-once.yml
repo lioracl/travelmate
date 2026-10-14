@@ -1,0 +1,77 @@
+name: Smart Trip race diagnostic once
+
+on:
+  push:
+    branches:
+      - integration/smart-trip-race-diagnostic-20261014
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-fix:
+    if: "${{ github.event.head_commit.message == 'chore: test Smart Trip race candidates' }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout diagnostic branch
+        uses: actions/checkout@v4
+        with:
+          ref: integration/smart-trip-race-diagnostic-20261014
+          fetch-depth: 0
+
+      - name: Apply candidate fixes in workspace only
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          function replaceOnce(path, from, to) {
+            const src = fs.readFileSync(path, 'utf8');
+            const count = src.split(from).length - 1;
+            if (count !== 1) throw new Error(`${path}: expected one match, found ${count}`);
+            fs.writeFileSync(path, src.replace(from, to));
+          }
+          replaceOnce(
+            'assets/smart-trip-actions.js',
+            "  win.addEventListener('travelmate:plan-live-routing',function(event){if(active&&event.detail&&String(event.detail.tripId||'')===id())paint();});",
+            "  win.addEventListener('travelmate:plan-live-routing',function(event){if(!active||!event.detail||String(event.detail.tripId||'')!==id())return;var panel=win.document.querySelector('[data-smart-decisions]'),form=panel&&panel.querySelector('[data-smart-move]'),draftTime=form&&form.elements&&form.elements.time&&form.elements.time.value,editing=form&&form.contains(win.document.activeElement);if(editing||draftTime)return;paint();});"
+          );
+          replaceOnce(
+            'assets/nearby.js',
+            "    if(canLiveRoute&&routing&&routing.matrix&&points.length>1){try{liveMatrix=await routing.matrix(points,{mode:'walk',signal:searchSignal})}catch(error){if(error&&error.name==='AbortError')throw error}}",
+            "    if(canLiveRoute&&routing&&routing.matrix&&points.length>1){try{liveMatrix=await Promise.race([routing.matrix(points,{mode:'walk',signal:searchSignal}),new Promise(function(resolve){setTimeout(function(){resolve(null)},1200)})])}catch(error){if(error&&error.name==='AbortError')throw error}}"
+          );
+          NODE
+          node --check assets/smart-trip-actions.js
+          node --check assets/nearby.js
+          git diff --check
+          git diff -- assets/smart-trip-actions.js assets/nearby.js
+
+      - name: Full Node regression
+        run: node --test tests/*.test.js
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/travelmate-http.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/travelmate-http.log
+          exit 1
+
+      - name: Re-run the two failed specs
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/smart-trip-decisions.spec.js tests/e2e/nearby-soft-time.spec.js --reporter=line
+
+      - name: Full Integration QA if targeted specs pass
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e --reporter=line
