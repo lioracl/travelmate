@@ -1,0 +1,95 @@
+name: Smart Trip verified race fix once
+
+on:
+  push:
+    branches:
+      - codex/smart-trip-2-decision-layer-20261013
+
+permissions:
+  contents: write
+
+jobs:
+  apply-verify-commit:
+    if: "${{ github.event.head_commit.message == 'chore: apply verified Smart Trip race fix' }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/smart-trip-2-decision-layer-20261013
+          fetch-depth: 0
+
+      - name: Guard expected head and clean branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "codex/smart-trip-2-decision-layer-20261013"
+          test "$(git rev-parse HEAD^)" = "788adc65094db6267a94782fb4a9ef17b2747eb2"
+          git diff --quiet
+
+      - name: Apply validated race fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          function replaceOnce(path, from, to) {
+            const src = fs.readFileSync(path, 'utf8');
+            const count = src.split(from).length - 1;
+            if (count !== 1) throw new Error(`${path}: expected one match, found ${count}`);
+            fs.writeFileSync(path, src.replace(from, to));
+          }
+          replaceOnce(
+            'assets/smart-trip-actions.js',
+            "  win.addEventListener('travelmate:plan-live-routing',function(event){if(active&&event.detail&&String(event.detail.tripId||'')===id())paint();});",
+            "  win.addEventListener('travelmate:plan-live-routing',function(event){if(!active||!event.detail||String(event.detail.tripId||'')!==id())return;var panel=win.document.querySelector('[data-smart-decisions]'),form=panel&&panel.querySelector('[data-smart-move]'),draftTime=form&&form.elements&&form.elements.time&&form.elements.time.value,editing=form&&form.contains(win.document.activeElement);if(editing||draftTime)return;paint();});"
+          );
+          replaceOnce(
+            'assets/nearby.js',
+            "    var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||null,canLiveRoute=navigator.onLine!==false&&!(connection&&connection.saveData)&&!(connection&&/^(slow-2g|2g)$/i.test(String(connection.effectiveType||''))),liveMatrix=null;\n    if(canLiveRoute&&routing&&routing.matrix&&points.length>1){try{liveMatrix=await routing.matrix(points,{mode:'walk',signal:searchSignal})}catch(error){if(error&&error.name==='AbortError')throw error}}",
+            "    var connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection||null,canLiveRoute=navigator.onLine!==false&&!(connection&&connection.saveData)&&!(connection&&/^(slow-2g|2g)$/i.test(String(connection.effectiveType||''))),liveMatrix=null;\n    if(searchSignal&&searchSignal.aborted)return places;\n    function provisionalCounts(){var counts={green:0,yellow:0,red:0};preliminary.forEach(function(seed){var outbound=seed.outbound,onward=next?seed.onward:null,openingStatus=opening&&seed.place.openingHours&&outbound?opening.statusAtMinutes(seed.place.openingHours,requested,Number(outbound.minutes||0)):{state:'unknown'},fit=helper.classifyNearbyTimeFit({availableMinutes:available,outboundMinutes:outbound&&outbound.minutes,onwardMinutes:onward&&onward.minutes,travelKnown:Boolean(outbound&&(!next||onward)),openingState:openingStatus.state});counts[fit.status]=(counts[fit.status]||0)+1;});return counts;}\n    var provisional=provisionalCounts();results.dataset.contextualRouting='estimate';results.dataset.contextualGreenCount=String(provisional.green||0);results.dataset.contextualYellowCount=String(provisional.yellow||0);results.dataset.contextualRedCount=String(provisional.red||0);\n    if(canLiveRoute&&routing&&routing.matrix&&points.length>1){try{liveMatrix=await routing.matrix(points,{mode:'walk',signal:searchSignal})}catch(error){if(error&&error.name==='AbortError')throw error}}"
+          );
+          NODE
+          node --check assets/smart-trip-actions.js
+          node --check assets/nearby.js
+          git diff --check
+
+      - name: Full Node regression
+        run: node --test tests/*.test.js
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/travelmate-http.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/travelmate-http.log
+          exit 1
+
+      - name: Exact failed specs
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/smart-trip-decisions.spec.js tests/e2e/nearby-soft-time.spec.js --reporter=line
+
+      - name: Full Integration QA
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e --reporter=line
+
+      - name: Commit verified source and remove temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/smart-trip-actions.js assets/nearby.js
+          git rm .github/workflows/smart-trip-race-fix-once.yml
+          git commit -m "fix: stabilize Smart Trip draft and Nearby guidance"
+          git push origin HEAD:codex/smart-trip-2-decision-layer-20261013
