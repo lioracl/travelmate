@@ -10,19 +10,23 @@ permissions:
 
 jobs:
   apply-fix:
-    if: github.event.head_commit.message == 'chore: bootstrap mobile core ui fix'
+    if: "${{ github.event.head_commit.message == 'chore: repair mobile fix workflow' }}"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout isolated repair branch
+        uses: actions/checkout@v4
         with:
           ref: codex/mobile-core-ui-fixes-20261014
-          fetch-depth: 2
+          fetch-depth: 3
 
-      - name: Guard exact preview parent
+      - name: Guard exact branch history
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "32eadf7f1af38dd952e399868626057e8dc362fc"
+          test "$GITHUB_REF_NAME" = "codex/mobile-core-ui-fixes-20261014"
+          test "$(git rev-parse HEAD^)" = "c81464ccee25cb0fbf5253b2903fa10f27bcca6c"
+          test "$(git rev-parse HEAD^^)" = "32eadf7f1af38dd952e399868626057e8dc362fc"
 
       - name: Apply surgical mobile UI fixes
         shell: bash
