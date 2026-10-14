@@ -91,18 +91,18 @@ body.tm-new-design .ai-orb-ring{animation:none}
   html body.ai-keyboard-open .ai-panel{
     left:0;
     right:0;
-    top:var(--ai-viewport-top,0px);
+    top:calc(var(--ai-viewport-top,0px) + var(--safe-area-inset-top,env(safe-area-inset-top)));
     bottom:auto;
     width:auto;
     max-width:none;
-    height:var(--ai-viewport-height,100dvh);
-    max-height:var(--ai-viewport-height,100dvh);
+    height:calc(var(--ai-viewport-height,100dvh) - var(--safe-area-inset-top,env(safe-area-inset-top)));
+    max-height:calc(var(--ai-viewport-height,100dvh) - var(--safe-area-inset-top,env(safe-area-inset-top)));
     border-radius:0;
     transform-origin:center;
   }
   html body.ai-assistant-open .ai-orb{display:none}
   html body.ai-assistant-open .ai-panel-header{
-    padding-top:max(12px,env(safe-area-inset-top));
+    padding-top:12px;
   }
   html body.ai-assistant-open .ai-composer{
     padding-bottom:max(10px,env(safe-area-inset-bottom));

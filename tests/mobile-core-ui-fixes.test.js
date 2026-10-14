@@ -13,7 +13,8 @@ test('All Trips date editor passes the clicked edit control',()=>{
 test('Mate owns the full mobile visual viewport when open',()=>{
   const css=read('assets/ai-assistant.css');
   assert.match(css,/Mobile full-screen Mate contract — 2026-10-14/);
-  assert.match(css,/height:var\(--ai-viewport-height,100dvh\)/);
+  assert.match(css,/top:calc\(var\(--ai-viewport-top,0px\) \+ var\(--safe-area-inset-top,env\(safe-area-inset-top\)\)\)/);
+  assert.match(css,/height:calc\(var\(--ai-viewport-height,100dvh\) - var\(--safe-area-inset-top,env\(safe-area-inset-top\)\)\)/);
   assert.match(css,/body\.ai-assistant-open \.ai-orb\{display:none\}/);
 });
 
