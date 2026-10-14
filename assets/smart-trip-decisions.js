@@ -88,8 +88,10 @@
     }
     if (context && typeof context.transitionAssessmentsForDate === 'function') {
       var assessments = context.transitionAssessmentsForDate(trip, date, { bufferMinutes: 10 }) || {};
+      var liveTransitions = options.transitionById && typeof options.transitionById === 'object' ? options.transitionById : {};
       Object.keys(assessments).forEach(function (key) {
-        var assessment = assessments[key];
+        var assessment = assessments[key], live = liveTransitions[key];
+        if (live && String(live.date || '') === date && live.source === 'live') assessment = live;
         if (!assessment || !assessment.risk) return;
         var destination = entries.find(function (entry) { return entry.kind + ':' + String(entry.record.id) === key; });
         if (!destination || destination.start < current || destination.start > current + 180) return;

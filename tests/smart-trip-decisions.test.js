@@ -153,3 +153,16 @@ test('browser global loads without persistence, GPS, provider or AI access', () 
   vm.runInNewContext(source, sandbox);
   assert.equal(typeof sandbox.window.TravelMateSmartTripDecisions.analyze, 'function');
 });
+
+test('live plan-transition evidence overrides only matching fresh-date estimates', () => {
+  const value = trip([item('a', '12:20'), item('b', '13:20')]);
+  const context = { transitionAssessmentsForDate() { return { 'activity:b': { date, risk: true, shortfallMinutes: 15, source: 'estimate' } }; } };
+  const live = evaluate(value, { context, transitionById: { 'activity:b': { date, risk: true, shortfallMinutes: 7, source: 'live', provider: 'OpenStreetMap routing' } } });
+  const warning = live.recommendations.find(entry => entry.key === 'transition:activity:b');
+  assert.equal(warning.confidence, 'high'); assert.equal(warning.provenance, 'routing:live'); assert.match(warning.reason, /7/);
+  const stale = evaluate(value, { context, transitionById: { 'activity:b': { date: '2026-10-12', risk: true, shortfallMinutes: 2, source: 'live' } } });
+  const fallback = stale.recommendations.find(entry => entry.key === 'transition:activity:b');
+  assert.equal(fallback.confidence, 'medium'); assert.equal(fallback.provenance, 'routing:estimate'); assert.match(fallback.reason, /15/);
+  const cleared = evaluate(value, { context, transitionById: { 'activity:b': { date, risk: false, shortfallMinutes: 0, source: 'live' } } });
+  assert.ok(!cleared.recommendations.some(entry => entry.key === 'transition:activity:b'));
+});

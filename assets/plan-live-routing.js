@@ -16,7 +16,7 @@ function collectPairs(trip,today){
   (trip.activities||[]).forEach(function(record){if(record&&record.date)(dates[String(record.date)]||(dates[String(record.date)]=[])).push({kind:'activity',record:record})});
   (trip.savedPlaces||[]).forEach(function(record){if(record&&record.date)(dates[String(record.date)]||(dates[String(record.date)]=[])).push({kind:'place',record:record})});
   Object.keys(dates).filter(function(date){return !today||date>=today}).sort().forEach(function(date){
-    var entries=dates[date].filter(function(entry){var mode=recordMode(entry.record);return entry.record&&entry.record.time&&mode!=='flexible'&&mode!=='window'}).sort(function(a,b){return String(a.record.time).localeCompare(String(b.record.time))});
+    var entries=dates[date].filter(function(entry){var mode=recordMode(entry.record);return entry.record&&entry.record.done!==true&&entry.record.time&&mode!=='flexible'&&mode!=='window'}).sort(function(a,b){return String(a.record.time).localeCompare(String(b.record.time))});
     for(var i=1;i<entries.length&&list.length<MAX_PAIRS;i+=1){
       var previous=entries[i-1],next=entries[i],from=point(previous.record),to=point(next.record);if(!from||!to)continue;
       var estimate=helper.estimateTravelMinutes(previous.record,next.record);if(!estimate||estimate.source==='manual')continue;
@@ -53,7 +53,7 @@ async function refresh(force){
   return state.inflight
 }
 var refreshTimer=0;function schedule(force){clearTimeout(refreshTimer);refreshTimer=setTimeout(function(){refresh(Boolean(force))},120)}
-window.TravelMatePlanLiveRouting=Object.freeze({refresh:refresh,collectPairs:collectPairs,buildBatches:buildBatches,providerMode:providerMode,getTransitions:function(){return state.transitions}});
+window.TravelMatePlanLiveRouting=Object.freeze({refresh:refresh,collectPairs:collectPairs,buildBatches:buildBatches,providerMode:providerMode,getTransitions:function(){return state.transitions},getSnapshot:function(){return Object.freeze({tripId:state.tripId,updatedAt:state.updatedAt,transitions:state.transitions})}});
 document.addEventListener('travelmate:planner-rendered',function(){schedule(false)});
 window.addEventListener('travelmate:viewchange',function(event){if(event.detail&&event.detail.view==='plan')schedule(false)});
 window.addEventListener('online',function(){schedule(true)});

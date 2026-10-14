@@ -73,3 +73,9 @@ test('Mini Route consumes live leg data when a matrix lookup is available',()=>{
   const route=helper.buildMiniRoute(places,request,()=>({minutes:5,mode:'walk',source:'live',distanceKm:.4}));
   assert.equal(route.stops.length,2);assert.equal(route.source,'live');assert.equal(route.totalTravelMinutes,10);
 });
+
+test('Plan live routing excludes completed records and exposes a scoped snapshot',()=>{
+  const source=read('assets/plan-live-routing.js');
+  assert.match(source,/entry\.record&&entry\.record\.done!==true&&entry\.record\.time/);
+  assert.match(source,/getSnapshot:function\(\)\{return Object\.freeze\(\{tripId:state\.tripId,updatedAt:state\.updatedAt,transitions:state\.transitions\}\)\}/);
+});

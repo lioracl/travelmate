@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const engine=require('../assets/smart-trip-decisions.js'),{controller}=require('../assets/smart-trip-actions.js');
+const engine=require('../assets/smart-trip-decisions.js'),{controller,selectLiveTransitions}=require('../assets/smart-trip-actions.js');
 function harness(){let account='A',id='t',trip={id:'t',ownerId:'A',activities:[{id:'a',date:'2026-10-13',time:'15:00',scheduleMode:'flexible'},{id:'fixed',time:'18:00',scheduleMode:'fixed'}],savedPlaces:[],expenses:[{id:'e',amount:3}]},saves=0;
  const flow=controller({engine,read:()=>trip,account:()=>account,tripId:()=>id,save:next=>{saves++;trip=next;return next;}});
  return {flow,get trip(){return trip;},get saves(){return saves;},switchAccount:()=>{account='B';},switchTrip:()=>{id='other';}};
@@ -38,3 +38,6 @@ test('ambiguous duplicate activity IDs fail closed',()=>{const h=harness();h.tri
 test('changed itinerary after apply blocks undo but preserves the later commitment',()=>{const h=harness();h.flow.preview('a','16:00');h.flow.confirm();h.flow.apply();h.trip.activities[1].time='15:30';assert.throws(()=>h.flow.undo(),/UNDO_CONFLICT/);assert.equal(h.trip.activities[1].time,'15:30');assert.equal(h.saves,1);});
 
 test('zero travel still respects the explicit arrival buffer and negative travel remains unknown',()=>{const options={trip:{id:'t',activities:[{id:'a',date:'2026-10-13',time:'12:05',scheduleMode:'fixed',arrivalBufferMinutes:10}]},now:new Date(2026,9,13,12),routingById:{a:{minutes:0,source:'live'}}};assert.equal(engine.analyze(options).recommendations[0].key,'late:a');options.routingById.a.minutes=-1;assert.equal(engine.analyze(options).recommendations[0].provenance,'routing:unknown');});
+
+
+test('live transition snapshots are scoped to the current trip and TTL',()=>{const transitions={'activity:fixed':{date:'2026-10-13',source:'live'}},now=1000000,trip={id:'t'};assert.equal(selectLiveTransitions({tripId:'t',updatedAt:now-1000,transitions},trip,now),transitions);assert.equal(selectLiveTransitions({tripId:'other',updatedAt:now-1000,transitions},trip,now),null);assert.equal(selectLiveTransitions({tripId:'t',updatedAt:now-120001,transitions},trip,now),null);assert.equal(selectLiveTransitions({tripId:'t',updatedAt:now+1,transitions},trip,now),null);});
