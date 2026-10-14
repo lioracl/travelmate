@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const engine=require('../assets/smart-trip-decisions.js'),{controller,selectLiveTransitions}=require('../assets/smart-trip-actions.js');
+const engine=require('../assets/smart-trip-decisions.js'),{controller,selectLiveTransitions,buildWeatherByKey}=require('../assets/smart-trip-actions.js');
 function harness(){let account='A',id='t',trip={id:'t',ownerId:'A',activities:[{id:'a',date:'2026-10-13',time:'15:00',scheduleMode:'flexible'},{id:'fixed',time:'18:00',scheduleMode:'fixed'}],savedPlaces:[],expenses:[{id:'e',amount:3}]},saves=0;
  const flow=controller({engine,read:()=>trip,account:()=>account,tripId:()=>id,save:next=>{saves++;trip=next;return next;}});
  return {flow,get trip(){return trip;},get saves(){return saves;},switchAccount:()=>{account='B';},switchTrip:()=>{id='other';}};
@@ -41,3 +41,6 @@ test('zero travel still respects the explicit arrival buffer and negative travel
 
 
 test('live transition snapshots are scoped to the current trip and TTL',()=>{const transitions={'activity:fixed':{date:'2026-10-13',source:'live'}},now=1000000,trip={id:'t'};assert.equal(selectLiveTransitions({tripId:'t',updatedAt:now-1000,transitions},trip,now),transitions);assert.equal(selectLiveTransitions({tripId:'other',updatedAt:now-1000,transitions},trip,now),null);assert.equal(selectLiveTransitions({tripId:'t',updatedAt:now-120001,transitions},trip,now),null);assert.equal(selectLiveTransitions({tripId:'t',updatedAt:now+1,transitions},trip,now),null);});
+
+
+test('weather evidence is scoped to explicit trip records and requested activity time',()=>{const calls=[],weather={at:(date,time)=>{calls.push([date,time]);return {ready:true,time:date+'T'+time.slice(0,2)+':00',source:'Open-Meteo:hourly'};}};const value={id:'t',activities:[{id:'a',date:'2026-10-13',time:'13:30'},{id:'done',date:'2026-10-13',time:'14:00',done:true}],savedPlaces:[{id:'p',date:'2026-10-13',time:'15:15'}]};const map=buildWeatherByKey(value,weather);assert.deepEqual(Object.keys(map).sort(),['activity:a','place:p']);assert.deepEqual(calls,[['2026-10-13','13:30'],['2026-10-13','15:15']]);});

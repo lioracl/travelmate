@@ -78,13 +78,22 @@
       if (!evidence || !/^(closed|closing)$/.test(String(evidence.status || '')) || !evidence.source) return;
       add('opening:' + String(entry.record.id), 90, evidence.status === 'closed' ? 'המקום מסומן כסגור' : 'המקום עשוי להיסגר בקרוב', 'בדוק את שעות הפתיחה המעודכנות לפני היציאה. המידע עשוי להשתנות.', 'opening:' + String(evidence.source), 'medium', { type: 'open-plan', href: '#plan' }, entry.record.id);
     });
-    var weather = options.weather || {}, code = finite(weather.weatherCode), rain = finite(weather.precipitationProbability);
-    var wet = weather.ready === true && ((code !== null && ((code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95)) || (rain !== null && rain >= 60));
-    if (wet) {
-      var outdoor = entries.find(function (entry) {
-        return entry.start >= current && entry.start <= current + 180 && /^(parks|park|beaches|beach|viewpoints|viewpoint|hiking|trail)$/.test(String(entry.record.category || '').toLowerCase());
-      });
-      if (outdoor) add('weather:' + String(outdoor.record.id), 65, 'כדאי לבדוק חלופה מקורה', 'צפוי גשם והפעילות הקרובה בחוץ. זו המלצה בלבד.', 'weather:forecast', 'medium', { type: 'open-places', href: '#places' }, outdoor.record.id);
+    var weather = options.weather || {}, weatherByKey = options.weatherByKey && typeof options.weatherByKey === 'object' ? options.weatherByKey : {};
+    function wetWeather(evidence) {
+      if (!evidence || evidence.ready !== true) return false;
+      var code = finite(evidence.weatherCode), rain = finite(evidence.precipitationProbability);
+      return (code !== null && ((code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95)) || (rain !== null && rain >= 60);
+    }
+    var outdoor = entries.find(function (entry) {
+      return entry.start >= current && entry.start <= current + 180 && /^(parks|park|beaches|beach|viewpoints|viewpoint|hiking|trail)$/.test(String(entry.record.category || '').toLowerCase());
+    });
+    if (outdoor) {
+      var weatherKey = outdoor.kind + ':' + String(outdoor.record.id), hourlyWeather = weatherByKey[weatherKey] || null;
+      if (hourlyWeather && hourlyWeather.ready === true) {
+        if (wetWeather(hourlyWeather)) add('weather:' + String(outdoor.record.id), 65, '???? ????? ????? ?????', '?????? ???? ??????? ?????? ?? ???. ?? ????? ????.', 'weather:' + String(hourlyWeather.source || 'hourly'), 'medium', { type: 'open-places', href: '#places' }, outdoor.record.id);
+      } else if (outdoor.start <= current + 60 && wetWeather(weather)) {
+        add('weather:' + String(outdoor.record.id), 65, '???? ????? ????? ?????', '???? ??? ?????? ???????? ??????? ?? ??? ???? ???????. ?? ????? ????.', 'weather:' + String(weather.source || 'current'), 'low', { type: 'open-places', href: '#places' }, outdoor.record.id);
+      }
     }
     if (context && typeof context.transitionAssessmentsForDate === 'function') {
       var assessments = context.transitionAssessmentsForDate(trip, date, { bufferMinutes: 10 }) || {};

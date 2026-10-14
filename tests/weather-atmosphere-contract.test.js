@@ -210,3 +210,11 @@ test('weather Mate action lazy-loads assistant before emitting ask-ai', () => {
   assert.doesNotMatch(block, /context: context/);
   assert.ok(block.indexOf("TravelMateFeatures.load('assistant')") < block.lastIndexOf('emitToMate()'), 'assistant load path must precede final emit path');
 });
+
+
+test('weather context exposes exact hourly evidence without new GPS', () => {
+  assert.match(js, /var hourly = 'weather_code,precipitation_probability,temperature_2m,wind_speed_10m'/);
+  assert.match(js, /&hourly=' \+ hourly/);assert.match(js, /function hourlySnapshot\(data,date,time\)/);assert.match(js, /source:'Open-Meteo:hourly'/);
+  assert.match(js, /TravelMateWeatherContext=Object\.freeze\(\{snapshot:contextSnapshot,at:contextAt\}\)/);
+  const start=js.indexOf('function hourlySnapshot('),end=js.indexOf('function contextSnapshot(',start),block=js.slice(start,end);assert.doesNotMatch(block,/geolocation|fetch\s*\(|localStorage|currentPosition/);
+});

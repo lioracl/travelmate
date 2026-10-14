@@ -166,3 +166,14 @@ test('live plan-transition evidence overrides only matching fresh-date estimates
   const cleared = evaluate(value, { context, transitionById: { 'activity:b': { date, risk: false, shortfallMinutes: 0, source: 'live' } } });
   assert.ok(!cleared.recommendations.some(entry => entry.key === 'transition:activity:b'));
 });
+
+test('activity-hour weather wins over current conditions', () => {
+  const value = trip([item('park', '14:00', 'flexible', { category: 'parks' })]);
+  const dryAtActivity = evaluate(value, { weather: { ready: true, weatherCode: 61, source: 'Open-Meteo' }, weatherByKey: { 'activity:park': { ready: true, weatherCode: 0, precipitationProbability: 0, source: 'Open-Meteo:hourly' } } });
+  assert.ok(!keys(dryAtActivity).includes('weather:park'));
+  const wetAtActivity = evaluate(value, { weather: { ready: true, weatherCode: 0, source: 'Open-Meteo' }, weatherByKey: { 'activity:park': { ready: true, weatherCode: 61, precipitationProbability: 80, source: 'Open-Meteo:hourly' } } });
+  const warning = wetAtActivity.recommendations.find(entry => entry.key === 'weather:park');
+  assert.equal(warning.provenance, 'weather:Open-Meteo:hourly');assert.equal(warning.confidence, 'medium');
+  const futureWithoutHourly = evaluate(value, { weather: { ready: true, weatherCode: 61, source: 'Open-Meteo' } });
+  assert.ok(!keys(futureWithoutHourly).includes('weather:park'));
+});

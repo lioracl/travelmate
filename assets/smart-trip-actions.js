@@ -27,6 +27,11 @@
   if(!Number.isFinite(updatedAt)||updatedAt<=0||current<updatedAt||current-updatedAt>120000)return null;
   return snapshot.transitions&&typeof snapshot.transitions==='object'?snapshot.transitions:null;
  }
+ function buildWeatherByKey(trip,weatherContext){
+  var result={};if(!trip||!weatherContext||typeof weatherContext.at!=='function')return result;
+  function add(kind,record){if(!record||record.done===true||!record.id||!record.date||!record.time)return;var evidence=weatherContext.at(record.date,record.time);if(evidence&&evidence.ready===true)result[kind+':'+String(record.id)]=evidence;}
+  (trip.activities||[]).forEach(function(record){add('activity',record);});(trip.savedPlaces||[]).forEach(function(record){add('place',record);});return result;
+ }
  function mount(win){
   var plan=win.document.querySelector('#plan');if(!plan||plan.querySelector('[data-smart-check]'))return;
   var engine=win.TravelMateSmartTripDecisions,store=win.TravelMateTripStore;if(!engine||!store)return;
@@ -41,7 +46,7 @@
    plan.insertBefore(card,check.nextSibling);card.dataset.smartDecisionActive='';card.hidden=false;
    var panel=card.querySelector('[data-smart-decisions]');if(!panel){panel=win.document.createElement('div');panel.dataset.smartDecisions='';panel.id='smart-trip-decisions-panel';card.appendChild(panel);}check.setAttribute('aria-controls',panel.id);
    var trip=read();if(!trip){panel.textContent='הטיול אינו זמין בחשבון הנוכחי.';return;}
-   var context=win.TravelMateTripContext,now=new Date(),opening={};(trip.activities||[]).concat(trip.savedPlaces||[]).forEach(function(item){if(!win.TravelMateOpeningHours||!item.openingHours||!item.time)return;var moment=new Date(item.date+'T'+item.time+':00'),at=win.TravelMateOpeningHours.statusAt(item.openingHours,moment),end=win.TravelMateOpeningHours.statusAtMinutes(item.openingHours,moment,Number(item.duration||60));opening[item.id]={status:at.state==='closed'?'closed':at.state==='open'&&end.state==='closed'?'closing':'unknown',source:at.source};});var liveSnapshot=win.TravelMatePlanLiveRouting&&typeof win.TravelMatePlanLiveRouting.getSnapshot==='function'?win.TravelMatePlanLiveRouting.getSnapshot():null,transitionById=selectLiveTransitions(liveSnapshot,trip,now.getTime());var result=engine.analyze({trip:trip,now:now,context:context,transitionById:transitionById,openingById:opening,offline:win.navigator.onLine===false,weather:win.TravelMateWeatherContext&&win.TravelMateWeatherContext.snapshot()});
+   var context=win.TravelMateTripContext,now=new Date(),opening={};(trip.activities||[]).concat(trip.savedPlaces||[]).forEach(function(item){if(!win.TravelMateOpeningHours||!item.openingHours||!item.time)return;var moment=new Date(item.date+'T'+item.time+':00'),at=win.TravelMateOpeningHours.statusAt(item.openingHours,moment),end=win.TravelMateOpeningHours.statusAtMinutes(item.openingHours,moment,Number(item.duration||60));opening[item.id]={status:at.state==='closed'?'closed':at.state==='open'&&end.state==='closed'?'closing':'unknown',source:at.source};});var liveSnapshot=win.TravelMatePlanLiveRouting&&typeof win.TravelMatePlanLiveRouting.getSnapshot==='function'?win.TravelMatePlanLiveRouting.getSnapshot():null,transitionById=selectLiveTransitions(liveSnapshot,trip,now.getTime()),weatherContext=win.TravelMateWeatherContext||null,weatherByKey=buildWeatherByKey(trip,weatherContext);var result=engine.analyze({trip:trip,now:now,context:context,transitionById:transitionById,openingById:opening,offline:win.navigator.onLine===false,weatherByKey:weatherByKey,weather:weatherContext&&typeof weatherContext.snapshot==='function'?weatherContext.snapshot():null});
    var items=result.recommendations.map(function(item){return '<li><strong>'+escape(item.title)+'</strong><p>'+escape(item.reason)+'</p><small>'+escape(item.provenance)+' · '+escape({high:'ביטחון גבוה',medium:'הערכה',low:'לא מאומת'}[item.confidence])+'</small> <a href="'+escape(item.action.href)+'">פתיחה</a></li>';}).join('');
    var moves=(trip.activities||[]).filter(function(item){var mode=context.scheduleMode(item);return item.done!==true&&item.date===result.date&&mode!=='fixed'&&mode!=='window'&&/^\d{2}:\d{2}$/.test(item.time||'');});
    var state=flow.state(),content='';
@@ -59,5 +64,5 @@
   win.addEventListener('travelmate:plan-live-routing',function(event){if(active&&event.detail&&String(event.detail.tripId||'')===id())paint();});
   ['travelmate:account-context-changed','travelmate:home-auth','travelmate:trip-write-forbidden'].forEach(function(name){win.addEventListener(name,function(){flow.reset();preview=null;message='';active=false;check.setAttribute('aria-expanded','false');var card=win.document.querySelector('[data-smart-trip-mode]');if(card)card.hidden=true;});});
  }
- return Object.freeze({controller:controller,mount:mount,selectLiveTransitions:selectLiveTransitions});
+ return Object.freeze({controller:controller,mount:mount,selectLiveTransitions:selectLiveTransitions,buildWeatherByKey:buildWeatherByKey});
 });
