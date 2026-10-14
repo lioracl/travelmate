@@ -1,4 +1,4 @@
-name: Mobile core UI diagnostic gate
+name: Mobile core UI verified fix
 
 on:
   push:
@@ -6,26 +6,29 @@ on:
       - codex/mobile-core-ui-fixes-20261014
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose-node:
-    if: "${{ github.event.head_commit.message == 'chore: diagnose mobile node gate' }}"
+  apply-and-verify:
+    if: "${{ github.event.head_commit.message == 'chore: run verified mobile core fix' }}"
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    strategy:
-      fail-fast: false
-      matrix:
-        variant: [base, patched]
     steps:
-      - name: Checkout exact preview base
+      - name: Checkout isolated branch with full history
         uses: actions/checkout@v4
         with:
-          ref: 32eadf7f1af38dd952e399868626057e8dc362fc
-          fetch-depth: 1
+          ref: codex/mobile-core-ui-fixes-20261014
+          fetch-depth: 0
 
-      - name: Apply surgical patch in workspace only
-        if: matrix.variant == 'patched'
+      - name: Guard isolated branch and untouched source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "codex/mobile-core-ui-fixes-20261014"
+          git merge-base --is-ancestor 32eadf7f1af38dd952e399868626057e8dc362fc HEAD
+          test -z "$(git diff --name-only 32eadf7f1af38dd952e399868626057e8dc362fc..HEAD -- assets/home.js assets/ai-assistant.css assets/security-center.css assets/home-organizer.css tests/design-system-debt-contract.test.js tests/mobile-core-ui-fixes.test.js)"
+
+      - name: Apply surgical mobile UI fixes
         shell: bash
         run: |
           set -euo pipefail
@@ -50,6 +53,12 @@ jobs:
             'assets/home.js',
             'if (editTrip) editTripDates(editTrip, editButton);',
             'if (editTrip) editTripDates(editTrip, editDates);'
+          );
+
+          replaceExactlyOnce(
+            'tests/design-system-debt-contract.test.js',
+            "assert.match(home, /editTripDates\\(editTrip, editButton\\)/);",
+            "assert.match(home, /editTripDates\\(editTrip, editDates\\)/);"
           );
 
           appendOnce('assets/ai-assistant.css', 'Mobile full-screen Mate contract — 2026-10-14', `
@@ -129,43 +138,32 @@ jobs:
             }
           }
           `);
+
+          fs.writeFileSync('tests/mobile-core-ui-fixes.test.js', `const test = require('node:test');\nconst assert = require('node:assert/strict');\nconst fs = require('node:fs');\n\nfunction read(path){ return fs.readFileSync(path,'utf8'); }\n\ntest('All Trips date editor passes the clicked edit control',()=>{\n  const js=read('assets/home.js');\n  assert.match(js,/editTripDates\\(editTrip, editDates\\)/);\n  assert.doesNotMatch(js,/editTripDates\\(editTrip, editButton\\)/);\n});\n\ntest('Mate owns the full mobile visual viewport when open',()=>{\n  const css=read('assets/ai-assistant.css');\n  assert.match(css,/Mobile full-screen Mate contract — 2026-10-14/);\n  assert.match(css,/height:var\\(--ai-viewport-height,100dvh\\)/);\n  assert.match(css,/body\\.ai-assistant-open \\.ai-orb\\{display:none\\}/);\n});\n\ntest('mobile Settings has an opaque full-screen shell and safe-area padding',()=>{\n  const css=read('assets/security-center.css');\n  assert.match(css,/Mobile settings solid full-screen authority — 2026-10-14/);\n  assert.match(css,/min-height:100dvh/);\n  assert.match(css,/background:#dcebee/);\n  assert.match(css,/background:#10262b/);\n  assert.match(css,/env\\(safe-area-inset-top\\)/);\n});\n\ntest('All Trips mobile action targets meet 44px minimum',()=>{\n  const css=read('assets/home-organizer.css');\n  assert.match(css,/All Trips mobile action touch targets — 2026-10-14/);\n  assert.match(css,/min-height:44px/);\n});\n`);
           NODE
 
-      - name: Validate patch shape
-        if: matrix.variant == 'patched'
+      - name: Targeted validation
         shell: bash
         run: |
           set -euo pipefail
           node --check assets/home.js
+          node --test tests/mobile-core-ui-fixes.test.js tests/design-system-debt-contract.test.js
           git diff --check
 
-      - name: Run full Node and capture only diagnostic evidence
-        id: nodegate
+      - name: Full Node regression with historical contracts
         shell: bash
         run: |
-          set +e
-          node --test tests/*.test.js > node-full.log 2>&1
-          code=$?
-          set -e
-          {
-            echo "VARIANT=${{ matrix.variant }}"
-            echo "NODE_EXIT=$code"
-            echo "HEAD=$(git rev-parse HEAD)"
-            echo "--- likely failure lines ---"
-            grep -E "(^not ok|^# fail|AssertionError|ERR_ASSERTION|Error:|tests/.*\.test\.js|failed|failure)" node-full.log | tail -n 160 || true
-            echo "--- final 100 log lines ---"
-            tail -n 100 node-full.log || true
-          } | tee failure-summary.txt
-          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          node --test tests/*.test.js
 
-      - name: Upload compact diagnostic
-        uses: actions/upload-artifact@v4
-        with:
-          name: mobile-node-${{ matrix.variant }}
-          path: failure-summary.txt
-          if-no-files-found: error
-          retention-days: 2
-
-      - name: Publish summary
+      - name: Commit verified source and remove temporary workflow
         shell: bash
-        run: cat failure-summary.txt >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/mobile-core-ui-fix-once.yml
+          git add assets/home.js assets/ai-assistant.css assets/security-center.css assets/home-organizer.css tests/design-system-debt-contract.test.js tests/mobile-core-ui-fixes.test.js
+          git diff --cached --check
+          git commit -m "fix: repair mobile Mate settings and trip dates"
+          git push origin HEAD:codex/mobile-core-ui-fixes-20261014
