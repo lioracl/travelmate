@@ -152,3 +152,42 @@ html[data-theme="dark"] .security-center-launcher{color:#f7fafa;-webkit-text-fil
 .security-captcha-retry:focus-visible{outline:3px solid var(--tm-focus-ring);outline-offset:2px}
 
 .security-captcha-frame{display:block;width:100%;max-width:100%;height:90px;border:0;background:transparent}
+
+/* Mobile settings solid full-screen authority — 2026-10-14 */
+@media(max-width:680px){
+  html body .security-center-backdrop{
+    inset:0;
+    padding:0;
+    overflow-y:auto;
+    background:#dcebee;
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+    overscroll-behavior:contain;
+  }
+  html body .security-center{
+    box-sizing:border-box;
+    width:100%;
+    min-height:100dvh;
+    max-height:none;
+    margin:0;
+    padding:calc(16px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+    border:0;
+    border-radius:0;
+    background:#dcebee;
+    box-shadow:none;
+    isolation:isolate;
+  }
+  html body .security-center>header{
+    top:0;
+    margin:calc(-1 * (16px + env(safe-area-inset-top))) -16px 8px;
+    padding:calc(16px + env(safe-area-inset-top)) 16px 14px;
+    border-radius:0;
+    background:#dcebee;
+    box-shadow:0 1px 0 color-mix(in srgb,var(--tm-family-text) 12%,transparent);
+  }
+  html[data-theme="dark"] body .security-center-backdrop,
+  html[data-theme="dark"] body .security-center,
+  html[data-theme="dark"] body .security-center>header{
+    background:#10262b;
+  }
+}

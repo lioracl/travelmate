@@ -326,7 +326,7 @@ test('Trip date editor traps focus and restores its opener', () => {
   assert.match(home, /event\.key === 'Escape'/);
   assert.match(home, /event\.key !== 'Tab'/);
   assert.match(home, /opener\.focus\(\)/);
-  assert.match(home, /editTripDates\(editTrip, editButton\)/);
+  assert.match(home, /editTripDates\(editTrip, editDates\)/);
 });
 
 test('Navo dialog contains keyboard focus while open', () => {
