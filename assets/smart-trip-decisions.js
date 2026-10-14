@@ -90,9 +90,9 @@
     if (outdoor) {
       var weatherKey = outdoor.kind + ':' + String(outdoor.record.id), hourlyWeather = weatherByKey[weatherKey] || null;
       if (hourlyWeather && hourlyWeather.ready === true) {
-        if (wetWeather(hourlyWeather)) add('weather:' + String(outdoor.record.id), 65, '???? ????? ????? ?????', '?????? ???? ??????? ?????? ?? ???. ?? ????? ????.', 'weather:' + String(hourlyWeather.source || 'hourly'), 'medium', { type: 'open-places', href: '#places' }, outdoor.record.id);
+        if (wetWeather(hourlyWeather)) add('weather:' + String(outdoor.record.id), 65, 'גשם צפוי בזמן הפעילות', 'התחזית לשעת הפעילות מצביעה על גשם או מזג אוויר רטוב. כדאי להכין חלופה מקורה.', 'weather:' + String(hourlyWeather.source || 'hourly'), 'medium', { type: 'open-places', href: '#places' }, outdoor.record.id);
       } else if (outdoor.start <= current + 60 && wetWeather(weather)) {
-        add('weather:' + String(outdoor.record.id), 65, '???? ????? ????? ?????', '???? ??? ?????? ???????? ??????? ?? ??? ???? ???????. ?? ????? ????.', 'weather:' + String(weather.source || 'current'), 'low', { type: 'open-places', href: '#places' }, outdoor.record.id);
+        add('weather:' + String(outdoor.record.id), 65, 'מזג האוויר עלול להפריע לפעילות', 'מזג האוויר הנוכחי עלול להשפיע על פעילות שמתחילה בקרוב. כדאי להכין חלופה מקורה.', 'weather:' + String(weather.source || 'current'), 'low', { type: 'open-places', href: '#places' }, outdoor.record.id);
       }
     }
     if (context && typeof context.transitionAssessmentsForDate === 'function') {

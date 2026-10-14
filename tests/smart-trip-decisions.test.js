@@ -176,6 +176,9 @@ test('activity-hour weather wins over current conditions', () => {
   const wetAtActivity = evaluate(value, { weather: { ready: true, weatherCode: 0, source: 'Open-Meteo' }, weatherByKey: { 'activity:park': { ready: true, weatherCode: 61, precipitationProbability: 80, source: 'Open-Meteo:hourly' } } });
   const warning = wetAtActivity.recommendations.find(entry => entry.key === 'weather:park');
   assert.equal(warning.provenance, 'weather:Open-Meteo:hourly');assert.equal(warning.confidence, 'medium');
+  assert.equal(warning.title, 'גשם צפוי בזמן הפעילות');
+  assert.match(warning.reason, /התחזית לשעת הפעילות/);
+  assert.doesNotMatch(warning.title + warning.reason, /\?{2,}/);
   const futureWithoutHourly = evaluate(value, { weather: { ready: true, weatherCode: 61, source: 'Open-Meteo' } });
   assert.ok(!keys(futureWithoutHourly).includes('weather:park'));
 });
