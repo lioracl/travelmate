@@ -1,0 +1,157 @@
+name: Mobile core UI fix once
+
+on:
+  push:
+    branches:
+      - codex/mobile-core-ui-fixes-20261014
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    if: github.event.head_commit.message == 'chore: bootstrap mobile core ui fix'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/mobile-core-ui-fixes-20261014
+          fetch-depth: 2
+
+      - name: Guard exact preview parent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "32eadf7f1af38dd952e399868626057e8dc362fc"
+
+      - name: Apply surgical mobile UI fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          function replaceExactlyOnce(path, from, to) {
+            const original = fs.readFileSync(path, 'utf8');
+            const count = original.split(from).length - 1;
+            if (count !== 1) throw new Error(`${path}: expected 1 occurrence, found ${count}`);
+            fs.writeFileSync(path, original.replace(from, to));
+          }
+
+          function appendOnce(path, marker, block) {
+            let text = fs.readFileSync(path, 'utf8');
+            if (text.includes(marker)) throw new Error(`${path}: marker already exists`);
+            if (!text.endsWith('\n')) text += '\n';
+            fs.writeFileSync(path, text + '\n' + block.trim() + '\n');
+          }
+
+          replaceExactlyOnce(
+            'assets/home.js',
+            'if (editTrip) editTripDates(editTrip, editButton);',
+            'if (editTrip) editTripDates(editTrip, editDates);'
+          );
+
+          appendOnce('assets/ai-assistant.css', 'Mobile full-screen Mate contract — 2026-10-14', `
+          /* Mobile full-screen Mate contract — 2026-10-14 */
+          @media(max-width:600px){
+            html body.ai-assistant-open .ai-panel,
+            html body.ai-keyboard-open .ai-panel{
+              left:0;
+              right:0;
+              top:var(--ai-viewport-top,0px);
+              bottom:auto;
+              width:auto;
+              max-width:none;
+              height:var(--ai-viewport-height,100dvh);
+              max-height:var(--ai-viewport-height,100dvh);
+              border-radius:0;
+              transform-origin:center;
+            }
+            html body.ai-assistant-open .ai-orb{display:none}
+            html body.ai-assistant-open .ai-panel-header{
+              padding-top:max(12px,env(safe-area-inset-top));
+            }
+            html body.ai-assistant-open .ai-composer{
+              padding-bottom:max(10px,env(safe-area-inset-bottom));
+            }
+          }
+          `);
+
+          appendOnce('assets/security-center.css', 'Mobile settings solid full-screen authority — 2026-10-14', `
+          /* Mobile settings solid full-screen authority — 2026-10-14 */
+          @media(max-width:680px){
+            html body .security-center-backdrop{
+              inset:0;
+              padding:0;
+              overflow-y:auto;
+              background:#dcebee;
+              -webkit-backdrop-filter:none;
+              backdrop-filter:none;
+              overscroll-behavior:contain;
+            }
+            html body .security-center{
+              box-sizing:border-box;
+              width:100%;
+              min-height:100dvh;
+              max-height:none;
+              margin:0;
+              padding:calc(16px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+              border:0;
+              border-radius:0;
+              background:#dcebee;
+              box-shadow:none;
+              isolation:isolate;
+            }
+            html body .security-center>header{
+              top:0;
+              margin:calc(-1 * (16px + env(safe-area-inset-top))) -16px 8px;
+              padding:calc(16px + env(safe-area-inset-top)) 16px 14px;
+              border-radius:0;
+              background:#dcebee;
+              box-shadow:0 1px 0 color-mix(in srgb,var(--tm-family-text) 12%,transparent);
+            }
+            html[data-theme="dark"] body .security-center-backdrop,
+            html[data-theme="dark"] body .security-center,
+            html[data-theme="dark"] body .security-center>header{
+              background:#10262b;
+            }
+          }
+          `);
+
+          appendOnce('assets/home-organizer.css', 'All Trips mobile action touch targets — 2026-10-14', `
+          /* All Trips mobile action touch targets — 2026-10-14 */
+          @media(max-width:800px){
+            .home-page.is-authenticated #active-trips>.trip-card-shell .trip-card-action-rail>button{
+              min-height:44px;
+              height:44px;
+              touch-action:manipulation;
+            }
+          }
+          `);
+
+          fs.writeFileSync('tests/mobile-core-ui-fixes.test.js', `const test = require('node:test');\nconst assert = require('node:assert/strict');\nconst fs = require('node:fs');\n\nfunction read(path){ return fs.readFileSync(path,'utf8'); }\n\ntest('All Trips date editor passes the clicked edit control',()=>{\n  const js=read('assets/home.js');\n  assert.match(js,/editTripDates\\(editTrip, editDates\\)/);\n  assert.doesNotMatch(js,/editTripDates\\(editTrip, editButton\\)/);\n});\n\ntest('Mate owns the full mobile visual viewport when open',()=>{\n  const css=read('assets/ai-assistant.css');\n  assert.match(css,/Mobile full-screen Mate contract — 2026-10-14/);\n  assert.match(css,/height:var\\(--ai-viewport-height,100dvh\\)/);\n  assert.match(css,/body\\.ai-assistant-open \\.ai-orb\\{display:none\\}/);\n});\n\ntest('mobile Settings has an opaque full-screen shell and safe-area padding',()=>{\n  const css=read('assets/security-center.css');\n  assert.match(css,/Mobile settings solid full-screen authority — 2026-10-14/);\n  assert.match(css,/min-height:100dvh/);\n  assert.match(css,/background:#dcebee/);\n  assert.match(css,/background:#10262b/);\n  assert.match(css,/env\\(safe-area-inset-top\\)/);\n});\n\ntest('All Trips mobile action targets meet 44px minimum',()=>{\n  const css=read('assets/home-organizer.css');\n  assert.match(css,/All Trips mobile action touch targets — 2026-10-14/);\n  assert.match(css,/min-height:44px/);\n});\n`);
+          NODE
+
+      - name: Validate targeted repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check assets/home.js
+          node --test tests/mobile-core-ui-fixes.test.js
+          git diff --check
+
+      - name: Run full Node regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/*.test.js
+
+      - name: Commit verified fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/home.js assets/ai-assistant.css assets/security-center.css assets/home-organizer.css tests/mobile-core-ui-fixes.test.js
+          git commit -m "fix: repair mobile Mate settings and trip dates"
+          git push origin HEAD:codex/mobile-core-ui-fixes-20261014
