@@ -933,3 +933,12 @@ html body.home-page #modal-destination .create-trip{background:var(--tm-action-p
   .landing-login{animation:none;transition:none;scroll-behavior:auto}
   .landing-login:hover{transform:none}
 }
+
+/* All Trips mobile action touch targets — 2026-10-14 */
+@media(max-width:800px){
+  .home-page.is-authenticated #active-trips>.trip-card-shell .trip-card-action-rail>button{
+    min-height:44px;
+    height:44px;
+    touch-action:manipulation;
+  }
+}
