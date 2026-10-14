@@ -73,6 +73,15 @@
     return { label: base.label, icon: base.icon, atmosphere: atmosphere };
   }
 
+  function hourlySnapshot(data,date,time) {
+    var hourly=data&&data.hourly||{},times=Array.isArray(hourly.time)?hourly.time:[],match=/^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(time||''));
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||''))||!match)return null;
+    var target=String(date)+'T'+match[1]+':00',index=times.indexOf(target);if(index<0)return null;
+    function value(list){var number=Number(Array.isArray(list)?list[index]:null);return Number.isFinite(number)?number:null;}
+    return Object.freeze({ready:true,time:target,weatherCode:value(hourly.weather_code),precipitationProbability:value(hourly.precipitation_probability),temperature:value(hourly.temperature_2m),windSpeed:value(hourly.wind_speed_10m),source:'Open-Meteo:hourly'});
+  }
+  function contextAt(date,time){if(!state.forecast||state.error)return null;return hourlySnapshot(state.forecast,date,time);}
+
   function contextSnapshot() {
     var data=state.forecast||{},current=data.current||{},daily=data.daily||{},details=state.forecast?weatherDetails(current.weather_code,current.is_day):{label:''};
     function value(list){var number=Number(Array.isArray(list)?list[0]:null);return Number.isFinite(number)?number:null;}
@@ -91,7 +100,7 @@
     });
   }
   function publishContext(){var snapshot=contextSnapshot();window.dispatchEvent(new CustomEvent('travelmate:weather-context-change',{detail:snapshot}));return snapshot;}
-  window.TravelMateWeatherContext=Object.freeze({snapshot:contextSnapshot});
+  window.TravelMateWeatherContext=Object.freeze({snapshot:contextSnapshot,at:contextAt});
 
   function weatherSvg(icon) {
     var cloud = '<path class="weather-icon__cloud" d="M7 19h12a5 5 0 0 0 .6-10A7 7 0 0 0 6.4 11 4 4 0 0 0 7 19Z"></path>';
@@ -185,10 +194,11 @@
     var cacheKey = 'travelmate-weather-forecast:' + place.latitude.toFixed(3) + ',' + place.longitude.toFixed(3);
     var cached = null;
     try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch (error) {}
-    if (!force && cached && Date.now() - cached.savedAt < 900000) return cached.data;
+    if (!force && cached && cached.data && cached.data.hourly && Array.isArray(cached.data.hourly.time) && Date.now() - cached.savedAt < 900000) return cached.data;
     var fields = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,uv_index_max';
     var current = 'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day';
-    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(place.latitude) + '&longitude=' + encodeURIComponent(place.longitude) + '&current=' + current + '&daily=' + fields + '&timezone=auto&forecast_days=7';
+    var hourly = 'weather_code,precipitation_probability,temperature_2m,wind_speed_10m';
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + encodeURIComponent(place.latitude) + '&longitude=' + encodeURIComponent(place.longitude) + '&current=' + current + '&hourly=' + hourly + '&daily=' + fields + '&timezone=auto&forecast_days=7';
     var data = null; var lastError = null;
     for (var attempt = 0; attempt < 2 && !data; attempt += 1) {
       try { data = await fetchJson(url, 'forecast'); }

@@ -96,7 +96,7 @@ test('Smart Trip Mode runtime is local and never owns search, GPS, AI or trip pe
 });
 
 test('overview intelligence loader wires context, personalization and Smart Trip Mode in order',()=>{
-  assert.match(app,/intelligence:\{styles:\['smart-trip-mode\.css'\],scripts:\['trip-context\.js','learned-preferences\.js','learned-profile\.js','personalized-suggestions\.js','smart-trip-mode\.js','trip-intelligence\.js'\]\}/);
+  assert.match(app,/intelligence:\{styles:\['smart-trip-mode\.css'\],scripts:\['trip-context\.js','learned-preferences\.js','learned-profile\.js','personalized-suggestions\.js','smart-trip-decisions\.js','smart-trip-mode\.js','smart-trip-actions\.js','trip-intelligence\.js'\]\}/);
   assert.match(source,/travelMateTripReady/);
 });
 
