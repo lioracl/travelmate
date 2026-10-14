@@ -1,4 +1,4 @@
-name: Smart Trip race diagnostic once
+name: Smart Trip Node failure capture
 
 on:
   push:
@@ -9,10 +9,10 @@ permissions:
   contents: read
 
 jobs:
-  candidate-fix:
-    if: "${{ github.event.head_commit.message == 'chore: test Smart Trip race candidates' }}"
+  capture-node-failure:
+    if: "${{ github.event.head_commit.message == 'chore: capture Smart Trip Node failure' }}"
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 10
     steps:
       - name: Checkout diagnostic branch
         uses: actions/checkout@v4
@@ -20,7 +20,7 @@ jobs:
           ref: integration/smart-trip-race-diagnostic-20261014
           fetch-depth: 0
 
-      - name: Apply candidate fixes in workspace only
+      - name: Apply the exact rejected candidate in workspace only
         shell: bash
         run: |
           set -euo pipefail
@@ -46,32 +46,33 @@ jobs:
           node --check assets/smart-trip-actions.js
           node --check assets/nearby.js
           git diff --check
-          git diff -- assets/smart-trip-actions.js assets/nearby.js
 
-      - name: Full Node regression
-        run: node --test tests/*.test.js
-
-      - name: Install Playwright
+      - name: Capture exact Node failure
+        id: node
+        shell: bash
         run: |
-          npm install --no-save @playwright/test@1.55.0
-          npx playwright install --with-deps chromium
+          set +e
+          node --test tests/*.test.js > /tmp/node.log 2>&1
+          status=$?
+          set -e
+          {
+            echo "NODE_EXIT=$status"
+            echo "--- FAILURE EXCERPTS ---"
+            grep -E -B 10 -A 28 'not ok|AssertionError|ERR_ASSERTION|failureType:|error:|location:' /tmp/node.log | tail -n 500 || true
+            echo "--- SUMMARY ---"
+            tail -n 40 /tmp/node.log
+          } > node-diagnostic.txt
+          cat node-diagnostic.txt >> "$GITHUB_STEP_SUMMARY"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
 
-      - name: Start static server
-        run: |
-          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/travelmate-http.log 2>&1 &
-          for i in {1..30}; do
-            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
-            sleep 1
-          done
-          cat /tmp/travelmate-http.log
-          exit 1
+      - name: Upload compact Node diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smart-trip-node-diagnostic
+          path: node-diagnostic.txt
+          retention-days: 2
 
-      - name: Re-run the two failed specs
-        env:
-          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e/smart-trip-decisions.spec.js tests/e2e/nearby-soft-time.spec.js --reporter=line
-
-      - name: Full Integration QA if targeted specs pass
-        env:
-          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/e2e --reporter=line
+      - name: Preserve failing gate
+        if: steps.node.outputs.status != '0'
+        run: exit 1
