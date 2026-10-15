@@ -32,6 +32,7 @@ import java.util.Set;
 public class TravelMateVoicePlugin extends Plugin {
     private TextToSpeech tts;
     private SpeechRecognizer recognizer;
+    private RecognitionSession recognitionSession;
     private boolean ready, initializing, foreground = true;
     private int engineEpoch;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -63,12 +64,23 @@ public class TravelMateVoicePlugin extends Plugin {
         for (Voice voice : usableVoices()) {
             JSObject item = new JSObject(); item.put("voiceURI", voice.getName()); item.put("name", voice.getName());
             item.put("lang", voice.getLocale().toLanguageTag()); item.put("localService", true);
-            item.put("networkRequired", voice.isNetworkConnectionRequired()); voices.put(item);
+            item.put("networkRequired", voice.isNetworkConnectionRequired());
+            item.put("quality", voice.getQuality()); item.put("latency", voice.getLatency());
+            item.put("default", tts.getDefaultVoice() != null && voice.getName().equals(tts.getDefaultVoice().getName())); voices.put(item);
         }
+        JSArray installed = new JSArray();
+        if (ready && tts != null && tts.getVoices() != null) for (Voice voice : tts.getVoices()) {
+            JSObject item = new JSObject(); item.put("voiceURI",voice.getName()); item.put("lang",voice.getLocale().toLanguageTag());
+            item.put("networkRequired",voice.isNetworkConnectionRequired()); item.put("quality",voice.getQuality()); item.put("latency",voice.getLatency());
+            item.put("installed",!voice.getFeatures().contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED)); installed.put(item);
+        }
+        result.put("installedVoices",installed);
         result.put("provider", "android-native"); result.put("canSpeak", voices.length() > 0);
         result.put("canRecognize", SpeechRecognizer.isRecognitionAvailable(getContext()));
         result.put("canStop", true); result.put("canPause", false); result.put("voices", voices);
         result.put("requestedLanguage", "he-IL");
+        result.put("voiceApiLevel", 3); result.put("automaticFinalization", true);
+        result.put("effectiveVoiceURI", ready && tts.getVoice() != null ? tts.getVoice().getName() : "");
         result.put("currentLanguage", ready && tts.getVoice() != null ? tts.getVoice().getLocale().toLanguageTag() : "");
         result.put("ttsNetwork", "device-reported-local-only"); result.put("sttNetwork", "provider-dependent");
         result.put("error", error == null ? "" : error); return result;
@@ -112,14 +124,14 @@ public class TravelMateVoicePlugin extends Plugin {
         for(Voice voice:voices)if(voice.getName().equals(requested))ordered.add(voice);
         for(Voice voice:voices)if(("he".equals(voice.getLocale().getLanguage())||"iw".equals(voice.getLocale().getLanguage()))&&!ordered.contains(voice))ordered.add(voice);
         for(Voice voice:voices)if(!ordered.contains(voice))ordered.add(voice);
-        Voice selected=VoicePolicy.firstUsable(ordered,voice->tts.setVoice(voice)==TextToSpeech.SUCCESS);
+        Voice selected=VoicePolicy.firstUsable(ordered,voice->tts.setVoice(voice)==TextToSpeech.SUCCESS && tts.getVoice()!=null && voice.getName().equals(tts.getVoice().getName()));
         if(selected==null){call.reject("No usable local device voice","voice-unavailable");return;}
-        tts.setSpeechRate(VoicePolicy.delivery(call.getDouble("rate",1.0),0.8f,1.2f));
-        tts.setPitch(VoicePolicy.delivery(call.getDouble("pitch",1.0),0.8f,1.2f));
+        float rate=VoicePolicy.delivery(call.getDouble("rate",1.0),0.8f,1.2f), pitch=VoicePolicy.delivery(call.getDouble("pitch",1.0),0.8f,1.2f);
+        boolean rateAccepted=tts.setSpeechRate(rate)==TextToSpeech.SUCCESS, pitchAccepted=tts.setPitch(pitch)==TextToSpeech.SUCCESS;
         Bundle parameters=new Bundle();parameters.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME,VoicePolicy.delivery(call.getDouble("volume",1.0),0f,1f));
         speakingLanguage=selected.getLocale().toLanguageTag();speaking=session;
         if(tts.speak(text,TextToSpeech.QUEUE_FLUSH,parameters,session)!=TextToSpeech.SUCCESS){speaking="";call.reject("Device synthesis failed","synthesis-failed");return;}
-        JSObject result=new JSObject();result.put("currentLanguage",selected.getLocale().toLanguageTag());result.put("voiceURI",selected.getName());call.resolve(result);
+        JSObject result=new JSObject();result.put("currentLanguage",selected.getLocale().toLanguageTag());result.put("voiceURI",selected.getName());result.put("requestedVoiceURI",requested);result.put("fallback",!requested.isEmpty()&&!requested.equals(selected.getName()));result.put("rate",rate);result.put("pitch",pitch);result.put("rateAccepted",rateAccepted);result.put("pitchAccepted",pitchAccepted);call.resolve(result);
     }); }
     @PluginMethod public void startListening(PluginCall call) { main(() -> {
         String session=call.getString("sessionId","");
@@ -140,26 +152,31 @@ public class TravelMateVoicePlugin extends Plugin {
         final String session=listening;
         try {
             recognizer=SpeechRecognizer.createSpeechRecognizer(getContext());
+            recognitionSession=new RecognitionSession(new RecognitionSession.Clock(){
+                public void post(Runnable task,long delay){handler.postDelayed(task,delay);}
+                public void remove(Runnable task){handler.removeCallbacks(task);}
+            },()->{if(foreground&&session.equals(listening)&&recognizer!=null){emit(session,"stt-finalizing",null);try{recognizer.stopListening();}catch(RuntimeException error){stopRecognition("service-not-allowed");}}},()->{if(session.equals(listening))stopRecognition("no-speech");});
             recognizer.setRecognitionListener(new RecognitionListener(){
                 private boolean current(){return foreground&&session.equals(listening);}
                 @Override public void onReadyForSpeech(Bundle data){if(current())emit(session,"stt-start",null);}
                 @Override public void onResults(Bundle data){if(!current())return;ArrayList<String> results=data.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);if(results!=null&&!results.isEmpty())emit(session,"stt-result",results.get(0));listening="";releaseRecognizer();emit(session,"stt-end",null);}
                 @Override public void onError(int error){if(!current())return;listening="";releaseRecognizer();emit(session,"stt-error",VoicePolicy.recognitionError(error));}
-                @Override public void onBeginningOfSpeech(){} @Override public void onEndOfSpeech(){}
+                @Override public void onBeginningOfSpeech(){if(current()){recognitionSession.beginning();emit(session,"stt-speech-start",null);}}
+                @Override public void onEndOfSpeech(){if(current()){recognitionSession.end();emit(session,"stt-speech-end",null);}}
                 @Override public void onRmsChanged(float rms){} @Override public void onBufferReceived(byte[] buffer){}
-                @Override public void onPartialResults(Bundle data){} @Override public void onEvent(int event,Bundle data){}
+                @Override public void onPartialResults(Bundle data){if(current()&&data!=null){ArrayList<String> values=data.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);if(values!=null&&!values.isEmpty())recognitionSession.partial(values.get(0));}} @Override public void onEvent(int event,Bundle data){}
             });
             Intent intent=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,"he-IL");intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS,false);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,"he-IL");intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS,true);
             intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,1);
             recognizer.startListening(intent);call.resolve();
         }catch(RuntimeException error){releaseRecognizer();listening="";call.reject("Recognition service unavailable","service-not-allowed");}
     }
-    private void releaseRecognizer(){SpeechRecognizer previous=recognizer;recognizer=null;if(previous!=null){try{previous.cancel();}catch(RuntimeException ignored){}try{previous.destroy();}catch(RuntimeException ignored){}}}
+    private void releaseRecognizer(){if(recognitionSession!=null){recognitionSession.finish();recognitionSession=null;}SpeechRecognizer previous=recognizer;recognizer=null;if(previous!=null){try{previous.cancel();}catch(RuntimeException ignored){}try{previous.destroy();}catch(RuntimeException ignored){}}}
     private void stopRecognition(String reason){String old=listening;listening="";releaseRecognizer();if(permissionCall!=null){permissionCall.reject("Recognition cancelled",reason);permissionCall=null;}if(!old.isEmpty())emit(old,"stt-error",reason);}
     private void stopSpeech(){String old=speaking;speaking="";if(tts!=null)tts.stop();if(!old.isEmpty())emit(old,"tts-error","interrupted");}
-    @PluginMethod public void stopListening(PluginCall call){main(()->{if(recognizer!=null&&listening.equals(call.getString("sessionId","")))recognizer.stopListening();call.resolve();});}
+    @PluginMethod public void stopListening(PluginCall call){main(()->{if(recognitionSession!=null&&listening.equals(call.getString("sessionId","")))recognitionSession.stop();call.resolve();});}
     @PluginMethod public void cancel(PluginCall call){main(()->{String id=call.getString("sessionId","");if(id.isEmpty()||id.equals(listening))stopRecognition("aborted");if(id.isEmpty()||id.equals(speaking))stopSpeech();call.resolve();});}
     private void suspend(){stopRecognition("aborted");stopSpeech();engineEpoch++;initializing=false;ready=false;if(tts!=null){tts.shutdown();tts=null;}finishInitialization("background");notifyListeners("voiceLifecycle",new JSObject());}
     @Override protected void handleOnPause(){foreground=false;main(this::suspend);}
