@@ -3,10 +3,10 @@ import {appendFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 
-// Last Preview web SHA explicitly accepted as compatible with the currently installed native shell.
-// Advance this only as part of an explicit native-shell release. Comparing cumulatively from this
-// baseline prevents a blocked native change from being hidden by a later web-only push.
-export const OTA_BASE = '054ca492931cd52c10af8c918f9bb98ec6b1a339';
+// Native API 2 QA 2.26.1 was installed and TTS/STT verified on Samsung by the owner.
+// Its exact web/native pin is the accepted compatibility boundary; later native changes still fail closed.
+// Advance only after an explicitly accepted native-shell release, never to hide a pending native delta.
+export const OTA_BASE = '81ff06343c49b9a395661f54bfc873a3ccb85644';
 
 const nativePath = /(^|\/)(android|ios|native|plugins|native-overlay|ota-native)(\/|$)|capacitor|cordova|native[-_.](?:api|bridge|plugin|widget|live|compat)|(?:stage-native-web|publish-ota|budget-widget-actions)|ota-overlay\.json$|(?:AndroidManifest\.xml|Info\.plist|Podfile|\.pbxproj|\.xcworkspace|\.xcodeproj|\.gradle|\.swift|\.kt|\.java|\.podspec|\.entitlements|\.aab|\.apk)(?:$|\/)/i;
 const dependencyPath = /(^|\/)(?:package(?:-lock)?\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb?)$/i;

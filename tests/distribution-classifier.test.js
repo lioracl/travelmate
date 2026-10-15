@@ -70,3 +70,6 @@ test('About system status distinguishes runtime and never invents native metadat
   assert.equal(webStamped.status.nativeApiLevel,null);
   assert.doesNotMatch(webStamped.html,/רמת API של Native/);
 });
+
+
+test('OTA acceptance boundary is the owner-tested API2 Samsung candidate',async()=>{const {OTA_BASE,classify}=await import('../tools/classify-distribution.mjs');assert.equal(OTA_BASE,'81ff06343c49b9a395661f54bfc873a3ccb85644');const overlay=JSON.parse(fs.readFileSync('ota-overlay.json','utf8'));assert.equal(overlay.sha,'d80d9909e78ffdca831251b514d1a54f11e9118a');assert.equal(overlay.nativeApiLevel,2);assert.equal(classify([{path:'android/app/src/main/java/com/travelmate/app/TravelMateVoicePlugin.java'}]).distribution,'APK_REQUIRED')});

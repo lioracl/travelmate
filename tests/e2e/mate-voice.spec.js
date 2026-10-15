@@ -9,7 +9,7 @@ async function prepare(page,theme='light'){
   window.SpeechSynthesisUtterance=class {constructor(text){this.text=text;}};
   Object.defineProperty(window,'speechSynthesis',{value:{speaking:false,pending:false,paused:false,getVoices:()=>[{voiceURI:'local-he',name:'Controlled Hebrew',lang:'he-IL',localService:true,default:true}],addEventListener(){},speak(u){this.speaking=true;voiceEvidence.speech.push({text:u.text,rate:u.rate});window.qaUtterance=u;if(u.onstart)u.onstart();},cancel(){this.speaking=false;this.paused=false;voiceEvidence.cancels++;},pause(){this.paused=true;},resume(){this.paused=false;}}});
  },{theme});
- await page.goto('/trip/japan-2027/index.html'); await page.locator('.ai-orb').click();await expect(page.locator('.ai-panel')).toBeVisible();
+ await page.goto('/trip/japan-2027/index.html'); await page.locator('.ai-orb').click();await expect(page.locator('.ai-panel')).toBeVisible();await page.evaluate(()=>TravelMateSettings.setVoicePreferences({autoSend:false}));
 }
 for(const width of [360,390,430])for(const theme of ['light','dark'])test('voice explicit controls and RTL layout '+width+' '+theme,async({page})=>{
  await page.setViewportSize({width,height:844});await prepare(page,theme);
@@ -26,7 +26,7 @@ for(const width of [360,390,430])for(const theme of ['light','dark'])test('setti
  await page.setViewportSize({width,height:844});await prepare(page,theme);await page.locator('[data-ai-close]').click();
  await page.evaluate(async()=>{await TravelMateFeatures.ensureAccount();TravelMateSettings.open();});
  const section=page.locator('[data-settings-voice]');await expect(section).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);await expect(section.locator('[data-voice-style] option')).toHaveCount(6);
- await section.locator('[data-voice-style]').selectOption('calm');await section.locator('[data-voice-choice]').selectOption('local-he');await section.locator('[data-voice-preview]').click();expect(await page.evaluate(()=>voiceEvidence.starts)).toBe(0);expect(await page.evaluate(()=>voiceEvidence.speech.at(-1).rate)).toBe(.88);
+ await section.locator('[data-voice-style]').selectOption('calm');await section.locator('[data-voice-choice]').selectOption('local-he');await section.locator('[data-voice-preview]').click();expect(await page.evaluate(()=>voiceEvidence.starts)).toBe(0);expect(await page.evaluate(()=>voiceEvidence.speech.at(-1).rate)).toBe(.8);
  await page.locator('[data-security-close]').click();expect(await page.evaluate(()=>speechSynthesis.speaking)).toBe(false);
  await Promise.all([page.waitForEvent('framenavigated',frame=>frame===page.mainFrame()),page.evaluate(()=>{localStorage.setItem('travelmate-active-user','other-owner');dispatchEvent(new CustomEvent('travelmate:account-context-changed',{detail:{userId:'other-owner'}}));})]);
  await page.waitForFunction(()=>Boolean(window.TravelMateFeatures));await page.evaluate(async()=>{await TravelMateFeatures.ensureAccount();TravelMateSettings.open();});

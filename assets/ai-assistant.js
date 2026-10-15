@@ -328,7 +328,11 @@
 
   async function invokeAssistant(client, messages, contextOverride) {
     var invokeRequest = client.functions.invoke('travel-assistant', { body: { messages: messages, context: contextOverride || tripContext, locale: document.documentElement.lang || 'he' } });
-    return Promise.race([invokeRequest, new Promise(function (resolve, reject) { setTimeout(function () { reject(new Error('AI_TIMEOUT')); }, 30000); })]);
+    var result = await Promise.race([invokeRequest, new Promise(function (resolve, reject) { setTimeout(function () { reject(new Error('AI_TIMEOUT')); }, 30000); })]);
+    if (result.error) {
+      try { var errorBody = await result.error.context.clone().json(); result.error.travelMateCode = [errorBody && errorBody.error, errorBody && errorBody.providerCode, errorBody && errorBody.providerStatus].filter(Boolean).join(':'); } catch (parseError) {}
+    }
+    return result;
   }
 
   function renderHistory() {
@@ -422,17 +426,18 @@
   }
 
   function friendlyError(error) {
-    var message = String(error && (error.travelMateCode || error.message || error.context && error.context.status) || '');
-    if (/AI_NOT_CONFIGURED/i.test(message)) return 'Mate עדיין לא מחובר למפתח Gemini בשרת. בדוק שסוד GEMINI_API_KEY קיים ב־Supabase.';
+    var status = Number(error && (error.context && error.context.status || error.status) || 0);
+    var message = [error && error.travelMateCode, error && error.message, error && error.name].filter(Boolean).join(':');
+    if (/AI_NOT_CONFIGURED/i.test(message)) return 'שירות ה־AI עדיין לא הוגדר במלואו. אפשר לנסות שוב לאחר עדכון השירות.';
     if (/USAGE_CHECK_FAILED/i.test(message)) return 'בדיקת מכסת השימוש של Mate נכשלה. נסה לצאת ולהיכנס מחדש לחשבון.';
-    if (/AI_PROVIDER_ERROR.*403|PERMISSION_DENIED/i.test(message)) return 'מפתח Gemini אינו מורשה כרגע. בדוק ב־Google AI Studio שהמפתח פעיל ושפרויקט ה־Free tier זמין.';
-    if (/AI_PROVIDER_ERROR.*404|NOT_FOUND/i.test(message)) return 'מודל Gemini שהוגדר אינו זמין למפתח הזה. TravelMate יעבור למודל Flash היציב לאחר עדכון השרת.';
-    if (/AI_PROVIDER_ERROR|EMPTY_AI_RESPONSE/i.test(message)) return 'שירות Gemini לא החזיר תשובה תקינה. אפשר לנסות שוב בעוד רגע.';
-    if (/AI_TIMEOUT/i.test(message)) return 'Mate לא קיבל תשובה בזמן. בדוק את החיבור ונסה שוב — השיחה נשמרה.';
-    if (/401|JWT|Unauthorized/i.test(message)) return 'כדי לדבר איתי צריך להתחבר לחשבון TravelMate.';
-    if (/429|limit|rate/i.test(message)) return 'הגעת למגבלת השימוש היומית בעוזר. אפשר לחזור ולשאול אותי מחר.';
-    if (/404|FunctionsHttpError|Failed to send/i.test(message)) return 'שירות ה־AI עדיין לא הופעל ב־Supabase. הממשק כבר מוכן, ונדרשת הפעלה חד־פעמית של הפונקציה.';
-    return 'לא הצלחתי להתחבר כרגע. אפשר לנסות שוב בעוד רגע.';
+    if (/AI_PROVIDER_ERROR|EMPTY_AI_RESPONSE/i.test(message)) return 'ספק ה־AI אינו זמין כרגע או לא החזיר תשובה תקינה. אפשר לנסות שוב בעוד רגע.';
+    if (/AI_TIMEOUT|AbortError|TimeoutError/i.test(message)) return 'Mate לא קיבל תשובה בזמן. בדוק את החיבור ונסה שוב — השיחה נשמרה.';
+    if (status === 401 || /JWT|Unauthorized|AUTH_REQUIRED|NAVO_AUTH_REQUIRED/i.test(message)) return 'כדי לדבר איתי צריך להתחבר לחשבון TravelMate.';
+    if (status === 429 || /DAILY_LIMIT_REACHED|RATE_LIMIT|429/i.test(message)) return 'הגעת למגבלת השימוש היומית בעוזר. אפשר לחזור ולשאול אותי מחר.';
+    var nativeAndroid = window.TravelMateVoice && window.TravelMateVoice.getSnapshot().provider === 'android-native';
+    if (status === 403 || /ORIGIN_NOT_ALLOWED/i.test(message) || nativeAndroid && /FunctionsFetchError|Failed to (?:send|fetch)|NetworkError/i.test(message)) return 'Mate לא הצליח להתחבר לשירות ה־AI מהאפליקציה. נדרש לבדוק את הרשאת החיבור של גרסת Android.';
+    if (status === 404 || /FUNCTION_NOT_FOUND/i.test(message)) return 'שירות ה־AI עדיין לא הופעל. נדרשת הפעלה של השירות כדי לקבל תשובות.';
+    return 'לא הצלחתי להתחבר כרגע. בדוק את החיבור ונסה שוב בעוד רגע.';
   }
 
   function appendAiNote(trip, question, answer, metadata) {
@@ -592,7 +597,6 @@
       var result = await invokeAssistant(client, state.messages.slice(-12));
       if (!requestIsCurrent(requestContext)) { typing.remove(); return; }
       if (result.error) {
-        try { var errorBody = await result.error.context.clone().json(); result.error.travelMateCode = [errorBody && errorBody.error, errorBody && errorBody.providerCode, errorBody && errorBody.providerStatus].filter(Boolean).join(':'); } catch (parseError) {}
         if (!requestIsCurrent(requestContext)) { typing.remove(); return; }
         throw result.error;
       }
@@ -620,7 +624,19 @@
     if (!voice) { button.disabled = true; return; }
     button.addEventListener('click', function () {
       if (voice.getSnapshot().phase === 'listening') voice.stopListening();
-      else voice.startListening({ onResult: function (text) { ui.input.value = text; autoGrow(); ui.input.focus(); } });
+      else {
+        var dictationGeneration = state.lifecycleGeneration, dictationSent = false;
+        voice.startListening({
+          onResult: function (text) { if (state.open && !state.busy && dictationGeneration === state.lifecycleGeneration) { ui.input.value = text; autoGrow(); } },
+          onComplete: function (text) {
+            if (dictationSent || !state.open || state.busy || dictationGeneration !== state.lifecycleGeneration) return;
+            var settings = window.TravelMateSettings;
+            if (settings && settings.getVoicePreferences().autoSend) {
+              dictationSent = true; sendMessage(text);
+            } else { ui.input.focus(); }
+          }
+        });
+      }
     });
     controls.querySelector('[data-voice-pause]').addEventListener('click', voice.pause);
     controls.querySelector('[data-voice-resume]').addEventListener('click', voice.resume);
