@@ -18,7 +18,7 @@ try {
   npx cap sync android
   if ($LASTEXITCODE -ne 0) { throw 'Native sync failed' }
   Push-Location android
-  try { .\gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest :app:assembleDebug --console=plain; if ($LASTEXITCODE -ne 0) { throw 'Android build failed' } } finally { Pop-Location }
+  try { .\gradlew.bat :app:check :app:assembleDebugAndroidTest :app:assembleDebug --console=plain; if ($LASTEXITCODE -ne 0) { throw 'Android build failed' } } finally { Pop-Location }
   $signature = & "$AndroidSdk\build-tools\36.0.0\apksigner.bat" verify --print-certs android/app/build/outputs/apk/debug/app-debug.apk
   $signature | Write-Output
   $expectedCertificate = (Get-FileHash -LiteralPath "$signRoot\qa-certificate.der" -Algorithm SHA256).Hash.ToLowerInvariant()

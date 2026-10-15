@@ -36,7 +36,7 @@ public class TravelMateVoicePlugin extends Plugin {
     private int engineEpoch;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable initializationTimeout;
-    private String speaking = "", listening = "";
+    private String speaking = "", listening = "", speakingLanguage = "";
     private PluginCall permissionCall;
     private final List<PluginCall> waiting = new ArrayList<>();
     private final Locale hebrew = Locale.forLanguageTag("he-IL");
@@ -92,7 +92,7 @@ public class TravelMateVoicePlugin extends Plugin {
                 if (ready) {
                     tts.setLanguage(hebrew);
                     tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-                        @Override public void onStart(String id) { main(() -> { if (id.equals(speaking)) emit(id,"tts-start",null); }); }
+                        @Override public void onStart(String id) { main(() -> { if (id.equals(speaking)) emit(id,"tts-start",speakingLanguage); }); }
                         @Override public void onDone(String id) { main(() -> { if (id.equals(speaking)) { speaking="";emit(id,"tts-end",null); } }); }
                         @Override public void onError(String id) { onError(id, TextToSpeech.ERROR); }
                         @Override public void onError(String id,int error) { main(() -> { if (id.equals(speaking)) { speaking="";emit(id,"tts-error","synthesis-failed"); } }); }
@@ -107,15 +107,16 @@ public class TravelMateVoicePlugin extends Plugin {
         if (!foreground || !ready || tts == null) { call.reject("TTS engine is not ready","engine-unavailable");return; }
         if (!VoicePolicy.validSession(session) || text.isEmpty() || text.length()>4000) { call.reject("Invalid speech request","invalid-request");return; }
         stopRecognition("aborted");stopSpeech();
-        List<Voice> voices=usableVoices();Voice selected=null;String requested=call.getString("voiceURI","");
-        for(Voice voice:voices)if(voice.getName().equals(requested))selected=voice;
-        if(selected==null)for(Voice voice:voices)if("he".equals(voice.getLocale().getLanguage())||"iw".equals(voice.getLocale().getLanguage())){selected=voice;break;}
-        if(selected==null&&!voices.isEmpty())selected=voices.get(0);
-        if(selected==null||tts.setVoice(selected)!=TextToSpeech.SUCCESS){call.reject("No usable local device voice","voice-unavailable");return;}
+        List<Voice> voices=usableVoices(),ordered=new ArrayList<>();String requested=call.getString("voiceURI","");
+        for(Voice voice:voices)if(voice.getName().equals(requested))ordered.add(voice);
+        for(Voice voice:voices)if(("he".equals(voice.getLocale().getLanguage())||"iw".equals(voice.getLocale().getLanguage()))&&!ordered.contains(voice))ordered.add(voice);
+        for(Voice voice:voices)if(!ordered.contains(voice))ordered.add(voice);
+        Voice selected=VoicePolicy.firstUsable(ordered,voice->tts.setVoice(voice)==TextToSpeech.SUCCESS);
+        if(selected==null){call.reject("No usable local device voice","voice-unavailable");return;}
         tts.setSpeechRate(VoicePolicy.delivery(call.getDouble("rate",1.0),0.8f,1.2f));
         tts.setPitch(VoicePolicy.delivery(call.getDouble("pitch",1.0),0.8f,1.2f));
         Bundle parameters=new Bundle();parameters.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME,VoicePolicy.delivery(call.getDouble("volume",1.0),0f,1f));
-        speaking=session;
+        speakingLanguage=selected.getLocale().toLanguageTag();speaking=session;
         if(tts.speak(text,TextToSpeech.QUEUE_FLUSH,parameters,session)!=TextToSpeech.SUCCESS){speaking="";call.reject("Device synthesis failed","synthesis-failed");return;}
         JSObject result=new JSObject();result.put("currentLanguage",selected.getLocale().toLanguageTag());result.put("voiceURI",selected.getName());call.resolve(result);
     }); }
