@@ -43,8 +43,7 @@
     });
   }
   function speak(text, language) {
-    if (!('speechSynthesis' in window)) return showStatus('הקראה קולית אינה זמינה בדפדפן הזה.', 'error');
-    speechSynthesis.cancel(); var utterance = new SpeechSynthesisUtterance(text); utterance.lang = language || 'he-IL'; utterance.rate = .94; speechSynthesis.speak(utterance);
+    if (!window.TravelMateVoice || !window.TravelMateVoice.speak(text, { owner: 'hub', lang: language || 'he-IL' })) showStatus(window.TravelMateVoice ? window.TravelMateVoice.getSnapshot().message : 'הקראה אינה זמינה.', 'error');
   }
   function getPosition() {
     if (state.position) return Promise.resolve(state.position);
@@ -139,7 +138,7 @@
   }
 
   function openHub() { state.ui.previousFocus = document.activeElement === document.body ? state.ui.launch : document.activeElement; if (typeof window.closeMobileMenu === 'function') window.closeMobileMenu(); state.ui.backdrop.classList.add('open'); state.ui.launch.setAttribute('aria-expanded', 'true'); state.ui.backdrop.querySelector('[data-smart-close]').focus(); }
-  function closeHub() { state.ui.backdrop.classList.remove('open'); state.ui.launch.setAttribute('aria-expanded', 'false'); showHome(); var focus = state.ui.previousFocus || state.ui.launch; if (focus.closest('.sidebar') && !document.body.classList.contains('mobile-menu-open') && window.matchMedia('(max-width: 1000px)').matches) focus = document.querySelector('.mobile-menu-button') || focus; if (focus.isConnected) focus.focus(); }
+  function closeHub() { if (window.TravelMateVoice) window.TravelMateVoice.cancel('hub'); state.ui.backdrop.classList.remove('open'); state.ui.launch.setAttribute('aria-expanded', 'false'); showHome(); var focus = state.ui.previousFocus || state.ui.launch; if (focus.closest('.sidebar') && !document.body.classList.contains('mobile-menu-open') && window.matchMedia('(max-width: 1000px)').matches) focus = document.querySelector('.mobile-menu-button') || focus; if (focus.isConnected) focus.focus(); }
   function showHome() { state.ui.modal.classList.remove('tool-open'); state.ui.content.innerHTML = ''; }
   function panel(title, description, body) { state.ui.modal.classList.add('tool-open'); state.ui.content.innerHTML = '<section class="smart-tool-panel"><h3>' + title + '</h3><p>' + description + '</p>' + (body || '') + '</section>'; return state.ui.content.querySelector('.smart-tool-panel'); }
   function showStatus(message, tone) { var host = state.ui && state.ui.content; if (!host) return; var old = host.querySelector('.smart-status'); if (old) old.remove(); var node = document.createElement('div'); node.className = 'smart-status' + (tone ? ' ' + tone : ''); node.textContent = message; host.querySelector('.smart-tool-panel').appendChild(node); }

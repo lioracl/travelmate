@@ -5,8 +5,10 @@ function localDateKey(value){
   return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-')
 }
 function minutes(value){
-  var parts=String(value||'').split(':').map(Number);
-  return Number.isFinite(parts[0])?parts[0]*60+(parts[1]||0):null
+  var match=/^(\d{1,2}):(\d{2})$/.exec(typeof value==='string'?value:'');
+  if(!match)return null;
+  var hour=Number(match[1]),minute=Number(match[2]);
+  return hour<24&&minute<60?hour*60+minute:null
 }
 function scheduleMode(item){
   var raw=String(item&&(item.scheduleMode||item.timingMode||item.flexibility)||'').toLowerCase();

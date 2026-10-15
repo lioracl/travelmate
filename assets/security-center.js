@@ -62,6 +62,53 @@
       '<button type="button" class="danger" data-security-clean><i class="fa-solid fa-mobile-screen-button"></i><span><strong>יציאה וניקוי המכשיר</strong><small>מוחק מהמכשיר נתוני TravelMate מקומיים</small></span></button>' +
       '</div></section><footer><i class="fa-solid fa-circle-info"></i> קוד האימות והסיסמה אינם נשמרים באפליקציה.</footer></div>';
     document.body.appendChild(backdrop);
+    setupVoicePreferences();
+  }
+
+
+  var voiceSettingsAccount = '', voiceOptionsSignature = '';
+  function syncVoicePreferences() {
+    var section = document.querySelector('[data-settings-voice]');
+    var settings = window.TravelMateSettings, voice = window.TravelMateVoice;
+    if (!section || !settings || !settings.getVoicePreferences || !voice) return;
+    voiceSettingsAccount = localStorage.getItem('travelmate-active-user') || '';
+    var prefs = settings.getVoicePreferences(), voices = voice.getLocalVoices();
+    section.querySelector('[data-voice-enabled]').checked = prefs.enabled;
+    var style = section.querySelector('[data-voice-style]');
+    if (!style.options.length) settings.getVoiceStyles().forEach(function (item) { style.add(new Option(item.label, item.id)); });
+    style.value = prefs.style;
+    var select = section.querySelector('[data-voice-choice]');
+    var signature = JSON.stringify([prefs.voiceURI, voices.map(function (item) { return [item.voiceURI,item.name,item.lang]; })]);
+    if (signature !== voiceOptionsSignature) {
+      voiceOptionsSignature = signature; select.replaceChildren(new Option('אוטומטי — קול מקומי', ''));
+      voices.forEach(function (item) { select.add(new Option(item.name + ' (' + item.lang + ')', item.voiceURI)); });
+      if (prefs.voiceURI && !voices.some(function (item) { return item.voiceURI === prefs.voiceURI; })) select.add(new Option('הקול שנשמר אינו זמין — ייבחר קול חלופי', prefs.voiceURI));
+      select.value = prefs.voiceURI;
+    }
+    var snapshot = voice.getSnapshot();
+    section.querySelector('[data-voice-preview]').disabled = !prefs.enabled;
+    section.querySelector('[data-voice-preview-stop]').disabled = snapshot.owner !== 'preview';
+    section.querySelector('[data-voice-settings-status]').textContent = snapshot.owner === 'preview' || snapshot.phase === 'error' || snapshot.phase === 'unsupported' ? snapshot.message : voices.length ? 'זמינים ' + voices.length + ' קולות שהמכשיר מסמן כמקומיים.' : 'לא נמצא קול מקומי. אפשר להמשיך להשתמש בטקסט.';
+  }
+  function setupVoicePreferences() {
+    var dialog = document.querySelector('[data-security-dialog]');
+    if (!dialog || dialog.querySelector('[data-settings-voice]')) return;
+    var section = document.createElement('section'); section.className = 'settings-voice'; section.dataset.settingsVoice = '';
+    section.innerHTML = '<h3>הקול של Mate</h3><label class="settings-voice-enabled"><input type="checkbox" data-voice-enabled> הפעלת אפשרויות קול</label><label>סגנון הקראה<select data-voice-style></select></label><label>קול מקומי במכשיר<select data-voice-choice></select></label><p>הסגנונות משנים קצב, גובה ועוצמה לפי תמיכת המכשיר; אינם מבטיחים קול רגשי או עברית. ההעדפות נשמרות בחשבון הזה במכשיר.</p><div class="settings-voice-actions"><button type="button" data-voice-preview>השמעת דוגמה</button><button type="button" data-voice-preview-stop disabled>עצירת הדוגמה</button></div><p data-voice-settings-status role="status" aria-live="polite"></p><small>הדוגמה אינה פותחת מיקרופון. הכתבה ב־Mate מופעלת רק בלחיצה ועשויה להישלח לספק הדפדפן; אין הבטחה לעיבוד מקומי או ללא רשת. TravelMate אינו מוסיף העלאת הקלטות. הקראה מוגבלת לקולות המסומנים כמקומיים.</small>';
+    dialog.querySelector('.settings-section-title').before(section);
+    section.addEventListener('change', function (event) {
+      var patch = {};
+      if (event.target.matches('[data-voice-enabled]')) patch.enabled = event.target.checked;
+      else if (event.target.matches('[data-voice-style]')) patch.style = event.target.value;
+      else if (event.target.matches('[data-voice-choice]')) patch.voiceURI = event.target.value;
+      else return;
+      var result = window.TravelMateSettings.setVoicePreferences(patch, { accountId: voiceSettingsAccount });
+      syncVoicePreferences();
+      if (!result) section.querySelector('[data-voice-settings-status]').textContent = 'ההעדפה לא נשמרה. בדקו את החשבון או את אחסון הדפדפן ונסו שוב.';
+    });
+    section.querySelector('[data-voice-preview]').addEventListener('click', function () { window.TravelMateVoice.speak('שלום, אני Mate. אפשר לתכנן את הטיול בקצב שמתאים לך.', { owner: 'preview', lang: 'he-IL' }); });
+    section.querySelector('[data-voice-preview-stop]').addEventListener('click', function () { window.TravelMateVoice.cancel('preview'); });
+    if (window.TravelMateVoice) window.TravelMateVoice.subscribe(syncVoicePreferences);
   }
 
   function createMfaGate() {
@@ -134,6 +181,7 @@
   }
 
   function openDialog() {
+    if (window.TravelMateVoice) window.TravelMateVoice.cancel();
     var dialog = document.querySelector('[data-security-dialog]');
     if (!dialog) return;
     dialogReturnFocus = document.activeElement && document.activeElement !== document.body ? document.activeElement : document.querySelector('[data-security-open]');
@@ -146,6 +194,7 @@
   }
 
   function syncPreferences() {
+    syncVoicePreferences();
     var language = window.TravelMateLanguage && window.TravelMateLanguage.get ? window.TravelMateLanguage.get() : 'he';
     var theme = window.TravelMateTheme && window.TravelMateTheme.get ? window.TravelMateTheme.get() : 'light';
     var accent = window.TravelMateTheme && window.TravelMateTheme.getAccent ? window.TravelMateTheme.getAccent() : 'ocean';
@@ -176,6 +225,7 @@
   }
 
   function closeDialog() {
+    if (window.TravelMateVoice) window.TravelMateVoice.cancel('preview');
     var dialog = document.querySelector('[data-security-dialog]');
     if (!dialog || dialog.hidden) return;
     dialog.hidden = true;
@@ -557,7 +607,7 @@
     resumeCaptcha: resumeCaptcha,
     open: openDialog
   };
-  window.TravelMateSettings = { open: openDialog, close: closeDialog };
+  window.TravelMateSettings = Object.assign(window.TravelMateSettings || {}, { open: openDialog, close: closeDialog });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { wire(); armCaptcha(); });
   else { wire(); armCaptcha(); }
 })();

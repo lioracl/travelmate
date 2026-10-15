@@ -5,7 +5,7 @@
   window.__travelMateAiAssistantLoaded = true;
 
   var cloud = window.TravelMateCloud;
-  var state = { open: false, busy: false, session: null, messages: [], recognition: null, lifecycleGeneration: 0 };
+  var state = { open: false, busy: false, session: null, messages: [], lifecycleGeneration: 0 };
   var pageLock = null;
   var tripContext = collectTripContext();
   var storageKey = conversationStorageKey();
@@ -203,7 +203,8 @@
     var content = responseState.content;
     var tools = document.createElement('div'); tools.className = 'ai-message-tools';
     var speak = document.createElement('button'); speak.type = 'button'; speak.innerHTML = '<i class="fa-solid fa-volume-high"></i> הקראה';
-    speak.addEventListener('click', function () { if (!window.speechSynthesis) return; speechSynthesis.cancel(); var utterance = new SpeechSynthesisUtterance(content); utterance.lang = 'he-IL'; speechSynthesis.speak(utterance); });
+    speak.dataset.aiRead = '';
+    speak.addEventListener('click', function () { if (window.TravelMateVoice) window.TravelMateVoice.speak(content, { owner: 'mate', lang: 'he-IL' }); });
     var copy = document.createElement('button'); copy.type = 'button'; copy.innerHTML = '<i class="fa-regular fa-copy"></i> העתקה';
     copy.addEventListener('click', function () { navigator.clipboard && navigator.clipboard.writeText(content); copy.textContent = 'הועתק'; });
     tools.appendChild(speak); tools.appendChild(copy);
@@ -338,6 +339,7 @@
 
   var tripHistory = window.TravelMateHistory || null;
   function setOpen(open, fromHistory) {
+    if (!open && window.TravelMateVoice) window.TravelMateVoice.cancel('mate');
     if (open && !state.open && !fromHistory) {
       if (tripHistory) {
         tripHistory.pushOverlay('ai', function () {
@@ -367,8 +369,26 @@
     else { unlockPageScroll(); if (document.contains(ui.orb)) ui.orb.focus(); }
   }
 
-  function setBusy(busy) { state.busy = busy; ui.input.disabled = busy; ui.form.querySelector('[data-ai-send]').disabled = busy; ui.panel.setAttribute('aria-busy', String(busy)); }
-  function setStatus(value) { ui.status.textContent = value; }
+  function setBusy(busy) { state.busy = busy; ui.input.disabled = busy; ui.form.querySelector('[data-ai-send]').disabled = busy; ui.panel.setAttribute('aria-busy', String(busy)); if (window.TravelMateVoice) window.TravelMateVoice.setProcessing(busy); }
+  var assistantStatus = 'מוכן לעזור בכל שאלה';
+  function setStatus(value) { assistantStatus = value; renderVoiceState(window.TravelMateVoice && window.TravelMateVoice.getSnapshot()); }
+  function renderVoiceState(snapshot) {
+    ui.status.textContent = snapshot && snapshot.message || assistantStatus;
+    if (!snapshot) return;
+    ui.panel.dataset.voiceState = snapshot.phase;
+    var mic = ui.panel.querySelector('[data-ai-voice]');
+    mic.disabled = state.busy || !snapshot.enabled || !snapshot.canRecognize || snapshot.phase === 'offline' || snapshot.stopping;
+    mic.classList.toggle('listening', snapshot.phase === 'listening');
+    mic.setAttribute('aria-pressed', String(snapshot.phase === 'listening'));
+    mic.setAttribute('aria-label', snapshot.phase === 'listening' ? 'סיום הכתבה' : 'הכתבה קולית');
+    var controls = ui.panel.querySelector('[data-ai-voice-controls]');
+    if (controls) {
+      controls.hidden = !['listening','speaking','paused'].includes(snapshot.phase);
+      controls.querySelector('[data-voice-pause]').hidden = snapshot.phase !== 'speaking';
+      controls.querySelector('[data-voice-resume]').hidden = snapshot.phase !== 'paused';
+      controls.querySelector('[data-voice-stop]').textContent = snapshot.phase === 'listening' ? 'ביטול הכתבה' : 'עצירת הקראה';
+    }
+  }
   function typingRow() { return addMessage('assistant', '<span class="ai-typing" aria-label="Mate חושב"><i></i><i></i><i></i></span>', { html: true, temporary: true }); }
 
   function activeCloud() { return window.TravelMateCloud || cloud; }
@@ -587,13 +607,23 @@
   function autoGrow() { ui.input.style.height = 'auto'; ui.input.style.height = Math.min(ui.input.scrollHeight, 110) + 'px'; }
 
   function setupVoice() {
-    var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition; var button = ui.panel.querySelector('[data-ai-voice]');
-    if (!Recognition) { button.hidden = true; return; }
-    state.recognition = new Recognition(); state.recognition.lang = 'he-IL'; state.recognition.interimResults = false;
-    state.recognition.onstart = function () { button.classList.add('listening'); setStatus('מקשיב…'); };
-    state.recognition.onend = function () { button.classList.remove('listening'); if (!state.busy) setStatus('מוכן לעזור בכל שאלה'); };
-    state.recognition.onresult = function (event) { ui.input.value = event.results[0][0].transcript; autoGrow(); ui.input.focus(); };
-    button.addEventListener('click', function () { try { state.recognition.start(); } catch (error) {} });
+    var voice = window.TravelMateVoice, button = ui.panel.querySelector('[data-ai-voice]');
+    ui.status.id = 'mate-voice-status'; button.setAttribute('aria-describedby', 'mate-voice-status');
+    var controls = document.createElement('div'); controls.className = 'ai-voice-controls'; controls.dataset.aiVoiceControls = ''; controls.hidden = true;
+    controls.innerHTML = '<button type="button" data-voice-pause>השהיה</button><button type="button" data-voice-resume hidden>המשך הקראה</button><button type="button" data-voice-stop>עצירת הקראה</button>';
+    ui.form.appendChild(controls);
+    var privacy = document.createElement('small'); privacy.className = 'ai-voice-privacy';
+    privacy.textContent = 'הכתבה מופעלת רק בלחיצה ועשויה לעבור דרך ספק הדפדפן; אינה מובטחת ללא רשת. הקראה משתמשת רק בקול שהמכשיר מסמן כמקומי. אפשר להמשיך להקליד.';
+    ui.form.appendChild(privacy);
+    if (!voice) { button.disabled = true; return; }
+    button.addEventListener('click', function () {
+      if (voice.getSnapshot().phase === 'listening') voice.stopListening();
+      else voice.startListening({ onResult: function (text) { ui.input.value = text; autoGrow(); ui.input.focus(); } });
+    });
+    controls.querySelector('[data-voice-pause]').addEventListener('click', voice.pause);
+    controls.querySelector('[data-voice-resume]').addEventListener('click', voice.resume);
+    controls.querySelector('[data-voice-stop]').addEventListener('click', function () { voice.cancel('mate'); ui.input.focus(); });
+    voice.subscribe(renderVoiceState);
   }
 
   ui.panel.querySelector('[data-ai-context]').textContent = contextLabel(); renderPrompts(); restoreMessages(); renderHistory(); renderAiNotesArchive(); setupVoice();
@@ -606,7 +636,7 @@
     state.lifecycleGeneration += 1;
     setBusy(false);
     ui.input.value = ''; autoGrow();
-    if (state.recognition) { try { state.recognition.abort(); } catch (error) {} }
+    if (window.TravelMateVoice) window.TravelMateVoice.cancel();
     tripContext = collectTripContext();
     var nextKey = conversationStorageKey(session && session.user ? session.user.id : 'guest');
     if (nextKey === storageKey) return;
@@ -625,7 +655,7 @@
   if (activeCloud() && activeCloud().onAuthChange) Promise.resolve(activeCloud().onAuthChange(applyAccountContext)).catch(function () { setStatus('החיבור לחשבון אינו זמין כרגע. אפשר להמשיך להשתמש בכלים המקומיים.'); });
   ui.orb.addEventListener('click', function () { setOpen(!state.open); });
   ui.panel.querySelector('[data-ai-close]').addEventListener('click', function () { setOpen(false); });
-  ui.panel.querySelector('[data-ai-clear]').addEventListener('click', function () { state.messages = []; persistMessages(); renderHistory(); setStatus('שיחה חדשה'); });
+  ui.panel.querySelector('[data-ai-clear]').addEventListener('click', function () { if (window.TravelMateVoice) window.TravelMateVoice.cancel('mate'); state.messages = []; persistMessages(); renderHistory(); setStatus('שיחה חדשה'); });
   ui.panel.querySelector('[data-ai-privacy]').addEventListener('click', function () { addMessage('assistant', 'אני שולח ל־Google Gemini רק את השאלה, היסטוריית השיחה הקצרה ותקציר הטיול: יעד, תאריכים, פעילויות, מקומות ששמרת, מסגרת התקציב וסיכום הוצאות מצומצם לפי מטבע וקטגוריה. הערות להוצאות, קבלות, מסמכים, סיסמאות, GPS ופרטי הכספת אינם נשלחים. במסלול החינמי Google עשויה להשתמש בתוכן לשיפור מוצריה.'); });
   ui.form.addEventListener('submit', function (event) { event.preventDefault(); sendMessage(); });
   ui.input.addEventListener('input', autoGrow);
@@ -635,6 +665,7 @@
   window.addEventListener('travelmate:ask-ai', function (event) {
     var prompt = trimText(event.detail && event.detail.prompt, 4000);
     if (event.detail && event.detail.context) {
+      if (window.TravelMateVoice) window.TravelMateVoice.cancel('mate');
       tripContext = event.detail.context;
       var nextKey = conversationStorageKey(state.session && state.session.user ? state.session.user.id : undefined);
       if (nextKey !== storageKey) {
