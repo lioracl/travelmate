@@ -113,3 +113,6 @@ body.tm-new-design .ai-orb-ring{animation:none}
     padding-bottom:max(10px,env(safe-area-inset-bottom));
   }
 }
+
+.ai-action { margin-block: 12px; overflow-wrap: anywhere; }
+.ai-action button { min-height: 44px; max-width: 100%; margin: 4px; white-space: normal; }
