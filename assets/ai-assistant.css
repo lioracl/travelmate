@@ -63,7 +63,7 @@ body.tm-new-design .ai-orb-ring{
 }
 body.tm-new-design .ai-panel-header{
   border-bottom:1px solid var(--tm-card-control-border);
-  background:var(--tm-surface-nested,var(--tm-card-control));
+  background:var(--tm-surface-nested,inherit);
   color:var(--tm-card-text);
   -webkit-text-fill-color:var(--tm-card-text)
 }
