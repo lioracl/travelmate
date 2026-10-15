@@ -93,6 +93,7 @@ public class TravelMateVoicePlugin extends Plugin {
                     tts.setLanguage(hebrew);
                     tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override public void onStart(String id) { main(() -> { if (id.equals(speaking)) emit(id,"tts-start",speakingLanguage); }); }
+                        @Override public void onStop(String id,boolean interrupted) { main(() -> { if(id.equals(speaking)){speaking="";emit(id,"tts-error","interrupted");} }); }
                         @Override public void onDone(String id) { main(() -> { if (id.equals(speaking)) { speaking="";emit(id,"tts-end",null); } }); }
                         @Override public void onError(String id) { onError(id, TextToSpeech.ERROR); }
                         @Override public void onError(String id,int error) { main(() -> { if (id.equals(speaking)) { speaking="";emit(id,"tts-error","synthesis-failed"); } }); }
