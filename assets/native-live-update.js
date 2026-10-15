@@ -7,7 +7,7 @@
     var key=await subtle.importKey('spki',bytes(pem),{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['verify']);
     if(!await subtle.verify('RSASSA-PKCS1-v1_5',key,bytes(envelope.signature),bytes(envelope.payload)))throw Error('OTA_METADATA_SIGNATURE');
     var manifest=JSON.parse(new TextDecoder().decode(bytes(envelope.payload)));
-    if(manifest.schemaVersion!==1||!Number.isInteger(manifest.nativeApiLevel)||manifest.nativeApiLevel<1||manifest.nativeApiLevel>contract.nativeApiLevel)throw Error('OTA_INCOMPATIBLE');
+    if(manifest.schemaVersion!==1||!Number.isInteger(manifest.nativeApiLevel)||manifest.nativeApiLevel<(contract.minimumWebApiLevel||1)||manifest.nativeApiLevel>contract.nativeApiLevel)throw Error('OTA_INCOMPATIBLE');
     if(!/^[a-f0-9]{40}$/.test(manifest.sha)||!/^[a-f0-9]{64}$/.test(manifest.sha256)||!manifest.version||!manifest.bundleSignature)throw Error('OTA_METADATA');
     if(manifest.url!=='https://lioracl.github.io/travelmate/ota/'+manifest.sha+'/bundle.zip')throw Error('OTA_URL');
     return manifest;

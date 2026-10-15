@@ -1,1 +1,4 @@
-{"nativeApiLevel":1,"description":"Geolocation 8, LiveUpdate 8, TravelMateWidgetBridge v1"}
+{
+  "nativeApiLevel": 2,
+  "description": "Geolocation 8, LiveUpdate 8, TravelMateWidgetBridge v1, TravelMateVoice v1; minimum web API 2"
+}

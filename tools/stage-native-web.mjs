@@ -25,7 +25,9 @@ const nativeScripts = [
 for (const script of nativeScripts) fs.copyFileSync(path.join(root, script), path.join(dist, script));
 for (const [relativePath, prefix] of [
   ['index.html', ''],
-  ['trip/custom/index.html', '../../']
+  ['trip/custom/index.html', '../../'],
+  ['trip/italy-2028/index.html', '../../'],
+  ['trip/japan-2027/index.html', '../../']
 ]) {
   const target = path.join(dist, relativePath);
   let html = fs.readFileSync(target, 'utf8');
@@ -38,7 +40,7 @@ for (const [relativePath, prefix] of [
 if (fs.existsSync(path.join(source,'build-info.json'))) fs.copyFileSync(path.join(source,'build-info.json'),path.join(dist,'build-info.json'));
 const {execFileSync} = await import('node:child_process');
 const sourceBuild=fs.existsSync(path.join(source,'build-info.json'))?JSON.parse(fs.readFileSync(path.join(source,'build-info.json'))):null;
-execFileSync(process.execPath,[path.join(root,'tools','stamp-web-build.mjs'),dist],{stdio:'inherit',env:{...process.env,...(sourceBuild?{TRAVELMATE_WEB_BUILD_SHA:sourceBuild.sha,TRAVELMATE_WEB_BUILD_VERSION:sourceBuild.version}:{})}});
+execFileSync(process.execPath,[path.join(root,'tools','stamp-web-build.mjs'),dist],{stdio:'inherit',env:{...process.env,...{TRAVELMATE_WEB_BUILD_SHA:sourceBuild?sourceBuild.sha:execFileSync('git',['-C',source,'rev-parse','HEAD'],{encoding:'utf8'}).trim(),TRAVELMATE_WEB_BUILD_VERSION:sourceBuild?sourceBuild.version:fs.readFileSync(path.join(source,'assets','about.js'),'utf8').match(/version: '([^']+)'/)[1]}}});
 const build=JSON.parse(fs.readFileSync(path.join(dist,'build-info.json')));
 build.nativeApiLevel=JSON.parse(fs.readFileSync(path.join(root,'native-overlay.json'))).nativeApiLevel;
 fs.writeFileSync(path.join(dist,'build-info.json'),JSON.stringify(build,null,2)+'\n');
