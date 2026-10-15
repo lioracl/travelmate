@@ -1,5 +1,6 @@
 const allowedOrigins = new Set([
   'https://lioracl.github.io',
+  'https://localhost', // Capacitor Android Native API 2; keep an exact origin, never a wildcard.
   'http://127.0.0.1:8000',
   'http://localhost:8000',
   'http://127.0.0.1:8001',

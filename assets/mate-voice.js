@@ -43,15 +43,28 @@
       if (win.navigator && win.navigator.onLine === false) return failure('הכתבה אינה מופעלת ללא רשת. אפשר להמשיך להקליד.', 'offline');
       invalidate(); owner = 'mate'; var token = generation, next;
       try { next = new Recognition(); } catch (error) { return failure('לא ניתן לפתוח הכתבה בדפדפן הזה. אפשר להקליד.', 'unsupported'); }
+      var finalParts = [];
       recognition = next; next.lang = 'he-IL'; next.interimResults = false; next.continuous = false;
       function valid() { return current(token) && recognition === next; }
-      next.onstart = function () { if (valid()) state('listening', 'מקשיב… סיום מקבל את ההכתבה; ביטול מוחק אותה.'); };
+      next.onstart = function () { if (valid()) state('listening', preferences().autoSend ? 'מקשיב… בסיום ההכתבה ההודעה תישלח אוטומטית. ביטול אינו שולח.' : 'מקשיב… בסיום אפשר לערוך ולשלוח. ביטול אינו שולח.'); };
       next.onresult = function (event) {
         if (!valid()) return;
-        var value = event.results && event.results[0] && event.results[0][0] && event.results[0][0].transcript;
-        if (typeof value === 'string' && options.onResult) options.onResult(value.trim().slice(0, 4000));
+        var results = event.results || [];
+        for (var resultIndex = event.resultIndex || 0; resultIndex < results.length; resultIndex += 1) {
+          var result = results[resultIndex];
+          if (!result || result.isFinal === false) continue;
+          var value = result[0] && result[0].transcript;
+          if (typeof value === 'string') finalParts[resultIndex] = value.trim();
+        }
+        var transcript = finalParts.filter(Boolean).join(' ').slice(0, 4000);
+        if (transcript && options.onResult) options.onResult(transcript);
       };
-      next.onend = function () { if (!valid()) return; recognition = null; owner = ''; stopping = false; clearTimer(); resetState(); };
+      next.onend = function () {
+        if (!valid()) return;
+        recognition = null; owner = ''; stopping = false; clearTimer(); resetState();
+        var transcript = finalParts.filter(Boolean).join(' ').slice(0, 4000);
+        if (transcript && current(token) && options.onComplete) options.onComplete(transcript);
+      };
       next.onerror = function (event) {
         if (!valid()) return;
         var code = event && event.error;

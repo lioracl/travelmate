@@ -6,6 +6,7 @@ on:
     branches:
       - 'integration/**'
       - 'codex/mate-voice-recovery-20261015'
+      - 'codex/mate-voice-2262-ota-recovery-20261015'
   pull_request:
     branches:
       - preview
