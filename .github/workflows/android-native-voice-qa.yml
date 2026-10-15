@@ -82,12 +82,16 @@ jobs:
         with:
           ref: ${{ steps.native.outputs.sha }}
           path: native-overlay
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
       - name: Install compile SDK
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - name: Verify native dependency and stage exact web SHA
