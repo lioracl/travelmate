@@ -66,7 +66,7 @@
   }
 
 
-  var voiceSettingsAccount = '', voiceOptionsSignature = '';
+  var voiceSettingsAccount = '', voiceOptionsSignature = '', voiceSettingsUnsubscribe = null;
   function syncVoicePreferences() {
     var section = document.querySelector('[data-settings-voice]');
     var settings = window.TravelMateSettings, voice = window.TravelMateVoice;
@@ -108,7 +108,7 @@
     });
     section.querySelector('[data-voice-preview]').addEventListener('click', function () { window.TravelMateVoice.speak('שלום, אני Mate. אפשר לתכנן את הטיול בקצב שמתאים לך.', { owner: 'preview', lang: 'he-IL' }); });
     section.querySelector('[data-voice-preview-stop]').addEventListener('click', function () { window.TravelMateVoice.cancel('preview'); });
-    if (window.TravelMateVoice) window.TravelMateVoice.subscribe(syncVoicePreferences);
+    if (window.TravelMateVoice) voiceSettingsUnsubscribe = window.TravelMateVoice.subscribe(syncVoicePreferences);
   }
 
   function createMfaGate() {
@@ -187,7 +187,9 @@
     dialogReturnFocus = document.activeElement && document.activeElement !== document.body ? document.activeElement : document.querySelector('[data-security-open]');
     dialog.hidden = false;
     document.body.classList.add('security-center-open');
+    if (window.TravelMateVoice && !voiceSettingsUnsubscribe) voiceSettingsUnsubscribe = window.TravelMateVoice.subscribe(syncVoicePreferences);
     syncPreferences();
+    if (window.TravelMateVoice) window.TravelMateVoice.prepare().catch(function () { dialog.querySelector('[data-voice-settings-status]').textContent = 'לא ניתן לטעון את קולות המכשיר. הטקסט נשאר זמין.'; });
     refresh();
     var closeButton = dialog.querySelector('[data-security-close]');
     if (closeButton) requestAnimationFrame(function () { closeButton.focus(); });
