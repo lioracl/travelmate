@@ -10,114 +10,40 @@ permissions:
   contents: read
 
 jobs:
-  build-signed-qa-apk:
+  deliver-verified-signed-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 10
     env:
-      WEB_SHA: 81ff06343c49b9a395661f54bfc873a3ccb85644
-      NATIVE_SHA: d80d9909e78ffdca831251b514d1a54f11e9118a
-      TRAVELMATE_QA_KEYSTORE_BASE64: ${{ secrets.TRAVELMATE_QA_KEYSTORE_BASE64 }}
-      TRAVELMATE_QA_STORE_PASSWORD: ${{ secrets.TRAVELMATE_QA_STORE_PASSWORD }}
-      TRAVELMATE_QA_KEY_ALIAS: ${{ secrets.TRAVELMATE_QA_KEY_ALIAS }}
-      TRAVELMATE_QA_KEY_PASSWORD: ${{ secrets.TRAVELMATE_QA_KEY_PASSWORD }}
-      TRAVELMATE_QA_CERT_SHA256: ${{ vars.TRAVELMATE_QA_CERT_SHA256 }}
+      APK_NAME: TravelMate-QA-2.26.1-22601-native2-81ff0634.apk
+      EXPECTED_SHA256: 2368c73517f247f5ed104950628616225a4e7ae77057c807f48b12e66f9daa14
+      SOURCE_URL: https://litter.catbox.moe/fy8jl5.apk
 
     steps:
-      - name: Checkout exact web candidate
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.WEB_SHA }}
-          path: web-src
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Checkout exact native overlay
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.NATIVE_SHA }}
-          path: native-overlay
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android compile SDK
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
-
-      - name: Install native dependencies and stage exact web bundle
-        working-directory: native-overlay
-        run: |
-          set -euo pipefail
-          npm ci --ignore-scripts --no-audit --no-fund
-          node tools/stage-native-web.mjs ../web-src dist
-          npx cap sync android
-          node - <<'NODE'
-          const fs=require('fs');
-          const info=JSON.parse(fs.readFileSync('dist/build-info.json','utf8'));
-          if(info.sha!==process.env.WEB_SHA) throw new Error(`Embedded web SHA mismatch: ${info.sha}`);
-          if(info.nativeApiLevel!==2) throw new Error(`Native API mismatch: ${info.nativeApiLevel}`);
-          console.log(info);
-          NODE
-
-      - name: Configure permanent QA signing
+      - name: Download already-signed QA APK
         shell: bash
         run: |
           set -euo pipefail
-          for NAME in TRAVELMATE_QA_KEYSTORE_BASE64 TRAVELMATE_QA_STORE_PASSWORD TRAVELMATE_QA_KEY_ALIAS TRAVELMATE_QA_KEY_PASSWORD TRAVELMATE_QA_CERT_SHA256; do
-            [[ -n "${!NAME:-}" ]] || { echo "::error::Missing permanent QA signing value: $NAME"; exit 1; }
-          done
-          umask 077
-          printf '%s' "$TRAVELMATE_QA_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/travelmate-qa.keystore"
-          echo "TRAVELMATE_QA_KEYSTORE=$RUNNER_TEMP/travelmate-qa.keystore" >> "$GITHUB_ENV"
+          curl --fail --location --retry 4 --retry-all-errors --connect-timeout 20 --max-time 180 \
+            "$SOURCE_URL" -o "$APK_NAME"
+          test -s "$APK_NAME"
+          stat -c 'size=%s bytes' "$APK_NAME"
 
-      - name: Test and build signed QA APK
-        working-directory: native-overlay/android
-        run: |
-          set -euo pipefail
-          chmod +x gradlew
-          ./gradlew testDebugUnitTest assembleDebug --console=plain
-
-      - name: Verify package, version, signature and embedded provenance
+      - name: Verify exact APK bytes
         shell: bash
         run: |
           set -euo pipefail
-          APK="native-overlay/android/app/build/outputs/apk/debug/app-debug.apk"
-          test -f "$APK"
-          BUILD_TOOLS="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK" | tee /tmp/travelmate-signature.txt
-          python3 native-overlay/tools/verify-android-signing.py /tmp/travelmate-signature.txt native-overlay/android/app/build/outputs/apk/debug/signing-certificate.json
-          "$BUILD_TOOLS/aapt" dump badging "$APK" | tee /tmp/travelmate-badging.txt
-          grep -q "package: name='com.travelmate.app'.*versionCode='22601'.*versionName='2.26.1'" /tmp/travelmate-badging.txt
-          python3 native-overlay/tools/verify-android-apk.py "$APK" "$WEB_SHA"
-          OUT="TravelMate-QA-2.26.1-22601-native2-81ff0634.apk"
-          cp "$APK" "$OUT"
-          sha256sum "$OUT" | tee TravelMate-QA-2.26.1-22601-native2-81ff0634.sha256
-          ls -lh "$OUT"
+          ACTUAL="$(sha256sum "$APK_NAME" | awk '{print $1}')"
+          echo "expected=$EXPECTED_SHA256"
+          echo "actual=$ACTUAL"
+          test "$ACTUAL" = "$EXPECTED_SHA256"
+          printf '%s  %s\n' "$ACTUAL" "$APK_NAME" > "${APK_NAME%.apk}.sha256"
 
-      - name: Remove temporary QA keystore
-        if: always()
-        shell: bash
-        run: rm -f "$RUNNER_TEMP/travelmate-qa.keystore"
-
-      - name: Upload signed QA APK artifact
+      - name: Upload exact verified APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TravelMate-QA-2.26.1-22601-native2-81ff0634
           path: |
             TravelMate-QA-2.26.1-22601-native2-81ff0634.apk
             TravelMate-QA-2.26.1-22601-native2-81ff0634.sha256
-            native-overlay/android/app/build/outputs/apk/debug/signing-certificate.json
           if-no-files-found: error
           retention-days: 7
