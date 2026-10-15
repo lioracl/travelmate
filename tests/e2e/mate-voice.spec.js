@@ -15,7 +15,7 @@ for(const width of [360,390,430])for(const theme of ['light','dark'])test('voice
  await page.setViewportSize({width,height:844});await prepare(page,theme);
  expect(await page.evaluate(()=>voiceEvidence.starts)).toBe(0);expect(await page.evaluate(()=>voiceEvidence.speech.length)).toBe(0);
  const mic=page.locator('[data-ai-voice]');await mic.click();await expect(page.locator('.ai-panel')).toHaveAttribute('data-voice-state','listening');
- await mic.click();await expect(page.locator('.ai-panel textarea')).toHaveValue('טיוטה בעברית');
+ await page.evaluate(()=>{qaRecognition.onresult({results:[[{transcript:'טיוטה בעברית'}]]});qaRecognition.onend();});await expect(page.locator('.ai-panel textarea')).toHaveValue('טיוטה בעברית');
  await mic.click();await page.locator('[data-voice-stop]').click();await page.evaluate(()=>qaRecognition.onresult({results:[[{transcript:'LATE'}]]}));await expect(page.locator('.ai-panel textarea')).toHaveValue('טיוטה בעברית');
  await page.locator('[data-ai-read]').first().click();await expect(page.locator('.ai-panel')).toHaveAttribute('data-voice-state','speaking');
  await page.locator('[data-voice-pause]').click();await expect(page.locator('.ai-panel')).toHaveAttribute('data-voice-state','paused');await page.locator('[data-voice-resume]').click();

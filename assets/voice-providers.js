@@ -16,7 +16,9 @@
     if(value.type==='tts-error'){activeSpeech=null;synth.speaking=false;if(utterance.onerror)utterance.onerror({error:value.value});}
    }
    if(recognition&&recognition.session===value.sessionId){
+    caps.recognitionSignal=value.type;
     if(value.type==='stt-start'&&recognition.onstart)recognition.onstart();
+    if((value.type==='stt-speech-end'||value.type==='stt-finalizing')&&recognition.onspeechend)recognition.onspeechend();
     if(value.type==='stt-result'&&recognition.onresult)recognition.onresult({results:[[{transcript:value.value}]]});
     if(value.type==='stt-end'){activeRecognition=null;if(recognition.onend)recognition.onend();}
     if(value.type==='stt-error'){activeRecognition=null;if(recognition.onerror)recognition.onerror({error:value.value});}
@@ -36,7 +38,7 @@
   }
   var synth={speaking:false,pending:false,paused:false,getVoices:function(){return caps.voices||[];},addEventListener:function(name,listener){if(name==='voiceschanged')voiceListeners.push(listener);},
    speak:function(utterance){var request={id:id(),value:utterance};activeSpeech=request;synth.speaking=true;
-    listeners().then(function(){if(activeSpeech!==request)return;return invoke('speak',{sessionId:request.id,text:utterance.text,voiceURI:utterance.voice&&utterance.voice.voiceURI||'',rate:utterance.rate,pitch:utterance.pitch,volume:utterance.volume}).then(function(result){if(activeSpeech===request&&result)caps.currentLanguage=result.currentLanguage||'';});}).catch(function(error){if(activeSpeech===request)event({sessionId:request.id,type:'tts-error',value:error.code||'synthesis-failed'});});
+    listeners().then(function(){if(activeSpeech!==request)return;return invoke('speak',{sessionId:request.id,text:utterance.text,voiceURI:utterance.voice&&utterance.voice.voiceURI||'',rate:utterance.rate,pitch:utterance.pitch,volume:utterance.volume}).then(function(result){if(activeSpeech===request&&result){caps.currentLanguage=result.currentLanguage||'';caps.effectiveVoiceURI=result.voiceURI||'';caps.requestedVoiceURI=result.requestedVoiceURI||'';caps.voiceFallback=result.fallback===true;caps.rateAccepted=result.rateAccepted;caps.pitchAccepted=result.pitchAccepted;caps.rate=result.rate;caps.pitch=result.pitch;if(utterance.onstart)utterance.onstart({language:caps.currentLanguage,fallback:caps.voiceFallback});}});}).catch(function(error){if(activeSpeech===request)event({sessionId:request.id,type:'tts-error',value:error.code||'synthesis-failed'});});
    },cancel:function(){var request=activeSpeech;activeSpeech=null;synth.speaking=false;if(plugin&&request)ignore(invoke('cancel',{sessionId:request.id}));}
   };
   function Recognition(){this.session='';}

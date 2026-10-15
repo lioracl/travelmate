@@ -87,6 +87,7 @@
       select.value = prefs.voiceURI;
     }
     var snapshot = voice.getSnapshot();
+    section.querySelector('[data-voice-diagnostics]').textContent = JSON.stringify({ provider: snapshot.provider, requestedVoiceURI: prefs.voiceURI, effectiveVoiceURI: snapshot.capabilities.effectiveVoiceURI || '', fallback: snapshot.capabilities.voiceFallback, rateAccepted: snapshot.capabilities.rateAccepted, pitchAccepted: snapshot.capabilities.pitchAccepted, rate: snapshot.capabilities.rate, pitch: snapshot.capabilities.pitch, recognitionSignal: snapshot.capabilities.recognitionSignal, installedVoices: snapshot.capabilities.installedVoices, voices: voices }, null, 2);
     var privacy = section.querySelector('[data-voice-settings-privacy]');
     if (privacy) privacy.textContent = snapshot.provider === 'android-native' ? 'הדוגמה אינה פותחת מיקרופון. ההכתבה מופעלת רק בלחיצה דרך ספק הזיהוי של Android, שעשוי להשתמש ברשת. TravelMate אינו שומר קובצי קול ואינו מוסיף נתיב העלאת אודיו. ההקראה מוגבלת לקולות שהמכשיר מסמן כמקומיים.' : 'הדוגמה אינה פותחת מיקרופון. הכתבה ב־Mate מופעלת רק בלחיצה ועשויה להישלח לספק הדפדפן; אין הבטחה לעיבוד מקומי או ללא רשת. TravelMate אינו מוסיף העלאת הקלטות. הקראה מוגבלת לקולות המסומנים כמקומיים.';
     section.querySelector('[data-voice-preview]').disabled = !prefs.enabled;
@@ -97,7 +98,7 @@
     var dialog = document.querySelector('[data-security-dialog]');
     if (!dialog || dialog.querySelector('[data-settings-voice]')) return;
     var section = document.createElement('section'); section.className = 'settings-voice'; section.dataset.settingsVoice = '';
-    section.innerHTML = '<h3>הקול של Mate</h3><label class="settings-voice-enabled"><input type="checkbox" data-voice-enabled> הפעלת אפשרויות קול</label><label class="settings-voice-enabled"><input type="checkbox" data-voice-auto-send> שליחה אוטומטית אחרי הכתבה</label><label>סגנון הקראה<select data-voice-style></select></label><label>קול מקומי במכשיר<select data-voice-choice></select></label><p>קול הוא קול מותקן במכשיר. סגנון משנה קצב וגובה, ולא מחליף את הדובר; ההבדל תלוי במנוע. עברית זמינה רק אם מותקן קול מתאים. ההעדפות נשמרות בחשבון הזה במכשיר.</p><div class="settings-voice-actions"><button type="button" data-voice-preview>השמעת דוגמה</button><button type="button" data-voice-preview-stop disabled>עצירת הדוגמה</button></div><p data-voice-settings-status role="status" aria-live="polite"></p><small data-voice-settings-privacy>הדוגמה אינה פותחת מיקרופון. הכתבה ב־Mate מופעלת רק בלחיצה ועשויה להישלח לספק הדפדפן; אין הבטחה לעיבוד מקומי או ללא רשת. TravelMate אינו מוסיף העלאת הקלטות. הקראה מוגבלת לקולות המסומנים כמקומיים.</small>';
+    section.innerHTML = '<h3>הקול של Mate</h3><label class="settings-voice-enabled"><input type="checkbox" data-voice-enabled> הפעלת אפשרויות קול</label><label class="settings-voice-enabled"><input type="checkbox" data-voice-auto-send> שליחה אוטומטית אחרי הכתבה</label><label>אופן דיבור<select data-voice-style></select></label><label>קול מקומי במכשיר<select data-voice-choice></select></label><p>קול הוא קול מותקן במכשיר. סגנון משנה קצב וגובה, ולא מחליף את הדובר; ההבדל תלוי במנוע. עברית זמינה רק אם מותקן קול מתאים. ההעדפות נשמרות בחשבון הזה במכשיר.</p><div class="settings-voice-actions"><button type="button" data-voice-preview>השמעת דוגמה</button><button type="button" data-voice-preview-stop disabled>עצירת הדוגמה</button></div><p data-voice-settings-status role="status" aria-live="polite"></p><details><summary>אבחון קול במכשיר</summary><pre data-voice-diagnostics style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details><small data-voice-settings-privacy>הדוגמה אינה פותחת מיקרופון. הכתבה ב־Mate מופעלת רק בלחיצה ועשויה להישלח לספק הדפדפן; אין הבטחה לעיבוד מקומי או ללא רשת. TravelMate אינו מוסיף העלאת הקלטות. הקראה מוגבלת לקולות המסומנים כמקומיים.</small>';
     dialog.querySelector('.settings-section-title').before(section);
     section.addEventListener('change', function (event) {
       var patch = {};
@@ -110,7 +111,7 @@
       syncVoicePreferences();
       if (!result) section.querySelector('[data-voice-settings-status]').textContent = 'ההעדפה לא נשמרה. בדקו את החשבון או את אחסון הדפדפן ונסו שוב.';
     });
-    section.querySelector('[data-voice-preview]').addEventListener('click', function () { window.TravelMateVoice.speak('שלום, אני Mate. אפשר לתכנן את הטיול בקצב שמתאים לך.', { owner: 'preview', lang: 'he-IL' }); });
+    section.querySelector('[data-voice-preview]').addEventListener('click', function () { window.TravelMateVoice.speak('שלום, אני Mate. נתחיל את הבוקר בהליכה נעימה בעיר. אחר כך נעצור לקפה ונבדוק מה מתאים להמשך היום. אפשר לשנות את קצב הדיבור, ולהקשיב להפסקות בין המשפטים. הטיול שלך נשאר בדיוק כפי שתכננת.', { owner: 'preview', lang: 'he-IL' }); });
     section.querySelector('[data-voice-preview-stop]').addEventListener('click', function () { window.TravelMateVoice.cancel('preview'); });
     if (window.TravelMateVoice) voiceSettingsUnsubscribe = window.TravelMateVoice.subscribe(syncVoicePreferences);
   }

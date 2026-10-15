@@ -44,6 +44,7 @@
       invalidate(); owner = 'mate'; var token = generation, next;
       try { next = new Recognition(); } catch (error) { return failure('לא ניתן לפתוח הכתבה בדפדפן הזה. אפשר להקליד.', 'unsupported'); }
       var finalParts = [];
+      next.onspeechend = function () { if (valid()) state('listening', 'מסיים את ההכתבה… אפשר לבטל.'); };
       recognition = next; next.lang = 'he-IL'; next.interimResults = false; next.continuous = false;
       function valid() { return current(token) && recognition === next; }
       next.onstart = function () { if (valid()) state('listening', preferences().autoSend ? 'מקשיב… בסיום ההכתבה ההודעה תישלח אוטומטית. ביטול אינו שולח.' : 'מקשיב… בסיום אפשר לערוך ולשלוח. ביטול אינו שולח.'); };
@@ -98,7 +99,7 @@
       if (text.length > 30000) return failure('התשובה ארוכה מדי להקראה אחת. הטקסט נשאר זמין לקריאה.');
       var prefs = preferences(), language = options.lang || 'he-IL', selection = chooseVoice(prefs.voiceURI, language);
       if (!selection.voice) return failure('לא נמצא קול מקומי במכשיר. אפשר לקרוא את הטקסט ולנסות שוב לאחר שקולות המכשיר נטענו.', 'unsupported');
-      invalidate(); owner = options.owner || 'mate'; parts = chunks(text); index = 0;
+      invalidate(); owner = options.owner || 'mate'; parts = provider.native ? text.match(/[^.!?。！？\n]+[.!?。！？\n]*|[.!?。！？\n]+/g).reduce(function (all, sentence) { return all.concat(chunks(sentence)); }, []) : chunks(text); index = 0;
       var token = generation, style = settings.getVoiceStyles().find(function (value) { return value.id === prefs.style; }) || settings.getVoiceStyles()[0];
       var fallback = selection.missing ? 'הקול שנבחר אינו זמין; נעשה שימוש בקול מקומי חלופי. ' : '';
       if (!/^he(?:-|$)/i.test(selection.voice.lang || '') && /^he(?:-|$)/i.test(language)) fallback += 'נבחר קול שאינו עברי; ההגייה בעברית עשויה להיות מוגבלת. ';
@@ -108,10 +109,10 @@
         var next = new Utterance(parts[index]); utterance = next;
         next.voice = selection.voice; next.lang = language; next.rate = style.rate; next.pitch = style.pitch; next.volume = style.volume;
         function valid() { return current(token) && utterance === next; }
-        next.onstart = function (event) { if (valid()) { var actualLanguage = event && event.language; var nativeWarning = actualLanguage && /^he(?:-|$)/i.test(language) && !/^he(?:-|$)/i.test(actualLanguage) && /^he(?:-|$)/i.test(selection.voice.lang || '') ? 'מנוע המכשיר בחר קול חלופי שאינו עברי; ההגייה עשויה להיות מוגבלת. ' : ''; state('speaking', fallback + nativeWarning + 'מקריא…'); } };
+        next.onstart = function (event) { if (valid()) { var actualLanguage = event && event.language; var voiceFallback = event && event.fallback ? 'מנוע המכשיר בחר קול מקומי חלופי. ' : ''; var nativeWarning = actualLanguage && /^he(?:-|$)/i.test(language) && !/^he(?:-|$)/i.test(actualLanguage) && /^he(?:-|$)/i.test(selection.voice.lang || '') ? 'מנוע המכשיר בחר קול חלופי שאינו עברי; ההגייה עשויה להיות מוגבלת. ' : ''; state('speaking', fallback + voiceFallback + nativeWarning + 'מקריא…'); } };
         next.onpause = function () { if (valid()) state('paused', fallback + 'ההקראה מושהית.'); };
         next.onresume = function () { if (valid()) state('speaking', fallback + 'מקריא…'); };
-        next.onend = function () { if (!valid()) return; utterance = null; index += 1; if (phase !== 'paused') play(); };
+        next.onend = function () { if (!valid()) return; utterance = null; index += 1; if (phase !== 'paused') { if (provider.native && index < parts.length) timer = win.setTimeout(function () { timer = 0; play(); }, style.pauseMs || 0); else play(); } };
         next.onerror = function (event) { if (!valid()) return; if (event && (event.error === 'canceled' || event.error === 'interrupted')) { cancel(); return; } failure('ההקראה אינה זמינה כרגע. הטקסט נשאר זמין לקריאה.'); };
         state('speaking', fallback + 'מקריא…');
         try { synth.speak(next); } catch (error) { failure('ההקראה נכשלה. הטקסט נשאר זמין לקריאה.'); }

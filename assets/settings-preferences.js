@@ -8,12 +8,12 @@
 })(typeof window === 'undefined' ? null : window, function () {
   'use strict';
   var styles = Object.freeze([
-    { id: 'auto', label: 'אוטומטי', rate: 1, pitch: 1, volume: 1 },
-    { id: 'calm', label: 'רגוע', rate: 0.8, pitch: 0.9, volume: 0.85 },
-    { id: 'friendly', label: 'ידידותי', rate: 1, pitch: 1.2, volume: 1 },
-    { id: 'professional', label: 'מקצועי', rate: 1.1, pitch: 0.8, volume: 1 },
-    { id: 'energetic', label: 'נמרץ', rate: 1.2, pitch: 1.1, volume: 1 },
-    { id: 'clear', label: 'ברור', rate: 0.9, pitch: 1.1, volume: 1 }
+    { id: 'auto', label: 'אוטומטי', rate: 1, pitch: 1, volume: 1, pauseMs: 180 },
+    { id: 'calm', label: 'רגוע', rate: 0.8, pitch: 0.9, volume: 0.85, pauseMs: 650 },
+    { id: 'friendly', label: 'ידידותי', rate: 1, pitch: 1.2, volume: 1, pauseMs: 300 },
+    { id: 'professional', label: 'מקצועי', rate: 1.1, pitch: 0.8, volume: 1, pauseMs: 220 },
+    { id: 'energetic', label: 'נמרץ', rate: 1.2, pitch: 1.1, volume: 1, pauseMs: 60 },
+    { id: 'clear', label: 'ברור', rate: 0.9, pitch: 1.1, volume: 1, pauseMs: 450 }
   ].map(function (style) { return Object.freeze(style); }));
   return function createSettings(win) {
     function account() { try { return String(win.localStorage.getItem('travelmate-active-user') || ''); } catch (error) { return ''; } }
