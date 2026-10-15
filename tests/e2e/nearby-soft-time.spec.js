@@ -1,10 +1,10 @@
 const { test, expect } = require('@playwright/test');
 const pois = Array.from({length: 8}, (_, i) => ({type: 'node', id: 8000 + i, lat: 32 + i * .001, lon: 34, tags: {name: 'Controlled POI ' + i, amenity: 'cafe', opening_hours: i === 0 ? 'Tu 00:00-00:01' : '24/7'}}));
-async function start(page, theme, fixed, response = 'pois', delayedRouting = false) {
+async function start(page, theme, fixed, response = 'pois', delayedRouting = false, afterClick = null) {
   await page.clock.setFixedTime(new Date('2026-10-13T09:00:00Z'));
   await page.route('**/*', route => {
     const url = new URL(route.request().url());
-    if (url.hostname === '127.0.0.1') return route.continue();
+    if (url.hostname === '127.0.0.1') return route.fallback();
     if (url.hostname.includes('overpass')) return response === 'failure' ? route.abort() : route.fulfill({json: {elements: response === 'empty' ? [] : pois}});
     if (url.hostname.includes('nominatim')) return route.fulfill({json: [{lat: '32', lon: '34', display_name: 'Controlled GPS mock'}]});
     return route.abort();
@@ -35,6 +35,7 @@ async function start(page, theme, fixed, response = 'pois', delayedRouting = fal
   await expect(button).toBeVisible();
   if(delayedRouting)await page.evaluate(()=>{window.TravelMateRouting={matrix:()=>new Promise(resolve=>{window.finishQaRouting=()=>resolve(null)})}});
   await button.click();
+  if(afterClick)await afterClick();
   await expect(page.locator('[data-gps-consent]')).toBeVisible();
   await page.locator('[data-gps-once]').click();
 }
@@ -84,4 +85,17 @@ for(const response of ['empty','failure'])test(response+' API result remains dis
 
 test('pending live routing never delays estimate tags or hides base POIs',async({page})=>{
  await start(page,'light',false,'pois',true);await expect(page.locator('[data-nearby-results] .nearby-result[data-place-id]')).toHaveCount(8);await expect(page.locator('[data-contextual-time-fit]')).toHaveCount(8);await expect(page.locator('[data-nearby-results]')).toHaveAttribute('data-contextual-routing','estimate');await page.evaluate(()=>window.finishQaRouting());await expect(page.locator('[data-contextual-time-fit]')).toHaveCount(8);await expect(page.locator('[data-nearby-results]')).toHaveAttribute('data-contextual-red-count','1');
+});
+
+// Reproduce the original CI order: Nearby became usable before TripContext arrived.
+test('contextual Nearby waits for its delayed trip helper before GPS and time guidance',async({page})=>{
+ let release,requested;const gate=new Promise(resolve=>{release=resolve}),seen=new Promise(resolve=>{requested=resolve});
+ await page.route('**/assets/trip-context.js*',async route=>{requested();await gate;await route.continue();});
+ const flow=start(page,'dark',true,'pois',false,async()=>{await expect(page.locator('[data-gps-consent]')).toBeHidden();release();});await seen;
+ await expect(page.locator('[data-contextual-nearby-open]')).toBeVisible();
+ await expect(page.locator('[data-gps-consent]')).toBeHidden();
+ await flow;
+ await expect(page.locator('[data-nearby-results]')).toHaveAttribute('data-contextual-green-count','0');
+ await expect(page.locator('[data-contextual-time-fit="red"]')).toHaveCount(8);
+ expect(await page.evaluate(()=>gpsMockCalls)).toBe(1);
 });

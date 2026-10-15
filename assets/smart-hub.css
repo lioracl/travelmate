@@ -15,3 +15,5 @@
 .smart-hub-launch:focus-visible{outline:3px solid var(--tm-focus-ring);outline-offset:3px}
 
 .smart-hub-modal header .smart-hub-heading>div>span{background:var(--tm-card-bg-nested);color:var(--tm-card-text)}
+
+.ai-voice-controls{display:flex;gap:8px;flex-wrap:wrap;margin-block:6px}.ai-voice-controls[hidden]{display:none}.ai-panel .ai-voice-controls button{width:auto;flex:0 1 auto;min-height:44px;height:auto;color:var(--tm-card-control-text);background:var(--tm-card-control);padding:8px 14px;border:1px solid var(--border,#aab);border-radius:12px;background:var(--card-bg,#fff);color:inherit}.ai-panel .ai-voice-privacy{color:var(--tm-card-secondary);display:block;font-size:11px;line-height:1.5;opacity:.8;overflow-wrap:anywhere}

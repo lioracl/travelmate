@@ -12,10 +12,10 @@ for(const width of [360,390,430])for(const theme of ['light','dark'])test(width+
  const read=()=>page.evaluate(()=>JSON.stringify(TravelMateTripStore.getTrip('decision-qa')));
  const before=await read();await panel.locator('input[type=time]').fill('16:00');await page.evaluate(()=>dispatchEvent(new Event('travelmate:weather-context-change')));await expect(panel.locator('input[type=time]')).toHaveValue('16:00');
  await panel.getByRole('button',{name:'תצוגה מקדימה',exact:true}).press('Enter');expect(await read()).toBe(before);
- const confirm=panel.locator('[data-smart-step=confirm]');await expect(confirm).toBeFocused();await confirm.press('Enter');expect(await read()).toBe(before);
+ const confirm=panel.locator('[data-smart-step=confirm]');await page.evaluate(()=>{document.dispatchEvent(new Event('travelmate:smart-trip-updated'));dispatchEvent(new Event('travelmate:weather-context-change'));});await expect(confirm).toBeFocused();await confirm.press('Enter');expect(await read()).toBe(before);
  await expect(panel.locator('[data-smart-step=apply]')).toBeFocused();await context.setOffline(true);await panel.locator('[data-smart-step=apply]').press('Enter');
  expect(await page.evaluate(()=>TravelMateTripStore.getTrip('decision-qa').activities[0].time)).toBe('16:00');
- await expect(panel.locator('[data-smart-step=undo]')).toBeFocused();await panel.locator('[data-smart-step=undo]').press('Enter');
+ await page.evaluate(()=>document.dispatchEvent(new Event('travelmate:smart-trip-updated')));await expect(panel.locator('[data-smart-step=undo]')).toBeFocused();await panel.locator('[data-smart-step=undo]').press('Enter');
  expect(await page.evaluate(()=>TravelMateTripStore.getTrip('decision-qa').activities.map(x=>x.time))).toEqual(['15:00','18:00']);
  expect(await page.evaluate(()=>window.gpsCalls)).toBe(0);expect(searches).toBe(0);
  await expect(page.locator('html')).toHaveAttribute('dir','rtl');await expect(page.locator('html')).toHaveAttribute('data-theme',theme);

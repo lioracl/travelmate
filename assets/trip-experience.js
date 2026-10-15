@@ -934,7 +934,7 @@
   function memoryDatabase() { return new Promise(function (resolve, reject) { var request = indexedDB.open('travelmate-memory-files', 1); request.onupgradeneeded = function () { if (!request.result.objectStoreNames.contains('files')) request.result.createObjectStore('files'); }; request.onsuccess = function () { resolve(request.result); }; request.onerror = function () { reject(request.error); }; }); }
   async function putLocalMemoryFile(key, file) { var database = await memoryDatabase(); return new Promise(function (resolve, reject) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').put(file, key); transaction.oncomplete = function () { database.close(); resolve(); }; transaction.onerror = function () { database.close(); reject(transaction.error); }; }); }
   async function getLocalMemoryFile(key) { var database = await memoryDatabase(); return new Promise(function (resolve, reject) { var request = database.transaction('files').objectStore('files').get(key); request.onsuccess = function () { database.close(); resolve(request.result); }; request.onerror = function () { database.close(); reject(request.error); }; }); }
-  async function deleteLocalMemoryFile(key) { var database = await memoryDatabase(); return new Promise(function (resolve) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = function () { database.close(); resolve(); }; transaction.onerror = function () { database.close(); resolve(); }; }); }
+  async function deleteLocalMemoryFile(key) { var database = await memoryDatabase(); return new Promise(function (resolve, reject) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = function () { database.close(); resolve(); }; transaction.onerror = transaction.onabort = function () { database.close(); reject(transaction.error || new Error('MEMORY_DELETE_FAILED')); }; }); }
   async function storeMemoryAttachment(file, memoryId) {
     var context = experienceContext(); assertExperienceCurrent(context);
     try {
@@ -972,9 +972,20 @@
     var context = experienceContext(); if (!experienceIsCurrent(context)) return;
     var memory = state.memories.find(function (item) { return String(item.id) === String(memoryId); }); if (!memory) return;
     var attachments = Array.isArray(memory.attachments) ? memory.attachments : [];
-    try { var cloudPaths = attachments.filter(function (item) { return item.cloud && item.storagePath; }).map(function (item) { return item.storagePath; }); if (cloudPaths.length && cloud) { var access = await privateStorageAccess(); if (!experienceIsCurrent(context)) return; await access.client.storage.from('travel-documents').remove(cloudPaths); } } catch (error) {}
-    if (!experienceIsCurrent(context)) return;
-    await Promise.all(attachments.filter(function (item) { return item.localKey; }).map(function (item) { return deleteLocalMemoryFile(item.localKey); }));
+    try {
+      var cloudPaths = attachments.filter(function (item) { return item.cloud && item.storagePath; }).map(function (item) { return item.storagePath; });
+      if (cloudPaths.length) {
+        if (!cloud) throw new Error('STORAGE_CLOUD_UNAVAILABLE');
+        var access = await privateStorageAccess(); if (!experienceIsCurrent(context)) return;
+        var result = await access.client.storage.from('travel-documents').remove(cloudPaths);
+        if (!experienceIsCurrent(context)) return;
+        if (!result || result.error) throw result && result.error || new Error('MEMORY_DELETE_FAILED');
+      }
+      await Promise.all(attachments.filter(function (item) { return item.localKey; }).map(function (item) { return deleteLocalMemoryFile(item.localKey); }));
+    } catch (error) {
+      if (experienceIsCurrent(context)) toast('המחיקה לא הושלמה. הרגע וההפניות לקבצים נשמרו כדי שתוכלו לנסות שוב לאחר חידוש החיבור.');
+      return;
+    }
     if (!experienceIsCurrent(context)) return;
     state.memories = state.memories.filter(function (item) { return String(item.id) !== String(memoryId); }); writeJson(storageKey('memories'), state.memories); saveTripData(); renderMemories(); renderSummary();
   }
