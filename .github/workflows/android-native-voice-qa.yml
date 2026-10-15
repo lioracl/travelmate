@@ -1,0 +1,117 @@
+name: TravelMate Android Native Voice QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'codex/android-native-voice-final-gate-20261015'
+
+permissions:
+  contents: read
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify syntax, distribution and whitespace
+        run: |
+          find assets tools tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | xargs -0 -n1 node --check
+          node --input-type=module -e "import {classifyGitRange} from './tools/classify-distribution.mjs'; const r=classifyGitRange(); console.log(r); if(r.distribution!=='APK_REQUIRED') throw Error('Native candidate must remain blocked from OTA-only publication');"
+          git diff --check HEAD^
+
+      - name: Run contract and regression tests
+        run: node --test tests/*.test.js
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/travelmate-http.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/travelmate-http.log
+          exit 1
+
+      - name: Run integration QA
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e --workers=2 --retries=0 --reporter=line
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: travelmate-playwright-report
+          path: |
+            test-results
+            playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
+
+  android-compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read exact native dependency
+        id: native
+        run: node -e "const fs=require('fs'),p=require('./ota-overlay.json');if(p.nativeApiLevel!==2||!/^[a-f0-9]{40}$/.test(p.sha))throw Error('Native API 2 pin required');fs.appendFileSync(process.env.GITHUB_OUTPUT,'sha='+p.sha+'\n')"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.native.outputs.sha }}
+          path: native-overlay
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
+      - name: Install compile SDK
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Verify native dependency and stage exact web SHA
+        run: |
+          cd native-overlay
+          npm ci --ignore-scripts --no-audit --no-fund
+          node --test tests/*.test.js
+          node tools/stage-native-web.mjs .. dist
+          npx cap sync android
+          node -e "const p=require('./dist/build-info.json');if(p.sha!==process.env.GITHUB_SHA||p.nativeApiLevel!==2)throw Error('APK web provenance mismatch')"
+      - name: Compile, unit test and lint without signing or installation
+        run: |
+          cd native-overlay/android
+          chmod +x gradlew
+          ./gradlew :app:compileDebugJavaWithJavac :app:check --console=plain
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-voice-compile-evidence
+          path: |
+            native-overlay/android/app/build/reports
+            native-overlay/android/app/build/test-results
+            native-overlay/dist/build-info.json

@@ -61,7 +61,7 @@ test('Mate is the personal assistant and its dark fields/targets use semantic ma
   const js=read('assets/ai-assistant.js'),css=read('assets/ai-assistant.css');
   assert.match(js,/__travelMateAiAssistantLoaded/);
   assert.match(css,/width:44px;height:44px/);
-  assert.match(css,/min-height:40px;white-space:nowrap/);
+  assert.match(css,/min-height:44px;white-space:nowrap/);
   assert.match(css,/min-height:44px;padding-inline:6px/);
   assert.doesNotMatch(css,/background:#fff!important/);
   assert.match(css,/textarea\{background:var\(--tm-surface-control\)/);

@@ -376,6 +376,8 @@
     ui.status.textContent = snapshot && snapshot.message || assistantStatus;
     if (!snapshot) return;
     ui.panel.dataset.voiceState = snapshot.phase;
+    var privacy = ui.panel.querySelector('.ai-voice-privacy');
+    if (privacy) privacy.textContent = snapshot.provider === 'android-native' ? 'הכתבה מופעלת רק בלחיצה דרך ספק הזיהוי של Android, שעשוי להשתמש ברשת. TravelMate אינו שומר קובצי קול. הקראה משתמשת בקולות שהמכשיר מסמן כמקומיים; אפשר להמשיך להקליד.' : 'הכתבה מופעלת רק בלחיצה ועשויה לעבור דרך ספק הדפדפן; אינה מובטחת ללא רשת. הקראה משתמשת רק בקול שהמכשיר מסמן כמקומי. אפשר להמשיך להקליד.';
     var mic = ui.panel.querySelector('[data-ai-voice]');
     mic.disabled = state.busy || !snapshot.enabled || !snapshot.canRecognize || snapshot.phase === 'offline' || snapshot.stopping;
     mic.classList.toggle('listening', snapshot.phase === 'listening');
@@ -384,8 +386,8 @@
     var controls = ui.panel.querySelector('[data-ai-voice-controls]');
     if (controls) {
       controls.hidden = !['listening','speaking','paused'].includes(snapshot.phase);
-      controls.querySelector('[data-voice-pause]').hidden = snapshot.phase !== 'speaking';
-      controls.querySelector('[data-voice-resume]').hidden = snapshot.phase !== 'paused';
+      controls.querySelector('[data-voice-pause]').hidden = snapshot.phase !== 'speaking' || !snapshot.canPause;
+      controls.querySelector('[data-voice-resume]').hidden = snapshot.phase !== 'paused' || !snapshot.canPause;
       controls.querySelector('[data-voice-stop]').textContent = snapshot.phase === 'listening' ? 'ביטול הכתבה' : 'עצירת הקראה';
     }
   }
@@ -658,6 +660,7 @@
   ui.panel.querySelector('[data-ai-clear]').addEventListener('click', function () { if (window.TravelMateVoice) window.TravelMateVoice.cancel('mate'); state.messages = []; persistMessages(); renderHistory(); setStatus('שיחה חדשה'); });
   ui.panel.querySelector('[data-ai-privacy]').addEventListener('click', function () { addMessage('assistant', 'אני שולח ל־Google Gemini רק את השאלה, היסטוריית השיחה הקצרה ותקציר הטיול: יעד, תאריכים, פעילויות, מקומות ששמרת, מסגרת התקציב וסיכום הוצאות מצומצם לפי מטבע וקטגוריה. הערות להוצאות, קבלות, מסמכים, סיסמאות, GPS ופרטי הכספת אינם נשלחים. במסלול החינמי Google עשויה להשתמש בתוכן לשיפור מוצריה.'); });
   ui.form.addEventListener('submit', function (event) { event.preventDefault(); sendMessage(); });
+  ui.panel.querySelector('.ai-quick-prompts').addEventListener('focusin', function (event) { var button = event.target.closest('button'); if (button) button.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' }); });
   ui.input.addEventListener('input', autoGrow);
   ui.input.addEventListener('focus', function () { setTimeout(syncVisualViewport, 80); setTimeout(syncVisualViewport, 320); });
   ui.input.addEventListener('blur', function () { setTimeout(syncVisualViewport, 120); });

@@ -13,7 +13,7 @@ if (/\/trip\//.test(location.pathname)) window.addEventListener('travelmate:acco
   if (!id || nextTrip) location.reload();
   else location.replace(new URL('../../index.html', location.href).href);
 });
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261015-01'}catch(error){return'20261015-01'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261015-02'}catch(error){return'20261015-02'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
@@ -25,8 +25,8 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
   var features={
     overview:{styles:['weather-widget.css','trip-intelligence.css'],scripts:['weather-widget.js']},
     intelligence:{styles:['smart-trip-mode.css'],scripts:['trip-context.js','learned-preferences.js','learned-profile.js','personalized-suggestions.js','smart-trip-decisions.js','smart-trip-mode.js','smart-trip-actions.js','trip-intelligence.js']},
-    assistant:{styles:['smart-hub.css'],scripts:['settings-preferences.js','mate-voice.js','trip-context.js','ai-assistant.js','smart-hub.js']},
-    account:{styles:['profile-wizard.css','security-center.css','admin-center.css'],scripts:['settings-preferences.js','mate-voice.js','learned-preferences.js','learned-profile.js','learned-profile-ui.js','profile-wizard.js','security-center.js','admin-center.js']},
+    assistant:{styles:['smart-hub.css'],scripts:['settings-preferences.js','voice-providers.js','mate-voice.js','trip-context.js','ai-assistant.js','smart-hub.js']},
+    account:{styles:['profile-wizard.css','security-center.css','admin-center.css'],scripts:['settings-preferences.js','voice-providers.js','mate-voice.js','learned-preferences.js','learned-profile.js','learned-profile-ui.js','profile-wizard.js','security-center.js','admin-center.js']},
     places:{styles:['nearby.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','place-sharing.css'],scripts:['trip-context.js','learned-preferences.js','learned-profile.js','personalized-suggestions.js','lodging-manager.js','place-auto-fill.js','place-directions.js']},
     plan:{styles:['calendar-export.css','smart-trip-mode.css','auto-planner.css','place-planner.css','lodging-manager.css','place-auto-fill.css','smart-plan-tools.css','place-directions.css','plan-ux-polish.css','free-time-finder.css'],scripts:['calendar-export.js','calendar-export-ui.js','trip-context.js','auto-planner.js','lodging-manager.js','place-auto-fill.js','place-directions.js','plan-ux-polish.js','free-time-finder.js','smart-trip-decisions.js','smart-trip-mode.js','smart-trip-actions.js']},
     documents:{styles:['document-vault.css'],scripts:['document-vault.js']},
