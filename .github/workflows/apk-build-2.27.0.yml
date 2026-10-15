@@ -1,0 +1,132 @@
+name: TravelMate QA APK Build 2.27.0
+
+on:
+  push:
+    branches:
+      - 'qa/apk-build-2.27.0-53c52aa'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-signed-qa-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      WEB_SHA: 53c52aae1454f20e010b08893937cffff8df0bd9
+      NATIVE_SHA: 623ae0ef2d6a655368f2be704a4ccdef8924b7af
+      APK_NAME: TravelMate-QA-2.27.0-22700-native3-53c52aae.apk
+      TRAVELMATE_QA_KEYSTORE_BASE64: ${{ secrets.TRAVELMATE_QA_KEYSTORE_BASE64 }}
+      TRAVELMATE_QA_STORE_PASSWORD: ${{ secrets.TRAVELMATE_QA_STORE_PASSWORD }}
+      TRAVELMATE_QA_KEY_ALIAS: ${{ secrets.TRAVELMATE_QA_KEY_ALIAS }}
+      TRAVELMATE_QA_KEY_PASSWORD: ${{ secrets.TRAVELMATE_QA_KEY_PASSWORD }}
+      TRAVELMATE_QA_CERT_SHA256: ${{ vars.TRAVELMATE_QA_CERT_SHA256 }}
+
+    steps:
+      - name: Checkout exact web candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.WEB_SHA }}
+          path: web-source
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout exact Native API 3 candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.NATIVE_SHA }}
+          path: native-overlay
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
+
+      - name: Install Android compile tools
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify exact source SHAs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C web-source rev-parse HEAD)" = "$WEB_SHA"
+          test "$(git -C native-overlay rev-parse HEAD)" = "$NATIVE_SHA"
+
+      - name: Configure permanent QA signing identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          for NAME in TRAVELMATE_QA_KEYSTORE_BASE64 TRAVELMATE_QA_STORE_PASSWORD TRAVELMATE_QA_KEY_ALIAS TRAVELMATE_QA_KEY_PASSWORD TRAVELMATE_QA_CERT_SHA256; do
+            [[ -n "${!NAME}" ]] || { echo "::error::Missing permanent QA signing value: $NAME"; exit 1; }
+          done
+          umask 077
+          printf '%s' "$TRAVELMATE_QA_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/travelmate-qa.keystore"
+          echo "TRAVELMATE_QA_KEYSTORE=$RUNNER_TEMP/travelmate-qa.keystore" >> "$GITHUB_ENV"
+
+      - name: Stage exact web candidate into Native API 3 shell
+        working-directory: native-overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          node tools/stage-native-web.mjs ../web-source dist
+          npx cap sync android
+          node -e "const p=require('./dist/build-info.json'); if(p.sha!==process.env.WEB_SHA||p.nativeApiLevel!==3) throw Error('APK provenance mismatch: '+JSON.stringify(p));"
+          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('android/app/src/main/assets/public/build-info.json','utf8')); if(p.sha!==process.env.WEB_SHA||p.nativeApiLevel!==3) throw Error('Embedded provenance mismatch: '+JSON.stringify(p));"
+
+      - name: Build signed QA APK
+        working-directory: native-overlay/android
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew testDebugUnitTest assembleDebug --console=plain
+
+      - name: Verify signature, package version and embedded source
+        working-directory: native-overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          BUILD_TOOLS="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK" > /tmp/travelmate-signature.txt
+          cat /tmp/travelmate-signature.txt
+          python3 tools/verify-android-signing.py /tmp/travelmate-signature.txt android/app/build/outputs/apk/debug/signing-certificate.json
+          "$BUILD_TOOLS/aapt" dump badging "$APK" > /tmp/travelmate-badging.txt
+          grep -q "package: name='com.travelmate.app'.*versionCode='22700'.*versionName='2.27.0'" /tmp/travelmate-badging.txt
+          python3 tools/verify-android-apk.py "$APK" "$WEB_SHA"
+          cp "$APK" "android/app/build/outputs/apk/debug/$APK_NAME"
+          sha256sum "android/app/build/outputs/apk/debug/$APK_NAME" | tee "android/app/build/outputs/apk/debug/${APK_NAME%.apk}.sha256"
+
+      - name: Remove temporary QA keystore
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/travelmate-qa.keystore"
+
+      - name: Upload signed QA APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TravelMate-QA-2.27.0-22700-native3-53c52aae
+          path: |
+            native-overlay/android/app/build/outputs/apk/debug/TravelMate-QA-2.27.0-22700-native3-53c52aae.apk
+            native-overlay/android/app/build/outputs/apk/debug/TravelMate-QA-2.27.0-22700-native3-53c52aae.sha256
+            native-overlay/android/app/build/outputs/apk/debug/signing-certificate.json
+            native-overlay/dist/build-info.json
+          if-no-files-found: error
+          retention-days: 7
