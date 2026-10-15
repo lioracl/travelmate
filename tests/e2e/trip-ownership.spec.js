@@ -18,6 +18,8 @@ test('retained Memories save preserves newer Budget and Plan and restores submit
  const t=await read(page);expect(t.budget).toBe(700);expect(t.activities[0].title).toBe('NEW');expect(t.memories.map(m=>m.note)).toEqual(['first memory','second memory']);
 });
 test('canonical replacement refreshes Plan and later edit preserves Budget',async({page})=>{
+ // Freeze the trip day so this ownership test is independent of the CI runner's calendar date.
+ await page.clock.setFixedTime(new Date('2026-10-14T09:00:00Z'));
  await seed(page,'plan');await expect(page.locator('[data-activity-id="a"]')).toBeAttached();
  await page.evaluate(()=>{const trip=TravelMateTripStore.updateTrip('ownership',t=>{t.activities[0].title='REALTIME NEW';t.budget=800;return t});window.dispatchEvent(new CustomEvent('travelmate:canonical-trip-replaced',{detail:{userId:'ownership-owner',trip}}));});
  await expect(page.locator('[data-activity-id="a"]')).toContainText('REALTIME NEW');await page.locator('[data-activity-id="a"] [data-toggle-done]').click();const t=await read(page);expect(t.activities[0].title).toBe('REALTIME NEW');expect(t.activities[0].done).toBe(true);expect(t.budget).toBe(800);
