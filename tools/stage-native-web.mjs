@@ -42,6 +42,8 @@ const {execFileSync} = await import('node:child_process');
 const sourceBuild=fs.existsSync(path.join(source,'build-info.json'))?JSON.parse(fs.readFileSync(path.join(source,'build-info.json'))):null;
 execFileSync(process.execPath,[path.join(root,'tools','stamp-web-build.mjs'),dist],{stdio:'inherit',env:{...process.env,...{TRAVELMATE_WEB_BUILD_SHA:sourceBuild?sourceBuild.sha:execFileSync('git',['-C',source,'rev-parse','HEAD'],{encoding:'utf8'}).trim(),TRAVELMATE_WEB_BUILD_VERSION:sourceBuild?sourceBuild.version:fs.readFileSync(path.join(source,'assets','about.js'),'utf8').match(/version: '([^']+)'/)[1]}}});
 const build=JSON.parse(fs.readFileSync(path.join(dist,'build-info.json')));
+build.nativeSha=execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+build.nativeVersion=JSON.parse(fs.readFileSync(path.join(root,'package.json'))).version;
 build.nativeApiLevel=JSON.parse(fs.readFileSync(path.join(root,'native-overlay.json'))).nativeApiLevel;
 fs.writeFileSync(path.join(dist,'build-info.json'),JSON.stringify(build,null,2)+'\n');
 fs.writeFileSync(path.join(dist,'assets','web-build.js'),'window.TravelMateWebBuild=Object.freeze('+JSON.stringify(build)+');\n');
