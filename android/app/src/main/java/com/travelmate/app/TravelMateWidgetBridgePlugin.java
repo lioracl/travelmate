@@ -18,8 +18,8 @@ public class TravelMateWidgetBridgePlugin extends Plugin {
     @PluginMethod
     public void getRuntimeContract(PluginCall call) {
         JSObject result = new JSObject();
-        result.put("nativeApiLevel", 3);
-        result.put("minimumWebApiLevel", 3);
+        result.put("nativeApiLevel", 4);
+        result.put("minimumWebApiLevel", 4);
         result.put("publicKey", getBridge().getConfig().getPluginConfiguration("LiveUpdate").getString("publicKey", ""));
         call.resolve(result);
     }

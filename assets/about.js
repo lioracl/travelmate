@@ -2,8 +2,8 @@
   'use strict';
 
   var release = {
-    version: '2.27.0',
-    label: 'Native Voice Endpoint QA - 2.27.0',
+    version: '2.28.0',
+    label: 'Native Voice Interrupt QA - 2.28.0',
     date: '15 באוקטובר 2026',
     highlights: [
       'עדכוני PWA: פרסום Preview מזהה את גרסת הווב לפי SHA. עדכון מוכן מוצג עם רענון מפורש, בלי להתקין APK ובלי למחוק נתונים מקומיים.',
