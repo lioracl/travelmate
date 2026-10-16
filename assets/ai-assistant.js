@@ -177,12 +177,13 @@
     return row;
   }
 
+  var speechControlId = 0;
   function addMessageTools(bubble, responseState) {
     var content = responseState.content;
     var tools = document.createElement('div'); tools.className = 'ai-message-tools';
     var speak = document.createElement('button'); speak.type = 'button'; speak.innerHTML = '<i class="fa-solid fa-volume-high"></i> הקראה';
-    speak.dataset.aiRead = '';
-    speak.addEventListener('click', function () { if (window.TravelMateVoice) window.TravelMateVoice.speak(content, { owner: 'mate', lang: 'he-IL' }); });
+    speak.dataset.aiRead = 'mate-read-' + (++speechControlId); speak.setAttribute('aria-label', 'הקראת תשובה');
+    speak.addEventListener('click', function () { if (!window.TravelMateVoice) return; var voice = window.TravelMateVoice; if (['speaking','paused'].includes(voice.getSnapshot().phase) && voice.getSnapshot().speechSourceId === speak.dataset.aiRead) voice.stopPlayback(); else voice.speak(content, { owner: 'mate', lang: 'he-IL', sourceId: speak.dataset.aiRead }); });
     var copy = document.createElement('button'); copy.type = 'button'; copy.innerHTML = '<i class="fa-regular fa-copy"></i> העתקה';
     copy.addEventListener('click', function () { navigator.clipboard && navigator.clipboard.writeText(content); copy.textContent = 'הועתק'; });
     tools.appendChild(speak); tools.appendChild(copy);
@@ -365,6 +366,7 @@
     ui.status.textContent = snapshot && snapshot.message || assistantStatus;
     if (!snapshot) return;
     ui.panel.dataset.voiceState = snapshot.phase;
+    ui.panel.querySelectorAll('[data-ai-read]').forEach(function (button) { var speaking = ['speaking','paused'].includes(snapshot.phase) && snapshot.speechSourceId === button.dataset.aiRead; button.textContent = speaking ? 'עצור הקראה' : 'הקראה'; button.setAttribute('aria-label', speaking ? 'עצור הקראה' : 'הקראת תשובה'); });
     ui.panel.dataset.conversationState = snapshot.conversationState || 'IDLE';
     var privacy = ui.panel.querySelector('.ai-voice-privacy');
     if (privacy) privacy.textContent = (snapshot.conversationActive ? 'מצב שיחה פעיל: אחרי הקראה תיפתח האזנה לעד 12 שניות; בתשובה שקטה נדרשת לחיצה להמשך. ' : '') + (snapshot.provider === 'android-native' ? 'הכתבה מופעלת ביוזמתך דרך ספק הזיהוי של Android, שעשוי להשתמש ברשת. TravelMate אינו שומר קובצי קול. הקראה משתמשת בקולות שהמכשיר מסמן כמקומיים; אפשר להמשיך להקליד.' : 'הכתבה מופעלת ביוזמתך ועשויה לעבור דרך ספק הדפדפן; אינה מובטחת ללא רשת. הקראה משתמשת רק בקול שהמכשיר מסמן כמקומי. אפשר להמשיך להקליד.') + ' זיהוי ללא רשת אינו מובטח.';
@@ -662,14 +664,15 @@
       console.error('TravelMate AI request failed', error); typing.remove(); addMessage('assistant', '<div class="ai-login-card ai-error-card">' + escapeText(friendlyError(error)) + '</div>', { html: true, temporary: true }); setStatus('החיבור ל־AI אינו זמין');
     } finally { if (requestGeneration === state.lifecycleGeneration) { setBusy(false); if (state.open) ui.input.focus();
       if (replyToSpeak && voiceReplyGeneration === state.voiceReplyGeneration && state.open && !document.hidden && requestIsCurrent(requestContext) && window.TravelMateVoice) {
-        if (conversationRequest) { if (window.TravelMateVoice.getSnapshot().conversationActive) window.TravelMateVoice.finishConversationTurn({ text: replyToSpeak, confirmationPending: pendingActionViews().length === 1 }); }
-        else if (window.TravelMateVoice.getSnapshot().enabled && window.TravelMateSettings.getVoicePreferences().autoSpeakReplies) window.TravelMateVoice.speak(replyToSpeak, { owner: 'mate', lang: 'he-IL' });
+        if (conversationRequest) { if (window.TravelMateVoice.getSnapshot().conversationActive) window.TravelMateVoice.finishConversationTurn({ text: replyToSpeak, sourceId: responseRow.querySelector('[data-ai-read]').dataset.aiRead, confirmationPending: pendingActionViews().length === 1 }); }
+        else if (window.TravelMateVoice.getSnapshot().enabled && window.TravelMateSettings.getVoicePreferences().autoSpeakReplies) window.TravelMateVoice.speak(replyToSpeak, { owner: 'mate', lang: 'he-IL', voiceOrigin: true, sourceId: responseRow.querySelector('[data-ai-read]').dataset.aiRead, createTurn: voiceTurnFactory, canContinue: function () { return state.open && !state.busy; } });
       } else if (conversationRequest && window.TravelMateVoice) window.TravelMateVoice.endConversation();
     } }
   }
 
   function autoGrow() { ui.input.style.height = 'auto'; ui.input.style.height = Math.min(ui.input.scrollHeight, 110) + 'px'; }
 
+  var voiceTurnFactory = null;
   function setupVoice() {
     var voice = window.TravelMateVoice, button = ui.panel.querySelector('[data-ai-voice]');
     ui.status.id = 'mate-voice-status'; button.setAttribute('aria-describedby', 'mate-voice-status');
@@ -694,6 +697,7 @@
         }
       };
     }
+    voiceTurnFactory = dictationOptions;
     button.addEventListener('click', function () {
       if (voice.getSnapshot().phase === 'listening') voice.endConversation() || voice.cancel('mate');
       else if (voice.getSnapshot().conversationActive) voice.continueConversation();
@@ -705,7 +709,7 @@
     });
     controls.querySelector('[data-voice-pause]').addEventListener('click', voice.pause);
     controls.querySelector('[data-voice-resume]').addEventListener('click', voice.resume);
-    controls.querySelector('[data-voice-stop]').addEventListener('click', function () { voice.endConversation() || voice.cancel('mate'); ui.input.focus(); });
+    controls.querySelector('[data-voice-stop]').addEventListener('click', function () { voice.stopPlayback() || voice.endConversation() || voice.cancel('mate'); ui.input.focus(); });
     voice.subscribe(renderVoiceState);
   }
 

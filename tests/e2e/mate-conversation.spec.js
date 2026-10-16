@@ -3,7 +3,7 @@ async function boot(page,theme='light'){
  await page.clock.install({time:new Date('2026-10-15T08:00:00+03:00')});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.qaErrors=errors;
  await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
- await page.addInitScript(theme=>{localStorage.setItem('travelmate-theme',theme);localStorage.setItem('travelmate-active-user','c-owner');localStorage.setItem('travelmate-trips',JSON.stringify([{id:'c-trip',ownerId:'c-owner',city:'Tel Aviv',start:'2026-10-15',end:'2026-10-17',days:3,planInitialized:true,activities:[{id:'a',title:'הליכה',date:'2026-10-15',time:'10:00'}],savedPlaces:[]}]));window.qa={listeners:{},calls:[],requests:[],actions:[]};const plugin={addListener:async(n,f)=>{qa.listeners[n]=f;return{remove:async()=>delete qa.listeners[n]}},getCapabilities:async()=>({canSpeak:true,canRecognize:true,canStop:true,canPause:false,sttNetwork:'provider-dependent',voices:[{voiceURI:'he',lang:'he-IL',localService:true}]}),startListening:async a=>{qa.mic=a.sessionId;qa.calls.push({kind:'mic',...a});qa.listeners.voiceEvent({type:'stt-start',sessionId:a.sessionId})},cancel:async a=>qa.calls.push({kind:'cancel',...a}),stopListening:async()=>{},speak:async a=>{qa.speech=a.sessionId;qa.calls.push({kind:'speech',...a});qa.listeners.voiceEvent({type:'tts-start',sessionId:a.sessionId,value:'he-IL'});return{voiceURI:'he',currentLanguage:'he-IL'}}};window.Capacitor={isNativePlatform:()=>true,getPlatform:()=> 'android',isPluginAvailable:()=>true,Plugins:{TravelMateVoice:plugin}};},theme);
+ await page.addInitScript(theme=>{localStorage.setItem('travelmate-theme',theme);localStorage.setItem('travelmate-active-user','c-owner');localStorage.setItem('travelmate-trips',JSON.stringify([{id:'c-trip',ownerId:'c-owner',city:'Tel Aviv',start:'2026-10-15',end:'2026-10-17',days:3,planInitialized:true,activities:[{id:'a',title:'הליכה',date:'2026-10-15',time:'10:00'}],savedPlaces:[]}]));window.qa={listeners:{},calls:[],requests:[],actions:[]};const plugin={addListener:async(n,f)=>{qa.listeners[n]=f;return{remove:async()=>delete qa.listeners[n]}},getCapabilities:async()=>({canSpeak:true,canRecognize:true,canStop:true,canPause:false,canInterrupt:true,sttNetwork:'provider-dependent',voices:[{voiceURI:'he',lang:'he-IL',localService:true}]}),startListening:async a=>{qa.mic=a.sessionId;qa.calls.push({kind:'mic',...a});qa.listeners.voiceEvent({type:'stt-start',sessionId:a.sessionId})},cancel:async a=>qa.calls.push({kind:'cancel',...a}),startInterrupt:async a=>{qa.interrupt=a.sessionId;qa.calls.push({kind:'interrupt',...a});if(qa.interruptError)throw{code:qa.interruptError};qa.listeners.voiceEvent({type:'stt-start',sessionId:a.sessionId})},stopListening:async()=>{},speak:async a=>{qa.speech=a.sessionId;qa.calls.push({kind:'speech',...a});qa.listeners.voiceEvent({type:'tts-start',sessionId:a.sessionId,value:'he-IL'});return{voiceURI:'he',currentLanguage:'he-IL'}}};window.Capacitor={isNativePlatform:()=>true,getPlatform:()=> 'android',isPluginAvailable:()=>true,Plugins:{TravelMateVoice:plugin}};},theme);
  await page.goto('/trip/custom/index.html?id=c-trip');await page.locator('.ai-orb').click();await page.waitForFunction(()=>window.TravelMateVoice&&window.TravelMateNavo);await page.evaluate(()=>{const cloud=TravelMateCloud;TravelMateCloud=Object.assign({},cloud,{getSession:async()=>({user:{id:'c-owner'}}),getClient:async()=>({functions:{invoke:async(n,a)=>{qa.requests.push(a);if(qa.pending)return new Promise(resolve=>qa.resolve=resolve);return{data:{answer:'תשובה מבוקרת',actions:qa.actions}}}}})});});
 }
 async function final(page,text){await page.evaluate(text=>{const f=qa.listeners.voiceEvent||qa.oldEvent;f({type:'stt-result',value:text,sessionId:qa.mic});f({type:'stt-end',sessionId:qa.mic});},text);}
@@ -20,3 +20,51 @@ test('ending conversation while thinking blocks late speech and follow-up',async
 test('auto-send OFF preserves edit mode and does not accept spoken confirmation',async({page})=>{await boot(page);await page.evaluate(()=>TravelMateSettings.setVoicePreferences({autoSend:false}));await page.locator('[data-ai-conversation]').click();await final(page,'טיוטה');await expect(page.locator('.ai-panel textarea')).toHaveValue('טיוטה');await expect(page.locator('.ai-panel textarea')).toBeFocused();expect(await page.evaluate(()=>qa.requests.length)).toBe(0);expect(await page.evaluate(()=>TravelMateVoice.getSnapshot().conversationActive)).toBe(false);});
 test('auto-speech OFF keeps reply silent and exposes bounded follow-up',async({page})=>{await boot(page);await page.evaluate(()=>TravelMateSettings.setVoicePreferences({autoSpeakReplies:false}));await page.locator('[data-ai-conversation]').click();await final(page,'שאלה');await expect(page.locator('.ai-panel')).toHaveAttribute('data-conversation-state','FOLLOW_UP_AVAILABLE');expect(await page.evaluate(()=>qa.calls.filter(c=>c.kind==='speech').length)).toBe(0);expect(await page.evaluate(()=>TravelMateVoice.getSnapshot().recognitionOfflineGuaranteed)).toBe(false);expect(await page.evaluate(()=>qa.calls.filter(c=>c.kind==='mic').length)).toBe(1);await expect(page.locator('[data-ai-voice]')).toHaveAttribute('aria-pressed','false');await page.locator('[data-ai-voice]').click();expect(await page.evaluate(()=>qa.calls.filter(c=>c.kind==='mic').length)).toBe(2);});
 test('yes without a pending proposal and normal dictation cannot mutate a trip',async({page})=>{await boot(page);await page.locator('[data-ai-conversation]').click();await final(page,'כן');expect(await activityCount(page)).toBe(1);await expect.poll(()=>page.evaluate(()=>qa.requests.length)).toBe(1);await expect(page.locator('.ai-panel')).toHaveAttribute('data-conversation-state','SPEAKING');await page.locator('[data-ai-conversation]').click();await page.locator('[data-ai-voice]').click();await final(page,'כן');await expect.poll(()=>page.evaluate(()=>qa.requests.length)).toBe(2);expect(await activityCount(page)).toBe(1);});
+
+test('spoken Stop stays private and leaves bounded tap follow-up',async({page})=>{
+ await boot(page);await page.locator('[data-ai-conversation]').click();await final(page,'שאלה');
+ await page.waitForFunction(()=>qa.interrupt);await expect(page.locator('#mate-voice-status')).toContainText('פקודת עצירה');
+ const trip=await page.evaluate(()=>JSON.stringify(TravelMateTripStore.getTrip('c-trip','c-owner')));
+ await page.evaluate(()=>{qa.beforeStorage=JSON.stringify(localStorage);qa.listeners.voiceEvent({type:'stt-result',value:'stop',sessionId:qa.interrupt});qa.listeners.voiceEvent({type:'stt-end',sessionId:qa.interrupt});qa.listeners.voiceEvent({type:'tts-end',sessionId:qa.speech});});
+ await expect(page.locator('.ai-panel')).toHaveAttribute('data-conversation-state','FOLLOW_UP_AVAILABLE');
+ expect(await page.evaluate(()=>qa.requests.length)).toBe(1);
+ expect(await page.evaluate(()=>JSON.stringify(localStorage)===qa.beforeStorage)).toBe(true);
+ expect(await page.evaluate(()=>JSON.stringify(TravelMateTripStore.getTrip('c-trip','c-owner')))).toBe(trip);
+ await expect(page.locator('[data-ai-voice]')).toHaveAttribute('aria-pressed','false');
+ await expect(page.locator('.ai-panel textarea')).toHaveValue('');
+ await page.clock.fastForward(12001);expect(await page.evaluate(()=>TravelMateVoice.getSnapshot().conversationActive)).toBe(false);
+});
+test('manual Read Aloud becomes Stop without any microphone',async({page})=>{
+ await boot(page);await page.locator('.ai-panel textarea').fill('שאלה');await page.locator('[data-ai-send]').click();
+ await expect(page.locator('[data-ai-read]').last()).toBeVisible();await page.locator('[data-ai-read]').last().click();
+ await expect(page.locator('[data-ai-read]').last()).toHaveAccessibleName('עצור הקראה');await expect(page.locator('[data-ai-read]').first()).toHaveAccessibleName('הקראת תשובה');await page.locator('[data-ai-read]').last().click();
+ expect(await page.evaluate(()=>TravelMateVoice.getSnapshot().phase)).toBe('idle');
+ expect(await page.evaluate(()=>qa.calls.filter(c=>c.kind==='mic'||c.kind==='interrupt').length)).toBe(0);
+ await page.evaluate(()=>qa.listeners.voiceEvent({type:'tts-end',sessionId:qa.speech}));
+ expect(await page.evaluate(()=>qa.calls.filter(c=>c.kind==='speech').length)).toBe(1);
+});
+for(const command of ['עצור','תעצור','תפסיק','די','stop','אל תעצור ליד המוזיאון','כדאי לעצור כאן','stop at the museum','אולי די'])test('interrupt strict command '+command,async({page})=>{
+ await boot(page);await page.locator('[data-ai-conversation]').click();await final(page,'שאלה');await page.waitForFunction(()=>qa.interrupt);
+ await page.evaluate(command=>qa.listeners.voiceEvent({type:'stt-result',value:command,sessionId:qa.interrupt}),command);
+ expect(await page.evaluate(()=>TravelMateVoice.getSnapshot().phase)).toBe(['עצור','תעצור','תפסיק','די','stop'].includes(command)?'idle':'speaking');
+ expect(await page.evaluate(()=>qa.requests.length)).toBe(1);expect(await activityCount(page)).toBe(1);
+});
+for(const change of ['close','viewchange','popstate','account','trip','pagehide','background','offline'])test('interrupt lifecycle fence '+change,async({page})=>{
+ await boot(page);await page.locator('[data-ai-conversation]').click();await final(page,'שאלה');await page.waitForFunction(()=>qa.interrupt);
+ await page.evaluate(()=>{qa.oldInterrupt=qa.interrupt;qa.oldSpeech=qa.speech;qa.oldEvent=qa.listeners.voiceEvent;});
+ if(change==='close')await page.locator('[data-ai-close]').click();else await page.evaluate(change=>{
+ if(change==='background')qa.listeners.voiceLifecycle();
+ else if(change==='account'){localStorage.setItem('travelmate-active-user','other');dispatchEvent(new Event('travelmate:accountchange'));}
+ else if(change==='trip'){history.replaceState({},'','?id=other');dispatchEvent(new Event('travelmate:viewchange'));}
+ else dispatchEvent(new Event(change==='viewchange'?'travelmate:viewchange':change));
+ },change);
+ await page.evaluate(()=>{qa.oldEvent({type:'stt-result',value:'stop',sessionId:qa.oldInterrupt});qa.oldEvent({type:'tts-end',sessionId:qa.oldSpeech});});
+ expect(await page.evaluate(()=>TravelMateVoice.getSnapshot().interruptListening)).toBe(false);expect(await page.evaluate(()=>qa.requests.length)).toBe(1);
+ expect(await page.evaluate(()=>qa.calls.filter(c=>c.kind==='speech').length)).toBe(1);
+});
+test('interrupt provider rejection preserves TTS and manual Stop without retry',async({page})=>{
+ await boot(page);await page.evaluate(()=>qa.interruptError='service-not-allowed');await page.locator('[data-ai-conversation]').click();await final(page,'שאלה');
+ await page.waitForFunction(()=>qa.calls.some(c=>c.kind==='interrupt'));await expect(page.locator('[data-ai-read]').last()).toHaveAccessibleName('עצור הקראה');
+ expect(await page.evaluate(()=>TravelMateVoice.getSnapshot().phase)).toBe('speaking');expect(await page.evaluate(()=>TravelMateVoice.getSnapshot().interruptListening)).toBe(false);
+ await page.clock.fastForward(1000);expect(await page.evaluate(()=>qa.calls.filter(c=>c.kind==='interrupt').length)).toBe(1);await page.locator('[data-ai-read]').last().click();expect(await page.evaluate(()=>TravelMateVoice.getSnapshot().phase)).toBe('idle');
+});

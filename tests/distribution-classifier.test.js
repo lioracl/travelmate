@@ -72,4 +72,6 @@ test('About system status distinguishes runtime and never invents native metadat
 });
 
 
-test('OTA acceptance boundary stays API2 while the unaccepted API3 candidate requires an APK',async()=>{const {OTA_BASE,classify}=await import('../tools/classify-distribution.mjs');assert.equal(OTA_BASE,'81ff06343c49b9a395661f54bfc873a3ccb85644');const overlay=JSON.parse(fs.readFileSync('ota-overlay.json','utf8'));assert.equal(overlay.sha,'623ae0ef2d6a655368f2be704a4ccdef8924b7af');assert.equal(overlay.nativeApiLevel,3);assert.equal(classify([{path:'android/app/src/main/java/com/travelmate/app/TravelMateVoicePlugin.java'}]).distribution,'APK_REQUIRED')});
+test('OTA acceptance boundary stays API2 while the unaccepted API4 candidate requires an APK',async()=>{const {OTA_BASE,classify}=await import('../tools/classify-distribution.mjs');assert.equal(OTA_BASE,'81ff06343c49b9a395661f54bfc873a3ccb85644');const overlay=JSON.parse(fs.readFileSync('ota-overlay.json','utf8'));assert.equal(overlay.sha,'e6b4e773d9229253b7e90f9edc5be2cc22afa93e');assert.equal(overlay.nativeApiLevel,4);assert.equal(classify([{path:'android/app/src/main/java/com/travelmate/app/TravelMateVoicePlugin.java'}]).distribution,'APK_REQUIRED')});
+
+test('system status reports stamped API4 without assuming installed shell version',()=>{const native=runAbout({Capacitor:{isNativePlatform(){return true;}},TravelMateWebBuild:{sha:'a'.repeat(40),version:'2.29.1',nativeApiLevel:4}});assert.equal(native.status.nativeApiLevel,4);assert.match(native.html,/רמת API של Native: 4/);});
