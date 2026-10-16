@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'codex/mate-voice-actions-20261015'
+      - 'codex/mate-brain-actions-v2-20261015'
 
 permissions:
   contents: read
@@ -77,7 +78,7 @@ jobs:
           node-version: '22'
       - name: Read exact native dependency
         id: native
-        run: node -e "const fs=require('fs'),p=require('./ota-overlay.json');if(p.nativeApiLevel!==3||!/^[a-f0-9]{40}$/.test(p.sha))throw Error('Native API 3 pin required');fs.appendFileSync(process.env.GITHUB_OUTPUT,'sha='+p.sha+'\n')"
+        run: node -e "const fs=require('fs'),p=require('./ota-overlay.json');if(p.nativeApiLevel!==4||!/^[a-f0-9]{40}$/.test(p.sha))throw Error('Native API 4 pin required');fs.appendFileSync(process.env.GITHUB_OUTPUT,'sha='+p.sha+'\n')"
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.native.outputs.sha }}
@@ -101,7 +102,7 @@ jobs:
           node --test tests/*.test.js
           node tools/stage-native-web.mjs .. dist
           npx cap sync android
-          node -e "const p=require('./dist/build-info.json');if(p.sha!==process.env.GITHUB_SHA||p.nativeApiLevel!==3)throw Error('APK web provenance mismatch')"
+          node -e "const p=require('./dist/build-info.json');if(p.sha!==process.env.GITHUB_SHA||p.nativeApiLevel!==4)throw Error('APK web provenance mismatch')"
       - name: Compile, unit test and lint without signing or installation
         run: |
           cd native-overlay/android

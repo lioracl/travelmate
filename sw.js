@@ -1,4 +1,4 @@
-const ASSET_VERSION='20261015-04';
+const ASSET_VERSION='20261016-03';
 const CACHE_SCHEMA='v266';
 const CACHE_NAME='travelmate-smart-'+CACHE_SCHEMA+'-'+ASSET_VERSION;
 const TRAVELMATE_CACHE_PATTERN=/^travelmate-smart-v\d+(?:-(?:20\d{6}-\d+|[a-f0-9]{40}))?$/;
@@ -12,6 +12,7 @@ const CORE_PATHS=[
   './assets/app.js',
   './assets/settings-preferences.js',
   './assets/mate-voice.js',
+  './assets/mate-trip-snapshot.js',
   './assets/mate-actions.js',
   './assets/voice-providers.js',
   './assets/smart-trip-decisions.js',

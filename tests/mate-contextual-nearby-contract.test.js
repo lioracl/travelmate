@@ -81,7 +81,7 @@ test('explicit Mate duration is capped by the next fixed commitment',()=>{
 
 test('Mate reuses Places contextual-nearby and never requests GPS directly',()=>{
   const assistant=read('assets/ai-assistant.js'),nearby=read('assets/nearby.js'),app=read('assets/app.js');
-  assert.match(app,/assistant:\{styles:\['smart-hub\.css'\],scripts:\['settings-preferences\.js','voice-providers\.js','mate-voice\.js','trip-context\.js','mate-actions\.js','ai-assistant\.js','smart-hub\.js'\]\}/);
+  assert.match(app,/assistant:\{styles:\['smart-hub\.css'\],scripts:\['settings-preferences\.js','voice-providers\.js','mate-voice\.js','trip-context\.js','mate-trip-snapshot\.js','mate-actions\.js','ai-assistant\.js','smart-hub\.js'\]\}/);
   assert.match(assistant,/parseMateNearbyIntent\(content\)/);
   assert.match(assistant,/features\.load\('places'\)/);
   assert.match(assistant,/navigation\.open\('places'\)/);

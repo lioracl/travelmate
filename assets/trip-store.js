@@ -118,7 +118,7 @@
   }
   function saveTripFields(trip, baseline, fields, options) {
     options = options || {};
-    var allowed = ['activities', 'savedPlaces', 'dayNotes', 'dayModes', 'planInitialized', 'budget', 'budgetFx', 'budgetUnlimited', 'expenses', 'budgetCategories', 'memories', 'photoAlbumUrl', 'currencyFee', 'secondaryCurrency'];
+    var allowed = ['activities', 'savedPlaces', 'aiNotes', 'dayNotes', 'dayModes', 'planInitialized', 'budget', 'budgetFx', 'budgetUnlimited', 'expenses', 'budgetCategories', 'memories', 'photoAlbumUrl', 'currencyFee', 'secondaryCurrency'];
     if (!Array.isArray(fields) || fields.some(function (field) { return allowed.indexOf(field) < 0; })) throw new Error('INVALID_TRIP_FIELD');
     if (!trip || !baseline || String(trip.id) !== String(baseline.id) || String(trip.ownerId || '') !== String(baseline.ownerId || '')) return null;
     if (options.userId === undefined || String(options.userId) !== String(localStorage.getItem('travelmate-active-user') || '')) return null;
