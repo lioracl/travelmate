@@ -128,7 +128,7 @@
     if (win.document && win.document.addEventListener) win.document.addEventListener('visibilitychange', function () { if (win.document.hidden) cancel(); });
     win.addEventListener('offline', function () { if (recognition) cancel(); else if (!utterance && !parts.length) resetState(); });
     win.addEventListener('online', function () { if (!recognition && !utterance && !parts.length) resetState(); });
-    if (provider.onLifecycle) provider.onLifecycle(function () { cancel(); });
+    if (provider.onLifecycle) provider.onLifecycle(function () { cancel(); win.dispatchEvent(new win.CustomEvent('travelmate:voice-lifecycle-invalidated')); });
     if (provider.dispose) win.addEventListener('pagehide', provider.dispose);
     if (synth && synth.addEventListener) synth.addEventListener('voiceschanged', emit);
     resetState();

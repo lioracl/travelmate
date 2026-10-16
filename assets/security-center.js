@@ -75,6 +75,7 @@
     var prefs = settings.getVoicePreferences(), voices = voice.getLocalVoices();
     section.querySelector('[data-voice-enabled]').checked = prefs.enabled;
     section.querySelector('[data-voice-auto-send]').checked = prefs.autoSend;
+    section.querySelector('[data-voice-auto-speak]').checked = prefs.autoSpeakReplies;
     var style = section.querySelector('[data-voice-style]');
     if (!style.options.length) settings.getVoiceStyles().forEach(function (item) { style.add(new Option(item.label, item.id)); });
     style.value = prefs.style;
@@ -98,11 +99,12 @@
     var dialog = document.querySelector('[data-security-dialog]');
     if (!dialog || dialog.querySelector('[data-settings-voice]')) return;
     var section = document.createElement('section'); section.className = 'settings-voice'; section.dataset.settingsVoice = '';
-    section.innerHTML = '<h3>הקול של Mate</h3><label class="settings-voice-enabled"><input type="checkbox" data-voice-enabled> הפעלת אפשרויות קול</label><label class="settings-voice-enabled"><input type="checkbox" data-voice-auto-send> שליחה אוטומטית אחרי הכתבה</label><label>אופן דיבור<select data-voice-style></select></label><label>קול מקומי במכשיר<select data-voice-choice></select></label><p>קול הוא קול מותקן במכשיר. סגנון משנה קצב וגובה, ולא מחליף את הדובר; ההבדל תלוי במנוע. עברית זמינה רק אם מותקן קול מתאים. ההעדפות נשמרות בחשבון הזה במכשיר.</p><div class="settings-voice-actions"><button type="button" data-voice-preview>השמעת דוגמה</button><button type="button" data-voice-preview-stop disabled>עצירת הדוגמה</button></div><p data-voice-settings-status role="status" aria-live="polite"></p><details><summary>אבחון קול במכשיר</summary><pre data-voice-diagnostics style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details><small data-voice-settings-privacy>הדוגמה אינה פותחת מיקרופון. הכתבה ב־Mate מופעלת רק בלחיצה ועשויה להישלח לספק הדפדפן; אין הבטחה לעיבוד מקומי או ללא רשת. TravelMate אינו מוסיף העלאת הקלטות. הקראה מוגבלת לקולות המסומנים כמקומיים.</small>';
+    section.innerHTML = '<h3>הקול של Mate</h3><label class="settings-voice-enabled"><input type="checkbox" data-voice-enabled> הפעלת אפשרויות קול</label><label class="settings-voice-enabled"><input type="checkbox" data-voice-auto-send> שליחה אוטומטית אחרי הכתבה</label><label class="settings-voice-enabled"><input type="checkbox" data-voice-auto-speak> הקראת תשובה אוטומטית לשאלה קולית</label><label>אופן דיבור<select data-voice-style></select></label><label>קול מקומי במכשיר<select data-voice-choice></select></label><p>קול הוא קול מותקן במכשיר. סגנון משנה קצב וגובה, ולא מחליף את הדובר; ההבדל תלוי במנוע. עברית זמינה רק אם מותקן קול מתאים. ההעדפות נשמרות בחשבון הזה במכשיר.</p><div class="settings-voice-actions"><button type="button" data-voice-preview>השמעת דוגמה</button><button type="button" data-voice-preview-stop disabled>עצירת הדוגמה</button></div><p data-voice-settings-status role="status" aria-live="polite"></p><details><summary>אבחון קול במכשיר</summary><pre data-voice-diagnostics style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details><small data-voice-settings-privacy>הדוגמה אינה פותחת מיקרופון. הכתבה ב־Mate מופעלת רק בלחיצה ועשויה להישלח לספק הדפדפן; אין הבטחה לעיבוד מקומי או ללא רשת. TravelMate אינו מוסיף העלאת הקלטות. הקראה מוגבלת לקולות המסומנים כמקומיים.</small>';
     dialog.querySelector('.settings-section-title').before(section);
     section.addEventListener('change', function (event) {
       var patch = {};
-      if (event.target.matches('[data-voice-enabled]')) patch.enabled = event.target.checked;
+      if (event.target.matches('[data-voice-auto-speak]')) patch.autoSpeakReplies = event.target.checked;
+      else if (event.target.matches('[data-voice-enabled]')) patch.enabled = event.target.checked;
       else if (event.target.matches('[data-voice-auto-send]')) patch.autoSend = event.target.checked;
       else if (event.target.matches('[data-voice-style]')) patch.style = event.target.value;
       else if (event.target.matches('[data-voice-choice]')) patch.voiceURI = event.target.value;

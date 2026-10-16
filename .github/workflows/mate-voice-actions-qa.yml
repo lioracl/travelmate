@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'codex/mate-voice-actions-20261015'
+      - 'codex/mate-brain-actions-v2-20261015'
 
 permissions:
   contents: read

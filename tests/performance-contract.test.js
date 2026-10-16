@@ -130,7 +130,7 @@ test('trip feature loader inherits the active asset version and keeps heavy stru
   assert.match(source, /memories:\{styles:\['trip-experience\.css','trip-replay\.css'\],scripts:\['trip-context\.js','trip-analytics\.js','trip-experience\.js','trip-replay\.js'\]\}/);
   assert.match(source, /summary:\{styles:\['trip-experience\.css','trip-replay\.css'\],scripts:\['trip-context\.js','trip-analytics\.js','trip-experience\.js','trip-replay\.js'\]\}/);
   assert.match(source, /baseStyles=\[[^\]]*'ai-assistant\.css'/);
-  assert.match(source, /assistant:\{styles:\['smart-hub\.css'\],scripts:\['settings-preferences\.js','voice-providers\.js','mate-voice\.js','trip-context\.js','mate-actions\.js','ai-assistant\.js','smart-hub\.js'\]\}/);
+  assert.match(source, /assistant:\{styles:\['smart-hub\.css'\],scripts:\['settings-preferences\.js','voice-providers\.js','mate-voice\.js','trip-context\.js','mate-trip-snapshot\.js','mate-actions\.js','ai-assistant\.js','smart-hub\.js'\]\}/);
   assert.match(source, /account:\{styles:\['profile-wizard\.css','security-center\.css','admin-center\.css'\],scripts:\['settings-preferences\.js','voice-providers\.js','mate-voice\.js','learned-preferences\.js','learned-profile\.js','learned-profile-ui\.js','profile-wizard\.js','security-center\.js','admin-center\.js'\]\}/);
   assert.doesNotMatch(source, /scheduleIdleFeature\('assistant'/);
   assert.doesNotMatch(source, /scheduleIdleFeature\('account',4200\)/);

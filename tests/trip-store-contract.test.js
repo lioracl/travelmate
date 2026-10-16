@@ -62,7 +62,8 @@ test('migrated writers preserve feature ownership while delegating persistence',
   assert.match(planner, /store\.saveTripFields\(trip,planBaseline/);
 
   const assistant = read('assets/ai-assistant.js');
-  assert.match(assistant, /store\.saveTrip\(trip\)/);
+  assert.match(assistant, /store\.saveTripFields\(trip, baseline, \['aiNotes'\]/);
+  assert.doesNotMatch(assistant, /store\.saveTrip\(trip\)/);
 
   const lodging = read('assets/lodging-manager.js');
   assert.match(lodging, /TravelMateTripStore\.updateTrip\(trip\.id/);

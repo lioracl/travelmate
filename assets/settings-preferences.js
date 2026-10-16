@@ -20,13 +20,13 @@
     function key() { return 'travelmate-settings:' + encodeURIComponent(account() || 'guest') + ':mate-voice'; }
     function normalize(value) {
       value = value && typeof value === 'object' ? value : {};
-      return Object.freeze({ enabled: value.enabled !== false, autoSend: value.autoSend !== false, style: styles.some(function (style) { return style.id === value.style; }) ? value.style : 'auto', voiceURI: typeof value.voiceURI === 'string' ? value.voiceURI.slice(0, 500) : '' });
+      return Object.freeze({ enabled: value.enabled !== false, autoSend: value.autoSend !== false, autoSpeakReplies: value.autoSpeakReplies !== false, style: styles.some(function (style) { return style.id === value.style; }) ? value.style : 'auto', voiceURI: typeof value.voiceURI === 'string' ? value.voiceURI.slice(0, 500) : '' });
     }
     function get() { try { return normalize(JSON.parse(win.localStorage.getItem(key()) || '{}')); } catch (error) { return normalize({}); } }
     function publish() { win.dispatchEvent(new win.CustomEvent('travelmate:voice-preferences-changed', { detail: { accountId: account(), preferences: get() } })); }
     function set(patch, options) {
       if (options && options.accountId !== undefined && String(options.accountId) !== account()) return null;
-      var previous = get(), next = normalize({ autoSend: patch && typeof patch.autoSend === 'boolean' ? patch.autoSend : previous.autoSend, enabled: patch && typeof patch.enabled === 'boolean' ? patch.enabled : previous.enabled, style: patch && patch.style !== undefined ? patch.style : previous.style, voiceURI: patch && patch.voiceURI !== undefined ? patch.voiceURI : previous.voiceURI });
+      var previous = get(), next = normalize({ autoSpeakReplies: patch && typeof patch.autoSpeakReplies === 'boolean' ? patch.autoSpeakReplies : previous.autoSpeakReplies, autoSend: patch && typeof patch.autoSend === 'boolean' ? patch.autoSend : previous.autoSend, enabled: patch && typeof patch.enabled === 'boolean' ? patch.enabled : previous.enabled, style: patch && patch.style !== undefined ? patch.style : previous.style, voiceURI: patch && patch.voiceURI !== undefined ? patch.voiceURI : previous.voiceURI });
       try { win.localStorage.setItem(key(), JSON.stringify(next)); } catch (error) { return null; }
       publish(); return next;
     }

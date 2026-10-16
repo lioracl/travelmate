@@ -10,11 +10,9 @@ const assistant = fs.readFileSync(path.join(root, 'assets/ai-assistant.js'), 'ut
 const edge = fs.readFileSync(path.join(root, 'supabase/functions/travel-assistant/index.ts'), 'utf8');
 
 test('Mate trip context includes bounded budget and expense summary without sensitive fields', () => {
-  assert.match(assistant, /budgetUnlimited: Boolean\(trip\.budgetUnlimited\)/);
-  assert.match(assistant, /expenseSummary: summarizeExpenses\(trip\.expenses\)/);
-  assert.match(assistant, /totals: Object\.keys\(totals\)\.slice\(0, 8\)/);
-  assert.match(assistant, /categories: Object\.keys\(categories\).*\.slice\(0, 8\)/s);
-  assert.doesNotMatch(assistant, /expenseSummary:[^\n]*(note|merchant|receipt)/i);
+  assert.match(assistant, /TravelMateTripSnapshot\.build\(trip/);
+  const snapshot=require('../assets/mate-trip-snapshot.js').build({id:'t',budget:200,budgetUnlimited:true,expenses:Array.from({length:20},(_,i)=>({amount:5,currency:'EUR',category:'category-'+i,note:'secret',receiptData:'secret'}))});
+  assert.equal(snapshot.budgetUnlimited,true);assert.equal(snapshot.expenseSummary.count,20);assert.equal(snapshot.expenseSummary.totals[0].amount,100);assert.equal(snapshot.expenseSummary.categories.length,8);assert.ok(!JSON.stringify(snapshot).includes('secret'));
 });
 
 test('Mate privacy copy accurately describes expense-summary sharing boundaries', () => {
