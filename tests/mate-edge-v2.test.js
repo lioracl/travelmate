@@ -7,4 +7,4 @@ test('oversized snapshot remains bounded with explicit omission metadata',()=>{c
 
 
 test('Edge prompt grounds TODAY from currentState.date',()=>{const source=fs.readFileSync('supabase/functions/travel-assistant/index.ts','utf8');assert.match(source,/TODAY is .*currentState\.date/);assert.match(source,/never claim the current date is unknown/);});
-test('Edge prompt separates itinerary activities from scheduled saved places',()=>{const source=fs.readFileSync('supabase/functions/travel-assistant/index.ts','utf8');assert.match(source,/sourceType "activity" means a real itinerary activity/);assert.match(source,/Do not count saved_place items as activities/);});
+test('Edge prompt separates itinerary activities from scheduled saved places',()=>{const source=fs.readFileSync('supabase/functions/travel-assistant/index.ts','utf8');assert.match(source,/sourceType "activity" means a real itinerary activity/);assert.match(source,/Never call a saved_place an activity or itinerary activity/);assert.match(source,/scheduled saved place in the request language/);});
