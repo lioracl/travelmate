@@ -16,4 +16,4 @@ Base: 53c52aae1454f20e010b08893937cffff8df0bd9 (#168), native pin 623ae0ef2d6a65
 ## Acceptance
 Focused snapshot/action/voice/security tests per increment; full Node and zero-retry Playwright before completion. Mobile RTL360/390/430 light/dark and keyboard shrink. Fresh review after tests. Physical Samsung remains untested until owner acceptance. Native API3 remains required by the inherited candidate, not newly introduced here.
 
-Continuation evidence and Design V3 preparation are recorded in MATE_FUNCTIONAL_FREEZE_HANDOFF.md. The candidate remains A+B only; new full-suite and exact-SHA CI evidence must gate Sprint C.
+Continuation evidence and Design V3 preparation are recorded in MATE_FUNCTIONAL_FREEZE_HANDOFF.md. The A+B architecture remains unchanged. Sprint C adds bounded Conversation Mode in the existing Voice controller; its scope and local/CI evidence are recorded in the handoff and Draft PR #169.

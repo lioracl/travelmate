@@ -8,6 +8,7 @@
   function createController(win, settings) {
     var provider = providers.create(win), synth = provider.synth, Recognition = provider.Recognition, Utterance = provider.Utterance;
     var recognition = null, utterance = null, parts = [], index = 0, generation = 0, timer = 0, processing = false, owner = '';
+    var conversation = null, conversationEnd = 'IDLE';
     var listeners = new Set(), phase = 'idle', message = '', stopping = false, sessionScope = scope();
     function scope() { var user = ''; try { user = win.localStorage.getItem('travelmate-active-user') || ''; } catch (error) {} return [user, win.location && win.location.pathname || '', win.location && win.location.search || ''].join('|'); }
     function preferences() { return settings && settings.getVoicePreferences ? settings.getVoicePreferences() : { enabled: false, style: 'auto', voiceURI: '' }; }
@@ -19,7 +20,16 @@
       if (win.navigator && win.navigator.onLine === false) return ['offline', voices().length ? 'ללא רשת: הכתבה כבויה. הקראה מקומית והקלדה זמינות.' : 'ללא רשת: אפשר להמשיך להקליד; לא נמצא קול מקומי.'];
       return ['idle', ''];
     }
-    function snapshot() { return Object.freeze({ phase: phase, message: message, owner: owner, stopping: stopping, canRecognize: provider.capabilities().canRecognize, canSpeak: provider.capabilities().canSpeak, canPause: provider.capabilities().canPause, provider: provider.name, capabilities: Object.freeze(Object.assign({}, provider.capabilities())), enabled: preferences().enabled, localVoiceCount: voices().length }); }
+    function conversationState() {
+      if (!conversation) return conversationEnd;
+      if (phase === 'processing') return 'THINKING';
+      if (phase === 'speaking' || phase === 'paused') return 'SPEAKING';
+      if (conversation.confirmationPending) return 'CONFIRMATION_PENDING';
+      if (phase === 'listening') return 'LISTENING';
+      if (conversation.awaitingTap) return 'FOLLOW_UP_AVAILABLE';
+      return 'IDLE';
+    }
+    function snapshot() { return Object.freeze({ conversationActive: Boolean(conversation), conversationState: conversationState(), recognitionOfflineGuaranteed: false, recognitionNetwork: provider.capabilities().sttNetwork || 'unknown', phase: phase, message: message, owner: owner, stopping: stopping, canRecognize: provider.capabilities().canRecognize, canSpeak: provider.capabilities().canSpeak, canPause: provider.capabilities().canPause, provider: provider.name, capabilities: Object.freeze(Object.assign({}, provider.capabilities())), enabled: preferences().enabled, localVoiceCount: voices().length }); }
     function emit() { var value = snapshot(); listeners.forEach(function (listener) { try { listener(value); } catch (error) {} }); }
     function state(next, text) { phase = next; message = text || ''; emit(); }
     function resetState() { var value = base(); state(value[0], value[1]); }
@@ -32,8 +42,8 @@
       if (synth) { try { if (synth.speaking || synth.pending || synth.paused || owner) synth.cancel(); } catch (error) {} }
       owner = ''; sessionScope = scope();
     }
-    function cancel(expectedOwner) { if (expectedOwner && expectedOwner !== owner) return false; invalidate(); resetState(); return true; }
-    function failure(text, kind) { invalidate(); state(kind || 'error', text); return false; }
+    function cancel(expectedOwner) { if (expectedOwner && expectedOwner !== owner && !(expectedOwner === 'mate' && conversation)) return false; if (conversation) conversationEnd = 'CANCELLED'; conversation = null; invalidate(); resetState(); return true; }
+    function failure(text, kind) { if (conversation) conversationEnd = 'ERROR'; conversation = null; invalidate(); state(kind || 'error', text); return false; }
     function available() { if (!preferences().enabled) return failure('יכולות הקול כבויות בהגדרות. אפשר להמשיך להקליד.', 'disabled'); if (processing) return false; if (win.document && win.document.hidden) return false; return true; }
     function startListening(options) {
       options = options || {};
@@ -47,7 +57,7 @@
       next.onspeechend = function () { if (valid()) state('listening', 'מסיים את ההכתבה… אפשר לבטל.'); };
       recognition = next; next.lang = 'he-IL'; next.interimResults = false; next.continuous = false;
       function valid() { return current(token) && recognition === next; }
-      next.onstart = function () { if (valid()) state('listening', preferences().autoSend ? 'מקשיב… בסיום ההכתבה ההודעה תישלח אוטומטית. ביטול אינו שולח.' : 'מקשיב… בסיום אפשר לערוך ולשלוח. ביטול אינו שולח.'); };
+      next.onstart = function () { if (valid()) state('listening', options.followUp ? (options.confirmationPending ? 'ממתין לכן או לא עבור ההצעה המוצגת — עד 12 שניות. אפשר לבטל.' : 'מקשיב לשאלת המשך — עד 12 שניות. אפשר לבטל.') : preferences().autoSend ? 'מקשיב… בסיום ההכתבה ההודעה תישלח אוטומטית. ביטול אינו שולח.' : 'מקשיב… בסיום אפשר לערוך ולשלוח. ביטול אינו שולח.'); };
       next.onresult = function (event) {
         if (!valid()) return;
         var results = event.results || [];
@@ -65,6 +75,7 @@
         recognition = null; owner = ''; stopping = false; clearTimer(); resetState();
         var transcript = finalParts.filter(Boolean).join(' ').slice(0, 4000);
         if (transcript && current(token) && options.onComplete) options.onComplete(transcript);
+        else if (!transcript && conversation) endConversation();
       };
       next.onerror = function (event) {
         if (!valid()) return;
@@ -73,8 +84,52 @@
         failure(text, code === 'not-allowed' ? 'permission-denied' : code === 'service-not-allowed' ? 'unsupported' : code === 'network' ? 'limited' : 'error');
       };
       state('listening', 'פותח הכתבה… אפשר לבטל בכל רגע.');
-      try { next.start(); if (valid()) timer = win.setTimeout(function () { if (valid()) failure('ההכתבה נעצרה לאחר 30 שניות. להפעלה נוספת יש ללחוץ שוב.'); }, 30000); }
+      try { next.start(); if (valid()) timer = win.setTimeout(function () { if (valid()) { if (options.followUp) endConversation(); else failure('ההכתבה נעצרה לאחר 30 שניות. להפעלה נוספת יש ללחוץ שוב.'); } }, options.followUp ? 12000 : 30000); }
       catch (error) { return failure('לא ניתן להתחיל הכתבה. בדקו הרשאת מיקרופון או המשיכו להקליד.'); }
+      return true;
+    }
+    // Conversation orchestration lives in the existing voice controller. A follow-up
+    // is a fresh recognition session, capped at 12 seconds, never a permanent mic.
+    function conversationCurrent(session) {
+      return conversation === session && session.scope === scope() && !(win.document && win.document.hidden) && (!session.canContinue || session.canContinue());
+    }
+    function endConversation() {
+      if (!conversation) return false;
+      cancel();
+      win.dispatchEvent(new win.CustomEvent('travelmate:voice-lifecycle-invalidated'));
+      return true;
+    }
+    function conversationTurn(followUp) {
+      var session = conversation;
+      if (!session || !conversationCurrent(session)) { endConversation(); return false; }
+      if (processing) return false;
+      session.followUp = Boolean(followUp); session.awaitingTap = false;
+      var options = session.createTurn();
+      options.followUp = session.followUp;
+      options.confirmationPending = session.confirmationPending;
+      return startListening(options);
+    }
+    function startConversation(options) {
+      if (processing || !available() || !options || typeof options.createTurn !== 'function') return false;
+      cancel(); conversationEnd = 'IDLE';
+      conversation = { scope: scope(), createTurn: options.createTurn, canContinue: options.canContinue, followUp: false, confirmationPending: false };
+      return conversationTurn(false);
+    }
+    function finishConversationTurn(options) {
+      var session = conversation;
+      if (!session || !conversationCurrent(session)) { endConversation(); return false; }
+      options = options || {}; session.confirmationPending = Boolean(options.confirmationPending);
+      function next() { if (conversationCurrent(session)) conversationTurn(true); }
+      if (options.text && preferences().autoSpeakReplies && provider.native && !provider.ready()) {
+        invalidate(); var preparing = generation;
+        state('processing', 'מכין את קול המכשיר… הטקסט נשאר זמין.');
+        provider.prepare().then(function () { if (current(preparing) && conversationCurrent(session)) { resetState(); finishConversationTurn(options); } }).catch(function () { if (current(preparing) && conversationCurrent(session)) failure('לא ניתן לאתחל את מנוע הקול במכשיר. הטקסט נשאר זמין.'); });
+        return true;
+      }
+      if (options.text && preferences().autoSpeakReplies && preferences().enabled && provider.capabilities().canSpeak && voices().length) return speak(options.text, { owner: 'mate', lang: 'he-IL', conversationReply: true, onComplete: next });
+      invalidate(); session.awaitingTap = true;
+      state('idle', 'אפשר לשאול שאלת המשך בלחיצה על המיקרופון — עד 12 שניות.');
+      timer = win.setTimeout(function () { if (conversation === session) endConversation(); }, 12000);
       return true;
     }
     function stopListening() { if (!recognition || stopping) return false; stopping = true; state('listening', 'מסיים את ההכתבה… אפשר לבטל.'); try { recognition.stop(); return true; } catch (error) { return failure('לא ניתן לסיים את ההכתבה. אפשר להמשיך להקליד.'); } }
@@ -88,6 +143,7 @@
     function chunks(text) { var result = []; while (text.length > 350) { var cut = text.lastIndexOf(' ', 350); if (cut < 100) cut = 350; result.push(text.slice(0, cut)); text = text.slice(cut).trim(); } if (text) result.push(text); return result; }
     function speak(text, options) {
       options = options || {};
+      if (conversation && !options.conversationReply) endConversation();
       if (!available()) return false;
       if (provider.native && !provider.ready()) {
         invalidate(); owner = options.owner || 'mate'; var preparing = generation; state('processing', 'מכין את קול המכשיר… הטקסט נשאר זמין.');
@@ -100,12 +156,12 @@
       var prefs = preferences(), language = options.lang || 'he-IL', selection = chooseVoice(prefs.voiceURI, language);
       if (!selection.voice) return failure('לא נמצא קול מקומי במכשיר. אפשר לקרוא את הטקסט ולנסות שוב לאחר שקולות המכשיר נטענו.', 'unsupported');
       invalidate(); owner = options.owner || 'mate'; parts = provider.native ? text.match(/[^.!?。！？\n]+[.!?。！？\n]*|[.!?。！？\n]+/g).reduce(function (all, sentence) { return all.concat(chunks(sentence)); }, []) : chunks(text); index = 0;
-      var token = generation, style = settings.getVoiceStyles().find(function (value) { return value.id === prefs.style; }) || settings.getVoiceStyles()[0];
+      var completed = false, token = generation, style = settings.getVoiceStyles().find(function (value) { return value.id === prefs.style; }) || settings.getVoiceStyles()[0];
       var fallback = selection.missing ? 'הקול שנבחר אינו זמין; נעשה שימוש בקול מקומי חלופי. ' : '';
       if (!/^he(?:-|$)/i.test(selection.voice.lang || '') && /^he(?:-|$)/i.test(language)) fallback += 'נבחר קול שאינו עברי; ההגייה בעברית עשויה להיות מוגבלת. ';
       function play() {
         if (!current(token)) return;
-        if (index >= parts.length) { utterance = null; parts = []; owner = ''; resetState(); return; }
+        if (index >= parts.length) { utterance = null; parts = []; owner = ''; resetState(); if (!completed && current(token)) { completed = true; if (options.onComplete) options.onComplete(); } return; }
         var next = new Utterance(parts[index]); utterance = next;
         next.voice = selection.voice; next.lang = language; next.rate = style.rate; next.pitch = style.pitch; next.volume = style.volume;
         function valid() { return current(token) && utterance === next; }
@@ -126,13 +182,13 @@
     var stop = function () { cancel(); };
     ['pagehide', 'beforeunload', 'popstate', 'travelmate:viewchange', 'travelmate:account-context-changed', 'travelmate:home-auth', 'travelmate:voice-preferences-changed'].forEach(function (event) { win.addEventListener(event, stop); });
     if (win.document && win.document.addEventListener) win.document.addEventListener('visibilitychange', function () { if (win.document.hidden) cancel(); });
-    win.addEventListener('offline', function () { if (recognition) cancel(); else if (!utterance && !parts.length) resetState(); });
+    win.addEventListener('offline', function () { if (recognition || conversation) cancel(); else if (!utterance && !parts.length) resetState(); });
     win.addEventListener('online', function () { if (!recognition && !utterance && !parts.length) resetState(); });
     if (provider.onLifecycle) provider.onLifecycle(function () { cancel(); win.dispatchEvent(new win.CustomEvent('travelmate:voice-lifecycle-invalidated')); });
     if (provider.dispose) win.addEventListener('pagehide', provider.dispose);
     if (synth && synth.addEventListener) synth.addEventListener('voiceschanged', emit);
     resetState();
-    return Object.freeze({ startListening: startListening, stopListening: stopListening, speak: speak, pause: pause, resume: resume, cancel: cancel, setProcessing: setProcessing, prepare: function () { return provider.prepare().then(function () { emit(); return snapshot(); }); }, getLocalVoices: voices, getSnapshot: function () { if (sessionScope !== scope()) cancel(); return snapshot(); }, subscribe: function (listener) { listeners.add(listener); listener(snapshot()); return function () { listeners.delete(listener); }; } });
+    return Object.freeze({ startConversation: startConversation, endConversation: endConversation, continueConversation: function () { return conversationTurn(Boolean(conversation && conversation.awaitingTap)); }, finishConversationTurn: finishConversationTurn, startListening: startListening, stopListening: stopListening, speak: speak, pause: pause, resume: resume, cancel: cancel, setProcessing: setProcessing, prepare: function () { return provider.prepare().then(function () { emit(); return snapshot(); }); }, getLocalVoices: voices, getSnapshot: function () { if (sessionScope !== scope()) cancel(); return snapshot(); }, subscribe: function (listener) { listeners.add(listener); listener(snapshot()); return function () { listeners.delete(listener); }; } });
   }
   return { createController: createController };
 });

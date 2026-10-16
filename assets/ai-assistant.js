@@ -365,16 +365,22 @@
     ui.status.textContent = snapshot && snapshot.message || assistantStatus;
     if (!snapshot) return;
     ui.panel.dataset.voiceState = snapshot.phase;
+    ui.panel.dataset.conversationState = snapshot.conversationState || 'IDLE';
     var privacy = ui.panel.querySelector('.ai-voice-privacy');
-    if (privacy) privacy.textContent = snapshot.provider === 'android-native' ? 'הכתבה מופעלת רק בלחיצה דרך ספק הזיהוי של Android, שעשוי להשתמש ברשת. TravelMate אינו שומר קובצי קול. הקראה משתמשת בקולות שהמכשיר מסמן כמקומיים; אפשר להמשיך להקליד.' : 'הכתבה מופעלת רק בלחיצה ועשויה לעבור דרך ספק הדפדפן; אינה מובטחת ללא רשת. הקראה משתמשת רק בקול שהמכשיר מסמן כמקומי. אפשר להמשיך להקליד.';
+    if (privacy) privacy.textContent = (snapshot.conversationActive ? 'מצב שיחה פעיל: אחרי הקראה תיפתח האזנה לעד 12 שניות; בתשובה שקטה נדרשת לחיצה להמשך. ' : '') + (snapshot.provider === 'android-native' ? 'הכתבה מופעלת ביוזמתך דרך ספק הזיהוי של Android, שעשוי להשתמש ברשת. TravelMate אינו שומר קובצי קול. הקראה משתמשת בקולות שהמכשיר מסמן כמקומיים; אפשר להמשיך להקליד.' : 'הכתבה מופעלת ביוזמתך ועשויה לעבור דרך ספק הדפדפן; אינה מובטחת ללא רשת. הקראה משתמשת רק בקול שהמכשיר מסמן כמקומי. אפשר להמשיך להקליד.') + ' זיהוי ללא רשת אינו מובטח.';
     var mic = ui.panel.querySelector('[data-ai-voice]');
     mic.disabled = state.busy || !snapshot.enabled || !snapshot.canRecognize || snapshot.phase === 'offline';
     mic.classList.toggle('listening', snapshot.phase === 'listening');
     mic.setAttribute('aria-pressed', String(snapshot.phase === 'listening'));
-    mic.setAttribute('aria-label', snapshot.phase === 'listening' ? 'ביטול הכתבה' : 'הכתבה קולית');
+    mic.setAttribute('aria-label', snapshot.phase === 'listening' ? 'ביטול הכתבה' : snapshot.conversationActive && snapshot.phase === 'speaking' ? 'עצירת הקראה והכתבה חדשה' : 'הכתבה קולית');
     var controls = ui.panel.querySelector('[data-ai-voice-controls]');
     if (controls) {
-      controls.hidden = !['listening','speaking','paused'].includes(snapshot.phase);
+      controls.hidden = false;
+      var conversationButton = controls.querySelector('[data-ai-conversation]');
+      conversationButton.textContent = snapshot.conversationActive ? 'סיום שיחה' : 'מצב שיחה';
+      conversationButton.setAttribute('aria-pressed', String(snapshot.conversationActive));
+      conversationButton.disabled = !snapshot.conversationActive && (state.busy || !snapshot.enabled || !snapshot.canRecognize || snapshot.phase === 'offline');
+      controls.querySelector('[data-voice-stop]').hidden = !['listening','speaking','paused'].includes(snapshot.phase);
       controls.querySelector('[data-voice-pause]').hidden = snapshot.phase !== 'speaking' || !snapshot.canPause;
       controls.querySelector('[data-voice-resume]').hidden = snapshot.phase !== 'paused' || !snapshot.canPause;
       controls.querySelector('[data-voice-stop]').textContent = snapshot.phase === 'listening' ? 'ביטול הכתבה' : 'עצירת הקראה';
@@ -566,28 +572,46 @@
     var yes = document.createElement('button'); yes.type = 'button'; yes.textContent = proposal.buttonLabel || 'הסר מהתוכנית'; yes.dataset.mateRemove = '';
     var undo = document.createElement('button'); undo.type = 'button'; undo.textContent = 'ביטול השינוי'; undo.hidden = true; undo.dataset.mateUndo = '';
     function fail() { yes.disabled = true; undo.disabled = true; status.textContent = 'הטיול או החשבון השתנו, או שהשמירה לא הצליחה. יש לבדוק מחדש.'; }
-    no.addEventListener('click', function () { proposal.cancel(); yes.disabled = true; no.disabled = true; status.textContent = 'התוכנית לא שונתה.'; });
-    yes.addEventListener('click', function () { if (!state.open || document.hidden) return fail(); yes.disabled = true;
-      try { proposal.confirm(); no.hidden = true; yes.hidden = true; undo.hidden = false; status.textContent = proposal.successText || 'הפעילות הוסרה מהתוכנית המקומית. סנכרון הענן כפוף למצב החיבור.'; undo.focus(); } catch (error) { fail(); }
-    });
+    function cancelProposal() { if (!proposal.valid() || proposal.state() !== 'proposed') return false; proposal.cancel(); yes.disabled = true; no.disabled = true; status.textContent = 'התוכנית לא שונתה.'; return true; }
+    no.addEventListener('click', cancelProposal);
+    function confirmProposal() { if (!state.open || document.hidden) { fail(); return false; } yes.disabled = true;
+      try { proposal.confirm(); no.hidden = true; yes.hidden = true; undo.hidden = false; status.textContent = proposal.successText || 'הפעילות הוסרה מהתוכנית המקומית. סנכרון הענן כפוף למצב החיבור.'; undo.focus(); return true; } catch (error) { fail(); return false; }
+    }
+    yes.addEventListener('click', confirmProposal);
     undo.addEventListener('click', function () { if (!state.open || document.hidden) return fail(); undo.disabled = true;
       try { proposal.undo(); status.textContent = 'השינוי בוטל והמצב הקודם שוחזר.'; } catch (error) { fail(); }
     });
     box.append(status, no, yes, undo); row.querySelector('.ai-bubble').appendChild(box);
-    actionViews.push({ box: box, refresh: function () { if (['proposed', 'undoable'].includes(proposal.state()) && !proposal.valid()) fail(); } });
+    actionViews.push({ box: box, proposal: proposal, confirm: confirmProposal, cancel: cancelProposal, refresh: function () { if (['proposed', 'undoable'].includes(proposal.state()) && !proposal.valid()) fail(); } });
     refreshActionViews(); ui.chat.scrollTop = ui.chat.scrollHeight;
   }
   ['travelmate:voice-lifecycle-invalidated', 'pagehide', 'popstate', 'travelmate:viewchange', 'travelmate:trip-write-forbidden', 'travelmate:ask-ai'].forEach(function (name) { window.addEventListener(name, function () { state.voiceReplyGeneration += 1; if (mateActions) invalidateMateActions(); }); });
   document.addEventListener('visibilitychange', function () { if (document.hidden) state.voiceReplyGeneration += 1; if (document.hidden && mateActions) invalidateMateActions(); });
 
+  function pendingActionViews() { return actionViews.filter(function (entry) { return entry.box.isConnected && entry.proposal.state() === 'proposed' && entry.proposal.valid(); }); }
+  function spokenConfirmation(text) {
+    var value = String(text || '').trim().replace(/[.!?׃]+$/g, '').trim();
+    var yes = /^(כן|כן בבקשה|אישור|מאשר|מאשרת|yes)$/i.test(value), no = /^(לא|ביטול|בטל|no)$/i.test(value);
+    if (!yes && !no) return false;
+    var pending = pendingActionViews(), answer;
+    if (!pending.length) return false;
+    if (pending.length !== 1) answer = 'אין הצעה יחידה ותקפה לאישור. יש לבחור פעולה מחדש.';
+    else { var success = yes ? pending[0].confirm() : pending[0].cancel(); answer = success ? (yes ? 'השינוי נשמר בתוכנית המקומית. אפשר לבטל אותו בכפתור ביטול השינוי.' : 'התוכנית לא שונתה.') : 'הטיול השתנה. יש לבדוק את הפעולה מחדש.'; }
+    ui.input.value = ''; autoGrow();
+    state.messages.push({ role: 'user', content: text }, { role: 'assistant', content: answer }); state.messages = state.messages.slice(-16); persistMessages();
+    addMessage('user', text); addMessage('assistant', answer);
+    window.TravelMateVoice.finishConversationTurn({ text: answer });
+    return true;
+  }
   async function sendMessage(forcedText, inputOrigin) {
     if (state.busy) return;
+    if (inputOrigin !== 'voice' && window.TravelMateVoice && window.TravelMateVoice.getSnapshot().conversationActive) window.TravelMateVoice.endConversation();
     var content = trimText(forcedText || ui.input.value, 4000); if (!content) return;
     var requestGeneration = state.lifecycleGeneration, requestRoute = location.pathname + location.search;
     var requestContext = null;
     tripContext = collectTripContext();
     var actionFence = mateActions && mateActions.capture();
-    var replyToSpeak = null, voiceReplyGeneration = state.voiceReplyGeneration;
+    var replyToSpeak = null, voiceReplyGeneration = state.voiceReplyGeneration, conversationRequest = Boolean(window.TravelMateVoice && window.TravelMateVoice.getSnapshot().conversationActive);
     setOpen(true); ui.input.value = ''; autoGrow();
     state.messages.push({ role: 'user', content: content }); state.messages = state.messages.slice(-16); persistMessages(); addMessage('user', content);
     var screen = window.TravelMateActions && window.TravelMateActions.openScreen(content);
@@ -637,7 +661,10 @@
       if (requestGeneration !== state.lifecycleGeneration || requestContext && !requestIsCurrent(requestContext)) { typing.remove(); return; }
       console.error('TravelMate AI request failed', error); typing.remove(); addMessage('assistant', '<div class="ai-login-card ai-error-card">' + escapeText(friendlyError(error)) + '</div>', { html: true, temporary: true }); setStatus('החיבור ל־AI אינו זמין');
     } finally { if (requestGeneration === state.lifecycleGeneration) { setBusy(false); if (state.open) ui.input.focus();
-      if (replyToSpeak && voiceReplyGeneration === state.voiceReplyGeneration && state.open && !document.hidden && requestIsCurrent(requestContext) && window.TravelMateVoice && window.TravelMateVoice.getSnapshot().enabled && window.TravelMateSettings.getVoicePreferences().autoSpeakReplies) window.TravelMateVoice.speak(replyToSpeak, { owner: 'mate', lang: 'he-IL' });
+      if (replyToSpeak && voiceReplyGeneration === state.voiceReplyGeneration && state.open && !document.hidden && requestIsCurrent(requestContext) && window.TravelMateVoice) {
+        if (conversationRequest) { if (window.TravelMateVoice.getSnapshot().conversationActive) window.TravelMateVoice.finishConversationTurn({ text: replyToSpeak, confirmationPending: pendingActionViews().length === 1 }); }
+        else if (window.TravelMateVoice.getSnapshot().enabled && window.TravelMateSettings.getVoicePreferences().autoSpeakReplies) window.TravelMateVoice.speak(replyToSpeak, { owner: 'mate', lang: 'he-IL' });
+      } else if (conversationRequest && window.TravelMateVoice) window.TravelMateVoice.endConversation();
     } }
   }
 
@@ -647,31 +674,38 @@
     var voice = window.TravelMateVoice, button = ui.panel.querySelector('[data-ai-voice]');
     ui.status.id = 'mate-voice-status'; button.setAttribute('aria-describedby', 'mate-voice-status');
     var controls = document.createElement('div'); controls.className = 'ai-voice-controls'; controls.dataset.aiVoiceControls = ''; controls.hidden = true;
-    controls.innerHTML = '<button type="button" data-voice-pause>השהיה</button><button type="button" data-voice-resume hidden>המשך הקראה</button><button type="button" data-voice-stop>עצירת הקראה</button>';
+    controls.innerHTML = '<button type="button" data-ai-conversation aria-pressed="false" aria-describedby="mate-voice-status">מצב שיחה</button><button type="button" data-voice-pause>השהיה</button><button type="button" data-voice-resume hidden>המשך הקראה</button><button type="button" data-voice-stop>עצירת הקראה</button>';
     ui.form.appendChild(controls);
     var privacy = document.createElement('small'); privacy.className = 'ai-voice-privacy';
-    privacy.textContent = 'הכתבה מופעלת רק בלחיצה ועשויה לעבור דרך ספק הדפדפן; אינה מובטחת ללא רשת. הקראה משתמשת רק בקול שהמכשיר מסמן כמקומי. אפשר להמשיך להקליד.';
+    privacy.textContent = 'הכתבה מופעלת ביוזמתך ועשויה לעבור דרך ספק הדפדפן; אינה מובטחת ללא רשת. הקראה משתמשת רק בקול שהמכשיר מסמן כמקומי. אפשר להמשיך להקליד.';
     ui.form.appendChild(privacy);
     if (!voice) { button.disabled = true; return; }
+    function dictationOptions() {
+      var dictationGeneration = state.lifecycleGeneration, dictationSent = false;
+      return {
+        onResult: function (text) { if (state.open && !state.busy && dictationGeneration === state.lifecycleGeneration) { ui.input.value = text; autoGrow(); } },
+        onComplete: function (text) {
+          if (dictationSent || !state.open || state.busy || dictationGeneration !== state.lifecycleGeneration) return;
+          if (window.TravelMateSettings.getVoicePreferences().autoSend) {
+            dictationSent = true;
+            if (voice.getSnapshot().conversationActive && spokenConfirmation(text)) return;
+            sendMessage(text, 'voice');
+          } else { voice.endConversation(); ui.input.focus(); }
+        }
+      };
+    }
     button.addEventListener('click', function () {
-      if (voice.getSnapshot().phase === 'listening') voice.cancel('mate');
-      else {
-        var dictationGeneration = state.lifecycleGeneration, dictationSent = false;
-        voice.startListening({
-          onResult: function (text) { if (state.open && !state.busy && dictationGeneration === state.lifecycleGeneration) { ui.input.value = text; autoGrow(); } },
-          onComplete: function (text) {
-            if (dictationSent || !state.open || state.busy || dictationGeneration !== state.lifecycleGeneration) return;
-            var settings = window.TravelMateSettings;
-            if (settings && settings.getVoicePreferences().autoSend) {
-              dictationSent = true; sendMessage(text, 'voice');
-            } else { ui.input.focus(); }
-          }
-        });
-      }
+      if (voice.getSnapshot().phase === 'listening') voice.endConversation() || voice.cancel('mate');
+      else if (voice.getSnapshot().conversationActive) voice.continueConversation();
+      else voice.startListening(dictationOptions());
+    });
+    controls.querySelector('[data-ai-conversation]').addEventListener('click', function () {
+      if (voice.getSnapshot().conversationActive) voice.endConversation();
+      else voice.startConversation({ createTurn: dictationOptions, canContinue: function () { return state.open && !state.busy; } });
     });
     controls.querySelector('[data-voice-pause]').addEventListener('click', voice.pause);
     controls.querySelector('[data-voice-resume]').addEventListener('click', voice.resume);
-    controls.querySelector('[data-voice-stop]').addEventListener('click', function () { voice.cancel('mate'); ui.input.focus(); });
+    controls.querySelector('[data-voice-stop]').addEventListener('click', function () { voice.endConversation() || voice.cancel('mate'); ui.input.focus(); });
     voice.subscribe(renderVoiceState);
   }
 

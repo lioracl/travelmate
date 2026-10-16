@@ -13,7 +13,7 @@ if (/\/trip\//.test(location.pathname)) window.addEventListener('travelmate:acco
   if (!id || nextTrip) location.reload();
   else location.replace(new URL('../../index.html', location.href).href);
 });
-var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261016-01'}catch(error){return'20261016-01'}})();
+var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).searchParams.get('v')||'20261016-02'}catch(error){return'20261016-02'}})();
 (function(){
   var version=appAssetVersion;
   var loadedStyles={},loadedScripts={},featureLoads={},readyFeatures={};
