@@ -39,6 +39,17 @@
   }
   var DOCUMENT_GROUPS = ['flights', 'lodging', 'tickets', 'insurance', 'personal', 'mate'];
 
+  // Search authorized metadata already attached to rows; never read file contents.
+  function normalizeDocumentSearch(value) {
+    return String(value || '').normalize('NFKC').toLocaleLowerCase('he-IL').trim().replace(/\s+/g, ' ');
+  }
+
+  function documentMatchesSearch(record, query) {
+    var words = normalizeDocumentSearch(query).split(' ').filter(Boolean);
+    var metadata = normalizeDocumentSearch(record.file_name) + ' ' + normalizeDocumentSearch(record.note);
+    return words.every(function (word) { return metadata.indexOf(word) >= 0; });
+  }
+
   function groupForCategory(value) {
     var category = String(value || '').trim();
     if (/טיסה|טיסות|flight|boarding/i.test(category)) return 'flights';
@@ -80,7 +91,8 @@
     var vaultLibrary = document.createElement('section');
     vaultLibrary.className = 'vault-library';
     vaultLibrary.setAttribute('aria-labelledby', 'vault-library-title');
-    vaultLibrary.innerHTML = '<h3 id="vault-library-title">המסמכים שלי</h3><div class="vault-summary" data-vault-summary hidden><strong data-vault-count>0 מסמכים</strong><div><small data-vault-size>0 MB</small><div class="vault-storage"><i data-vault-storage style="width:0%"></i></div></div></div>';
+    vaultLibrary.innerHTML = '<h3 id="vault-library-title">המסמכים שלי</h3><div class="vault-summary" data-vault-summary hidden><strong data-vault-count>0 מסמכים</strong><div><small data-vault-size>0 MB</small><div class="vault-storage"><i data-vault-storage style="width:0%"></i></div></div></div>' +
+      '<div class="vault-search" data-vault-search-controls hidden><label for="vault-document-search">חיפוש במסמכים</label><div class="vault-search-field"><input id="vault-document-search" data-vault-search type="search" maxlength="180" autocomplete="off" spellcheck="false" dir="auto" placeholder="שם קובץ או הערה" aria-describedby="vault-search-help"><button type="button" data-vault-search-clear hidden>ניקוי חיפוש</button></div><small id="vault-search-help">חיפוש בשם הקובץ ובהערה בלבד. שם, קטגוריה והערה הם פרטי חשבון; תוכן הקבצים מוצפן בנפרד.</small><p data-vault-search-results role="status" aria-live="polite" aria-atomic="true"></p></div><p class="vault-lock-state" data-vault-lock-state hidden>להעלאה ולפתיחת קבצים יש להזין את סיסמת ההצפנה למעלה. אפשר לחפש בפרטי המסמכים גם לפני הזנתה; הזנת הסיסמה אינה מאמתת אותה.</p><p class="vault-offline-state" data-vault-offline hidden>אין חיבור לרשת. פרטי מסמכים שכבר נטענו עשויים להופיע, אך קבצים מהענן דורשים חיבור זמין.</p><div class="vault-library-state" data-vault-library-state role="status" aria-live="polite" aria-atomic="true"><strong data-vault-state-title></strong><p data-vault-state-copy></p><button type="button" data-vault-retry hidden>ניסיון טעינה נוסף</button></div>';
     vault.insertAdjacentElement('afterend', vaultLibrary);
     if (categoryNavigation) vaultLibrary.appendChild(categoryNavigation);
     var existingCategoryList = section.querySelector('[data-document-category-list]');
@@ -113,6 +125,60 @@
     var uploadInProgress = false;
     var categoryTargets = {};
     var activeDocumentFilter = 'all';
+    var documentSearchQuery = '';
+    var documentLoadState = 'loading';
+    var documentRenderVersion = 0;
+    var searchControls = vaultLibrary.querySelector('[data-vault-search-controls]');
+    var searchInput = vaultLibrary.querySelector('[data-vault-search]');
+    var searchClear = vaultLibrary.querySelector('[data-vault-search-clear]');
+    var searchResults = vaultLibrary.querySelector('[data-vault-search-results]');
+    var libraryState = vaultLibrary.querySelector('[data-vault-library-state]');
+
+    function updateDocumentLibraryState(total, visible) {
+      var searching = Boolean(normalizeDocumentSearch(documentSearchQuery));
+      var metadataReady = currentUser && documentLoadState === 'ready';
+      var isMate = activeDocumentFilter === 'mate';
+      var locked = Boolean(currentUser && passphraseInput.value.length < 10);
+      var state = !currentUser && documentLoadState !== 'loading' && documentLoadState !== 'error' ? 'signed-out' : documentLoadState;
+      if (metadataReady) state = !total ? 'empty' : !visible ? 'no-results' : locked ? 'locked' : 'ready';
+      vaultLibrary.dataset.vaultLibraryState = state;
+      vaultLibrary.setAttribute('aria-busy', String(documentLoadState === 'loading'));
+      searchControls.hidden = !metadataReady || isMate;
+      searchClear.hidden = !documentSearchQuery;
+      searchResults.textContent = metadataReady ? (searching ? visible + ' מסמכים תואמים' : visible + ' מסמכים בקטגוריה') : '';
+      vaultLibrary.querySelector('[data-vault-lock-state]').hidden = !locked || isMate;
+      vaultLibrary.querySelector('[data-vault-offline]').hidden = navigator.onLine !== false || isMate;
+      var messages = {
+        loading: ['טוענים את פרטי המסמכים', 'ממתינים לתשובת החשבון.'],
+        'signed-out': ['התחברות לצפייה במסמכים', 'יש להתחבר לחשבון כדי לטעון את מסמכי הטיול.'],
+        error: ['לא ניתן לטעון את המסמכים', 'לא התקבלה רשימה עדכנית. בדקו את החיבור ונסו שוב.'],
+        empty: ['עדיין אין מסמכים בטיול', 'הרשימה נטענה בהצלחה. אפשר להוסיף מסמך באמצעות אזור ההעלאה.'],
+        'no-results': ['לא נמצאו מסמכים תואמים', searching ? 'נסו שם או הערה אחרים, נקו את החיפוש או בחרו קטגוריה אחרת.' : 'אין מסמכים בקטגוריה הזאת. אפשר לבחור קטגוריה אחרת.']
+      };
+      var message = messages[state];
+      libraryState.hidden = !message || isMate;
+      libraryState.querySelector('[data-vault-state-title]').textContent = message ? message[0] : '';
+      libraryState.querySelector('[data-vault-state-copy]').textContent = message ? message[1] : '';
+      vaultLibrary.querySelector('[data-vault-retry]').hidden = state !== 'error' || !currentUser;
+    }
+
+    searchInput.addEventListener('input', function () {
+      documentSearchQuery = searchInput.value;
+      applyDocumentFilter();
+    });
+    searchClear.addEventListener('click', function () {
+      documentSearchQuery = '';
+      searchInput.value = '';
+      applyDocumentFilter();
+      searchInput.focus();
+    });
+    passphraseInput.addEventListener('input', function () { applyDocumentFilter(); });
+    vaultLibrary.querySelector('[data-vault-retry]').addEventListener('click', function () {
+      setStatus('');
+      renderDocuments();
+    });
+    window.addEventListener('offline', function () { applyDocumentFilter(); });
+    window.addEventListener('online', function () { applyDocumentFilter(); });
 
     section.querySelectorAll('[data-document-category-list] > .doc-row').forEach(function (categoryRow) {
       var title = categoryRow.querySelector('strong');
@@ -147,18 +213,30 @@
 
     function applyDocumentFilter() {
       var archive = mateArchive();
+      var totalDocuments = 0;
+      var visibleDocuments = 0;
       section.querySelectorAll('[data-document-filter]').forEach(function (button) {
         var selected = button.dataset.documentFilter === activeDocumentFilter;
         button.classList.toggle('active', selected);
         button.setAttribute('aria-pressed', String(selected));
       });
       Object.keys(categoryTargets).forEach(function (group) {
-        categoryTargets[group].row.hidden = activeDocumentFilter !== 'all' && activeDocumentFilter !== group;
+        var target = categoryTargets[group];
+        var categorySelected = activeDocumentFilter === 'all' || activeDocumentFilter === group;
+        var groupMatches = 0;
+        [].slice.call(target.files.children).forEach(function (row) {
+          totalDocuments += 1;
+          var matches = row._documentRecord && documentMatchesSearch(row._documentRecord, documentSearchQuery);
+          row.hidden = !matches;
+          if (matches && categorySelected) { visibleDocuments += 1; groupMatches += 1; }
+        });
+        target.row.hidden = !categorySelected || Boolean(normalizeDocumentSearch(documentSearchQuery) && !groupMatches);
       });
-      if (categoryList) categoryList.hidden = activeDocumentFilter === 'mate';
+      if (categoryList) categoryList.hidden = activeDocumentFilter === 'mate' || documentLoadState === 'loading' || documentLoadState === 'error';
       vault.hidden = activeDocumentFilter === 'mate';
       if (archive) archive.hidden = activeDocumentFilter !== 'all' && activeDocumentFilter !== 'mate';
       updateDocumentFilterCounts();
+      updateDocumentLibraryState(totalDocuments, visibleDocuments);
     }
 
     if (categoryNavigation) {
@@ -182,11 +260,15 @@
     applyDocumentFilter();
 
     if (!config || !config.url || !config.publishableKey) {
+      documentLoadState = 'error';
+      applyDocumentFilter();
       setStatus('חיבור האחסון טרם הוגדר. קטגוריות ו־Mate עדיין זמינים במכשיר.', true);
       return;
     }
 
     if (!window.TravelMateCloud || typeof window.TravelMateCloud.getClient !== 'function') {
+      documentLoadState = 'error';
+      applyDocumentFilter();
       setStatus('שירות הענן אינו זמין כרגע. קטגוריות ו־Mate עדיין זמינים במכשיר.', true);
       return;
     }
@@ -195,6 +277,8 @@
     try {
       client = await window.TravelMateCloud.getClient();
     } catch (error) {
+      documentLoadState = 'error';
+      applyDocumentFilter();
       setStatus('לא ניתן לטעון כרגע את הכספת. קטגוריות ו־Mate עדיין זמינים במכשיר.', true);
       return;
     }
@@ -273,6 +357,8 @@
     }
 
     function clearRemoteDocumentMetadata() {
+      documentSearchQuery = '';
+      searchInput.value = '';
       Object.keys(categoryTargets).forEach(function (group) {
         var target = categoryTargets[group];
         target.files.innerHTML = '';
@@ -291,6 +377,7 @@
       hasDocumentSession = true;
       var sessionEpoch = ++documentSessionEpoch;
       currentUser = session && session.user ? session.user : null;
+      documentLoadState = currentUser ? 'loading' : 'signed-out';
       authPanel.hidden = Boolean(currentUser);
       sessionPanel.hidden = !currentUser;
       unlockPanel.hidden = !currentUser;
@@ -325,7 +412,11 @@
           await flushPendingCleanup();
           if (isDocumentSession(sessionUserId, sessionEpoch)) await renderDocuments(sessionEpoch, sessionUserId);
         } catch (error) {
-          if (isDocumentSession(sessionUserId, sessionEpoch)) setStatus(storageErrorMessage(error), true);
+          if (isDocumentSession(sessionUserId, sessionEpoch)) {
+            documentLoadState = 'error';
+            applyDocumentFilter();
+            setStatus(storageErrorMessage(error), true);
+          }
         }
       }, 0);
     }
@@ -403,9 +494,21 @@
       if (window.TravelMateDocumentHealth && String(window.TravelMateDocumentHealth.tripId || '') === String(tripId)) delete window.TravelMateDocumentHealth;
       var requestEpoch = typeof expectedEpoch === 'number' ? expectedEpoch : documentSessionEpoch;
       var requestUserId = expectedUserId || currentUser.id;
-      var result = await client.from('travel_documents').select('*').eq('user_id', requestUserId).eq('trip_id', tripId).order('created_at', { ascending: false });
+      var renderVersion = ++documentRenderVersion;
+      documentLoadState = 'loading';
+      applyDocumentFilter();
+      var result;
+      try {
+        result = await client.from('travel_documents').select('*').eq('user_id', requestUserId).eq('trip_id', tripId).order('created_at', { ascending: false });
+      } catch (error) {
+        result = { error: error };
+      }
       if (requestEpoch !== documentSessionEpoch || !currentUser || currentUser.id !== requestUserId) return;
+      if (renderVersion !== documentRenderVersion) return;
       if (result.error) {
+        documentLoadState = 'error';
+        // Do not present stale rows as a successful list after a failed refresh.
+        clearRemoteDocumentMetadata();
         setStatus(databaseErrorMessage(result.error), true);
         return;
       }
@@ -430,6 +533,7 @@
         var categoryCount = categoryTarget.files.children.length;
         categoryTarget.button.innerHTML = '<i class="fa-solid fa-plus"></i> העלאה נוספת (' + categoryCount + ')';
       });
+      documentLoadState = 'ready';
       applyDocumentFilter();
     }
 
@@ -784,8 +888,17 @@
     client.auth.onAuthStateChange(function (_event, session) { authEventVersion += 1; applySession(session); });
     window.addEventListener('online', function () { if (currentUser) flushPendingCleanup(); });
     var initialAuthVersion = authEventVersion;
-    var sessionResult = await client.auth.getSession();
-    if (initialAuthVersion === authEventVersion) await applySession(sessionResult.data.session);
+    try {
+      var sessionResult = await client.auth.getSession();
+      if (initialAuthVersion !== authEventVersion) return;
+      if (sessionResult.error) throw sessionResult.error;
+      await applySession(sessionResult.data.session);
+    } catch (error) {
+      if (initialAuthVersion !== authEventVersion) return;
+      documentLoadState = 'error';
+      applyDocumentFilter();
+      setStatus('לא ניתן לבדוק את החיבור לחשבון. נסו לרענן לאחר בדיקת החיבור.', true);
+    }
   }
 
   async function deriveKey(passphrase, salt, usage) {

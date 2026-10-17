@@ -491,7 +491,8 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-t
 #documents :is(.vault-intro,.vault-access,.vault-upload-section,.vault-library) h3{margin:0 0 12px}
 #documents .vault-access :is(.vault-auth,.vault-session,.vault-unlock){border:0;background:transparent;box-shadow:none;padding-inline:0}
 #documents .vault-library [data-document-category-list]{border:0;border-radius:0;background:transparent;box-shadow:none}
-#documents :is(.vault-summary,.vault-upload-section)[hidden]{display:none}
+#documents :is(.vault-summary,.vault-upload-section)[hidden],
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] main.content #documents :is(.vault-library,.document-vault) [hidden]{display:none}
 #documents .vault-library .vault-summary{margin:0 0 14px;padding:0 0 14px;border-top:0;border-bottom:1px solid var(--tm-card-border)}
 
 
@@ -577,10 +578,7 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
   color:var(--tm-card-control-text);
   box-shadow:none
 }
-body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents :is(
-  .vault-auth button,.vault-session button,.vault-upload-button,.doc-row>button,
-  .doc-category-file-actions button
-){
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] main.content #documents :is(.vault-library,.document-vault) :is(button,input,select,[role="button"]){
   min-height:44px
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-auth button[data-auth-signin],
@@ -637,6 +635,7 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
   gap:10px;
   margin-bottom:10px
 }
+body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-upload-section>header small{color:var(--tm-card-secondary)}
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-upload{
   grid-template-columns:minmax(140px,.7fr) minmax(180px,1.3fr) auto;
   gap:8px;
@@ -664,7 +663,7 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
   padding:0 0 8px
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .documents-category-nav button{
-  min-height:40px;
+  min-height:44px;
   padding:7px 10px
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents [data-document-category-list]{
@@ -680,13 +679,14 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
   background:var(--tm-documents-soft)
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-row>button{
-  min-height:40px;
+  min-height:44px;
   padding-inline:10px
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file{
   min-height:58px;
-  padding:9px 0;
-  background:var(--tm-documents-row)
+  padding:12px 0;
+  border-bottom:1px solid var(--tm-card-border);
+  background:transparent
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-copy{
   min-width:0
@@ -694,7 +694,10 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-copy strong{
   overflow:hidden;
   text-overflow:ellipsis;
-  white-space:nowrap;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  unicode-bidi:plaintext;
+  line-height:1.45;
   color:var(--tm-card-heading)
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-copy small{
@@ -709,7 +712,7 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
   gap:6px
 }
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-actions button{
-  min-height:40px;
+  min-height:44px;
   border-radius:var(--tm-card-radius-control);
   white-space:nowrap
 }
@@ -755,7 +758,7 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
     gap:6px
   }
   body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .documents-category-nav button{
-    min-height:40px;
+    min-height:44px;
     padding:6px 9px
   }
   body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-row{
@@ -774,7 +777,7 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
   body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file{
     grid-template-columns:36px minmax(0,1fr);
     gap:8px;
-    padding:9px 0
+    padding:12px 0
   }
   body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .doc-category-file-actions{
     grid-column:1/-1;
@@ -790,4 +793,27 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
     white-space:normal;
     line-height:1.15
   }
+}
+
+/* Documents V3: metadata search and explicit states, using existing tokens. */
+#documents .vault-search{display:grid;gap:8px;margin:14px 0;min-width:0}
+#documents .vault-search label{font-weight:800;color:var(--tm-card-heading)}
+#documents .vault-search-field{display:flex;gap:8px;min-width:0}
+#documents .vault-search input{flex:1;min-width:0;width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--tm-card-control-border);border-radius:var(--tm-card-radius-control);background:var(--tm-card-control);color:var(--tm-card-control-text);font:inherit}
+#documents .vault-search small{color:var(--tm-card-secondary);line-height:1.5}
+#documents [data-vault-search-results]{margin:0;color:var(--tm-card-secondary);font-size:13px}
+#documents :is(.vault-search,.vault-lock-state,.vault-offline-state,.vault-library-state)[hidden],
+#documents :is(.vault-search,.vault-library-state) [hidden]{display:none}
+#documents :is(.vault-lock-state,.vault-offline-state,.vault-library-state){padding:14px;margin:12px 0;border:1px solid var(--tm-card-border);border-radius:var(--tm-card-radius-control);background:var(--tm-card-bg-compact);color:var(--tm-card-text);line-height:1.6;overflow-wrap:anywhere}
+#documents .vault-library-state p{margin:4px 0 0;color:var(--tm-card-secondary)}
+#documents .vault-offline-state{border-color:var(--tm-warning)}
+#documents .vault-library[data-vault-library-state="error"] .vault-library-state{border-color:var(--tm-error)}
+#documents :is([data-vault-search-clear],[data-vault-retry]){padding:8px 12px;border:1px solid var(--tm-card-control-border);border-radius:var(--tm-card-radius-control);background:var(--tm-action-secondary);color:var(--tm-card-link);font:inherit;cursor:pointer}
+#documents [data-vault-retry]{margin-top:10px}
+
+@media(max-width:700px){
+  #documents .vault-search-field{flex-wrap:wrap}
+  #documents .vault-search-field input{flex-basis:100%}
+  #documents [data-vault-search-clear]{width:100%}
+  #documents :is(.vault-lock-state,.vault-offline-state,.vault-library-state){padding:12px}
 }
