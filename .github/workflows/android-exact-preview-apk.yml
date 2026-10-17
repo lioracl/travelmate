@@ -1,0 +1,167 @@
+name: TravelMate Exact Preview APK
+# Artifact-only QA route. No Pages, Release, OTA publisher, install, or dispatch.
+on:
+  workflow_dispatch:
+    inputs:
+      web_sha:
+        description: Full SHA already verified on the deployed Preview
+        required: true
+        type: string
+      native_version:
+        description: Expected versionName from the authorized pinned wrapper
+        required: true
+        type: string
+      native_version_code:
+        description: Expected versionCode from the authorized pinned wrapper
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: travelmate-exact-apk
+  cancel-in-progress: false
+jobs:
+  apk:
+    if: github.ref == 'refs/heads/preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      WEB_SHA: ${{ inputs.web_sha }}
+      EXPECTED_NATIVE_VERSION: ${{ inputs.native_version }}
+      EXPECTED_NATIVE_CODE: ${{ inputs.native_version_code }}
+      TRAVELMATE_QA_CERT_SHA256: ${{ vars.TRAVELMATE_QA_CERT_SHA256 }}
+      TRAVELMATE_WEB_CHANNEL: preview
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reject invalid inputs and missing permanent signing
+        env:
+          TRAVELMATE_QA_KEYSTORE_BASE64: ${{ secrets.TRAVELMATE_QA_KEYSTORE_BASE64 }}
+          TRAVELMATE_QA_STORE_PASSWORD: ${{ secrets.TRAVELMATE_QA_STORE_PASSWORD }}
+          TRAVELMATE_QA_KEY_ALIAS: ${{ secrets.TRAVELMATE_QA_KEY_ALIAS }}
+          TRAVELMATE_QA_KEY_PASSWORD: ${{ secrets.TRAVELMATE_QA_KEY_PASSWORD }}
+        run: |
+          node --input-type=module -e "import {exactSha,signingReady} from './tools/verify-release-inputs.mjs';exactSha(process.env.WEB_SHA);signingReady(process.env)"
+      - name: Capture deployed Preview provenance
+        run: |
+          mkdir pipeline-output
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 --max-time 60 --header 'Cache-Control: no-cache' https://lioracl.github.io/travelmate/build-info.json -o pipeline-output/preview-build-info.json
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.web_sha }}
+          path: web-source
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Read and validate authorized native pin
+        id: native
+        run: |
+          node --input-type=module -e "import fs from 'node:fs';import {NATIVE_SHA} from './tools/verify-release-inputs.mjs';const p=JSON.parse(fs.readFileSync('ota-overlay.json'));if(p.sha!==NATIVE_SHA||p.nativeApiLevel!==2||p.repository!=='lioracl/travelmate')throw Error('Unauthorized native pin');fs.appendFileSync(process.env.GITHUB_OUTPUT,'sha='+p.sha+'\n')"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.native.outputs.sha }}
+          path: native-overlay
+          persist-credentials: false
+      - name: Verify source, deployed Preview and wrapper contracts
+        run: |
+          node tools/verify-release-inputs.mjs . web-source native-overlay pipeline-output/preview-build-info.json pipeline-output/contract.json
+          node --input-type=module -e "import fs from 'node:fs';import {classifyGitRange} from './tools/classify-distribution.mjs';import {requireCompatibleDistribution} from './tools/verify-release-inputs.mjs';const r=classifyGitRange(undefined,process.env.WEB_SHA,'web-source');console.log(JSON.stringify(r));const proof=requireCompatibleDistribution(r,JSON.parse(fs.readFileSync('ota-overlay.json')));fs.writeFileSync('pipeline-output/compatibility.json',JSON.stringify(proof,null,2)+'\n',{flag:'wx'})"
+          node --test tests/release-pipeline.test.js
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
+      - name: Install authorized SDK
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Stage exact web tree with the pinned native tooling
+        working-directory: native-overlay
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          node --test tests/*.test.js
+          python3 tools/test_android_signing.py
+          test ! -e dist
+          node tools/stage-native-web.mjs ../web-source dist
+          npx --no-install cap sync android
+          node -e "const fs=require('fs'),a=JSON.parse(fs.readFileSync('../pipeline-output/contract.json')),b=JSON.parse(fs.readFileSync('dist/build-info.json'));if(b.sha!==a.webSha||b.version!==a.webVersion||b.nativeApiLevel!==a.nativeApiLevel)throw Error('Staged provenance mismatch')"
+      - name: Configure existing permanent QA signer
+        env:
+          TRAVELMATE_QA_KEYSTORE_BASE64: ${{ secrets.TRAVELMATE_QA_KEYSTORE_BASE64 }}
+          TRAVELMATE_QA_STORE_PASSWORD: ${{ secrets.TRAVELMATE_QA_STORE_PASSWORD }}
+          TRAVELMATE_QA_KEY_ALIAS: ${{ secrets.TRAVELMATE_QA_KEY_ALIAS }}
+          TRAVELMATE_QA_KEY_PASSWORD: ${{ secrets.TRAVELMATE_QA_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          KEYDIR="$(mktemp -d "$RUNNER_TEMP/travelmate-exact-apk.XXXXXXXX")"
+          KEYFILE="$KEYDIR/qa.keystore"
+          echo "TRAVELMATE_QA_KEYSTORE=$KEYFILE" >> "$GITHUB_ENV"
+          trap 'rm -f -- "$KEYFILE"' ERR
+          printf '%s' "$TRAVELMATE_QA_KEYSTORE_BASE64" | base64 --decode > "$KEYFILE"
+          trap - ERR
+      - name: Compile, test, lint and build QA APK
+        env:
+          TRAVELMATE_QA_STORE_PASSWORD: ${{ secrets.TRAVELMATE_QA_STORE_PASSWORD }}
+          TRAVELMATE_QA_KEY_ALIAS: ${{ secrets.TRAVELMATE_QA_KEY_ALIAS }}
+          TRAVELMATE_QA_KEY_PASSWORD: ${{ secrets.TRAVELMATE_QA_KEY_PASSWORD }}
+        working-directory: native-overlay/android
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:compileDebugJavaWithJavac :app:check testDebugUnitTest assembleDebug --console=plain
+      - name: Verify actual APK signature, manifest, resources and complete packaged web tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="native-overlay/android/app/build/outputs/apk/debug/app-debug.apk"
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/36.0.0"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK" > pipeline-output/signature.txt
+          python3 native-overlay/tools/verify-android-signing.py pipeline-output/signature.txt pipeline-output/signing-certificate.json
+          "$BUILD_TOOLS/aapt" dump badging "$APK" > pipeline-output/badging.txt
+          "$BUILD_TOOLS/aapt" dump xmltree "$APK" AndroidManifest.xml > pipeline-output/manifest.txt
+          for ENTRY in TravelMateWidgetProvider TravelMateLiveTodayWidgetProvider travelmate LAUNCHER; do grep -q "$ENTRY" pipeline-output/manifest.txt; done
+          python3 tools/verify-android-apk.py "$APK" native-overlay pipeline-output/contract.json pipeline-output/badging.txt pipeline-output/signing-certificate.json pipeline-output/provenance.json
+          cp "$APK" pipeline-output/TravelMate-preview-qa.apk
+          (cd pipeline-output && sha256sum TravelMate-preview-qa.apk > TravelMate-preview-qa.apk.sha256)
+      - name: Remove task-owned keystore
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${TRAVELMATE_QA_KEYSTORE:-}" ]]; then
+            case "$TRAVELMATE_QA_KEYSTORE" in
+              "$RUNNER_TEMP"/travelmate-exact-apk.*/qa.keystore) rm -- "$TRAVELMATE_QA_KEYSTORE" ;;
+              *) echo "::error::Unexpected keystore path"; exit 1 ;;
+            esac
+          fi
+      - name: Recheck deployed Preview at final APK acceptance
+        run: |
+          curl --fail --silent --show-error --proto '=https' --tlsv1.2 --max-time 60 --header 'Cache-Control: no-cache' https://lioracl.github.io/travelmate/build-info.json -o pipeline-output/preview-build-info-final.json
+          node --input-type=module -e "import fs from 'node:fs';import {verifyPreview} from './tools/verify-release-inputs.mjs';const p=JSON.parse(fs.readFileSync('pipeline-output/contract.json'));verifyPreview(JSON.parse(fs.readFileSync('pipeline-output/preview-build-info-final.json')),p.webSha,p.webVersion)"
+
+      - name: Upload verified APK and public evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: travelmate-preview-apk-${{ inputs.web_sha }}
+          path: |
+            pipeline-output/TravelMate-preview-qa.apk
+            pipeline-output/TravelMate-preview-qa.apk.sha256
+            pipeline-output/signature.txt
+            pipeline-output/signing-certificate.json
+            pipeline-output/badging.txt
+            pipeline-output/manifest.txt
+            pipeline-output/provenance.json
+            pipeline-output/contract.json
+            pipeline-output/compatibility.json
+            pipeline-output/preview-build-info-final.json
+            pipeline-output/preview-build-info.json
+            native-overlay/dist/build-info.json
+          if-no-files-found: error
+          retention-days: 7

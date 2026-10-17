@@ -68,6 +68,10 @@ jobs:
             --exclude='.github' \
             --exclude='.agents' \
             --exclude='.codex' \
+            --exclude='.cache' \
+            --exclude='pipeline-output' \
+            --exclude='web-source' \
+            --exclude='ota' \
             --exclude='supabase' \
             --exclude='docs' \
             --exclude='native-overlay' \
@@ -100,24 +104,25 @@ jobs:
           path: native-overlay
           persist-credentials: false
 
-      - name: Build signed native OTA from this web SHA
-        env:
-          TRAVELMATE_OTA_PRIVATE_KEY: ${{ secrets.TRAVELMATE_OTA_PRIVATE_KEY }}
+      - name: Preserve currently published signed OTA files (fail closed)
         run: |
-          test -n "$TRAVELMATE_OTA_PRIVATE_KEY" || { echo '::error::OTA signing secret is required'; exit 1; }
-          node native-overlay/tools/stage-native-web.mjs _site ota-native
-          node native-overlay/tools/publish-ota.mjs ota-native _site/ota
-          node -e "const fs=require('fs');const a=JSON.parse(fs.readFileSync('_site/build-info.json')),b=JSON.parse(fs.readFileSync('ota-native/build-info.json'));if(a.sha!==b.sha||a.sha!==process.env.GITHUB_SHA)throw Error('Web/OTA SHA mismatch')"
+          node tools/retain-preview-ota.mjs _site native-overlay/capacitor.config.json
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
 
+      - name: Recheck current OTA and deployment immediately before artifact upload
+        run: node tools/retain-preview-ota.mjs --recheck _site
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
+      - name: Recheck current OTA and deployment immediately before Pages publication
+        run: node tools/retain-preview-ota.mjs --recheck _site
 
       - name: Deploy to GitHub Pages
         id: deployment
