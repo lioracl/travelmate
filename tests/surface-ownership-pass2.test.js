@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
 test('reserved custom Weather is a sibling immediately after Hero',()=>{
  const html=read('trip/custom/index.html');
- assert.match(html,/<section id="overview"[^\n]+?<\/section><button[^>]+data-weather-top-widget/);
+ assert.match(html,/<section id="overview"[^>]*>[\s\S]*?<\/section>\s*<button[^>]+data-weather-top-widget/);
  assert.equal((html.match(/data-weather-top-widget/g)||[]).length,1);
 });
 test('dynamic Weather reuses the independent slot and creates a sibling when missing',()=>{

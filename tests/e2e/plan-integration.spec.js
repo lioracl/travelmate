@@ -124,7 +124,7 @@ for (const viewport of [
       expect(pageErrors, pageErrors.join('\n')).toEqual([]);
     });
 
-    test('Overview Today card is compact and reversible', async ({ page }) => {
+    test('Overview V3 Today starts collapsed with a summary and expands accessibly', async ({ page }) => {
       await seed(page);
       await page.goto('/trip/custom/index.html?id=qa-playwright&view=overview', { waitUntil: 'domcontentloaded' });
 
@@ -132,14 +132,21 @@ for (const viewport of [
       await expect(todayCard).toBeVisible();
       await expect(todayCard).toHaveClass(/today-activities-card/);
       const toggle = todayCard.locator('.today-activities-toggle');
+      // The approved compact default remains part of the V3 UX contract.
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(todayCard.locator('.today-activities-expanded')).toBeHidden();
+      await expect(todayCard.locator('.today-activities-summary')).toBeVisible();
       await expect(todayCard.locator('[data-next-title]')).not.toHaveText('');
+      await expect(toggle).toHaveAttribute('aria-controls', await todayCard.locator('.today-activities-expanded').getAttribute('id'));
 
-      await toggle.click();
+      await toggle.focus();
+      await page.keyboard.press('Enter');
       await expect(toggle).toHaveAttribute('aria-expanded', 'true');
       await expect(todayCard.locator('.today-activities-expanded')).toBeVisible();
       await todayCard.locator('.today-activities-less').click();
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(toggle).toBeFocused();
+      await expect(todayCard.locator('.today-activities-summary')).toBeVisible();
 
       expect(await noHorizontalOverflow(page)).toBeTruthy();
     });

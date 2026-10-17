@@ -100,6 +100,8 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     if(isHomePage)return;
     var orb=document.querySelector('.ai-orb');
     if(!orb){orb=document.createElement('button');orb.className='ai-orb';orb.type='button';orb.dataset.aiShell='';orb.setAttribute('aria-label','פתיחת העוזר האישי');orb.setAttribute('aria-expanded','false');orb.innerHTML='<span class="ai-orb-ring"></span><i class="fa-solid fa-wand-magic-sparkles"></i><span class="ai-orb-badge">AI</span>';document.body.appendChild(orb)}
+    var mateMount=document.querySelector('[data-shell-mate]');
+    if(mateMount)mateMount.appendChild(orb);
     var sidebarMenu=document.querySelector('.trip-sidebar-more-menu'),sidebarButton=document.querySelector('[data-ai-sidebar-open]');
     if(!sidebarButton&&sidebarMenu){sidebarButton=document.createElement('button');sidebarButton.type='button';sidebarButton.className='trip-sidebar-mate';sidebarButton.dataset.aiSidebarOpen='';sidebarButton.innerHTML='<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Mate <small>עוזר אישי</small></span>';var smartHub=sidebarMenu.querySelector('[data-smart-hub-open]');if(smartHub)smartHub.insertAdjacentElement('beforebegin',sidebarButton);else sidebarMenu.appendChild(sidebarButton)}
     var loading=false;
