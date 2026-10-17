@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="assets/phone-visual-qa.css?v=20261015-03&patch=2">
 <link rel="stylesheet" href="assets/app-shell.css?v=20261015-03">
 </head>
-<body class="home-page">
+<body class="home-page" data-design="v3">
 <a class="tm-skip-link" href="#main-content">דלג לתוכן הראשי</a>
 <aside class="home-sidebar" aria-label="תפריט כל הטיולים">
   <a class="home-sidebar-logo" href="index.html" aria-label="TravelMate"><i class="fa-solid fa-route" aria-hidden="true"></i><span class="tip">TravelMate</span></a>
@@ -45,12 +45,26 @@
     </button>
     <div class="home-personal-copy">
       <small data-home-context-kicker>הפרופיל שלי</small>
-      <h1 id="home-personal-greeting" data-home-greeting>שלום</h1>
+      <h2 id="home-personal-greeting" data-home-greeting>שלום</h2>
       <p data-home-context>טוען את מצב הטיולים שלך…</p>
     </div>
     <a class="home-context-action" data-home-context-action href="#active-trips">לטיולים שלי <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a>
   </section>
-  <section id="active-trips" class="modules trip-list" data-trip-list>
+  <section class="home-trip-browser" data-home-trip-browser aria-labelledby="home-trips-title">
+    <h1 id="home-trips-title">הטיולים שלי</h1>
+    <div class="home-trip-tools">
+      <label class="home-trip-search"><span class="sr-only">חיפוש בטיולים לפי יעד או מדינה</span><input type="search" data-home-trip-search placeholder="חיפוש טיול, יעד או מדינה…" autocomplete="off" aria-controls="active-trips trip-archive"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></label>
+      <button type="button" class="home-trip-create" data-modal="destination"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i> טיול חדש</button>
+    </div>
+    <div class="home-trip-filters" role="group" aria-label="סינון טיולים">
+      <button type="button" data-home-filter="active" aria-pressed="true" aria-controls="active-trips">פעילים <span data-home-active-count>0</span></button>
+      <button type="button" data-home-filter="archive" aria-pressed="false" aria-controls="trip-archive">ארכיון <span data-home-archive-count>0</span></button>
+    </div>
+    <p class="home-trip-state" data-home-trip-state role="status" aria-live="polite"></p>
+    <button type="button" class="home-trip-retry" data-home-trip-retry hidden>ניסיון סנכרון נוסף</button>
+    <p class="home-trip-results" data-home-trip-results role="status" aria-live="polite"></p>
+  </section>
+  <section id="active-trips" class="modules trip-list" data-trip-list aria-label="טיולים פעילים">
     <a class="trip-card" data-static-id="japan-2027" data-country="יפן" data-start="2027-10-14" data-end="2027-10-28" data-days="14" href="trip/japan-2027/index.html" style="background-image:url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&amp;fit=crop&amp;w=1600&amp;q=85')"><span class="trip-overlay"></span><span class="trip-flag">🇯🇵</span><span class="trip-copy"><h2>יפן</h2><p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> טוקיו, קיוטו ואוסקה</p><span class="tag">14-28 באוקטובר 2027</span> <span class="tag">14 ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></strong></span></a>
     <a class="trip-card" data-static-id="italy-2028" data-country="איטליה" data-start="2028-04-12" data-end="2028-04-19" data-days="7" href="trip/italy-2028/index.html" style="background-image:url('https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&amp;fit=crop&amp;w=1600&amp;q=85')"><span class="trip-overlay"></span><span class="trip-flag">🇮🇹</span><span class="trip-copy"><h2>איטליה</h2><p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> רומא וטוסקנה</p><span class="tag">12-19 באפריל 2028</span> <span class="tag">7 ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></strong></span></a>
     <button class="module add-destination" data-modal="destination"><span class="icon"><i class="fa-solid fa-plus"></i></span><strong>הוספת יעד חדש</strong><small>בחר מדינה, עיר ותאריכים — כל הטיול ייבנה אוטומטית.</small></button>
