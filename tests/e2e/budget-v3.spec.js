@@ -56,8 +56,18 @@ for (const width of [390, 430]) for (const theme of ['light', 'dark']) {
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 2)).toBe(true);
-      for (const locator of [toggle, page.locator('[data-converter-swap]'), page.locator('[data-converter-from]'), page.locator('[data-converter-to]')]) {
-        const box = await locator.boundingBox(); expect(box.height).toBeGreaterThanOrEqual(44); expect(box.width).toBeGreaterThanOrEqual(44);
+      for (const selector of ['[data-expense-toggle]', '[data-converter-swap]', '[data-converter-from]', '[data-converter-to]']) {
+        const geometry = await page.locator(selector).evaluate(element => {
+          const rect = element.getBoundingClientRect(), style = getComputedStyle(element), ancestors = [];
+          for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+            const parentStyle = getComputedStyle(parent);
+            if (parentStyle.transform !== 'none' || parentStyle.zoom && parentStyle.zoom !== '1') ancestors.push({ tag: parent.tagName, id: parent.id, className: parent.className, transform: parentStyle.transform, zoom: parentStyle.zoom });
+          }
+          return { width: rect.width, height: rect.height, offsetWidth: element.offsetWidth, offsetHeight: element.offsetHeight, font: style.font, lineHeight: style.lineHeight, padding: style.padding, border: style.borderWidth, minHeight: style.minHeight, minWidth: style.minWidth, boxSizing: style.boxSizing, transform: style.transform, zoom: style.zoom, ancestors };
+        });
+        const diagnostic = selector + ' computed geometry: ' + JSON.stringify(geometry);
+        expect(geometry.height, diagnostic).toBeGreaterThanOrEqual(44);
+        expect(geometry.width, diagnostic).toBeGreaterThanOrEqual(44);
       }
       await toggle.click(); await expect(form.locator('[name="amount"]')).toHaveValue('');
       await fillExpense(page); await form.locator('[data-expense-cancel]').click();
