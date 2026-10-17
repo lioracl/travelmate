@@ -143,7 +143,7 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
 /* Documents semantic-state authority — Phase 2.
    Shared card/control material remains owned by readable-glass.css. */
 #documents .vault-unlock>small{
-  --tm-card-secondary:#6f3e19;
+  --tm-card-secondary:var(--tm-surface-text-muted);
   padding:10px 12px;
   border:1px solid #efb37f;
   border-radius:var(--tm-card-radius-control);
@@ -156,7 +156,7 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
 #documents .vault-unlock>small *{color:inherit;-webkit-text-fill-color:currentColor;text-shadow:none}
 
 #documents .vault-status:not(:empty){
-  --tm-card-secondary:#17664e;
+  --tm-card-secondary:var(--tm-surface-text-muted);
   padding:11px 13px;
   border:1px solid #add3c1;
   border-radius:12px;
@@ -167,7 +167,7 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
   text-shadow:none
 }
 #documents .vault-status.error:not(:empty){
-  --tm-card-secondary:#8f2532;
+  --tm-card-secondary:var(--tm-error);
   border-color:#e2a1a9;
   background:#ffe9ec;
   color:var(--tm-card-secondary);
@@ -175,12 +175,12 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
   box-shadow:inset 4px 0 0 #cf5262
 }
 #documents :is(.vault-badge,.ai-notes-archive>header>b,.ai-note-toggle){
-  --tm-card-heading:#17664e;
-  --tm-card-text:#17664e;
-  --tm-card-secondary:#17664e;
-  border-color:#add3c1;
-  background:#e7f4ed;
-  color:#17664e;
+  --tm-card-heading:var(--tm-surface-text);
+  --tm-card-text:var(--tm-surface-text);
+  --tm-card-secondary:var(--tm-surface-text-muted);
+  border-color:var(--tm-card-control-border);
+  background:var(--tm-surface-control);
+  color:var(--tm-surface-text);
   -webkit-text-fill-color:currentColor;
   text-shadow:none
 }
