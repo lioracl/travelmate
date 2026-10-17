@@ -5,6 +5,8 @@
   window.__travelMateWeatherLoaded = true;
 
   var state = { location: null, forecast: null, loading: false, error: false };
+  // Presentation metadata only; provider payloads, cache format and context stay intact.
+  var forecastDisplay = { cached: false, stale: false, savedAt: 0 };
   var locale = 'he-IL';
 
   function clean(value) { return String(value || '').replace(/[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]/gu, '').trim(); }
@@ -194,7 +196,10 @@
     var cacheKey = 'travelmate-weather-forecast:' + place.latitude.toFixed(3) + ',' + place.longitude.toFixed(3);
     var cached = null;
     try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch (error) {}
-    if (!force && cached && cached.data && cached.data.hourly && Array.isArray(cached.data.hourly.time) && Date.now() - cached.savedAt < 900000) return cached.data;
+    if (!force && cached && cached.data && cached.data.hourly && Array.isArray(cached.data.hourly.time) && Date.now() - cached.savedAt < 900000) {
+      forecastDisplay = { cached: true, stale: false, savedAt: Number(cached.savedAt) || 0 };
+      return cached.data;
+    }
     var fields = 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,uv_index_max';
     var current = 'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day';
     var hourly = 'weather_code,precipitation_probability,temperature_2m,wind_speed_10m';
@@ -204,8 +209,12 @@
       try { data = await fetchJson(url, 'forecast'); }
       catch (error) { lastError = error; if (attempt === 0) await wait(1200); }
     }
-    if (!data && cached && cached.data) return cached.data;
+    if (!data && cached && cached.data) {
+      forecastDisplay = { cached: true, stale: true, savedAt: Number(cached.savedAt) || 0 };
+      return cached.data;
+    }
     if (!data) throw lastError || new Error('forecast');
+    forecastDisplay = { cached: false, stale: false, savedAt: Date.now() };
     try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data: data })); } catch (error) {}
     return data;
   }
@@ -236,6 +245,19 @@
     if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = currentAtmosphere;
     ui.summary.textContent = details.label + ' \u00b7 \u05de\u05e8\u05d2\u05d9\u05e9 \u05db\u05de\u05d5 ' + round(current.apparent_temperature) + '\u00b0'; ui.temperature.textContent = round(current.temperature_2m) + '\u00b0'; ui.icon.innerHTML = weatherSvg(details.icon);
     ui.updated.textContent = '\u05e2\u05d5\u05d3\u05db\u05df \u05e2\u05db\u05e9\u05d9\u05d5 \u00b7 \u05d0\u05d6\u05d5\u05e8 \u05d6\u05de\u05df ' + (data.timezone_abbreviation || data.timezone || place.timezone || '\u05de\u05e7\u05d5\u05de\u05d9');
+    if (document.body.dataset.design === 'v3') {
+      var freshness = ui.button.querySelector('[data-weather-freshness]');
+      if (!freshness) {
+        freshness = document.createElement('small');
+        freshness.dataset.weatherFreshness = '';
+        ui.summary.insertAdjacentElement('afterend', freshness);
+      }
+      var savedLabel = forecastDisplay.savedAt ? new Intl.DateTimeFormat('he-IL', {day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(forecastDisplay.savedAt)) : 'מועד העדכון אינו ידוע';
+      freshness.textContent = forecastDisplay.cached ? (forecastDisplay.stale ? 'לא ניתן לעדכן · ' : '') + 'תחזית שמורה · ' + savedLabel : '';
+      freshness.hidden = !forecastDisplay.cached;
+      ui.button.dataset.weatherFreshness = forecastDisplay.stale ? 'stale' : forecastDisplay.cached ? 'cached' : 'live';
+      if (forecastDisplay.cached) ui.updated.textContent = freshness.textContent;
+    }
     function atmospherePieces(atmosphere) {
       var precipitation = atmosphere === 'rain' || atmosphere === 'storm' || atmosphere === 'snow' ? '<span class="weather-atmosphere__precip"></span>' : '';
       return '<span class="weather-atmosphere__orb"></span><span class="weather-atmosphere__stars"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--one"></span><span class="weather-atmosphere__cloud weather-atmosphere__cloud--two"></span>' + precipitation + '<span class="weather-atmosphere__mist weather-atmosphere__mist--one"></span><span class="weather-atmosphere__mist weather-atmosphere__mist--two"></span><span class="weather-atmosphere__flash"></span>';
@@ -296,6 +318,12 @@
   }
 
   function renderError(ui) {
+    var freshness = ui.button.querySelector('[data-weather-freshness]');
+    if (freshness) freshness.hidden = true;
+    if (document.body.dataset.design === 'v3') {
+      ui.button.dataset.weatherFreshness = 'error';
+      ui.updated.textContent = navigator.onLine === false ? 'ללא רשת · אין תחזית שמורה זמינה' : 'אין תחזית עדכנית זמינה';
+    }
     if (ui.atmosphere) ui.atmosphere.dataset.weatherAtmosphere = 'idle';
     ui.summary.textContent = 'לא הצלחנו לעדכן כרגע'; ui.temperature.textContent = '--°';
     ui.content.innerHTML = '<div class="weather-error"><i class="fa-solid fa-cloud-arrow-down"></i><strong>התחזית לא נטענה</strong><span>בדוק את החיבור ונסה שוב.</span><button type="button" data-weather-retry>ניסיון נוסף</button></div>';

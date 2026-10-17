@@ -121,7 +121,7 @@
 
   function shellHtml(id) {
     return '<button class="today-activities-toggle" type="button" aria-expanded="false" aria-controls="' + id + '">' +
-      '<span class="today-activities-label">הפעילות הקרובה</span>' +
+      '<span class="today-activities-label">' + (document.body.dataset.design === 'v3' ? 'היום בתוכנית' : 'הפעילות הקרובה') + '</span>' +
       '<span class="today-activities-summary" aria-live="polite"><span class="today-activities-main"><b data-next-time></b><strong data-next-title></strong></span>' +
       '<span class="today-activities-meta"><span data-next-status></span><span data-next-location></span></span></span>' +
       '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>' +

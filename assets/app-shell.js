@@ -9,6 +9,43 @@
   }
   if (header && window.ResizeObserver) new ResizeObserver(measureHeader).observe(header);
   measureHeader();
+  // The dock is an optional shell surface; History remains the navigation owner.
+  var dock = document.querySelector('.tm-trip-dock');
+  if (dock) {
+    var shellLinks = dock.querySelectorAll('[data-shell-view]');
+    var drawer = document.querySelector('.workspace>.sidebar');
+    if (drawer) {
+      if (!drawer.id) drawer.id = 'tm-trip-menu';
+      dock.querySelector('[data-shell-more]').setAttribute('aria-controls', drawer.id);
+    }
+    function syncDock() {
+      var view = document.body.dataset.tripPrimaryView || 'overview';
+      shellLinks.forEach(function (link) {
+        var url = new URL(location.href);
+        url.hash = '';
+        url.searchParams.set('view', link.dataset.shellView);
+        link.href = url.href;
+        if (view === link.dataset.shellView) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      });
+      dock.querySelector('[data-shell-more]').setAttribute('aria-expanded', String(document.body.classList.contains('mobile-menu-open')));
+      dock.querySelector('[data-shell-more]').classList.toggle('is-active', !/^(overview|plan|places)$/.test(view));
+    }
+    dock.addEventListener('click', function (event) {
+      var link = event.target.closest('[data-shell-view]');
+      if (link && !event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && window.TravelMateHistory) {
+        event.preventDefault();
+        window.TravelMateHistory.navigate(link.dataset.shellView);
+      }
+      if (event.target.closest('[data-shell-more]')) {
+        var menu = document.querySelector('[data-mobile-menu]');
+        if (menu) menu.click();
+      }
+    });
+    new MutationObserver(syncDock).observe(document.body, {attributes:true,attributeFilter:['class','data-trip-primary-view']});
+    window.addEventListener('travelmate:viewchange', syncDock);
+    syncDock();
+  }
   var capacitor = window.Capacitor;
   var bars = null;
   if (capacitor && capacitor.isNativePlatform && capacitor.isNativePlatform()) {

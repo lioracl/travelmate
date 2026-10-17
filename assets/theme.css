@@ -34,10 +34,10 @@ html[data-theme="dark"] body.tm-new-design .custom-hero :where(.hero-copy,h1,.he
 html[data-theme="dark"] body.tm-new-design .trip-home-actions>div :where(p,h2){
   color:#f3f5f4!important
 }
-html[data-theme="dark"] body.home-page.is-authenticated{
+html[data-theme="dark"] body.home-page.is-authenticated:not(:where([data-design="v3"])){
   color:#f3f5f4;background-color:#071611!important;background-blend-mode:multiply!important
 }
-html[data-theme="dark"] body.home-page.is-authenticated :where(
+html[data-theme="dark"] body.home-page.is-authenticated:not(:where([data-design="v3"])) :where(
   .trip-area-head,.trip-archive,.home-about
 ){
   border-color:rgba(255,255,255,.16)!important;

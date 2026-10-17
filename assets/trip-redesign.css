@@ -272,7 +272,7 @@ body.tm-new-design[data-trip-view="documents"] #documents{
 
 /* The only trip-exit control on mobile is the large arrow in the sticky header. */
 @media(max-width:1000px){
-  html body.tm-new-design .custom-hero>.hero-back{
+  html body.tm-new-design:not(:where([data-design="v3"][data-trip-view="overview"])) .custom-hero>.hero-back{
     display:none!important;
   }
 }
