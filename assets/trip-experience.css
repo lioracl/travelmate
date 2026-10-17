@@ -30,13 +30,13 @@
 #budget .currency-converter>header>i{width:40px;height:40px;border-radius:13px}
 #budget .currency-converter h2{font-size:20px;margin:1px 0 2px}
 #budget .currency-converter header p{font-size:12px}
-#budget .currency-converter-grid{grid-template-columns:minmax(110px,.72fr) minmax(120px,1fr) 40px minmax(120px,1fr);gap:8px;margin-top:12px}
-#budget .currency-converter-grid input,#budget .currency-converter-grid select{min-height:40px;border-radius:11px;padding:7px 10px}
-#budget .currency-converter-grid>button{width:40px;height:40px;border-radius:11px}
+#budget .currency-converter-grid{grid-template-columns:minmax(110px,.72fr) minmax(120px,1fr) 44px minmax(120px,1fr);gap:8px;margin-top:12px}
+#budget .currency-converter-grid input,#budget .currency-converter-grid select{min-height:44px;border-radius:11px;padding:7px 10px}
+#budget .currency-converter-grid>button{width:44px;height:44px;border-radius:11px}
 #budget .currency-converter-result{min-height:54px;margin-top:10px;padding:9px 12px;border-radius:13px}
 #budget .currency-converter-result strong{font-size:22px}
 #budget .currency-converter>footer{margin-top:8px}
-@media(max-width:700px){#budget .expense-workspace-head{padding:17px 16px 13px}#budget .currency-converter{padding:15px}#budget .currency-converter>header{align-items:flex-start}#budget .currency-converter-grid{grid-template-columns:1fr 42px 1fr}#budget .currency-converter-grid label:first-child{grid-column:1/-1}#budget .currency-converter-grid>button{grid-column:2;grid-row:2}#budget .currency-converter-grid label:nth-of-type(2){grid-column:1;grid-row:2}#budget .currency-converter-grid label:nth-of-type(3){grid-column:3;grid-row:2}#budget .currency-converter>footer{align-items:flex-start;flex-direction:column}}
+@media(max-width:700px){#budget .expense-workspace-head{padding:17px 16px 13px}#budget .currency-converter{padding:15px}#budget .currency-converter>header{align-items:flex-start}#budget .currency-converter-grid{grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr)}#budget .currency-converter-grid label:first-child{grid-column:1/-1}#budget .currency-converter-grid>button{grid-column:2;grid-row:2}#budget .currency-converter-grid label:nth-of-type(2){grid-column:1;grid-row:2}#budget .currency-converter-grid label:nth-of-type(3){grid-column:3;grid-row:2}#budget .currency-converter>footer{align-items:flex-start;flex-direction:column}}
 @media(max-width:760px){.total-budget-editor{min-width:100%;margin-top:15px}.currency-converter-grid{grid-template-columns:1fr 1fr}.currency-converter-grid>label:first-child{grid-column:1/-1}.currency-converter-grid>button{grid-column:1/-1;justify-self:center;transform:rotate(90deg)}.currency-converter>footer{align-items:flex-start;flex-direction:column}.currency-converter-result{align-items:center;flex-direction:column}.budget-hero{align-items:stretch;flex-direction:column}}
 
 /* 1.39.3 — saved receipts stay accessible without restoring the legacy budget rows. */
@@ -534,3 +534,13 @@ html:not([data-theme="dark"]) body[data-trip-kind="custom"].tm-new-design[data-t
   #budget .budget-limit-mode label>span{transition:none}
   #budget .budget-limit-mode label:hover>span{transform:none}
 }
+
+/* Budget V3: optional attachment disclosure and isolated currency amounts. */
+#budget .expense-attachment{min-width:0;border:1px solid var(--tm-card-border);border-radius:13px;padding:10px;color:var(--tm-text-primary);background:var(--tm-card-bg-nested)}
+#budget .expense-attachment>summary{min-height:44px;display:list-item;align-content:center;cursor:pointer;font-weight:800}
+#budget .expense-attachment>button{min-height:44px;margin-top:10px;border:1px solid var(--tm-card-border);border-radius:12px;padding:8px 12px;background:var(--tm-card-bg);color:var(--tm-text-primary);font:inherit}
+#budget .expense-attachment:focus-within{outline:2px solid var(--tm-action-primary);outline-offset:2px}
+#budget .currency-converter-grid label{min-width:0}
+#budget .currency-converter-result bdi{unicode-bidi:isolate;direction:ltr;overflow-wrap:anywhere}
+#budget .currency-converter-result{overflow-wrap:anywhere}
+#budget .receipt-grid :is([name="amount"],[name="currency"],[name="date"]){direction:ltr;unicode-bidi:isolate}
