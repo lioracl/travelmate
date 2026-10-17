@@ -34,7 +34,7 @@ test('Overview critical materials and stable dynamic slots exist before first pa
   }
   assert.match(html,/data-weather-top-widget/);
   assert.match(html,/data-navo-trip-banner/);
-  assert.match(html,/<body class="tm-new-design" data-trip-kind="custom">/);
+  assert.match(html,/<body class="tm-new-design" data-trip-kind="custom" data-design="v3">/);
   assert.match(html,/document\.body\.dataset\.tripView=v/);
   assert.doesNotMatch(html,/security-center\.css[^\n]*admin-center\.css/);
   assert.doesNotMatch(html,/security-center\.js[^\n]*admin-center\.js/);
