@@ -2901,6 +2901,34 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-design=
  html body[data-trip-kind="custom"].tm-new-design[data-design="v3"][data-trip-view="overview"] main.content>#overview.custom-hero{min-height:380px}
 }
 
+/* TRA-19 Plan V3 material. Geometry stays with plan-ux-polish.css. */
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"]{background-color:#c9eeee;background-image:linear-gradient(180deg,#0a536b60,#dcf8f5eb 400px),var(--trip-bg-image,none)}
+html[data-theme="dark"] body.tm-new-design[data-design="v3"][data-trip-view="plan"]{background-color:#082d38;background-image:linear-gradient(180deg,#082d38c9,#082d38f5 400px),var(--trip-bg-image,none)}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan{
+ --tm-plan-v3-surface:color-mix(in srgb,var(--tm-surface-neutral,#f4f3ef) 8%,#f5ffff);--tm-plan-v3-text:var(--tm-text-primary,#12383f);--tm-plan-v3-muted:var(--tm-text-secondary,#415b60);
+ --tm-plan-v3-accent:var(--tm-brand-primary-dark,#075b68);--tm-plan-v3-soft:var(--tm-surface-selected,#d6f2f3);
+ --tm-readable-control:var(--tm-plan-v3-surface);--tm-readable-control-text:var(--tm-plan-v3-text);
+ --tm-card-bg:var(--tm-plan-v3-surface);--tm-card-bg-compact:var(--tm-plan-v3-surface);--tm-card-text:var(--tm-plan-v3-text);--tm-card-secondary:var(--tm-plan-v3-muted);--tm-card-link:var(--tm-plan-v3-accent);--tm-card-control:var(--tm-plan-v3-surface);--tm-card-control-text:var(--tm-plan-v3-text)
+}
+html[data-theme="dark"] body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan{--tm-plan-v3-surface:#102f3b;--tm-plan-v3-text:#ecffff;--tm-plan-v3-muted:#bdd6de;--tm-plan-v3-accent:#8de4ed;--tm-plan-v3-soft:#184652}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .tm-plan-days{background:var(--tm-plan-v3-surface);border-radius:18px}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .tm-plan-days button{border:1px solid var(--tm-border-control);background:var(--tm-plan-v3-surface);color:var(--tm-plan-v3-text);-webkit-text-fill-color:currentColor;box-shadow:0 4px 14px #073b4610}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .tm-plan-days [aria-pressed="true"]{--tm-readable-control:var(--tm-plan-v3-soft);--tm-border-control:var(--tm-plan-v3-accent);background:var(--tm-plan-v3-soft);border-color:var(--tm-plan-v3-accent);box-shadow:inset 0 0 0 1px var(--tm-plan-v3-accent)}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan :is(.planner-toolbar,.past-days-strip,.tm-plan-next){background:var(--tm-plan-v3-surface);color:var(--tm-plan-v3-text);border:1px solid var(--tm-border-control)}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .generated-day>div{background:var(--tm-plan-v3-surface);border:1px solid var(--tm-border-control);color:var(--tm-plan-v3-text);box-shadow:0 8px 24px #073b4614}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .tm-plan-day-selected>div{border-color:var(--tm-plan-v3-accent)}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .day-heading{background:var(--tm-plan-v3-soft);color:var(--tm-plan-v3-text);box-shadow:none}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .planned-activity.tm-plan-item{border:1px solid var(--tm-border-control);background:var(--tm-plan-v3-surface);color:var(--tm-plan-v3-text);box-shadow:0 3px 12px #073b4610}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .planned-activity.tm-plan-item[data-plan-activity-state="current"]{border-inline-start:4px solid var(--tm-plan-v3-accent);background:var(--tm-plan-v3-soft)}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .tm-plan-state-badge{background:var(--tm-plan-v3-soft);color:var(--tm-plan-v3-text)}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .tm-plan-state-badge.is-now{background:var(--tm-plan-v3-accent);color:var(--tm-plan-v3-surface)}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .tm-plan-state-badge.is-done{border:1px solid var(--tm-border-control);background:transparent;color:var(--tm-plan-v3-text)}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .tm-plan-item.done{opacity:1}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan :is(.activity-copy,.saved-place-content){color:var(--tm-plan-v3-text);-webkit-text-fill-color:currentColor}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan :is(.tm-plan-location,.activity-copy>small,.day-summary){color:var(--tm-plan-v3-muted);-webkit-text-fill-color:currentColor}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan .tm-plan-secondary-details{background:var(--tm-plan-v3-soft);color:var(--tm-plan-v3-text)}
+html body.tm-new-design[data-design="v3"][data-trip-view="plan"] #plan :focus-visible{outline:3px solid var(--tm-plan-v3-accent);outline-offset:3px}
+
 /* A slightly denser existing menu tint separates the drawer from page content. */
 @media(max-width:1000px){
   html body.tm-new-design:not(.home-page) .workspace>.sidebar{
