@@ -6,6 +6,32 @@ const path = require('node:path');
 const vm = require('node:vm');
 const code = fs.readFileSync(path.join(__dirname, 'e2e/fixtures/overview-v3.cjs'), 'utf8');
 
+const sixScreenSpec = fs.readFileSync(path.join(__dirname, 'e2e/design-v3-six-screen.spec.js'), 'utf8');
+test('six-screen saved Places control distinguishes button identity from panel state', () => {
+  // nearby.js puts data-places-view on both the panel and its view buttons.
+  // Require the canonical navigation button; never select by mutable state
+  // alone or silently choose one match. Real DOM verification remains in CI.
+  const declaration = /const savedPlacesView = page\.locator\('([^']+)'\);/.exec(sixScreenSpec);
+  assert.ok(declaration, 'A reusable canonical saved-view button locator is required');
+  assert.equal(declaration[1], '#places [data-nearby-places] .places-v3-views button[data-places-view="saved"]');
+  assert.doesNotMatch(sixScreenSpec, /page\.locator\('\[data-places-view="saved"\]'\)/);
+  assert.doesNotMatch(sixScreenSpec, /savedPlacesView\.(?:first|nth|last)\(/);
+});
+
+test('saved Places selection and restoration each require one visible pressed button', () => {
+  const blocks = sixScreenSpec.split("await navigate(page, 'places');").slice(1);
+  assert.equal(blocks.length, 2, 'Check initial selection and later restoration');
+  for (const block of blocks) {
+    const end = block.indexOf('await unchanged(baseline);');
+    assert.ok(end >= 0);
+    const checks = block.slice(0, end);
+    assert.match(checks, /await expect\(savedPlacesView\)\.toHaveCount\(1\);/);
+    assert.match(checks, /await expect\(savedPlacesView\)\.toBeVisible\(\);/);
+    assert.match(checks, /await expect\(savedPlacesView\)\.toHaveAttribute\('aria-pressed', 'true'\);/);
+  }
+  assert.match(blocks[0], /await savedPlacesView\.click\(\);/);
+});
+
 // Exercise the real MATE owner assertions, stopping before browser lifecycle
 // actions. This boundary regression does not substitute for real DOM coverage.
 const sixScreenCode = fs.readFileSync(path.join(__dirname, 'e2e/fixtures/six-screen-v3.cjs'), 'utf8');

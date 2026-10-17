@@ -39,10 +39,13 @@ for (const width of [390, 430]) for (const theme of ['light', 'dark']) {
 
       await navigate(page, 'places');
       await expect(page.locator('.places-v3-views')).toBeVisible();
-      await page.locator('[data-places-view="saved"]').click();
+      const savedPlacesView = page.locator('#places [data-nearby-places] .places-v3-views button[data-places-view="saved"]');
+      await expect(savedPlacesView).toHaveCount(1);
+      await expect(savedPlacesView).toBeVisible();
+      await savedPlacesView.click();
       await page.locator('[data-places-saved-search]').fill('\u05e9\u05d7\u05d6\u05d5\u05e8');
       await expect(page.locator('[data-saved-shelf-id="saved-controlled"]')).toBeVisible();
-      await expect(page.locator('[data-places-view="saved"]')).toHaveAttribute('aria-pressed', 'true');
+      await expect(savedPlacesView).toHaveAttribute('aria-pressed', 'true');
       await layout(page, theme); await unchanged(baseline); await mate(page, testInfo, 'places', width);
       await capture(page, testInfo, '04-places-saved-state');
 
@@ -91,7 +94,9 @@ for (const width of [390, 430]) for (const theme of ['light', 'dark']) {
       await expect(page.locator('.generated-day[data-day-date="2026-10-19"]')).toBeVisible();
       await unchanged(baseline);
       await navigate(page, 'places');
-      await expect(page.locator('[data-places-view="saved"]')).toHaveAttribute('aria-pressed', 'true');
+      await expect(savedPlacesView).toHaveCount(1);
+      await expect(savedPlacesView).toBeVisible();
+      await expect(savedPlacesView).toHaveAttribute('aria-pressed', 'true');
       await expect(page.locator('[data-places-saved-search]')).toHaveValue('\u05e9\u05d7\u05d6\u05d5\u05e8');
       await expect(page.locator('[data-saved-shelf-id="saved-controlled"]')).toBeVisible();
       await unchanged(baseline);
