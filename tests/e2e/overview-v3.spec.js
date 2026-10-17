@@ -1,7 +1,7 @@
 const {test, expect} = require('@playwright/test');
 const path = require('node:path');
 
-const {trip, open} = require('./fixtures/overview-v3.cjs');
+const {trip, open,previewOrigin} = require('./fixtures/overview-v3.cjs');
 
 for (const width of [360,390,430,768]) for (const theme of ['light','dark']) {
   test(`V3 RTL layout ${width} ${theme}`,async({page})=>{
@@ -110,7 +110,7 @@ test('Today expands and opens Plan; Weather opens and returns through History',a
 test('explicit All Trips exit preserves the normal public/account boundary',async({page})=>{
   await page.setViewportSize({width:390,height:844});await open(page);
   await page.locator('#overview .hero-back').click();
-  await expect(page).toHaveURL('http://127.0.0.1:4173/index.html');
+  await expect(page).toHaveURL(previewOrigin+'/index.html');
   await expect(page.locator('body')).toHaveClass(/home-page/);
   await expect(page.locator('.tm-trip-dock')).toHaveCount(0);
   await test.info().attach('All Trips normal entry',{body:await page.screenshot(),contentType:'image/png'});
@@ -118,7 +118,7 @@ test('explicit All Trips exit preserves the normal public/account boundary',asyn
 
 test('fixture storage is confined to the local preview origin',async({page})=>{
   await open(page);
-  expect(new URL(page.url()).origin).toBe('http://127.0.0.1:4173');
+  expect(new URL(page.url()).origin).toBe(previewOrigin);
   await page.route('http://preview-outside.invalid/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><title>Isolated origin check</title>'}));
   await page.goto('http://preview-outside.invalid/');
   expect(await page.evaluate(()=>localStorage.getItem('travelmate-trips'))).toBeNull();
