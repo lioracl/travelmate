@@ -2385,6 +2385,23 @@ html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .tri
   backdrop-filter:none;
 }
 
+/* Budget/Documents content owns opaque C1 surfaces; the destination canvas,
+   Hero/Weather and every other screen retain their existing material. Rebind
+   the existing aliases here because inherited custom properties resolve at
+   their defining ancestor, not against a descendant's surface tokens. */
+html body[data-trip-kind="custom"].tm-new-design[data-design="v3"] :is(#budget,#documents){
+  --tm-surface-glass:#FFFFFF;--tm-surface-nested:#FFFFFF;--tm-surface-control:#FFFFFF;
+  --tm-surface-text:#102A4D;--tm-surface-text-muted:#58718E;
+  --tm-card-bg:var(--tm-surface-glass);--tm-card-bg-nested:var(--tm-surface-nested);--tm-card-bg-compact:var(--tm-surface-nested);
+  --tm-card-text:var(--tm-surface-text);--tm-card-heading:var(--tm-surface-text);--tm-card-secondary:var(--tm-surface-text-muted);--tm-card-muted:var(--tm-surface-text-muted);
+  --tm-card-control:var(--tm-surface-control);--tm-card-control-text:var(--tm-surface-text);
+  --tm-text-primary:var(--tm-surface-text);--tm-text-secondary:var(--tm-surface-text-muted);
+}
+html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-design="v3"] :is(#budget,#documents){
+  --tm-surface-glass:#183249;--tm-surface-nested:#183249;--tm-surface-control:#183249;
+  --tm-surface-text:#F1F8FF;--tm-surface-text-muted:#B9CFDC;
+}
+
 /* Canvas never becomes a card. */
 html body[data-trip-kind="custom"].tm-new-design main.content,
 html body[data-trip-kind="custom"].tm-new-design main.content :is(

@@ -155,11 +155,32 @@ async function readability(page, testInfo, label, selectors) {
             backgroundClip: style.backgroundClip, textShadow: style.textShadow, boxShadow: style.boxShadow
           };
         }
+        function geometry(node, style) {
+          const box = node.getBoundingClientRect();
+          const borderBox = { left: box.left, top: box.top, right: box.right, bottom: box.bottom };
+          const radius = value => {
+            const parts = value.trim().split(/\s+/);
+            return parts.every(v => /^\d+(?:\.\d+)?px$/.test(v)) && parts.length <= 2 ?
+              [parseFloat(parts[0]), parseFloat(parts[1] || parts[0])] : [null, null];
+          };
+          return {
+            borderBox, paddingBox: {
+              left: box.left + parseFloat(style.borderLeftWidth), top: box.top + parseFloat(style.borderTopWidth),
+              right: box.right - parseFloat(style.borderRightWidth), bottom: box.bottom - parseFloat(style.borderBottomWidth)
+            },
+            radii: ['borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius'].map(k => radius(style[k])),
+            fragments: node.getClientRects().length,
+            transform: style.transform, translate: style.translate, rotate: style.rotate, scale: style.scale,
+            perspective: style.perspective, zoom: style.zoom, clip: style.clip, contain: style.contain,
+            overflowX: style.overflowX, overflowY: style.overflowY
+          };
+        }
         const ancestors = []; for (let n = element; n; n = n.parentElement) ancestors.unshift(n);
         const layers = [], pseudoEvidence = [];
         for (const ancestor of ancestors) {
           const style = getComputedStyle(ancestor), name = ancestor.tagName + (ancestor.id ? '#' + ancestor.id : '');
           const surface = layer(style, name);
+          surface.geometry = geometry(ancestor, style);
           if (ancestor !== document.body && ancestor !== document.documentElement && Number(style.zIndex) < 0) surface.issue = 'negative-z ancestor paint order is unsupported';
           layers.push(surface);
           for (const pseudo of ['::before', '::after']) {
@@ -186,7 +207,46 @@ async function readability(page, testInfo, label, selectors) {
         }
         const style = getComputedStyle(element);
         const foreground = style.webkitTextFillColor && style.webkitTextFillColor !== 'currentcolor' ? style.webkitTextFillColor : style.color;
-        return { text: element.textContent.trim(), foreground: color(foreground), foregroundCSS: foreground, layers, pseudoEvidence };
+        const textRects = [], issues = [], descendantEvidence = [];
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) {
+          const text = walker.currentNode;
+          if (!text.textContent.trim()) continue;
+          const ts = getComputedStyle(text.parentElement);
+          const ink = ts.webkitTextFillColor && ts.webkitTextFillColor !== 'currentcolor' ? ts.webkitTextFillColor : ts.color;
+          if (ink !== foreground) issues.push('Descendant text has a different foreground');
+          if (parseFloat(ts.webkitTextStrokeWidth) > 0 || ts.fontStyle !== 'normal' || ts.textDecorationLine !== 'none') issues.push('Text stroke/decoration/italic overhang is outside the bounded geometry proof');
+          const range = document.createRange(); range.selectNodeContents(text);
+          for (const r of range.getClientRects()) if (r.width > 0 && r.height > 0) textRects.push({ left: r.left, top: r.top, right: r.right, bottom: r.bottom });
+          range.detach();
+        }
+        // A descendant or generated icon must not silently become an overlay
+        // omitted from the ancestor stack. This bounded proof rejects such
+        // paint, rather than guessing its order or using screenshot samples.
+        for (const child of element.querySelectorAll('*')) {
+          const cs = getComputedStyle(child), paint = layer(cs, child.tagName);
+          const transparent = paint.background && paint.background[3] === 0;
+          const borders = ['Top', 'Right', 'Bottom', 'Left'].some(side => parseFloat(cs['border' + side + 'Width']) > 0 && cs['border' + side + 'Style'] !== 'none');
+          const plain = transparent && cs.backgroundImage === 'none' && cs.opacity === '1' &&
+            ['filter', 'backdropFilter', 'maskImage', 'clipPath'].every(k => paint[k] === 'none') &&
+            ['transform', 'translate', 'rotate', 'scale', 'perspective', 'contain'].every(k => !cs[k] || cs[k] === 'none') &&
+            cs.mixBlendMode === 'normal' && cs.boxShadow === 'none' && cs.textShadow === 'none' && cs.clip === 'auto' &&
+            cs.overflowX === 'visible' && cs.overflowY === 'visible' && Number(cs.zoom) === 1 && !borders;
+          if (!plain) issues.push('Descendant paint/effects are unsupported: ' + child.tagName);
+          descendantEvidence.push({ paint, plain });
+          for (const pseudo of ['::before', '::after']) {
+            const ps = getComputedStyle(child, pseudo);
+            const generated = ps.content !== 'none' && ps.content !== 'normal' && ps.display !== 'none' && ps.visibility === 'visible';
+            const paint = layer(ps, child.tagName + pseudo);
+            const empty = ps.content === '""' || ps.content === "''";
+            const borders = ['Top', 'Right', 'Bottom', 'Left'].some(side => parseFloat(ps['border' + side + 'Width']) > 0 && ps['border' + side + 'Style'] !== 'none');
+            const paints = generated && (!empty || !paint.background || paint.background[3] > 0 || ps.backgroundImage !== 'none' || borders || ps.boxShadow !== 'none' || ps.filter !== 'none' || paint.backdropFilter !== 'none');
+            if (paints) issues.push('Descendant pseudo paint/order is not proven: ' + child.tagName + pseudo);
+            descendantEvidence.push({ paint, generated, paints });
+          }
+        }
+        return { text: element.textContent.trim(), foreground: color(foreground), foregroundCSS: foreground, layers, pseudoEvidence,
+          geometry: { textRects, issues }, descendantEvidence };
       });
       evidence.push({ selector, snapshot, ...assessSolidContrast(snapshot) });
     }

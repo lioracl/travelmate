@@ -512,6 +512,12 @@ body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documen
   -webkit-backdrop-filter:none;
   backdrop-filter:none
 }
+/* V3 reading backgrounds stay with the Documents owner; legacy rules above
+   keep their original transparent/default background behavior. */
+body[data-trip-kind="custom"].tm-new-design[data-design="v3"][data-trip-view="documents"] #documents>.section-head,
+body[data-trip-kind="custom"].tm-new-design[data-design="v3"][data-trip-view="documents"] #documents .vault-intro{
+  background:var(--tm-documents-shell)
+}
 body[data-trip-kind="custom"].tm-new-design[data-trip-view="documents"] #documents .vault-head{
   display:block;
   padding:0
