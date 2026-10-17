@@ -2901,6 +2901,43 @@ html[data-theme="dark"] body[data-trip-kind="custom"].tm-new-design[data-design=
  html body[data-trip-kind="custom"].tm-new-design[data-design="v3"][data-trip-view="overview"] main.content>#overview.custom-hero{min-height:380px}
 }
 
+@media(min-width:1001px){
+ html body[data-trip-kind="custom"][data-design="v3"][data-trip-view="overview"] #overview:has([data-trip-profile-avatar]) .hero-back{top:88px}
+}
+
+/* All Trips V3 material owner. Geometry remains in home-organizer.css. */
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips){
+ --tm-alltrips-surface:rgba(247,255,255,.96);--tm-alltrips-text:var(--tm-text-primary,#12383f);--tm-alltrips-muted:var(--tm-text-secondary,#415b60);--tm-alltrips-link:var(--tm-brand-primary-dark,#075b68);
+ background:linear-gradient(155deg,rgba(203,249,247,.91),rgba(229,251,251,.94)),url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80') center/cover fixed;color:var(--tm-alltrips-text)
+}
+html[data-theme="dark"] body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips){--tm-alltrips-surface:#102f3b;--tm-alltrips-text:#ecffff;--tm-alltrips-muted:#bdd6de;--tm-alltrips-link:#8de4ed;background:linear-gradient(155deg,#062d38ee,#0e3c45f5),url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80') center/cover fixed}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .home-personal-summary{background:transparent;color:var(--tm-alltrips-text)}
+html body.home-page[data-design="v3"] .home-personal-copy h2{color:var(--tm-alltrips-text);-webkit-text-fill-color:currentColor;text-shadow:none}
+html body.home-page[data-design="v3"] :is(.home-trip-browser,.trip-area-head){color:var(--tm-alltrips-text)}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .trip-area-head{background:transparent;border:0;box-shadow:none;padding:0}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .trip-area-head :is(h2,span){background:transparent;color:var(--tm-alltrips-text);-webkit-text-fill-color:currentColor}
+html body.home-page[data-design="v3"] :is(.home-trip-search input,.home-trip-filters button,.home-trip-retry){background:var(--tm-alltrips-surface);color:var(--tm-alltrips-text);border:1px solid var(--tm-border-control,#8abcc3);-webkit-text-fill-color:currentColor;box-shadow:0 4px 16px #073b4610}
+html body.home-page[data-design="v3"] .home-trip-search input::placeholder{color:var(--tm-alltrips-muted);opacity:1}
+html body.home-page[data-design="v3"] .home-trip-create{border:1px solid var(--tm-brand-primary,#087c8c);background:var(--tm-brand-primary,#087c8c);color:var(--tm-text-on-brand,#fff);-webkit-text-fill-color:currentColor;box-shadow:0 5px 16px #087c8c30}
+html body.home-page[data-design="v3"] .home-trip-filters [aria-pressed="true"]{background:var(--tm-surface-selected,#bceef1);border-color:var(--tm-brand-primary,#087c8c);color:var(--tm-alltrips-text);box-shadow:inset 0 0 0 1px var(--tm-brand-primary,#087c8c)}
+html body.home-page[data-design="v3"] :is(.home-trip-state,.home-trip-results){color:var(--tm-alltrips-muted)}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell{border:1px solid var(--tm-border-control,#a6cdd1);background:var(--tm-alltrips-surface);box-shadow:0 8px 24px #073b4614;color:var(--tm-alltrips-text)}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy{background:var(--tm-alltrips-surface);color:var(--tm-alltrips-text);box-shadow:none;backdrop-filter:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy :is(h2,p,span,strong,i){color:inherit;-webkit-text-fill-color:currentColor}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy :is(p,.tag){color:var(--tm-alltrips-muted)}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy>strong{color:var(--tm-alltrips-link)}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy .trip-date-state{background:#075b68;color:#fff}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-card-action-rail{background:var(--tm-alltrips-surface);border-top:1px solid var(--tm-border-control,#a6cdd1)}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-card-action-rail>button{border:1px solid transparent;background:transparent;color:var(--tm-alltrips-text);-webkit-text-fill-color:currentColor}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-card-action-rail>.trip-delete{color:var(--tm-error,#a02a31)}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .trip-archive{background:var(--tm-alltrips-surface);border-color:var(--tm-border-control,#a6cdd1);box-shadow:none}
+html body.home-page[data-design="v3"] .trip-archive-toggle{color:var(--tm-alltrips-text)}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .trip-archive .trip-archive-toggle :is(strong,span,b,i){color:var(--tm-alltrips-text);-webkit-text-fill-color:currentColor;text-shadow:none}
+html body.home-page[data-design="v3"] .trip-archive-toggle small{color:var(--tm-alltrips-muted)}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .trip-archive .trip-archive-toggle span small{color:var(--tm-alltrips-muted);-webkit-text-fill-color:currentColor}
+html body.home-page[data-design="v3"] :is(.trip-archive-toggle b,.trip-archive-toggle>i:first-child){background:var(--tm-surface-selected,#bceef1);color:var(--tm-alltrips-text)}
+html body.home-page[data-design="v3"] :is(.home-trip-browser,.trip-card-shell,.trip-archive) :is(a,button,input):focus-visible{outline:3px solid var(--tm-brand-primary,#087c8c);outline-offset:3px}
+
 /* A slightly denser existing menu tint separates the drawer from page content. */
 @media(max-width:1000px){
   html body.tm-new-design:not(.home-page) .workspace>.sidebar{

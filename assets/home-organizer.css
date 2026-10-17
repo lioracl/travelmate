@@ -942,3 +942,57 @@ html body.home-page #modal-destination .create-trip{background:var(--tm-action-p
     touch-action:manipulation;
   }
 }
+
+/* TRA-17: All Trips V3 geometry. No trip-level dock or new navigation owner. */
+.home-trip-browser{display:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .home-sidebar .home-new-trip-action{display:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) main.content{max-width:1000px;padding:104px 24px 44px;margin-inline:auto}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .home-landing{display:none}
+html body.home-page[data-design="v3"] main.content>.home-trip-browser{margin:0 0 16px}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .home-trip-browser{display:block}
+html body.home-page[data-design="v3"] .home-trip-browser h1{font-size:clamp(30px,6vw,42px);line-height:1.2;margin:16px 0 20px}
+html body.home-page[data-design="v3"] .home-trip-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:stretch}
+html body.home-page[data-design="v3"] .home-trip-search{position:relative;display:flex;min-width:0;align-items:center}
+html body.home-page[data-design="v3"] .home-trip-search>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+html body.home-page[data-design="v3"] .home-trip-search input{width:100%;min-width:0;min-height:50px;padding:12px 38px 12px 10px;border-radius:16px;font:inherit;font-size:14px}
+html body.home-page[data-design="v3"] .home-trip-search i{position:absolute;inset-inline-start:13px;pointer-events:none}
+html body.home-page[data-design="v3"] :is(.home-trip-create,.home-trip-retry){min-height:48px;padding:10px 16px;border-radius:16px;font:inherit;font-weight:700;font-size:14px;line-height:1.4;cursor:pointer}
+html body.home-page[data-design="v3"] .home-trip-filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+html body.home-page[data-design="v3"] .home-trip-filters button{min-height:48px;border-radius:16px;font:inherit;font-weight:700;cursor:pointer}
+html body.home-page[data-design="v3"] :is(.home-trip-state,.home-trip-results){font-size:14px;line-height:1.6;margin:10px 0}
+html body.home-page[data-design="v3"] :is(.home-trip-state,.home-trip-results):empty{display:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .home-personal-summary{grid-template-columns:minmax(0,1fr) auto;margin:0 0 16px;padding:0;border:0;box-shadow:none}
+html body.home-page[data-design="v3"] .home-personal-copy{grid-column:1;grid-row:1}
+html body.home-page[data-design="v3"] .home-profile-launcher{grid-column:2;grid-row:1;width:58px;height:58px}
+html body.home-page[data-design="v3"] .home-personal-copy h2{font-size:23px;line-height:1.3;margin:0}
+html body.home-page[data-design="v3"] .home-personal-copy small{display:none}
+html body.home-page[data-design="v3"] .home-personal-summary .home-context-action{grid-column:1/-1;justify-self:start;margin-top:8px;white-space:normal}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive-list){display:grid;grid-template-columns:minmax(0,1fr);gap:14px;margin:0}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) #active-trips>.add-destination{display:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell{min-height:0;border-radius:22px;overflow:hidden;margin:0}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-card{display:block;position:relative;min-height:166px;height:auto;border-radius:0;background-size:cover;background-position:center left;overflow:hidden}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy{position:relative;inset:auto;display:block;width:60%;min-height:166px;margin:0;padding:14px;box-sizing:border-box;text-shadow:none;border-radius:0}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy h2{font-size:23px;line-height:1.25;margin:0 0 5px}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy p{font-size:14px;line-height:1.45;margin:0 0 9px;overflow-wrap:anywhere}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy .tag{display:inline-block;border:0;background:none;padding:0;margin:0 0 4px 8px;font-size:12px;line-height:1.65;white-space:normal}
+html body.home-page[data-design="v3"] .trip-date-range{direction:rtl;unicode-bidi:isolate}
+html body.home-page[data-design="v3"] .trip-date-range bdi{display:inline-block}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-copy>strong{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-date-state{position:absolute;inset-inline-start:calc(100% + 8px);top:10px;max-width:calc(66.66% - 16px);width:max-content;box-sizing:border-box;padding:5px 7px;border-radius:10px;font-size:11px;line-height:1.4;text-shadow:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-flag{display:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-overlay{display:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-card-action-rail{position:relative;inset:auto;display:flex;flex-wrap:wrap;gap:4px;padding:4px 8px;pointer-events:auto}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-card-action-rail>button{position:static;inset:auto;display:inline-flex;align-items:center;justify-content:center;flex:1;gap:5px;width:auto;min-width:44px;min-height:44px;height:auto;padding:6px;border-radius:10px;font-size:12px;line-height:1.3;white-space:normal;box-shadow:none;backdrop-filter:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive) .trip-card-shell .trip-card-action-rail>button span{display:inline;max-width:none;white-space:normal;overflow:visible}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .trip-area-head{margin:0 0 10px}
+html body.home-page[data-design="v3"] .trip-area-head h2{font-size:17px}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) .trip-archive{margin:18px 0 0;padding:12px;border-radius:22px}
+html body.home-page[data-design="v3"] .trip-archive-toggle{min-height:48px;margin-bottom:8px}
+html body.home-page[data-design="v3"] .trip-archive-toggle small{font-size:12px;line-height:1.4}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive-list,.trip-card-shell,.trip-area-head)[hidden]{display:none}
+@media(max-width:700px){
+ html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) main.content{padding:calc(var(--tm-safe-top,0px) + var(--tm-shell-header-height,76px) + 16px) 16px calc(28px + var(--tm-safe-bottom,0px));padding-inline-start:max(16px,var(--tm-safe-right,0px));padding-inline-end:max(16px,var(--tm-safe-left,0px))}
+ html body.home-page[data-design="v3"] .home-trip-tools{gap:8px;grid-template-columns:minmax(0,1fr) 106px}
+ html body.home-page[data-design="v3"] .home-trip-create{padding:8px;font-size:14px}
+}
+@media(min-width:768px){html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) :is(#active-trips,#trip-archive-list){grid-template-columns:repeat(2,minmax(0,1fr))}}
