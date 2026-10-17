@@ -6,6 +6,70 @@ const path = require('node:path');
 const vm = require('node:vm');
 const code = fs.readFileSync(path.join(__dirname, 'e2e/fixtures/overview-v3.cjs'), 'utf8');
 
+// Exercise the real MATE owner assertions, stopping before browser lifecycle
+// actions. This boundary regression does not substitute for real DOM coverage.
+const sixScreenCode = fs.readFileSync(path.join(__dirname, 'e2e/fixtures/six-screen-v3.cjs'), 'utf8');
+async function checkMateOwners(owners) {
+  const reachedLifecycle = new Error('Owner checks passed; real DOM lifecycle still required');
+  const sandbox = {
+    module: { exports: {} },
+    require(name) {
+      if (name !== '@playwright/test') return {};
+      return { expect(actual) {
+        return {
+          async toHaveCount(count) { assert.equal(count, 1); },
+          async toBeVisible() {},
+          toHaveLength(length) { assert.equal(actual.length, length); },
+          toBe(expected) { assert.equal(actual, expected); },
+          toContain(fragment) { assert.ok(actual.includes(fragment), JSON.stringify(actual) + ' must contain ' + fragment); }
+        };
+      } };
+    }
+  };
+  vm.runInNewContext(sixScreenCode, sandbox);
+  const page = {
+    async evaluate() { return owners; },
+    locator() { return { async all() { throw reachedLifecycle; } }; }
+  };
+  return { run: () => sandbox.module.exports.mate(page, {}, 'overview', 390), reachedLifecycle };
+}
+
+for (const combinator of ['>', ' > ', '> ', ' >', '\t>\n']) {
+  test('MATE owner accepts equivalent direct-child CSSOM spacing: ' + JSON.stringify(combinator), async () => {
+    const selector = 'html body.tm-new-design[data-design="v3"]:not(.ai-assistant-open):not(.ai-keyboard-open) .tm-trip-dock .tm-trip-dock-mate' + combinator + '.ai-orb';
+    const check = await checkMateOwners([selector]);
+    await assert.rejects(check.run(), error => error === check.reachedLifecycle);
+  });
+}
+
+for (const selector of [
+  '.tm-trip-dock-mate .ai-orb',
+  '.tm-trip-dock-mate + .ai-orb',
+  '.tm-trip-dock-mate ~ .ai-orb',
+  '.ai-orb > .tm-trip-dock-mate',
+  '.tm-trip-dock > .ai-orb',
+  '.tm-trip-dock-mate > .wrapper .ai-orb',
+  '.tm-trip-dock-mate > .wrapper > .ai-orb',
+  '.tm-trip-dock-mate-extra>.ai-orb',
+  '.tm-trip-dock-mate>.ai-orb-extra',
+  '[data-selector=".tm-trip-dock-mate>.ai-orb"]',
+  '/* .tm-trip-dock-mate>.ai-orb */ .ai-orb',
+  'html body.tm-new-design[data-design="v3"]:not(.ai-assistant-open):not(.ai-keyboard-open) .tm-trip-dock [data-selector=".tm-trip-dock-mate>.ai-orb"]',
+  'html body.tm-new-design[data-design="v3"]:not(.ai-assistant-open):not(.ai-keyboard-open) .tm-trip-dock .tm-trip-dock-mate>.ai-orb-extra'
+]) {
+  test('MATE owner rejects wrong selector: ' + selector, async () => {
+    const check = await checkMateOwners([selector]);
+    await assert.rejects(check.run(), { name: 'AssertionError' });
+  });
+}
+
+for (const owners of [[], ['.tm-trip-dock-mate>.ai-orb', '.tm-trip-dock-mate > .ai-orb']]) {
+  test('MATE requires exactly one display owner: ' + owners.length, async () => {
+    const check = await checkMateOwners(owners);
+    await assert.rejects(check.run(), { name: 'AssertionError' });
+  });
+}
+
 function load(port) {
   const sandbox = {
     module: { exports: {} }, process: { env: { TRAVELMATE_V3_TEST_PORT: port } },

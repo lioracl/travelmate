@@ -226,7 +226,9 @@ async function mate(page, testInfo, view, width) {
   await expect(orb).toBeVisible();
   const closedOwners = await dockDisplayOwners(page);
   expect(closedOwners).toHaveLength(1);
-  expect(closedOwners[0]).toContain('.tm-trip-dock-mate>.ai-orb');
+  // CSSOM may serialize spaces around >. Compare the complete known owner so
+  // descendant/sibling selectors, class suffixes and quoted fragments fail.
+  expect(closedOwners[0].replace(/\s*>\s*/g, '>')).toBe('html body.tm-new-design[data-design="v3"]:not(.ai-assistant-open):not(.ai-keyboard-open) .tm-trip-dock .tm-trip-dock-mate>.ai-orb');
   for (const control of await page.locator('.tm-trip-dock [data-shell-view],.tm-trip-dock [data-shell-more]').all()) {
     await expect(control).toHaveCSS('display', 'flex');
   }
