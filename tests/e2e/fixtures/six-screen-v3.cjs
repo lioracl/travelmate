@@ -263,4 +263,3 @@ async function mate(page, testInfo, view, width) {
 }
 
 module.exports = { boot, documents, canonical, navigate, capture, layout, readability, mate, OWNER, ID };
-

@@ -108,4 +108,3 @@ for (const width of [390, 430]) for (const theme of ['light', 'dark']) {
     }
   });
 }
-

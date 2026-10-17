@@ -78,4 +78,3 @@ for (const port of ['4173', '4174', '4175']) {
     assert.equal(foreign.get('travelmate-trips'), prior);
   });
 }
-

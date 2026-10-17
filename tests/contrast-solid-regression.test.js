@@ -68,4 +68,3 @@ test('unsupported blending cannot issue a passing ratio', () => {
 test('unsupported inset paint cannot issue a passing ratio', () => {
   unverified(assessSolidContrast(snapshot([solid('ancestor', { boxShadow: 'inset 0 0 50px white' })])), 'inset shadow');
 });
-

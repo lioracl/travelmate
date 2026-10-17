@@ -39,4 +39,3 @@ function assessSolidContrast(snapshot) {
   return { status: 'VERIFIED', minimumContrast: ratio, passes: ratio >= 4.5, reasons: [], foreground, background };
 }
 module.exports = { assessSolidContrast };
-
