@@ -55,13 +55,13 @@ html[data-theme="dark"] body.home-page #modal-destination .destination-modal{
 }
 
 /* Overview weather card: transparent photo surface, not milky glass. */
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget{
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]:not(:where([data-design="v3"])) .content>.weather-top-widget{
   background:rgba(169,220,231,.05);
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
   border-color:rgba(235,252,248,.50);
 }
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget:hover{
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]:not(:where([data-design="v3"])) .content>.weather-top-widget:hover{
   background:rgba(169,220,231,.08);
 }
 
@@ -233,7 +233,7 @@ html:not([data-theme="dark"]) body.tm-new-design #modal-weather-live .modal-clos
 
 
 /* Phone acceptance 2.20.1: Weather transparency and predictable close targets. */
-html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget{
+html body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"]:not(:where([data-design="v3"])) .content>.weather-top-widget{
   background:transparent;
   -webkit-backdrop-filter:none;
   backdrop-filter:none;

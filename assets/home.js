@@ -34,6 +34,49 @@
   var authSubscribed = false;
   var passwordChangeMode = false;
   var renderedTrips = new Map();
+  // List presentation only: canonical storage, account hydration and dates retain their owners.
+  var tripBrowser = document.querySelector('[data-home-trip-browser]');
+  var tripSearch = document.querySelector('[data-home-trip-search]');
+  var homeFilter = 'active';
+  var homeSyncState = 'loading';
+  function paintHomeState(state) {
+    if (state) homeSyncState = state;
+    if (!tripBrowser) return;
+    var offline = navigator.onLine === false;
+    var text = offline ? 'ללא רשת · מוצגים הטיולים השמורים במכשיר' : homeSyncState === 'loading' ? 'טוען ומסנכרן את הטיולים…' : homeSyncState === 'error' ? 'הסנכרון לא הושלם · הטיולים השמורים עדיין זמינים' : '';
+    tripBrowser.querySelector('[data-home-trip-state]').textContent = text;
+    tripBrowser.querySelector('[data-home-trip-retry]').hidden = offline || homeSyncState !== 'error' || !currentSession;
+    if (list) list.setAttribute('aria-busy', String(!offline && homeSyncState === 'loading'));
+  }
+  function filterHomeTrips() {
+    if (!tripBrowser || !list) return;
+    var query = String(tripSearch.value || '').normalize('NFKC').trim().toLocaleLowerCase('he');
+    var visible = 0;
+    document.querySelectorAll('.trip-card-shell').forEach(function (shell) {
+      var matches = !query || shell.querySelector('.trip-copy').textContent.normalize('NFKC').toLocaleLowerCase('he').includes(query);
+      shell.hidden = !matches;
+      if (matches && (shell.parentElement === list) === (homeFilter === 'active')) visible += 1;
+    });
+    tripBrowser.querySelector('[data-home-trip-results]').textContent = query ? (visible ? 'נמצאו ' + visible + ' טיולים' : 'לא נמצאו טיולים. אפשר לנסות יעד או מדינה אחרים.') : !visible && homeFilter === 'active' && homeSyncState !== 'loading' ? 'אין טיולים פעילים כרגע. אפשר ליצור טיול חדש או לעיין בארכיון.' : '';
+  }
+  function selectHomeFilter(value) {
+    if (!tripBrowser || !list) return;
+    homeFilter = value;
+    var archive = ensureArchive();
+    list.hidden = value === 'archive';
+    var heading = document.querySelector('.trip-area-head');
+    if (heading) heading.hidden = value === 'archive';
+    archive.querySelector('[data-archive-list]').hidden = value !== 'archive';
+    archive.querySelector('[data-archive-toggle]').setAttribute('aria-expanded', String(value === 'archive'));
+    tripBrowser.querySelectorAll('[data-home-filter]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.dataset.homeFilter === value)); });
+    filterHomeTrips();
+  }
+  if (tripBrowser) {
+    tripSearch.addEventListener('input', filterHomeTrips);
+    tripBrowser.querySelectorAll('[data-home-filter]').forEach(function (button) { button.addEventListener('click', function () { selectHomeFilter(button.dataset.homeFilter); }); });
+    tripBrowser.querySelector('[data-home-trip-retry]').addEventListener('click', synchronize);
+    window.addEventListener('offline', function () { paintHomeState(); });
+  }
   var staticActivityKey = 'travelmate-static-trip-activity';
   var pendingShortcut = new URLSearchParams(location.search).get('shortcut') || '';
   var destinationImageObserver = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
@@ -275,12 +318,13 @@
     archive.className = 'trip-archive';
     archive.id = 'trip-archive';
     archive.dataset.tripArchive = '';
-    archive.innerHTML = '<button class="trip-archive-toggle" type="button" data-archive-toggle aria-expanded="false"><i class="fa-solid fa-box-archive"></i><span><strong>ארכיון הטיולים</strong><small>טיול עתידי יופעל אוטומטית שבוע לפני היציאה</small></span><b data-archive-count>0</b><i class="fa-solid fa-chevron-down"></i></button><div class="modules trip-archive-list" data-archive-list hidden></div>';
+    archive.innerHTML = '<button class="trip-archive-toggle" type="button" data-archive-toggle aria-expanded="false" aria-controls="trip-archive-list"><i class="fa-solid fa-box-archive" aria-hidden="true"></i><span><strong>ארכיון הטיולים</strong><small>כולל טיולים שהסתיימו וטיולים שטרם הופעלו</small></span><b data-archive-count>0</b><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button><div id="trip-archive-list" class="modules trip-archive-list" data-archive-list hidden></div>';
     list.insertAdjacentElement('afterend', archive);
     archive.querySelector('[data-archive-toggle]').addEventListener('click', function (event) {
       var expanded = event.currentTarget.getAttribute('aria-expanded') === 'true';
       event.currentTarget.setAttribute('aria-expanded', String(!expanded));
       archive.querySelector('[data-archive-list]').hidden = expanded;
+      if (expanded && homeFilter === 'archive') selectHomeFilter('active');
     });
     return archive;
   }
@@ -293,6 +337,7 @@
     var archiveList = archive.querySelector('[data-archive-list]');
     toggle.setAttribute('aria-expanded', 'true');
     archiveList.hidden = false;
+    if (tripBrowser) selectHomeFilter('archive');
     archive.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -307,6 +352,25 @@
     shell.dataset.days = trip.days || '';
     if (!isStatic) shell.dataset.cloudTrip = String(trip.id);
     shell.innerHTML = '<a class="trip-card" href="' + escapeText(href) + '" style="background-image:url(\'' + escapeText(background) + '\')"><span class="trip-overlay"></span><span class="trip-flag trip-country-flag" aria-label="דגל ' + escapeText(trip.country) + '">' + countryFlag(trip.country) + '</span><span class="trip-copy"><span class="trip-date-state' + (state.now ? ' now' : '') + '"><i class="fa-solid ' + state.icon + '" aria-hidden="true"></i> ' + escapeText(state.label) + '</span><h2>' + escapeText(trip.country) + '</h2><p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ' + escapeText(trip.city) + '</p><span class="tag">' + (trip.start ? formatDate(trip.start) + ' – ' + formatDate(trip.end) : '') + '</span> <span class="tag">' + escapeText(trip.days) + ' ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></strong></span></a><div class="trip-card-action-rail">' + (!isStatic ? '<button class="trip-edit-dates" type="button" data-trip-edit-dates aria-label="עריכת תאריכי הטיול"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>תאריכים</span></button><button class="trip-delete" type="button" data-trip-delete aria-label="מחיקת הטיול"><i class="fa-solid fa-trash" aria-hidden="true"></i><span>מחיקה</span></button>' : '') + '<button class="trip-activity-toggle' + (state.active ? ' active' : '') + '" type="button" data-trip-activity aria-pressed="' + String(state.active) + '"><i class="fa-solid ' + (state.active ? 'fa-circle-check' : 'fa-circle') + '" aria-hidden="true"></i><span>' + escapeText(state.active ? 'פעיל' : state.label) + '</span></button></div>';
+    // Isolate the endpoints so Hebrew labels cannot reverse the date range.
+    var dateTag = shell.querySelector('.tag');
+    dateTag.classList.add('trip-date-range');
+    dateTag.replaceChildren();
+    if (trip.start && trip.end) {
+      dateTag.setAttribute('aria-label', 'מ־' + formatDate(trip.start) + ' עד ' + formatDate(trip.end));
+      [trip.start, trip.end].forEach(function (value, index) {
+        if (index) dateTag.appendChild(document.createTextNode(' – '));
+        var endpoint = document.createElement('bdi');
+        endpoint.textContent = formatDate(value);
+        dateTag.appendChild(endpoint);
+      });
+    }
+    if (Array.isArray(trip.savedPlaces)) {
+      var places = document.createElement('span');
+      places.className = 'tag trip-place-count';
+      places.textContent = trip.savedPlaces.length === 1 ? 'מקום שמור אחד' : trip.savedPlaces.length + ' מקומות שמורים';
+      shell.querySelector('.trip-copy').insertBefore(places, shell.querySelector('.trip-copy>strong'));
+    }
     return shell;
   }
 
@@ -348,6 +412,7 @@
       queueDestinationCardImage(shell, trip);
     });
     updateCounts();
+    filterHomeTrips();
     renderAdaptiveHome(canonicalTrips);
     handlePwaShortcut(canonicalTrips);
   }
@@ -405,6 +470,11 @@
       empty = document.createElement('div'); empty.className = 'trip-archive-empty'; empty.textContent = 'הארכיון ריק כרגע.'; archiveList.appendChild(empty);
     }
     if (archiveCount && empty) empty.remove();
+    if (tripBrowser) {
+      tripBrowser.querySelector('[data-home-active-count]').textContent = '(' + activeCount + ')';
+      tripBrowser.querySelector('[data-home-archive-count]').textContent = '(' + archiveCount + ')';
+      filterHomeTrips();
+    }
   }
 
   function editTripDates(trip, opener) {
@@ -759,6 +829,10 @@
   }
 
   function setSession(session) {
+    if (tripBrowser && String(currentSession && currentSession.user.id || '') !== String(session && session.user.id || '')) {
+      tripSearch.value = '';
+      selectHomeFilter('active');
+    }
     sessionGeneration += 1;
     currentSession = session;
     var user = session && session.user;
@@ -800,6 +874,7 @@
     }
     else {
       hydrateCachedTrips();
+      paintHomeState('ready');
       setMessage('התחברו כדי לשמור את כל הטיולים בענן הפרטי.');
     }
   }
@@ -827,15 +902,20 @@
     hydrateCachedTrips();
     var generation = sessionGeneration;
     var owner = currentSession.user.id;
+    paintHomeState('loading');
     setMessage('מסנכרן/ת את הטיולים…');
     try {
       var trips = await cloud.syncLocalTrips();
       if (generation !== sessionGeneration || !currentSession || currentSession.user.id !== owner) return;
       renderTrips(trips);
+      paintHomeState('ready');
+      filterHomeTrips();
       setMessage('הכול מסונכרן · ' + trips.length + ' טיולים זמינים בכל המכשירים');
     } catch (error) {
       if (generation !== sessionGeneration || !currentSession || currentSession.user.id !== owner) return;
       console.error('TravelMate trip sync failed', error);
+      paintHomeState('error');
+      filterHomeTrips();
       var missingTable = /travel_trips|schema cache|does not exist/i.test(String(error && error.message || ''));
       setMessage(missingTable ? 'טבלת סנכרון הטיולים עדיין לא הופעלה ב־Supabase.' : 'הסנכרון נכשל זמנית. הטיולים נשארו שמורים במכשיר.', true);
     }
@@ -1069,6 +1149,8 @@
     }).catch(function () {
       if (generation !== sessionGeneration) return;
       hydrateCachedTrips();
+      paintHomeState('error');
+      filterHomeTrips();
       setMessage('חיבור הענן אינו זמין כרגע. הטיולים השמורים זמינים במכשיר.', true);
     });
     if (authSubscribed || authSubscriptionPending) return;
