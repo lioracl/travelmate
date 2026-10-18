@@ -1399,7 +1399,7 @@
     }
     function release(record, close, returnFocus) {
       if (nested !== record) return;
-      nested = null; focusRevision += 1; record.observer.disconnect(); restoreWizard(record);
+      nested = null; focusRevision += 1; clearTimeout(record.cancelTimer); record.observer.disconnect(); restoreWizard(record);
       // Close through the canonical sheet action, never by emulating its state.
       if (close && !record.node.hidden) record.close.click();
       record.node.inert = options.isOpen() ? true : record.entry.inert;
@@ -1411,7 +1411,7 @@
       var state = options.snapshot();
       if (!current(record) || state.step !== 2 || state.busy || state.prepared) { release(record, true, false); return; }
       if (record.node.hidden) { release(record, false, true); return; }
-      record.active = true; record.closing = false; modal.inert = true; modal.setAttribute('aria-modal', 'false');
+      record.active = true; record.closing = false; clearTimeout(record.cancelTimer); modal.inert = true; modal.setAttribute('aria-modal', 'false');
       record.node.inert = false;
       if (!record.sheet.contains(document.activeElement)) record.close.focus({ preventScroll: true });
     }
@@ -1433,7 +1433,12 @@
       // Release before openSheet's synchronous focus; suspend the wizard only
       // after openSheet has retained its original return-focus element.
       node.inert = false;
-      Promise.resolve().then(function () { if (nested === record && !record.active) reconcile(record); });
+      // A trusted click can checkpoint microtasks between capture and target
+      // listeners. Hidden is still expected then: openSheet has not run yet.
+      // Cancel a non-opening dispatch only in the next task, after propagation.
+      record.cancelTimer = setTimeout(function () {
+        if (nested === record && !record.active && record.node.hidden) release(record, false, false);
+      }, 0);
     }
     document.addEventListener('click', function (event) {
       var trigger = event.target.closest('[data-modal="destination"]'); if (trigger) opener = trigger;

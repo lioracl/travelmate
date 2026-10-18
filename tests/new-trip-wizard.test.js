@@ -142,7 +142,7 @@ test('RTL grid keyboard arrows move focus without selecting or writing',()=>{
 });
 
 function nestedOwnershipHarness({sheetInitiallyInert=false,lazy=false}={}){
- let owner='A',open=true;const state={step:2,busy:false,prepared:false},listeners={},windowListeners=[],observers=[];let dispatch;
+ let owner='A',open=true,timerId=0;const state={step:2,busy:false,prepared:false},listeners={},windowListeners=[],observers=[],timers=new Map();let dispatch;
  const document={activeElement:null,addEventListener(type,fn){(listeners[type]??=[]).push(fn);},querySelectorAll(){return this.body.children.filter(n=>n.kind==='canonical-backdrop');}};
  class Node{
   constructor(kind,parent=null){this.kind=kind;this.parent=parent;this.tagName='SECTION';this.inert=false;this.isConnected=true;this.attributes={};this.children=[];this._hidden=false;this.disabled=false;if(parent)parent.children.push(this);}
@@ -165,13 +165,15 @@ function nestedOwnershipHarness({sheetInitiallyInert=false,lazy=false}={}){
  const sheet=new Node('canonical-sheet',backdrop),close=new Node('nested-close',sheet),content=new Node('nested-content',sheet),last=new Node('nested-last',sheet),title=new Node('title',sheet);
  class Observer{constructor(cb){this.cb=cb;this.connected=true;this.pending=false;observers.push(this);}observe(target){this.target=target;}disconnect(){this.connected=false;}}
  const window={TravelMateTripIntelligence:{},addEventListener(type,fn,capture){windowListeners.push({type,fn,capture:Boolean(capture)});}};
- const env={Promise,document,window,MutationObserver:Observer};
+ const env={Promise,document,window,MutationObserver:Observer,setTimeout(fn){timers.set(++timerId,fn);return timerId;},clearTimeout(id){timers.delete(id);}};
  const code=source.slice(source.indexOf('  function createWizardModalOwnership('),source.indexOf('  function initDestinationWizard('));vm.runInNewContext(code+'\nthis.create=createWizardModalOwnership;',env);
  const control=env.create(modal,form,{isOpen:()=>open,identity:()=>owner,snapshot:()=>state,dismiss:()=>wizardClose.click()});
- dispatch=target=>{const event={target};for(const fn of listeners.click||[])fn(event);if(target===launch){returnFocus=document.activeElement;backdrop.hidden=false;close.focus();}if(target===close||target===backdrop){backdrop.hidden=true;if(returnFocus)returnFocus.focus();}if(target===wizardClose)open=false;};let returnFocus;
+ function capture(target){for(const fn of listeners.click||[])fn({target});}
+ function targetAction(target){if(target===launch){returnFocus=document.activeElement;backdrop.hidden=false;close.focus();}if(target===close||target===backdrop){backdrop.hidden=true;if(returnFocus)returnFocus.focus();}if(target===wizardClose)open=false;}
+ dispatch=target=>{capture(target);targetAction(target);};let returnFocus;
  function flush(){for(let rounds=0;rounds<5;rounds++){const pending=observers.filter(o=>o.connected&&o.pending);if(!pending.length)return;for(const o of pending){o.pending=false;o.cb();}}throw Error('observer loop');}
  function key(key,shiftKey=false){const event={key,shiftKey,preventDefault(){this.prevented=true;},stopImmediatePropagation(){this.stopped=true;}};for(const fn of listeners.keydown||[])fn(event);return event;}
- return{control,state,modal,form,launch,backdrop,sheet,close,content,last,background,preInert,trigger,wizardClose,document,window,observers,flush,key,createNode:kind=>new Node(kind),emit(type,detail){for(const capture of [true,false])for(const item of windowListeners)if(item.type===type&&item.capture===capture)item.fn({detail});},click(n){n.focus();dispatch(n);flush();},append(n){body.children.push(n);n.parent=body;for(const o of observers)if(o.target===body)o.pending=true;flush();},get owner(){return owner;},set owner(v){owner=v;},get open(){return open;},set open(v){open=v;}};
+ return{control,state,modal,form,launch,backdrop,sheet,close,content,last,background,preInert,trigger,wizardClose,document,window,observers,timers,flush,key,captureOnly(n){n.focus();capture(n);},flushTimers(){for(const [id,fn]of [...timers]){timers.delete(id);fn();}},async checkpointClick(n){n.focus();capture(n);await Promise.resolve();const before={hidden:backdrop.hidden,inert:backdrop.inert,wizardInert:modal.inert};targetAction(n);flush();return before;},createNode:kind=>new Node(kind),emit(type,detail){for(const capture of [true,false])for(const item of windowListeners)if(item.type===type&&item.capture===capture)item.fn({detail});},click(n){n.focus();dispatch(n);flush();},append(n){body.children.push(n);n.parent=body;for(const o of observers)if(o.target===body)o.pending=true;flush();},get owner(){return owner;},set owner(v){owner=v;},get open(){return open;},set open(v){open=v;}};
 }
 test('canonical Preferences sheet borrows focus and pointer inertness; close restores the wizard but not its background',async()=>{
  const h=nestedOwnershipHarness();h.control.opened();assert.equal(h.backdrop.inert,true);h.click(h.launch);assert.equal(h.backdrop.hidden,false);assert.equal(h.backdrop.inert,false);assert.equal(h.modal.inert,true);assert.equal(h.modal.getAttribute('aria-modal'),'false');assert.equal(h.document.activeElement,h.close);assert.equal(h.background.inert,true);assert.equal(h.preInert.inert,true);
@@ -217,4 +219,14 @@ test('real askMore and openConversation hand off before actual assistant event/s
 test('assistant handoff requires the owned closing NEW_TRIP continuation; unrelated events do not dismiss or exempt UI',()=>{
  const h=nestedOwnershipHarness();h.control.opened();h.click(h.launch);h.emit('travelmate:ask-ai',{source:'mate-conversation',context:{contextMode:'NEW_TRIP'}});assert.equal(h.open,true,'visible recommendations have not exited yet');
  h.backdrop.hidden=true;h.emit('travelmate:ask-ai',{source:'other',context:{contextMode:'NEW_TRIP'}});assert.equal(h.open,true);h.emit('travelmate:ask-ai',{source:'mate-conversation',context:{contextMode:'EXISTING_TRIP'}});assert.equal(h.open,true);h.owner='B';h.emit('travelmate:ask-ai',{source:'mate-conversation',context:{contextMode:'NEW_TRIP'}});assert.equal(h.open,true);assert.equal(h.background.inert,true);
+});
+
+test('inter-listener microtask checkpoint cannot cancel an armed sheet before the canonical target click opens it',async()=>{
+ const h=nestedOwnershipHarness();h.control.opened();const beforeTarget=await h.checkpointClick(h.launch);
+ assert.deepEqual(beforeTarget,{hidden:true,inert:false,wizardInert:false},'capture handoff must stay armed through the checkpoint before target openSheet');
+ assert.equal(h.backdrop.hidden,false);assert.equal(h.backdrop.inert,false);assert.equal(h.modal.inert,true);assert.equal(h.modal.getAttribute('aria-modal'),'false');assert.equal(h.document.activeElement,h.close);h.flushTimers();assert.equal(h.backdrop.inert,false,'post-dispatch cancellation cannot release an active sheet');h.click(h.close);assert.equal(h.modal.inert,false);assert.equal(h.background.inert,true);
+});
+test('a dispatch that never opens cancels after propagation, while stale cancellation cannot release a later handoff',async()=>{
+ const h=nestedOwnershipHarness();h.control.opened();h.captureOnly(h.launch);await Promise.resolve();assert.equal(h.backdrop.inert,false);assert.equal(h.modal.inert,false);const stale=[...h.timers.values()][0];h.flushTimers();assert.equal(h.backdrop.inert,true);assert.equal(h.control.ownsFocus(),false);assert.equal(h.background.inert,true);
+ h.click(h.launch);stale();assert.equal(h.backdrop.inert,false);assert.equal(h.modal.inert,true);h.click(h.close);assert.equal(h.timers.size,0);
 });
