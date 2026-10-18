@@ -562,6 +562,8 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
   font-size:21px;
   font-weight:300
 }
+html body.home-page[data-design="v3"] .landing-create-trip{pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;min-height:48px;min-width:120px;max-width:100%;margin-top:20px;padding:12px 20px;border:0;border-radius:16px;background:var(--tm-action-primary,#0F64E8);color:#fff;-webkit-text-fill-color:currentColor;font:inherit;font-weight:700;text-shadow:none;cursor:pointer}
+html body.home-page[data-design="v3"] .landing-create-trip:focus-visible{outline:3px solid #fff;outline-offset:4px}
 .home-page:not(.is-authenticated):not(.has-cached-trips) .destination-carousel{
   position:absolute;
   z-index:3;
