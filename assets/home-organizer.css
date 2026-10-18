@@ -546,8 +546,9 @@ body.home-page main.content{max-width:none;margin:0;padding:0}.home-page .home-l
   max-width:none;
   margin:0;
   text-align:right;
-  text-shadow:0 3px 24px rgba(0,0,0,.68)
+  text-shadow:none
 }
+.home-page:not(.is-authenticated):not(.has-cached-trips) .landing-intro>:is(h1,p){text-shadow:0 3px 24px rgba(0,0,0,.68)}
 .home-page:not(.is-authenticated):not(.has-cached-trips) .landing-intro h1{
   margin:0;
   color:#fff;
@@ -899,7 +900,7 @@ html body.home-page #modal-destination .destination-modal{
 html body.home-page #modal-destination .destination-modal>header{display:grid;grid-template-columns:minmax(0,1fr) 48px;align-items:start;gap:12px;background:transparent;padding:20px 20px 12px}
 html body.home-page #modal-destination .destination-modal>header>div{min-width:0}
 html body.home-page #modal-destination .destination-modal h2{margin:4px 0;font-size:24px;color:var(--tm-overlay-text)}
-html body.home-page #modal-destination [data-wizard-progress-label]{font-size:13px;color:var(--tm-overlay-muted)}
+html body.home-page #modal-destination [data-wizard-progress-label]{font-size:13px;padding:0;border-radius:0;background:transparent;color:var(--tm-overlay-muted);-webkit-text-fill-color:currentColor}
 html body.home-page #modal-destination .destination-modal .modal-close{position:static;margin:0;min-width:48px;min-height:48px;border-radius:50%;background:var(--tm-family-control);color:var(--tm-overlay-text);-webkit-text-fill-color:currentColor}
 html body.home-page #modal-destination .trip-wizard-progress{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;direction:rtl;margin:0;padding:8px 20px;list-style:none}
 html body.home-page #modal-destination .trip-wizard-progress li{display:grid;justify-items:center;gap:5px;font-size:12px;color:var(--tm-overlay-muted);border-block-end:3px solid var(--tm-family-border);padding-bottom:8px;transition:border-color 220ms ease,color 220ms ease}

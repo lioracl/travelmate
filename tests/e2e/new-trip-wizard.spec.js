@@ -19,7 +19,7 @@ async function openWizard(page,guest=false){
  let trigger;
  if(guest){await expect(page.locator('body')).not.toHaveClass(/is-authenticated|has-cached-trips/);expect(await page.evaluate(()=>localStorage.getItem('travelmate-active-user'))).toBeNull();trigger=page.locator('.landing-intro').getByRole('button',{name:'טיול חדש',exact:true});}
  else trigger=page.locator('.tm-home-dock [data-modal="destination"]');
- await expect(trigger).toHaveCount(1);await expect(trigger).toBeVisible();if(guest){await expect(trigger).toHaveCSS('pointer-events','auto');await readability(page,test.info(),'guest-create',['.landing-create-trip']);const box=await trigger.boundingBox();expect(box.height).toBeGreaterThanOrEqual(44);expect(box.width).toBeGreaterThanOrEqual(44);}await trigger.click();
+ await expect(trigger).toHaveCount(1);await expect(trigger).toBeVisible();if(guest){await expect(trigger).toHaveCSS('pointer-events','auto');await expect(page.locator('.landing-intro')).toHaveCSS('text-shadow','none');await expect(trigger).toHaveCSS('text-shadow','none');await readability(page,test.info(),'guest-create',['.landing-create-trip']);const box=await trigger.boundingBox();expect(box.height).toBeGreaterThanOrEqual(44);expect(box.width).toBeGreaterThanOrEqual(44);}await trigger.click();
  const modal=page.locator('#modal-destination');await expect(modal).toHaveClass(/open/);await expect(modal.locator('[data-wizard-heading]')).toBeFocused();
  return{trigger,modal,form:modal.locator('[data-destination-form]'),next:modal.locator('[data-wizard-next]'),back:modal.locator('[data-wizard-back]'),confirm:modal.locator('.create-trip')};
 }
@@ -29,6 +29,12 @@ async function dates(ui,start='2026-01-01',end=start){await ui.form.locator('[na
 async function summary(ui,budget='2500'){await ui.form.locator('[name=budget]').fill(budget);await ui.next.click();await step(ui,3);}
 async function counts(page){return page.evaluate(()=>({local:wizardQA.local.length,cloud:wizardQA.cloud.length,attach:wizardQA.attach}));}
 async function expectZero(page){expect(await counts(page)).toEqual({local:0,cloud:0,attach:0});}
+async function expectOverviewRoute(page,expectedId){
+ await expect(page).toHaveURL(url=>url.origin==='http://127.0.0.1:4173'&&url.pathname==='/trip/custom/index.html'&&url.hash===''&&/^\d+$/.test(url.searchParams.get('id')||'')&&(!expectedId||url.searchParams.get('id')===expectedId)&&url.searchParams.get('view')==='overview'&&JSON.stringify([...url.searchParams.keys()].sort())==='["id","view"]');
+ await expect(page.locator('body')).toHaveAttribute('data-trip-view','overview');
+ await expect(page.locator('#overview [data-city]')).toBeVisible();
+ expect(await page.evaluate(()=>history.state?.travelMateView)).toBe('overview');
+}
 async function captureNavigation(page){
  // Snapshot synchronously in the departing document; never hold its navigation
  // request while trying to evaluate that same document from the test runner.
@@ -41,8 +47,7 @@ async function captureNavigation(page){
   },{once:true});
  });
  return {async read(){
-  await expect(page).toHaveURL(/trip\/custom\/index\.html\?id=\d+$/);
-  await expect(page.locator('#overview [data-city]')).toBeVisible();
+  await expectOverviewRoute(page);
   const evidence=await page.evaluate(()=>{
    const captured=JSON.parse(sessionStorage.getItem('wizard-navigation-evidence'));
    if(!captured)throw Error('Missing departing-document save evidence');
@@ -88,17 +93,17 @@ test('date boundaries, minimum/step/default budgets and hidden-field final reval
 test('one local save and one cloud call across click/Enter, token refresh and pending completion',async({page})=>{
  await boot(page,{mode:'pending-cloud'});const capture=await captureNavigation(page),ui=await openWizard(page);await destination(ui);await dates(ui);await summary(ui);await ui.confirm.click();await page.keyboard.press('Enter');await page.evaluate(()=>document.querySelector('[data-destination-form]').requestSubmit());
  expect(await counts(page)).toEqual({local:1,cloud:1,attach:1});await expect(ui.confirm).toBeDisabled();await page.evaluate(()=>allTripsQA.emit('alltrips-A'));await step(ui,3);await expect(ui.form.locator('[name=city]')).toHaveValue('רומא');
- await page.evaluate(()=>wizardQA.resolve());await expect(page).toHaveURL(/trip\/custom\/index\.html\?id=\d+$/);const evidence=await capture.read();expect(evidence.local).toHaveLength(1);expect(evidence.cloud).toHaveLength(1);expect(evidence.attach).toBe(1);expect(evidence.trip).toMatchObject({id:evidence.id,country:'איטליה',city:'רומא',days:1,budget:2500,ownerId:'alltrips-A'});await expect(page.locator('#overview [data-city]')).toHaveText('רומא');
+ await page.evaluate(()=>wizardQA.resolve());await expectOverviewRoute(page);const evidence=await capture.read();expect(evidence.local).toHaveLength(1);expect(evidence.cloud).toHaveLength(1);expect(evidence.attach).toBe(1);expect(evidence.trip).toMatchObject({id:evidence.id,country:'איטליה',city:'רומא',days:1,budget:2500,ownerId:'alltrips-A'});await expect(page.locator('#overview [data-city]')).toHaveText('רומא');
 });
 for(const guest of [true,false])test((guest?'guest':'signed-in cached offline')+' local creation keeps canonical trip contract',async({page})=>{
- await boot(page,{guest,state:guest?'ready':'offline'});const capture=await captureNavigation(page),ui=await openWizard(page,guest);await destination(ui);await dates(ui);await summary(ui,'');await ui.confirm.click();await expect(page).toHaveURL(/trip\/custom\/index\.html\?id=\d+$/);
+ await boot(page,{guest,state:guest?'ready':'offline'});const capture=await captureNavigation(page),ui=await openWizard(page,guest);await destination(ui);await dates(ui);await summary(ui,'');await ui.confirm.click();await expectOverviewRoute(page);
  const evidence=await capture.read();expect(evidence.local).toHaveLength(1);expect(evidence.cloud).toHaveLength(0);expect(evidence.trip).toMatchObject({country:'איטליה',city:'רומא',days:1,budget:2500,type:'זוגי'});if(guest)expect(evidence.trip.ownerId).toBeUndefined();else expect(evidence.trip.ownerId).toBe('alltrips-A');
 });
 for(const mode of ['local-failure','missing-local','unavailable-local'])test(mode+' leaves error and no navigation/cloud save',async({page})=>{
  await boot(page,{mode});const ui=await openWizard(page);await destination(ui);await dates(ui);await summary(ui);const before=page.url();await ui.confirm.click();await expect(ui.form.locator('[data-form-error]')).toBeVisible();await expect(ui.confirm).toBeEnabled();expect(page.url()).toBe(before);expect(await counts(page)).toEqual(mode==='unavailable-local'?{local:0,cloud:0,attach:0}:{local:1,cloud:0,attach:1});
 });
 test('cloud failure keeps one saved trip and offers opening it without another save',async({page})=>{
- await boot(page,{mode:'cloud-failure'});const capture=await captureNavigation(page),ui=await openWizard(page);await destination(ui);await dates(ui);await summary(ui);await ui.confirm.click();await expect(ui.form.locator('[data-wizard-save-status]')).toContainText('לא הושלם');expect(await counts(page)).toEqual({local:1,cloud:1,attach:1});await expect(ui.form.locator('[name=city]')).toBeDisabled();await expect(ui.back).toBeDisabled();await ui.confirm.click();await expect(page).toHaveURL(/trip\/custom\/index\.html\?id=\d+$/);const evidence=await capture.read();expect(evidence.local).toHaveLength(1);expect(evidence.cloud).toHaveLength(1);
+ await boot(page,{mode:'cloud-failure'});const capture=await captureNavigation(page),ui=await openWizard(page);await destination(ui);await dates(ui);await summary(ui);await ui.confirm.click();await expect(ui.form.locator('[data-wizard-save-status]')).toContainText('לא הושלם');expect(await counts(page)).toEqual({local:1,cloud:1,attach:1});await expect(ui.form.locator('[name=city]')).toBeDisabled();await expect(ui.back).toBeDisabled();await ui.confirm.click();await expectOverviewRoute(page);const evidence=await capture.read();expect(evidence.local).toHaveLength(1);expect(evidence.cloud).toHaveLength(1);
 });
 test('actual account change invalidates a pending completion and clears the draft; refresh does not',async({page})=>{
  await boot(page,{mode:'pending-cloud'});const ui=await openWizard(page);await destination(ui);await dates(ui);await summary(ui);await page.evaluate(()=>allTripsQA.emit('alltrips-A'));await step(ui,3);await expect(ui.form.locator('[name=city]')).toHaveValue('רומא');await ui.confirm.click();expect(await counts(page)).toEqual({local:1,cloud:1,attach:1});const before=page.url();
@@ -136,5 +141,5 @@ test('partial canonical write retry preserves actual consumed recommendation and
  await page.keyboard.press('Escape');await ui.trigger.click();await step(ui,3);await expect(ui.form.locator('[name=city]')).toHaveValue('רומא');await expect(ui.form.locator('[name=city]')).toBeDisabled();
  // Tampering with a disabled input cannot silently change the approved payload.
  await ui.form.locator('[name=city]').evaluate(n=>n.value='Changed after failure');await ui.confirm.click();await expect(ui.form.locator('[name=city]')).toHaveValue('רומא');expect(await counts(page)).toEqual({local:1,cloud:0,attach:1});await ui.confirm.click();
- await expect(page).toHaveURL(new RegExp('trip/custom/index.html\\?id='+id+'$'));const evidence=await captured.read();expect(evidence.id).toBe(id);expect(evidence.local).toHaveLength(2);expect(evidence.cloud).toHaveLength(1);expect(evidence.attach).toBe(1);expect(evidence.pendingSave).toBe(false);expect(evidence.trip.ownerId).toBe('alltrips-A');expect(evidence.trip.aiNotes).toHaveLength(1);expect(evidence.trip.aiNotes[0].answer).toBe('Approved source recommendation');expect(evidence.trip.activities[0].id).toBe('canonical-activity');expect(evidence.trip.savedPlaces[0].id).toBe('canonical-place');expect(evidence.trip.dayNotes['2026-01-01']).toBe('Preserve canonical note');expect(evidence.trip.extraCanonicalField).toEqual({keep:true});
+ await expectOverviewRoute(page,id);const evidence=await captured.read();expect(evidence.id).toBe(id);expect(evidence.local).toHaveLength(2);expect(evidence.cloud).toHaveLength(1);expect(evidence.attach).toBe(1);expect(evidence.pendingSave).toBe(false);expect(evidence.trip.ownerId).toBe('alltrips-A');expect(evidence.trip.aiNotes).toHaveLength(1);expect(evidence.trip.aiNotes[0].answer).toBe('Approved source recommendation');expect(evidence.trip.activities[0].id).toBe('canonical-activity');expect(evidence.trip.savedPlaces[0].id).toBe('canonical-place');expect(evidence.trip.dayNotes['2026-01-01']).toBe('Preserve canonical note');expect(evidence.trip.extraCanonicalField).toEqual({keep:true});
 });

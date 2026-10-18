@@ -10,6 +10,7 @@ for(const width of [390,430,768,1440])for(const theme of ['light','dark'])test(`
  const close=modal.getByRole('button',{name:'ביטול וסגירת טיול חדש',exact:true});await expect(close).toBeVisible();
  const surface=await modal.locator('.destination-modal').evaluate(el=>({bg:getComputedStyle(el).backgroundColor,direction:getComputedStyle(el).direction,overflow:document.documentElement.scrollWidth>innerWidth}));
  expect(surface.bg).toBe(theme==='light'?'rgb(255, 255, 255)':'rgb(24, 50, 73)');expect(surface.direction).toBe('rtl');expect(surface.overflow).toBe(false);
+ const progress=modal.locator('[data-wizard-progress-label]');await expect(progress).toHaveCSS('background-color','rgba(0, 0, 0, 0)');const muted=theme==='light'?'rgb(88, 113, 142)':'rgb(185, 207, 220)';await expect(progress).toHaveCSS('color',muted);await expect(progress).toHaveCSS('-webkit-text-fill-color',muted);
  await readability(page,test.info(),'new-trip-initial',['#destination-title','#wizard-step-title','#modal-destination [data-wizard-progress-label]','#modal-destination [data-wizard-next]']);
  await expect(modal.locator('button[type=submit]')).toBeHidden();await close.focus();await page.keyboard.press('Shift+Tab');await expect(modal.locator('[data-wizard-next]')).toBeFocused();await page.keyboard.press('Tab');await expect(close).toBeFocused();
  await page.screenshot({path:test.info().outputPath(`new-trip-${width}-${theme}.png`)});
