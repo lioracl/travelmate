@@ -143,7 +143,7 @@ body.vault-preview-open{overflow:hidden!important;touch-action:none}
 /* Documents semantic-state authority — Phase 2.
    Shared card/control material remains owned by readable-glass.css. */
 #documents .vault-unlock>small{
-  --tm-card-secondary:var(--tm-surface-text-muted);
+  --tm-card-secondary:var(--tm-warning-note-text,var(--tm-surface-text-muted));
   padding:10px 12px;
   border:1px solid #efb37f;
   border-radius:var(--tm-card-radius-control);

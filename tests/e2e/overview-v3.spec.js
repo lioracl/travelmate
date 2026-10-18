@@ -110,9 +110,10 @@ test('Today expands and opens Plan; Weather opens and returns through History',a
 test('explicit All Trips exit preserves the normal public/account boundary',async({page})=>{
   await page.setViewportSize({width:390,height:844});await open(page);
   await page.locator('#overview .hero-back').click();
-  await expect(page).toHaveURL(previewOrigin+'/index.html');
+  await expect(page).toHaveURL(previewOrigin+'/index.html#active-trips');
   await expect(page.locator('body')).toHaveClass(/home-page/);
-  await expect(page.locator('.tm-trip-dock')).toHaveCount(0);
+  await expect(page.locator('[data-home-carousel]')).toBeVisible();await expect(page.locator('.landing-login')).toBeVisible();
+  await expect(page.locator('.tm-home-header')).toBeHidden();await expect(page.locator('[data-home-dashboard]')).toBeHidden();await expect(page.locator('.tm-trip-dock')).toBeHidden();await expect(page.locator('[data-home-trip-browser]')).toBeHidden();
   await test.info().attach('All Trips normal entry',{body:await page.screenshot(),contentType:'image/png'});
 });
 

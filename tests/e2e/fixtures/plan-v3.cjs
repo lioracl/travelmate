@@ -1,3 +1,4 @@
+const {expect}=require('@playwright/test');
 const {trip,open:openOverview}=require('./overview-v3.cjs');
 const record={...trip,id:'plan-v3',start:'2026-10-16',end:'2026-10-20',days:5,dayNotes:{'2026-10-17':'זמן חופשי בין הפעילויות'},activities:[
  {id:'past',date:'2026-10-16',time:'10:00',title:'היכרות עם העיר',duration:60,category:'attraction',done:true},
@@ -9,7 +10,7 @@ const record={...trip,id:'plan-v3',start:'2026-10-16',end:'2026-10-20',days:5,da
 ],savedPlaces:[{id:'saved',date:'2026-10-17',time:'18:00',name:'כיכר נבונה',duration:45,category:'attraction',address:'Piazza Navona, Roma',description:'מקום שמור בתוכנית'}]};
 async function open(page,options={}){
  await openOverview(page,{...options,record:options.record||record,preserveTrip:true});
- await page.locator(page.viewportSize().width>1000?'.sidebar [data-view="plan"]':'[data-shell-view="plan"]').click();
+ const dock=page.locator('[data-shell-view="plan"]');await expect(dock).toHaveCount(1);await expect(dock).toBeVisible();await dock.click();await expect(page.locator('body')).toHaveAttribute('data-trip-view','plan');
  await page.waitForFunction(()=>document.querySelector('#plan [data-plan-days] button')&&document.querySelector('#plan [data-plan-activity-state]'));
  await page.waitForFunction(()=>Array.from(document.querySelectorAll('link[rel="stylesheet"]')).filter(link=>link.href.startsWith(location.origin)).every(link=>link.sheet));
 }

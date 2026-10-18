@@ -5,8 +5,8 @@ test.beforeEach(async({page})=>{await page.route('**/*',r=>new URL(r.request().u
 for(const width of [360,390,430])for(const theme of ['light','dark'])test(`public landing inset ${width} ${theme}`,async({page})=>{
  await page.setViewportSize({width,height:844});
  await page.addInitScript(theme=>{localStorage.setItem('travelmate-theme',theme);document.addEventListener('DOMContentLoaded',()=>{document.documentElement.style.setProperty('--safe-area-inset-top','32px');document.documentElement.dataset.nativeShell='android';});},theme);
- await page.goto('/');await expect(page.locator('.landing-login')).toBeVisible();
- const bar=await page.evaluate(()=>getComputedStyle(document.documentElement,'::before').backgroundColor);expect(bar).toBe(theme==='dark'?'rgb(38, 48, 51)':'rgb(244, 243, 239)');
+ await page.goto('/');await expect(page.locator('.landing-login')).toBeVisible();await expect(page.locator('[data-home-carousel]')).toBeVisible();await expect(page.locator('.tm-home-header')).toBeHidden();await expect(page.locator('[data-home-dashboard]')).toBeHidden();
+ const bar=await page.evaluate(()=>getComputedStyle(document.documentElement,'::before').backgroundColor);expect(bar).toBe(theme==='dark'?'rgb(14, 33, 52)':'rgb(243, 248, 253)');
  const box=await page.locator('.landing-login').boundingBox();expect(box.y).toBeGreaterThanOrEqual(32);
  const nav=await page.locator('.landing-nav').evaluate(el=>({padding:parseFloat(getComputedStyle(el).paddingTop),bottom:el.getBoundingClientRect().bottom}));expect(nav.padding).toBeGreaterThanOrEqual(32);
  await page.locator('.landing-login').click();await expect(page.locator('.cloud-account-backdrop')).toBeVisible();
@@ -22,6 +22,8 @@ async function notifications(page,shared){
   window.travelMateTripReady=Promise.resolve({id:'qa',ownerId:'A'});
   window.TravelMateCloud={getSession:async()=>({user:{id:'A'}}),onAuthChange:cb=>{qa.auth=cb;},listTripMembers:async()=>qa.members,listTripChangeEvents:async()=>{qa.reads++;return qa.events;},getTripChangeReadState:async()=>({last_read_event_id:0}),subscribeToTripChangeEvents:async()=>()=>{}};
  },shared);
+ await page.addScriptTag({url:'/assets/app-shell.js'});
+ await expect(page.locator('[data-shell-more]')).toHaveCount(1);await expect(page.locator('[data-shell-more]')).toBeVisible();await page.locator('[data-shell-more]').click();await expect(page.locator('[data-shell-utilities]')).toBeVisible();
  await page.addScriptTag({url:'/assets/trip-change-notifications.js'});
  await expect.poll(()=>page.evaluate(()=>typeof qa.auth)).toBe('function');
 }
@@ -68,4 +70,11 @@ for(const width of [360,390,430])test(`short landing remains scrollable with ful
  const geometry=await page.locator('.destination-slide.active').evaluate(el=>({slide:el.getBoundingClientRect().toJSON(),scene:el.closest('.home-landing').getBoundingClientRect().toJSON()}));
  expect(geometry.slide.bottom).toBeLessThanOrEqual(geometry.scene.bottom-48);expect(geometry.slide.bottom).toBeLessThanOrEqual(568-48+1);expect(geometry.slide.top).toBeGreaterThanOrEqual(geometry.scene.top);
  await page.screenshot({path:test.info().outputPath('short-landing.png')});
+});
+
+
+for(const theme of ['light','dark'])test('legacy native inset material remains unchanged '+theme,async({page})=>{
+ await page.route('**/legacy-shell-material.html',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html dir="rtl" data-native-shell="android"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/readable-glass.css"><link rel="stylesheet" href="/assets/app-shell.css"><body class="home-page"><script src="/assets/theme.js"></script></body></html>'}));
+ await page.addInitScript(theme=>localStorage.setItem('travelmate-theme',theme),theme);await page.goto('/legacy-shell-material.html');await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
+ expect(await page.evaluate(()=>getComputedStyle(document.documentElement,'::before').backgroundColor)).toBe(theme==='dark'?'rgb(38, 48, 51)':'rgb(244, 243, 239)');
 });

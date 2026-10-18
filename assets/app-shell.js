@@ -11,6 +11,7 @@
   measureHeader();
   var isV3 = document.body.dataset.design === 'v3';
   var isHome = document.body.classList.contains('home-page');
+  var homeAuthenticated = false;
   var dock = document.querySelector('.tm-trip-dock');
   var utilities = document.querySelector('[data-shell-utilities]');
   var utilityOpener = null;
@@ -118,7 +119,8 @@
     if (!isHome) new MutationObserver(syncDock).observe(document.body,{attributes:true,attributeFilter:['data-trip-primary-view']});
     window.addEventListener('hashchange',syncHomeRoute);
     window.addEventListener('travelmate:home-auth',function (event) {
-      if (event.detail && event.detail.authenticated === false && !document.body.classList.contains('has-cached-trips')) { var homeUrl=new URL(location.href);homeUrl.hash='home';history.replaceState(history.state,'',homeUrl.href); }
+      if (homeAuthenticated && event.detail && event.detail.authenticated === false && !document.body.classList.contains('has-cached-trips')) { var homeUrl=new URL(location.href);homeUrl.hash='home';history.replaceState(history.state,'',homeUrl.href); }
+      homeAuthenticated = Boolean(event.detail && event.detail.authenticated);
       syncHomeRoute();
     });
     document.addEventListener('DOMContentLoaded',syncHomeRoute,{once:true});

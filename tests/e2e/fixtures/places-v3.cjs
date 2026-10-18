@@ -25,7 +25,7 @@ async function open(page,{theme='light',gps='accepted',provider='ready',realMap=
   window.maplibregl={Map:MapMock,Marker:MarkerMock,NavigationControl:class{},AttributionControl:class{},getRTLTextPluginStatus:()=> 'loaded',setRTLTextPlugin(){}};
  },{gps,previewOrigin,realMap});
  await openOverview(page,{theme,record,preserveTrip:true});
- await (page.viewportSize().width>1000?page.locator('.sidebar [data-view="places"]'):page.locator('[data-shell-view="places"]')).click();
+ const dock=page.locator('[data-shell-view="places"]');await expect(dock).toHaveCount(1);await expect(dock).toBeVisible();await dock.click();await expect(page.locator('body')).toHaveAttribute('data-trip-view','places');
  await expect(page.locator('.places-v3-views')).toBeVisible();
  await page.waitForFunction(()=>[...document.styleSheets].some(sheet=>sheet.href&&sheet.href.includes('nearby.css')));
 }

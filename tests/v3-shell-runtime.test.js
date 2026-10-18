@@ -4,10 +4,10 @@ const read=n=>fs.readFileSync(path.join(process.env.TRAVELMATE_SHELL_SOURCE_ROOT
 function classes(){const values=new Set();return{add:n=>values.add(n),remove:n=>values.delete(n),contains:n=>values.has(n),toggle(n,on){if(on===undefined)on=!values.has(n);on?values.add(n):values.delete(n);return on;}};}
 function style(){const values=new Map();return{setProperty:(k,v)=>values.set(k,v),getPropertyValue:k=>values.get(k)||'',values};}
 function control(key){return{dataset:{accentChoice:key},hidden:false,style:style(),classList:classes(),attrs:{},setAttribute(k,v){this.attrs[k]=v;},getAttribute(k){return this.attrs[k];},querySelector(){return null;}};}
-function theme(saved={}){
+function theme(saved={},design="v3"){
  const values=new Map(Object.entries(saved)),buttons=['ocean','plum','pink','sunset','emerald','teal'].map(control),root={dataset:{},style:style()};
  const win={dispatchEvent(){}};
- const doc={body:{dataset:{design:'v3'}},documentElement:root,readyState:'complete',querySelectorAll(q){return q==='[data-accent-choice]'?buttons:[];},addEventListener(){}};
+ const doc={body:{dataset:{design}},documentElement:root,readyState:'complete',querySelectorAll(q){return q==='[data-accent-choice]'?buttons:[];},addEventListener(){}};
  vm.runInNewContext(read('assets/theme.js'),{window:win,document:doc,localStorage:{getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)},CustomEvent:function(n,o){this.type=n;this.detail=o?.detail;}});
  return{api:win.TravelMateTheme,root,values,buttons,doc};
 }
@@ -130,4 +130,34 @@ test('legacy secondary Hero geometry retains exact padding fallbacks with V3-onl
  assert.match(css,/padding-block:var\(--tm-secondary-hero-padding,4px\)/);assert.match(css,/padding:var\(--tm-secondary-hero-padding,12px\) 14px/);
  assert.equal(theme().root.style.getPropertyValue('--tm-secondary-hero-padding'),'16px');
  assert.match(themeSource,/'--tm-secondary-hero-padding':'16px'/);
+});
+
+
+test('C1 warning note uses its own readable foreground and preserves global secondary and legacy tokens',()=>{
+ const css=read('assets/document-vault.css');assert.match(css,/#documents \.vault-unlock>small\{\s*--tm-card-secondary:var\(--tm-warning-note-text,var\(--tm-surface-text-muted\)\)/);
+ for(const mode of ['light','dark']){const t=theme({'travelmate-theme':mode}),get=k=>t.root.style.getPropertyValue(k);assert.equal(get('--tm-family-muted'),mode==='dark'?'#B9CFDC':'#58718E');assert.ok(contrast(get('--tm-warning-note-text'),mode==='dark'?'#203C55':'#F5F0EA')>=4.5);}
+ const legacy=theme({'travelmate-accent':'ocean','travelmate-surface-theme':'warm-sand'},'legacy');assert.equal(legacy.root.style.getPropertyValue('--tm-warning-note-text'),'');assert.equal(legacy.root.style.getPropertyValue('--tm-brand-primary'),'#147D92');assert.equal(legacy.values.get('travelmate-surface-theme'),'warm-sand');
+});
+
+test('Overview map label foreground passes both map and saved halves',()=>{
+ const css=read('assets/readable-glass.css');const ink=css.match(/--tm-overview-map-ink:(#[\da-f]+);/i)[1];for(const bg of ['#e3f8f1','#f2eaff'])assert.ok(contrast(ink,bg)>=4.5,ink+' on '+bg);
+});
+
+test('utility closed-details rule excludes the V3 div and dock selection uses a nonoverlapping border',()=>{
+ const css=read('assets/trip-redesign.css'),shellCss=read('assets/app-shell.css'),html=read('trip/custom/index.html');
+ assert.match(css,/body:not\(\.home-page\) details\.trip-sidebar-more:not\(\[open\]\) \.trip-sidebar-more-menu\{display:none\}/);assert.match(html,/<div class="trip-sidebar-more"/);
+ assert.doesNotMatch(shellCss,/\[aria-current="page"\]::after/);assert.match(shellCss,/border-block-end:3px solid var\(--tm-action-primary\)/);
+});
+
+test('initial signed-out All Trips boundary survives auth hydration, while actual logout returns Home',()=>{
+ const source=read('assets/app-shell.js'),start=source.indexOf("window.addEventListener('travelmate:home-auth'"),end=source.indexOf("document.addEventListener('DOMContentLoaded'",start);let callback;
+ const location={href:'http://local/index.html#active-trips'},context={homeAuthenticated:false,window:{addEventListener(n,fn){callback=fn;}},document:{body:{classList:{contains(){return false;}}}},location,URL,history:{state:null,replaceState(state,title,url){location.href=url;}},syncHomeRoute(){}};
+ vm.runInNewContext(source.slice(start,end),context);callback({detail:{authenticated:false}});assert.equal(new URL(location.href).hash,'#active-trips');callback({detail:{authenticated:true}});assert.equal(context.homeAuthenticated,true);callback({detail:{authenticated:false}});assert.equal(new URL(location.href).hash,'#home');
+});
+
+test('signed-out Home suppresses duplicate shell branding and Weather retains local transparency',()=>{
+ const home=read('assets/home-organizer.css'),css=read('assets/readable-glass.css');
+ assert.match(home,/:not\(\.is-authenticated\):not\(\.has-cached-trips\) :is\(\.tm-home-header,\[data-home-dashboard\]/);
+ assert.match(css,/\.content>\.weather-top-widget\{\s*min-height:102px;[^}]*background:transparent/);
+ assert.doesNotMatch(css,/\.content>\.weather-top-widget\{[^}]*background:var\(--tm-family-primary\)/);
 });

@@ -368,7 +368,7 @@ body:not(.home-page) .trip-sidebar-more-menu{
   background:var(--tm-card-bg);
   box-shadow:var(--tm-card-shadow-compact);
 }
-body:not(.home-page) .trip-sidebar-more:not([open]) .trip-sidebar-more-menu{display:none}
+body:not(.home-page) details.trip-sidebar-more:not([open]) .trip-sidebar-more-menu{display:none}
 body:not(.home-page) .trip-sidebar-more-menu :is(a,button){
   width:100%;
   min-height:44px;

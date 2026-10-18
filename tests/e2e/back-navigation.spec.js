@@ -90,5 +90,5 @@ test('direct non-Overview entry backs into Overview and cannot leave without the
   expect(new URL(page.url()).pathname).toBe(path);
 
   const exit = page.locator('.mobile-trip-back,.hero-back').first();
-  await expect(exit).toHaveAttribute('href', '../../index.html');
+  await expect(exit).toHaveAttribute('href', '../../index.html#active-trips');
 });

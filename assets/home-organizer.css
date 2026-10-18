@@ -1006,7 +1006,8 @@ html body.home-page[data-design="v3"] .tm-home-shortcuts{display:flex;flex-wrap:
 html body.home-page[data-design="v3"] .tm-home-shortcuts button{background:var(--tm-action-primary);color:#fff}
 html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) main.content{padding-top:var(--tm-safe-top);padding-bottom:calc(116px + var(--tm-safe-bottom));padding-left:calc(16px + var(--tm-safe-left));padding-right:calc(16px + var(--tm-safe-right))}
 html body.home-page[data-design="v3"]:not(.is-authenticated):not(.has-cached-trips) main.content{padding-top:var(--tm-safe-top)}
-html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) [data-home-carousel],html body.home-page[data-home-view]:not([data-home-view="home"]) [data-home-carousel]{display:none}
+html body.home-page[data-design="v3"]:is(.is-authenticated,.has-cached-trips) [data-home-carousel]{display:none}
+html body.home-page[data-design="v3"]:not(.is-authenticated):not(.has-cached-trips) :is(.tm-home-header,[data-home-dashboard],#home-places,.tm-home-dock,[data-home-trip-browser],[data-trip-list],[data-trip-archive],.trip-area-head){display:none}
 html body.home-page[data-home-view]:not([data-home-view="home"]) [data-home-dashboard],
 html body.home-page[data-home-view]:not([data-home-view="places"]) #home-places,
 html body.home-page[data-home-view]:not([data-home-view="trips"]) :is([data-home-trip-browser],[data-trip-list],[data-trip-archive],.trip-area-head),

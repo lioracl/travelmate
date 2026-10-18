@@ -30,7 +30,7 @@ for(const width of [360,390,430,768,1440])for(const theme of ['light','dark'])te
  await more.click();await page.goBack();await expect(utilities).toBeHidden();await expect(more).toBeFocused();
  // Real capture loader -> Smart Hub owner -> canonical History adapter.
  for(const dismiss of ['escape','back','button']){
-  await more.click();await utilities.locator('[data-smart-hub-open]').click();
+  await more.click();await expect(utilities).toBeVisible();await expect(utilities.locator('.trip-sidebar-more-menu')).toBeVisible();await expect(utilities.locator('[data-smart-hub-open]')).toBeVisible();await utilities.locator('[data-smart-hub-open]').click();
   const hub=page.locator('#modal-smart-hub');await expect(hub).toHaveClass(/open/);await expect(utilities).toBeHidden();await expect(hub.locator('[data-smart-close]')).toBeFocused();
   expect(await page.locator('main.content').evaluate(n=>n.inert)).toBe(false);expect(await dock.evaluate(n=>n.inert)).toBe(false);
   await page.keyboard.press('Shift+Tab');expect(await hub.evaluate(n=>n.contains(document.activeElement))).toBe(true);
@@ -50,6 +50,7 @@ for(const width of [360,390,430,768,1440])for(const theme of ['light','dark'])te
  const weather=await page.locator('[data-weather-top-widget]').boundingBox();expect(weather.y).toBeGreaterThanOrEqual(hero.y+hero.height);
  await readability(page,info,'trip-dock-C1',['.tm-trip-dock [data-shell-view] span:last-child','.tm-trip-dock [data-shell-more] span:last-child']);
  expect(await page.evaluate(()=>JSON.stringify(TravelMateTripStore.getTrip(new URLSearchParams(location.search).get('id'))))).toBe(baseline);expect(await page.evaluate(()=>window.shellGpsCalls)).toBe(0);
+ await page.locator('#overview .hero-back').click();await expect(page).toHaveURL(/index\.html#active-trips$/);await expect(page.locator('[data-home-trip-browser]')).toBeVisible();await expect(page.locator('[data-cloud-trip="alltrips-rome"]')).toBeVisible();await expect(page.locator('[data-home-carousel]')).toBeHidden();await expect(page.locator('.tm-home-header')).toHaveCount(1);
 });
 
 test('home Places retries failed lazy loading without acquiring GPS, and account transitions clear prior data',async({page})=>{
@@ -58,7 +59,7 @@ test('home Places retries failed lazy loading without acquiring GPS, and account
  await page.locator('[data-home-route="places"]').click();await expect(page.locator('#home-places [data-nearby-status]')).toContainText('טעינת מקומות לא הושלמה');
  await page.unroute('**/nearby.js*',abort);await page.locator('[data-home-route="home"]').click();await page.locator('[data-home-route="places"]').click();await page.waitForFunction(()=>window.TravelMateNearby);
  await page.locator('[data-home-route="trips"]').click();await page.locator('[data-home-trip-search]').fill('Rome');await page.evaluate(()=>allTripsQA.emit('alltrips-B'));await expect(page.locator('[data-home-trip-search]')).toHaveValue('');await expect(page.locator('[data-cloud-trip="alltrips-B-only"]')).toBeVisible();await expect(page.locator('[data-cloud-trip="alltrips-rome"]')).toHaveCount(0);
- await page.evaluate(()=>allTripsQA.emit(null));await expect(page.locator('[data-home-dashboard]')).toBeVisible();await expect(page.locator('[data-cloud-trip]')).toHaveCount(0);
+ await page.evaluate(()=>allTripsQA.emit(null));await expect(page.locator('[data-home-carousel]')).toBeVisible();await expect(page.locator('[data-home-dashboard]')).toBeHidden();await expect(page.locator('.tm-home-header')).toBeHidden();await expect(page.locator('[data-cloud-trip]')).toHaveCount(0);
 });
 
 test('single MATE launcher hides with simulated IME, closes and restores focus without a voice request',async({page})=>{

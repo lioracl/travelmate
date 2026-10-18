@@ -45,7 +45,7 @@
       '--tm-text-on-action':'#FFFFFF', '--tm-surface-neutral':dark?'#0E2134':'#F3F8FD',
       '--tm-semantic-turquoise':'#14B8C5', '--tm-semantic-mate':'#7951E8', '--tm-semantic-success':'#18B87B',
       '--tm-semantic-orange':'#F6A623', '--tm-semantic-coral':'#F45D70',
-      '--tm-secondary-hero-height':'140px', '--tm-secondary-hero-padding':'16px', '--tm-canvas-image':'none', '--bg':dark?'#0E2134':'#F3F8FD', '--tm-v3-canvas':dark?'#0E2134':'#F3F8FD'
+      '--tm-warning-note-text':dark?'#F1F8FF':'#102A4D', '--tm-secondary-hero-height':'140px', '--tm-secondary-hero-padding':'16px', '--tm-canvas-image':'none', '--bg':dark?'#0E2134':'#F3F8FD', '--tm-v3-canvas':dark?'#0E2134':'#F3F8FD'
     };
     Object.keys(tokens).forEach(function (key) { root.style.setProperty(key,tokens[key]); });
   }
