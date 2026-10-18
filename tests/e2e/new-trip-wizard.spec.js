@@ -360,3 +360,102 @@ for(const theme of ['light','dark'])test('actual Ask Mate continuation hands off
  await ui.trigger.click();await step(ui,0);await expect(ui.form.locator('[name=city]')).toHaveValue('');await expect(ui.form.locator('[name=country]')).toHaveValue('');await expect(ui.form.locator('[data-destination-search]')).toHaveValue('');await expectZero(page);
  await info.attach('actual-continuation-boundary',{body:Buffer.from(JSON.stringify({realRecommendationAndAssistantSource:true,onlyGenerationTransportIntercepted:true,syntheticAccounts:true,microphoneActivated:false,transport:await page.evaluate(()=>continuationTransport)},null,2)),contentType:'application/json'});
 });
+
+// Later-step presentation evidence uses synthetic account/data fixtures only.
+async function laterStepEvidence(page,info,ui,name){
+ const visible=ui.form.locator('input:visible,select:visible,button:visible');
+ const measurements=await visible.evaluateAll(nodes=>nodes.filter(n=>!n.closest('.navo-native-trip-type')).map(n=>{const r=n.getBoundingClientRect();return{name:n.name||n.textContent.trim(),width:r.width,height:r.height};}));
+ for(const r of measurements){expect(r.width,JSON.stringify(r)).toBeGreaterThanOrEqual(44);expect(r.height,JSON.stringify(r)).toBeGreaterThanOrEqual(44);}
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await expect(page.locator('.tm-home-dock')).toHaveCount(1);
+ await expect(ui.form).toHaveCSS('direction','rtl');
+ const selectors=['#modal-destination [data-wizard-heading]','#modal-destination .trip-wizard-intro p','#modal-destination .trip-wizard-hint:visible','#modal-destination .trip-wizard-summary dt:visible','#modal-destination [data-wizard-summary="destination"]:visible','#modal-destination [data-wizard-summary="preferences"]:visible','#modal-destination .trip-wizard-summary bdi:visible','#modal-destination .trip-wizard-summary small:visible','#modal-destination .trip-wizard-summary p:visible','#modal-destination .trip-wizard-edit button:visible','#modal-destination .navo-date-display:visible','#modal-destination .navo-trip-types button span:visible','#modal-destination .navo-trip-banner strong:visible','#modal-destination .navo-trip-banner p:visible','#modal-destination .navo-trip-banner button:visible','#modal-destination .trip-wizard-back:visible','#modal-destination .trip-wizard-next:visible','#modal-destination .create-trip:visible'];
+ // Filter absent/hidden controls only; every existing rendered match is measured.
+ const present=[];for(const selector of selectors)if(await page.locator(selector).count())present.push(selector);
+ await readability(page,info,name,present);
+ const out=info.outputPath(name+'-controls.json');require('node:fs').mkdirSync(require('node:path').dirname(out),{recursive:true});require('node:fs').writeFileSync(out,JSON.stringify({scope:'Synthetic account; browser rendering evidence, not real device/auth',measurements},null,2));await info.attach(name+'-controls',{path:out,contentType:'application/json'});
+ await ui.form.evaluate(n=>n.scrollTop=0);await discoveryCapture(page,info,name+'-top');
+}
+for(const width of [390,430])for(const theme of ['light','dark'])test('later steps presentation and native fallback '+width+'/'+theme,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await boot(page,{theme});const ui=await openWizard(page);
+ const firstIntro=await ui.form.locator('.trip-wizard-intro p').textContent();
+ await destination(ui,{city:'Rome רומא'});await expect(ui.form.locator('.trip-wizard-intro p')).toContainText('יום היציאה');
+ for(const name of ['start','end']){await expect(ui.form.locator('[name='+name+']')).toHaveAttribute('type','date');await expect(ui.form.locator('[name='+name+']')).toHaveAttribute('dir','ltr');}
+ await laterStepEvidence(page,info,ui,'later-step2-'+width+'-'+theme);
+ await dates(ui,'2026-01-01','2026-03-01');await expect(ui.form.locator('.trip-wizard-intro p')).toContainText('תקציב כולל באירו');
+ await expect(ui.form.locator('[name=type]')).toBeVisible();expect(await ui.form.locator('[name=type] option').allTextContents()).toEqual(['זוגי','משפחתי','חברים','סולו']);
+ await ui.form.locator('[name=type]').selectOption({label:'חברים'});await laterStepEvidence(page,info,ui,'later-step3-'+width+'-'+theme);
+ await summary(ui,'');await expect(ui.form.locator('.trip-wizard-intro p')).toContainText('בדקו את פרטי הטיול');await expect(ui.form.locator('[data-wizard-summary=days]')).toHaveText('60 ימים');await expect(ui.form.locator('[data-wizard-summary=budget]')).toContainText('2,500');await expect(ui.form.locator('[data-wizard-summary=destination]')).toHaveAttribute('dir','auto');
+ await laterStepEvidence(page,info,ui,'later-step4-'+width+'-'+theme);await expectZero(page);
+ await ui.form.locator('[data-wizard-edit="2"]').click();await expect(ui.form.locator('[name=budget]')).toHaveValue('');await expect(ui.form.locator('[name=type]')).toHaveValue('חברים');await ui.back.click();await expect(ui.form.locator('[name=end]')).toHaveValue('2026-03-01');await ui.back.click();await expect(ui.form.locator('.trip-wizard-intro p')).toHaveText(firstIntro);await expectZero(page);
+});
+for(const theme of ['light','dark'])test('later steps safe areas, 360 and simulated keyboard '+theme,async({page},info)=>{
+ await page.setViewportSize({width:360,height:800});await page.emulateMedia({reducedMotion:'reduce'});await boot(page,{theme});await page.evaluate(()=>{for(const [side,value]of Object.entries({top:28,right:12,bottom:20,left:24}))document.documentElement.style.setProperty('--safe-area-inset-'+side,value+'px');});
+ const ui=await openWizard(page);await destination(ui);
+ for(const index of [1,2,3]){
+  await step(ui,index);await expect(ui.modal.locator('[data-wizard-progress]').first()).toHaveCSS('transition-duration','0s');
+  await page.evaluate(()=>{const viewport=new EventTarget();viewport.height=420;viewport.offsetTop=0;Object.defineProperty(window,'visualViewport',{configurable:true,value:viewport});window.dispatchEvent(new Event('resize'));});
+  const action=index===3?ui.confirm:ui.next;await action.scrollIntoViewIfNeeded();const b=await action.boundingBox();expect(b.x).toBeGreaterThanOrEqual(24);expect(b.x+b.width).toBeLessThanOrEqual(348);expect(b.y+b.height).toBeLessThanOrEqual(400);expect(b.height).toBeGreaterThanOrEqual(44);expect(b.width).toBeGreaterThanOrEqual(44);
+  await laterStepEvidence(page,info,ui,'later-step'+(index+1)+'-simulated-keyboard-'+theme);
+  if(index===1)await dates(ui);else if(index===2)await summary(ui);
+ }
+ await expectZero(page);await page.keyboard.press('Escape');await expect(ui.trigger).toBeFocused();
+});
+for(const loadAt of ['before-open','destination','dates','summary'])test('later-step decorator hooks loaded at '+loadAt,async({page},info)=>{
+ await boot(page,{theme:'dark',intelligence:false});
+ async function load(){await page.evaluate(()=>TravelMateFeatures.load('intelligence'));await page.waitForFunction(()=>window.TravelMateTripIntelligence);}
+ if(loadAt==='before-open')await load();const ui=await openWizard(page);if(loadAt==='destination')await load();await destination(ui);if(loadAt==='dates')await load();await dates(ui);await summary(ui);if(loadAt==='summary')await load();
+ await expect(ui.form.locator('.navo-trip-types')).toBeHidden();await expect(ui.form.locator('.navo-trip-banner')).toBeHidden();
+ expect(await ui.form.evaluate(f=>['country','city'].every(n=>f.elements[n].closest('label').parentElement===f)&&f.querySelector('.create-trip').parentElement===f&&f.querySelector('[data-wizard-back]').parentElement===f)).toBe(true);
+ await ui.back.click();await expect(ui.form.locator('.navo-trip-types')).toBeVisible();await expect(ui.form.locator('.navo-trip-banner')).toBeVisible();await expect(ui.form.locator('.navo-trip-types button')).toHaveCount(4);
+ await ui.form.locator('.navo-trip-types button').filter({hasText:'סולו'}).click();await expect(ui.form.locator('[name=type]')).toHaveValue('סולו');await laterStepEvidence(page,info,ui,'later-decorated-preferences-'+loadAt);
+ await ui.back.click();await expect(ui.form.locator('.navo-trip-types')).toBeHidden();await expect(ui.form.locator('.navo-trip-banner')).toBeHidden();await expect(ui.form.locator('.navo-date-display')).toHaveCount(2);await laterStepEvidence(page,info,ui,'later-decorated-dates-'+loadAt);
+ await ui.back.click();await expect(ui.form.locator('.navo-trip-types')).toBeHidden();await expect(ui.form.locator('.navo-trip-banner')).toBeHidden();await expectZero(page);
+});
+for(const theme of ['light','dark'])for(const mode of ['local-failure','pending-cloud'])test('later-step saving and retry evidence '+theme+'/'+mode,async({page},info)=>{
+ await page.setViewportSize({width:390,height:900});await boot(page,{theme,mode});const ui=await openWizard(page);await destination(ui);await dates(ui);await summary(ui);await ui.confirm.click();
+ if(mode==='local-failure'){await expect(ui.form.locator('[data-form-error]')).toBeVisible();await expect(ui.confirm).toHaveText('ניסיון שמירה נוסף');await expect(ui.back).toBeDisabled();await readability(page,info,'prepared-retry',['#modal-destination [data-form-error]']);await discoveryCapture(page,info,'later-prepared-retry-'+theme);await page.evaluate(()=>wizardQA.mode='success');const captured=await captureNavigation(page);await ui.confirm.click();await expectOverviewRoute(page);const e=await captured.read();expect(e.local).toHaveLength(2);expect(e.local[0].id).toBe(e.local[1].id);expect(e.attach).toBe(1);}
+ else{await expect(ui.confirm).toHaveText('שומר…');await expect(ui.confirm).toHaveAttribute('aria-busy','true');await discoveryCapture(page,info,'later-saving-'+theme);await page.evaluate(()=>wizardQA.reject());await expect(ui.form.locator('[data-wizard-save-status]')).toContainText('לא הושלם');await expect(ui.confirm).toHaveText('פתיחת הטיול שנשמר');await readability(page,info,'saved-sync-failure',['#modal-destination [data-wizard-save-status]']);await discoveryCapture(page,info,'later-saved-sync-failure-'+theme);const captured=await captureNavigation(page);await ui.confirm.click();await expectOverviewRoute(page);const e=await captured.read();expect(e.local).toHaveLength(1);expect(e.cloud).toHaveLength(1);}
+});
+
+
+// V10 review: computed boundaries and reachability are independent of top captures.
+async function laterBoundaryEvidence(page,info,name,selectors){
+ const rows=[];for(const selector of selectors)for(const node of await page.locator(selector).all()){
+  const row=await node.evaluate(n=>{
+   const s=getComputedStyle(n),host=getComputedStyle(n.closest('.destination-modal'));
+   const rgb=v=>{const m=/^rgb\((\d+), (\d+), (\d+)\)$/.exec(v);return m?m.slice(1).map(Number):null;};
+   const luminance=c=>c.map(x=>x/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4).reduce((v,x,i)=>v+x*[.2126,.7152,.0722][i],0);
+   const contrast=(a,b)=>{const x=luminance(a),y=luminance(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+   const inside=rgb(s.backgroundColor),outside=rgb(host.backgroundColor),colors=['Top','Right','Bottom','Left'].map(side=>rgb(s['border'+side+'Color']));
+   const supported=inside&&outside&&colors.every(Boolean)&&s.opacity==='1'&&s.backgroundImage==='none'&&host.backgroundImage==='none'&&host.opacity==='1'&&s.filter==='none'&&s.mixBlendMode==='normal'&&['Top','Right','Bottom','Left'].every(side=>s['border'+side+'Style']==='solid'&&parseFloat(s['border'+side+'Width'])>=1);
+   return{name:n.name||n.textContent.trim(),status:supported?'VERIFIED':'UNVERIFIED',inside:s.backgroundColor,outside:host.backgroundColor,borders:colors,ratios:supported?colors.flatMap(c=>[contrast(c,inside),contrast(c,outside)]):[]};
+  });rows.push(row);
+ }
+ const file=info.outputPath(name+'-boundaries.json');require('node:fs').mkdirSync(require('node:path').dirname(file),{recursive:true});require('node:fs').writeFileSync(file,JSON.stringify(rows,null,2));await info.attach(name+'-boundaries',{path:file,contentType:'application/json'});
+ expect(rows.length).toBeGreaterThan(0);for(const row of rows){expect(row.status,JSON.stringify(row)).toBe('VERIFIED');for(const ratio of row.ratios)expect(ratio,JSON.stringify(row)).toBeGreaterThanOrEqual(3);}
+}
+async function laterControlReachability(page,info,ui,name){
+ const rows=[];for(const control of await ui.form.locator('input:visible,select:visible,button:visible').all()){
+  if(await control.evaluate(n=>Boolean(n.closest('.navo-native-trip-type'))))continue;
+  await control.evaluate(n=>n.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));
+  const row=await control.evaluate(n=>{
+   const box=n.getBoundingClientRect(),form=n.closest('form').getBoundingClientRect(),dock=document.querySelector('#modal-destination .tm-home-dock').getBoundingClientRect(),hit=document.elementFromPoint(box.x+box.width/2,box.y+box.height/2);
+   return{name:n.name||n.textContent.trim(),left:box.left,right:box.right,top:box.top,bottom:box.bottom,width:box.width,height:box.height,formTop:form.top,formBottom:form.bottom,dockTop:dock.top,viewportHeight:innerHeight,hit:hit===n||n.contains(hit)};
+  });rows.push(row);
+  const file=info.outputPath(name+'-reachability.json');require('node:fs').writeFileSync(file,JSON.stringify({scope:'Each control separately scrolled into view; top screenshot does not prove all controls are visible together',rows},null,2));
+  expect(row.width).toBeGreaterThanOrEqual(44);expect(row.height).toBeGreaterThanOrEqual(44);expect(row.top).toBeGreaterThanOrEqual(row.formTop-.5);expect(row.bottom).toBeLessThanOrEqual(Math.min(row.formBottom,row.dockTop,row.viewportHeight)+.5);expect(row.hit,JSON.stringify(row)).toBe(true);
+ }
+ await info.attach(name+'-reachability',{path:info.outputPath(name+'-reachability.json'),contentType:'application/json'});
+}
+for(const width of [390,430])for(const theme of ['light','dark'])test('decorated preferences full presentation matrix '+width+'/'+theme,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await boot(page,{theme,intelligence:false});const ui=await openWizard(page);
+ await page.evaluate(()=>TravelMateFeatures.load('intelligence'));await page.waitForFunction(()=>window.TravelMateTripIntelligence);
+ await destination(ui);await expect(ui.form.locator('.navo-trip-types')).toBeHidden();await laterBoundaryEvidence(page,info,'dates-'+width+'-'+theme,['#modal-destination [name=start]','#modal-destination [name=end]']);
+ await dates(ui);await expect(ui.form.locator('.navo-trip-types')).toBeVisible();await expect(ui.form.locator('.navo-trip-banner')).toBeVisible();await expect(ui.form.locator('.navo-trip-types button')).toHaveCount(4);
+ await ui.form.locator('.navo-trip-types button').filter({hasText:'סולו'}).click();await expect(ui.form.locator('[name=type]')).toHaveValue('סולו');
+ const name='decorated-preferences-'+width+'-'+theme;
+ await laterStepEvidence(page,info,ui,name);await laterBoundaryEvidence(page,info,name,['#modal-destination [name=budget]','#modal-destination .navo-trip-types button:not(.is-selected)']);await laterControlReachability(page,info,ui,name);
+ await ui.next.click();await expect(ui.form.locator('[data-wizard-summary=preferences]')).toHaveText('סולו');await expect(ui.form.locator('.navo-trip-types')).toBeHidden();await expect(ui.form.locator('.navo-trip-banner')).toBeHidden();await expectZero(page);
+});
+

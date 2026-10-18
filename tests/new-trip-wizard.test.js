@@ -355,3 +355,28 @@ for(const [name,reason,mutate]of [
 ])test('circular chip rejects '+name+' and verifies restoration',()=>{
  const h=circularChipFixture();assert.equal(circularFixtureProof(h).status,'VERIFIED');mutate(h);const invalid=circularFixtureProof(h);assert.equal(invalid.status,'UNVERIFIED');assert(invalid.issues.some(issue=>issue.includes(reason)),JSON.stringify(invalid));assert.equal(circularFixtureProof(circularChipFixture()).status,'VERIFIED');
 });
+
+test('later-step help preserves native constraints, isolated summary and decorator hook structure',()=>{
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ for(const name of ['start','end'])assert.match(html,new RegExp('name="'+name+'" type="date" required dir="ltr" aria-describedby="wizard-dates-hint destination-error"'));
+ assert.match(html,/name="budget" type="number" min="100" step="50" value="2500" dir="ltr" aria-describedby="wizard-budget-hint destination-error"/);
+ assert.match(html,/<dd dir="auto" data-wizard-summary="destination">/);
+ assert.match(html,/id="wizard-dates-hint" data-wizard-panel="1"/);assert.match(html,/id="wizard-budget-hint" data-wizard-panel="2"/);
+ assert.match(source,/intro\.textContent = descriptions\[state\.step\]/);assert.match(source,/var descriptions = \[intro\.textContent,/);
+});
+test('later-step presentation CSS cannot match frozen discovery state',()=>{
+ const css=fs.readFileSync(path.join(root,'assets/home-organizer.css'),'utf8').split('/* Later wizard steps:')[1].split('/* 2.16.0 profile strip:')[0];
+ assert.doesNotMatch(css,/data-wizard-step="0"|!important|\.tm-home-dock|destination-choice|destination-discovery/);
+ for(const rule of css.matchAll(/([^{}]+)\{/g)){const selector=rule[1].trim();if(selector.startsWith('@')||selector.startsWith('presentation only;'))continue;assert.match(selector,/data-wizard-step="[123]"/);}
+ assert.match(css,/>label:not\(\[hidden\]\)/);
+});
+
+
+test('later wizard materials reuse canonical semantic tokens with an accessible local boundary alias',()=>{
+ const css=fs.readFileSync(path.join(root,'assets/home-organizer.css'),'utf8').split('/* Later wizard steps:')[1].split('/* 2.16.0 profile strip:')[0],theme=fs.readFileSync(path.join(root,'assets/theme.js'),'utf8');
+ assert.match(css,/--tm-later-control:var\(--tm-family-solid\)/);assert.match(css,/--tm-later-border:var\(--tm-family-muted\)/);assert.doesNotMatch(css,/--tm-overlay-(?:surface|text|muted):/);assert.deepEqual(css.match(/#[0-9a-fA-F]{6}/g),['#F45D70']);
+ const luminance=hex=>hex.slice(1).match(/../g).map(n=>parseInt(n,16)/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4).reduce((v,x,i)=>v+x*[.2126,.7152,.0722][i],0);
+ const pair=name=>theme.match(new RegExp("'--tm-family-"+name+"':dark\\?'(#[0-9A-Fa-f]{6})':'(#[0-9A-Fa-f]{6})'")).slice(1);
+ for(const index of [0,1])for(const adjacent of ['solid','primary']){const a=luminance(pair('muted')[index]),b=luminance(pair(adjacent)[index]);assert.ok((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=3);}
+});
+

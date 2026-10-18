@@ -1540,6 +1540,8 @@
     var names = ['country', 'city', 'start', 'end', 'budget', 'type'];
     var titles = ['לאן רוצים לטוס?', 'מתי יוצאים לדרך?', 'איך תרצו לטייל?', 'הטיול שלכם, לפני שיוצאים'];
     var labels = ['יעד', 'תאריכים', 'העדפות ותקציב', 'סיכום'];
+    var intro = form.querySelector('.trip-wizard-intro p');
+    var descriptions = [intro.textContent, 'בחרו את יום היציאה ואת יום החזרה כדי לקבוע את משך הטיול.', 'בחרו את סוג הטיול והגדירו תקציב כולל באירו שמתאים לכם.', 'בדקו את פרטי הטיול המרוכזים כאן.'];
     function defaults() {
       if (ownership) ownership.reset();
       if (discovery) discovery.reset();
@@ -1565,6 +1567,7 @@
         item.dataset.complete = String(index < state.step);
       });
       heading.textContent = titles[state.step];
+      intro.textContent = descriptions[state.step];
       progress.textContent = 'שלב ' + (state.step + 1) + ' מתוך 4 · ' + labels[state.step];
       error.textContent = state.error; status.textContent = state.status;
       error.hidden = !state.error; status.hidden = !state.status;
