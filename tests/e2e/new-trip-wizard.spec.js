@@ -2,6 +2,21 @@
 const {test,expect}=require('@playwright/test');
 const home=require('./fixtures/all-trips-v3.cjs');
 const {readability}=require('./fixtures/six-screen-v3.cjs');
+async function readVisibleWizardText(page,info,label,selectors){
+ // The reserved footer makes the content a genuinely clipped scroll viewport.
+ // Measure each text target at its actual visible scroll position, keeping the
+ // shared VERIFIED/4.5 paint proof unchanged. This is not an all-at-once capture.
+ let index=0;
+ for(const selector of selectors){
+  const nodes=page.locator(selector);expect(await nodes.count(),selector).toBeGreaterThan(0);
+  for(let i=0;i<await nodes.count();i++){
+   const node=nodes.nth(i);
+   if(await node.evaluate(n=>Boolean(n.closest('.trip-wizard-scroll'))))await node.scrollIntoViewIfNeeded();
+   await readability(page,info,label+'-visible-'+index++,[selector+' >> nth='+i]);
+  }
+ }
+}
+
 async function gradientReadability(page,info,name){
  // Component-local, instantaneous paint proof. Shared canonical scrolling may
  // clip the entire card; this bounds contrast of its remaining visible glyphs.
@@ -102,7 +117,7 @@ async function openWizard(page,guest=false){
  let trigger;
  if(guest){await expect(page.locator('body')).not.toHaveClass(/is-authenticated|has-cached-trips/);expect(await page.evaluate(()=>localStorage.getItem('travelmate-active-user'))).toBeNull();trigger=page.locator('.landing-intro').getByRole('button',{name:'טיול חדש',exact:true});}
  else trigger=page.locator('.tm-home-dock [data-modal="destination"]');
- await expect(trigger).toHaveCount(1);await expect(trigger).toBeVisible();if(guest){await expect(trigger).toHaveCSS('pointer-events','auto');await expect(page.locator('.landing-intro')).toHaveCSS('text-shadow','none');await expect(trigger).toHaveCSS('text-shadow','none');await readability(page,test.info(),'guest-create',['.landing-create-trip']);const box=await trigger.boundingBox();expect(box.height).toBeGreaterThanOrEqual(44);expect(box.width).toBeGreaterThanOrEqual(44);}await trigger.click();
+ await expect(trigger).toHaveCount(1);await expect(trigger).toBeVisible();if(guest){await expect(trigger).toHaveCSS('pointer-events','auto');await expect(page.locator('.landing-intro')).toHaveCSS('text-shadow','none');await expect(trigger).toHaveCSS('text-shadow','none');await readVisibleWizardText(page,test.info(),'guest-create',['.landing-create-trip']);const box=await trigger.boundingBox();expect(box.height).toBeGreaterThanOrEqual(44);expect(box.width).toBeGreaterThanOrEqual(44);}await trigger.click();
  const modal=page.locator('#modal-destination');await expect(modal).toHaveClass(/open/);await expect(modal.locator('[data-wizard-heading]')).toBeFocused();
  return{trigger,modal,form:modal.locator('[data-destination-form]'),next:modal.locator('[data-wizard-next]'),back:modal.locator('[data-wizard-back]'),confirm:modal.locator('.create-trip')};
 }
@@ -146,7 +161,7 @@ for(const width of [390,430])for(const theme of ['light','dark'])test('four wiza
  await page.setViewportSize({width,height:900});await boot(page,{theme});
  await page.evaluate(()=>{for(const [side,value]of Object.entries({top:32,right:12,bottom:24,left:44}))document.documentElement.style.setProperty('--safe-area-inset-'+side,value+'px');});
  const ui=await openWizard(page);const historyLength=await page.evaluate(()=>history.length);await step(ui,0);await expect(ui.form.locator('[name=start]')).toBeHidden();await ui.form.evaluate(form=>{form.elements.start.value='';form.elements.end.value='';});
- await ui.form.locator('[data-destination-manual]').click();await ui.form.locator('[name=country]').fill('   ');await ui.next.click();await expect(ui.form.locator('[name=country]')).toBeFocused();await expect(ui.form.locator('[data-form-error]')).toBeVisible();await step(ui,0);await readability(page,info,'wizard-error',['#modal-destination [data-form-error]','#modal-destination [aria-current="step"] b']);
+ await ui.form.locator('[data-destination-manual]').click();await ui.form.locator('[name=country]').fill('   ');await ui.next.click();await expect(ui.form.locator('[name=country]')).toBeFocused();await expect(ui.form.locator('[data-form-error]')).toBeVisible();await step(ui,0);await readVisibleWizardText(page,info,'wizard-error',['#modal-destination [data-form-error]','#modal-destination [aria-current="step"] b']);
  await destination(ui,{city:'<img src=x onerror="window.wizardXss=1">'});await dates(ui);await summary(ui,'');
  await expect(ui.form.locator('[data-wizard-summary="destination"]')).toContainText('<img');await expect(ui.form.locator('[data-wizard-summary="destination"] img')).toHaveCount(0);expect(await page.evaluate(()=>window.wizardXss)).toBeUndefined();await expect(ui.form.locator('[data-wizard-summary="days"]')).toHaveText('יום אחד');await expect(ui.form.locator('[data-wizard-summary="budget"]')).toContainText('2,500');
  await ui.form.locator('[data-wizard-edit="0"]').click();await step(ui,0);await ui.form.locator('[name=city]').fill('Tokyo');await ui.next.click();await ui.next.click();await ui.next.click();await step(ui,3);await expect(ui.form.locator('[data-wizard-summary="destination"]')).toContainText('Tokyo');
@@ -154,7 +169,7 @@ for(const width of [390,430])for(const theme of ['light','dark'])test('four wiza
  const centers=await ui.modal.locator('[data-wizard-progress]').evaluateAll(nodes=>nodes.map(n=>{const b=n.getBoundingClientRect();return b.x+b.width/2;}));for(let i=1;i<centers.length;i++)expect(centers[i]).toBeLessThan(centers[i-1]);
  for(const button of await ui.form.locator('button:visible').all()){const box=await button.boundingBox();expect(box.height).toBeGreaterThanOrEqual(44);expect(box.width).toBeGreaterThanOrEqual(44);}
  const footer=await ui.confirm.boundingBox();expect(footer.y+footer.height).toBeLessThanOrEqual(900-24);expect(footer.x).toBeGreaterThanOrEqual(44);expect(footer.x+footer.width).toBeLessThanOrEqual(width-12);
- expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await readability(page,info,'wizard-summary',['#modal-destination [data-wizard-heading]','#modal-destination [data-wizard-summary="destination"]','#modal-destination [data-wizard-summary="budget"]']);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await readVisibleWizardText(page,info,'wizard-summary',['#modal-destination [data-wizard-heading]','#modal-destination [data-wizard-summary="destination"]','#modal-destination [data-wizard-summary="budget"]']);
  await page.emulateMedia({reducedMotion:'reduce'});await expect(ui.modal.locator('[data-wizard-progress]').first()).toHaveCSS('transition-duration','0s');
  const close=ui.modal.locator('[data-close]'),profile=ui.modal.locator('.tm-home-dock [data-cloud-account-open]'),firstDock=ui.modal.locator('.tm-home-dock [data-home-route="home"]');
  await close.focus();await page.keyboard.press('Shift+Tab');await expect(profile).toBeFocused();await page.keyboard.press('Tab');await expect(close).toBeFocused();
@@ -277,7 +292,7 @@ for(const width of [390,430])for(const theme of ['light','dark'])test(`discovery
  const positions=await cards.evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height};}));expect(positions[0].y).toBe(positions[1].y);expect(positions[0].x).toBeGreaterThan(positions[1].x);expect(positions[2].y).toBeGreaterThan(positions[0].y);
  for(const box of positions){expect(box.w).toBeGreaterThanOrEqual(44);expect(box.h).toBeGreaterThanOrEqual(44);}
  const rome=cards.filter({hasText:'רומא'});await rome.click();await expect(rome).toHaveAttribute('aria-pressed','true');await expect(ui.form.locator('[data-destination-selection]')).toHaveText('היעד שנבחר: רומא, איטליה');await expectZero(page);await discoveryCapture(page,info,'discovery-selected-synthetic');
- await gradientReadability(page,info,'discovery-card-copy');await readability(page,info,'discovery-card-copy',['#modal-destination [data-destination-selection]']);
+ await gradientReadability(page,info,'discovery-card-copy');await readVisibleWizardText(page,info,'discovery-card-copy',['#modal-destination [data-destination-selection]']);
  await search.fill('Japan');await expect(ui.form.locator('[data-destination-choice]:visible')).toHaveCount(1);await expect(ui.form.locator('[name=city]')).toHaveValue('');await expect(ui.form.locator('[name=country]')).toHaveValue('');await discoveryCapture(page,info,'discovery-search-synthetic');
  await search.fill('Unknown destination');await expect(ui.form.locator('[data-destination-choice]:visible')).toHaveCount(0);await expect(ui.form.locator('[data-destination-empty]')).toBeVisible();await search.press('Enter');await expect(ui.form.locator('[data-destination-manual]')).toBeFocused();await step(ui,0);await discoveryCapture(page,info,'discovery-empty-synthetic');
  await ui.form.locator('[data-destination-manual]').click();await expect(ui.form.locator('[name=city]')).toBeFocused();await ui.form.locator('[name=city]').fill('יעד ידני ABC');await ui.form.locator('[name=country]').fill('מדינה מפורשת');await expect(ui.form.locator('[name=city]')).toBeVisible();await discoveryCapture(page,info,'discovery-manual-synthetic');await expectZero(page);
@@ -372,9 +387,9 @@ async function laterStepEvidence(page,info,ui,name){
  const selectors=['#modal-destination [data-wizard-heading]','#modal-destination .trip-wizard-intro p','#modal-destination .trip-wizard-hint:visible','#modal-destination .trip-wizard-summary dt:visible','#modal-destination [data-wizard-summary="destination"]:visible','#modal-destination [data-wizard-summary="preferences"]:visible','#modal-destination .trip-wizard-summary bdi:visible','#modal-destination .trip-wizard-summary small:visible','#modal-destination .trip-wizard-summary p:visible','#modal-destination .trip-wizard-edit button:visible','#modal-destination .navo-date-display:visible','#modal-destination .navo-trip-types button span:visible','#modal-destination .navo-trip-banner strong:visible','#modal-destination .navo-trip-banner p:visible','#modal-destination .navo-trip-banner button:visible','#modal-destination .trip-wizard-back:visible','#modal-destination .trip-wizard-next:visible','#modal-destination .create-trip:visible'];
  // Filter absent/hidden controls only; every existing rendered match is measured.
  const present=[];for(const selector of selectors)if(await page.locator(selector).count())present.push(selector);
- await readability(page,info,name,present);
+ await readVisibleWizardText(page,info,name,present);
  const out=info.outputPath(name+'-controls.json');require('node:fs').mkdirSync(require('node:path').dirname(out),{recursive:true});require('node:fs').writeFileSync(out,JSON.stringify({scope:'Synthetic account; browser rendering evidence, not real device/auth',measurements},null,2));await info.attach(name+'-controls',{path:out,contentType:'application/json'});
- await ui.form.evaluate(n=>n.scrollTop=0);await discoveryCapture(page,info,name+'-top');
+ await ui.form.evaluate(n=>(n.querySelector('.trip-wizard-scroll:not([hidden])')||n).scrollTop=0);await discoveryCapture(page,info,name+'-top');
 }
 for(const width of [390,430])for(const theme of ['light','dark'])test('later steps presentation and native fallback '+width+'/'+theme,async({page},info)=>{
  await page.setViewportSize({width,height:900});await boot(page,{theme});const ui=await openWizard(page);
@@ -414,8 +429,8 @@ for(const loadAt of ['before-open','destination','dates','summary'])test('later-
 });
 for(const theme of ['light','dark'])for(const mode of ['local-failure','pending-cloud'])test('later-step saving and retry evidence '+theme+'/'+mode,async({page},info)=>{
  await page.setViewportSize({width:390,height:900});await boot(page,{theme,mode});const ui=await openWizard(page);await destination(ui);await dates(ui);await summary(ui);await ui.confirm.click();
- if(mode==='local-failure'){await expect(ui.form.locator('[data-form-error]')).toBeVisible();await expect(ui.confirm).toHaveText('ניסיון שמירה נוסף');await expect(ui.back).toBeDisabled();await readability(page,info,'prepared-retry',['#modal-destination [data-form-error]']);await discoveryCapture(page,info,'later-prepared-retry-'+theme);await page.evaluate(()=>wizardQA.mode='success');const captured=await captureNavigation(page);await ui.confirm.click();await expectOverviewRoute(page);const e=await captured.read();expect(e.local).toHaveLength(2);expect(e.local[0].id).toBe(e.local[1].id);expect(e.attach).toBe(1);}
- else{await expect(ui.confirm).toHaveText('שומר…');await expect(ui.confirm).toHaveAttribute('aria-busy','true');await discoveryCapture(page,info,'later-saving-'+theme);await page.evaluate(()=>wizardQA.reject());await expect(ui.form.locator('[data-wizard-save-status]')).toContainText('לא הושלם');await expect(ui.confirm).toHaveText('פתיחת הטיול שנשמר');await readability(page,info,'saved-sync-failure',['#modal-destination [data-wizard-save-status]']);await discoveryCapture(page,info,'later-saved-sync-failure-'+theme);const captured=await captureNavigation(page);await ui.confirm.click();await expectOverviewRoute(page);const e=await captured.read();expect(e.local).toHaveLength(1);expect(e.cloud).toHaveLength(1);}
+ if(mode==='local-failure'){await expect(ui.form.locator('[data-form-error]')).toBeVisible();await expect(ui.confirm).toHaveText('ניסיון שמירה נוסף');await expect(ui.back).toBeDisabled();await readVisibleWizardText(page,info,'prepared-retry',['#modal-destination [data-form-error]']);await discoveryCapture(page,info,'later-prepared-retry-'+theme);await page.evaluate(()=>wizardQA.mode='success');const captured=await captureNavigation(page);await ui.confirm.click();await expectOverviewRoute(page);const e=await captured.read();expect(e.local).toHaveLength(2);expect(e.local[0].id).toBe(e.local[1].id);expect(e.attach).toBe(1);}
+ else{await expect(ui.confirm).toHaveText('שומר…');await expect(ui.confirm).toHaveAttribute('aria-busy','true');await discoveryCapture(page,info,'later-saving-'+theme);await page.evaluate(()=>wizardQA.reject());await expect(ui.form.locator('[data-wizard-save-status]')).toContainText('לא הושלם');await expect(ui.confirm).toHaveText('פתיחת הטיול שנשמר');await readVisibleWizardText(page,info,'saved-sync-failure',['#modal-destination [data-wizard-save-status]']);await discoveryCapture(page,info,'later-saved-sync-failure-'+theme);const captured=await captureNavigation(page);await ui.confirm.click();await expectOverviewRoute(page);const e=await captured.read();expect(e.local).toHaveLength(1);expect(e.cloud).toHaveLength(1);}
 });
 
 
@@ -470,9 +485,48 @@ for(const theme of ['light','dark'])test('preferences recommendation actual acti
    const paint=await button.evaluate(n=>{const s=getComputedStyle(n),root=getComputedStyle(document.documentElement);return{color:s.color,fill:s.webkitTextFillColor,background:s.backgroundColor,action:root.getPropertyValue('--tm-action-primary').trim(),onAction:root.getPropertyValue('--tm-text-on-action').trim()};});
    const rgb=hex=>'rgb('+hex.slice(1).match(/../g).map(n=>parseInt(n,16)).join(', ')+')';
    expect(paint.background).toBe(rgb(paint.action));expect(paint.color).toBe(rgb(paint.onAction));expect(paint.fill).toBe(paint.color);
-   await readability(page,info,'preferences-action-'+theme+'-'+accent+'-'+interaction,['#modal-destination .navo-trip-banner button:visible']);
+   await readVisibleWizardText(page,info,'preferences-action-'+theme+'-'+accent+'-'+interaction,['#modal-destination .navo-trip-banner button:visible']);
   }
   await page.mouse.move(0,0);await ui.form.locator('[data-wizard-heading]').focus();
  }
  await expectZero(page);await ui.back.click();await expect(button).toBeHidden();await ui.back.click();await expect(button).toBeHidden();await expectZero(page);
+});
+
+// One clipped content viewport and a separately reserved native action row.
+async function wizardScrollProof(page,info,ui,name,{minimum=96}={}){
+ const result=await ui.form.evaluate(form=>{
+  const scroll=form.querySelector('.trip-wizard-scroll'),r=scroll.getBoundingClientRect(),s=getComputedStyle(scroll),modal=form.closest('.destination-modal').getBoundingClientRect(),dock=document.querySelector('#modal-destination .tm-home-dock').getBoundingClientRect(),actions=[...form.querySelectorAll(':scope>.trip-wizard-back,:scope>.trip-wizard-next,:scope>.create-trip')].filter(n=>!n.hidden).map(n=>{const b=n.getBoundingClientRect();return{top:b.top,bottom:b.bottom,left:b.left,right:b.right,width:b.width,height:b.height,position:getComputedStyle(n).position};}),top=Math.min(...actions.map(a=>a.top)),visible=[];
+  for(const node of scroll.querySelectorAll('.navo-trip-banner,.navo-trip-banner button')){if(!node.getClientRects().length)continue;const b=node.getBoundingClientRect(),clip={left:Math.max(r.left,b.left),right:Math.min(r.right,b.right),top:Math.max(r.top,b.top),bottom:Math.min(r.bottom,b.bottom)};if(clip.right>clip.left&&clip.bottom>clip.top){const hit=document.elementFromPoint((clip.left+clip.right)/2,(clip.top+clip.bottom)/2);visible.push({kind:node.tagName,clip,hit:hit===node||node.contains(hit)});}}
+  return{scroll:{top:r.top,bottom:r.bottom,height:r.height,left:r.left,right:r.right,overflow:s.overflowY,usableHeight:scroll.clientHeight-parseFloat(s.paddingTop)-parseFloat(s.paddingBottom),scrollTop:scroll.scrollTop},formOverflow:getComputedStyle(form).overflowY,formScroll:form.scrollTop,actionTop:top,actions,visible,dockTop:dock.top,modalBottom:modal.bottom,compact:form.closest('#modal-destination').dataset.wizardCompact};
+ });
+ const path=info.outputPath(name+'-scroll-proof.json');require('node:fs').mkdirSync(require('node:path').dirname(path),{recursive:true});require('node:fs').writeFileSync(path,JSON.stringify(result,null,2));await info.attach(name+'-scroll-proof',{path,contentType:'application/json'});
+ expect(result.formOverflow).toBe('hidden');expect(result.formScroll).toBe(0);expect(result.scroll.overflow).toBe('auto');expect(result.scroll.usableHeight,JSON.stringify(result)).toBeGreaterThanOrEqual(minimum);expect(result.scroll.bottom).toBeLessThanOrEqual(result.actionTop);
+ for(const action of result.actions){expect(action.position).toBe('static');expect(action.width).toBeGreaterThanOrEqual(44);expect(action.height).toBeGreaterThanOrEqual(44);expect(action.bottom).toBeLessThanOrEqual(result.dockTop);expect(action.bottom).toBeLessThanOrEqual(result.modalBottom);}
+ for(const visible of result.visible){expect(visible.clip.bottom).toBeLessThanOrEqual(result.actionTop);expect(visible.hit,JSON.stringify(visible)).toBe(true);}
+ await expect(ui.modal.locator('.tm-home-dock')).toHaveCount(1);return result;
+}
+async function wizardFocusedControl(page,info,ui,selector,name,{reveal=true}={}){
+ const control=ui.form.locator(selector);if(reveal){await control.focus();await control.evaluate(n=>n.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));}await expect(control).toBeFocused();
+ const row=await control.evaluate(n=>{const b=n.getBoundingClientRect(),s=n.closest('.trip-wizard-scroll').getBoundingClientRect(),samples=[[b.left+3,b.top+3],[b.right-3,b.top+3],[b.left+3,b.bottom-3],[b.right-3,b.bottom-3]].map(([x,y])=>{const hit=document.elementFromPoint(x,y);return hit===n||n.contains(hit);});return{top:b.top,bottom:b.bottom,left:b.left,right:b.right,scrollTop:s.top,scrollBottom:s.bottom,scrollLeft:s.left,scrollRight:s.right,hits:samples};});
+ const path=info.outputPath(name+'-focused-control.json');require('node:fs').mkdirSync(require('node:path').dirname(path),{recursive:true});require('node:fs').writeFileSync(path,JSON.stringify({testRequestedScroll:reveal,...row},null,2));await info.attach(name+'-focused-control',{path,contentType:'application/json'});
+ expect(row.top).toBeGreaterThanOrEqual(row.scrollTop-.5);expect(row.bottom).toBeLessThanOrEqual(row.scrollBottom+.5);expect(row.left).toBeGreaterThanOrEqual(row.scrollLeft-.5);expect(row.right).toBeLessThanOrEqual(row.scrollRight+.5);expect(row.hits.every(Boolean),JSON.stringify(row)).toBe(true);await wizardScrollProof(page,info,ui,name);await discoveryCapture(page,info,name+'-focused');
+}
+for(const width of [390,430])for(const theme of ['light','dark'])test('reserved wizard action row, long decorated content, shrink and restore '+width+'/'+theme,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});await boot(page,{theme,intelligence:false});
+ await page.evaluate(()=>{for(const[side,value]of Object.entries({top:32,right:12,bottom:24,left:24}))document.documentElement.style.setProperty('--safe-area-inset-'+side,value+'px');});
+ const ui=await openWizard(page);await page.evaluate(()=>{const f=document.querySelector('[data-destination-form]');window.scrollIdentity={dock:document.querySelector('.tm-home-dock'),intro:f.querySelector('.trip-wizard-intro'),fields:Object.fromEntries(['country','city','start','end','budget','type'].map(k=>[k,f.elements[k]]))};});
+ await destination(ui);await page.evaluate(()=>TravelMateFeatures.load('intelligence'));await page.waitForFunction(()=>window.TravelMateTripIntelligence);
+ async function viewport(height){await page.evaluate(height=>{const viewport=new EventTarget();viewport.height=height;viewport.offsetTop=0;Object.defineProperty(window,'visualViewport',{configurable:true,value:viewport});window.dispatchEvent(new Event('resize'));},height);}
+ for(const [phase,height] of [['full',900],['shrunk',420],['restored',900]]){await viewport(height);await expect(ui.modal).toHaveAttribute('data-wizard-compact',String(height<560));await expect(ui.modal.locator('[data-wizard-progress-label]')).toBeVisible();await wizardFocusedControl(page,info,ui,'[name=start]','dates-start-'+width+'-'+theme+'-'+phase);await wizardFocusedControl(page,info,ui,'[name=end]','dates-end-'+width+'-'+theme+'-'+phase);}
+ await dates(ui);await expect(ui.form.locator('.navo-trip-types')).toBeVisible();await ui.form.locator('[name=budget]').fill('3500');await ui.form.locator('.navo-trip-banner p').evaluate(n=>n.textContent='תוכן המלצות ארוך לבדיקת גלילה ושמירת מקום לפעולות. '.repeat(18));
+ for(const [phase,height] of [['full',900],['shrunk',420],['restored',900]]){await ui.form.locator('[name=budget]').focus();await viewport(height);await expect(ui.form.locator('[name=budget]')).toBeFocused();await expect(ui.form.locator('[name=budget]')).toHaveValue('3500');
+  await wizardFocusedControl(page,info,ui,'[name=budget]','preferences-budget-'+width+'-'+theme+'-'+phase,{reveal:false});
+  for(const position of ['top','middle','bottom']){await ui.form.locator('.trip-wizard-scroll').evaluate((n,position)=>{const banner=n.querySelector('.navo-trip-banner'),b=banner.getBoundingClientRect(),r=n.getBoundingClientRect(),start=n.scrollTop+b.top-r.top;n.scrollTop=position==='top'?start:position==='middle'?start+(b.height-r.height)/2:start+b.height-r.height;},position);expect(await ui.form.locator('.navo-trip-banner p').evaluate(n=>n.textContent.length)).toBeGreaterThan(500);const proof=await wizardScrollProof(page,info,ui,'recommendation-'+width+'-'+theme+'-'+phase+'-'+position);expect(proof.visible.some(n=>n.kind==='ASIDE')).toBe(true);await discoveryCapture(page,info,'recommendation-'+width+'-'+theme+'-'+phase+'-'+position);}
+  await wizardFocusedControl(page,info,ui,'.navo-trip-banner button','recommendation-cta-'+width+'-'+theme+'-'+phase);
+ }
+ await ui.next.click();await step(ui,3);await expect(ui.form.locator('[data-wizard-summary=budget]')).toContainText('3,500');
+ for(const [phase,height] of [['full',900],['shrunk',420],['restored',900]]){await viewport(height);await wizardFocusedControl(page,info,ui,'[data-wizard-edit="2"]','summary-edit-'+width+'-'+theme+'-'+phase);await expect(ui.confirm).toBeVisible();}
+ await ui.form.locator('[data-wizard-edit="0"]').click();await step(ui,0);
+ expect(await ui.form.evaluate(f=>f.querySelector('.trip-wizard-intro').parentElement===f&&Object.entries(scrollIdentity.fields).every(([k,n])=>f.elements[k]===n)&&scrollIdentity.dock===document.querySelector('.tm-home-dock')&&f.querySelector('.trip-wizard-scroll').hidden&&f.querySelector('.trip-wizard-scroll').children.length===0&&f.elements.country.closest('label').parentElement===f&&f.elements.city.closest('label').parentElement===f&&f.querySelector('.create-trip').parentElement===f&&f.querySelector('[data-wizard-back]').parentElement===f)).toBe(true);
+ await expect(ui.form.locator('.navo-trip-banner')).toBeHidden();await expect(ui.form.locator('.navo-trip-types')).toBeHidden();await expectZero(page);await ui.modal.locator('[data-close]').click();await expect(ui.trigger).toBeFocused();
 });

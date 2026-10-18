@@ -1530,6 +1530,43 @@
       closed: closeOwnership
     };
   }
+  // Presentation adapter only: native form controls and writer ownership stay intact.
+  function createWizardScrollLayout(form, back) {
+    var scroll = document.createElement('div'), records = [];
+    scroll.className = 'trip-wizard-scroll'; scroll.setAttribute('data-wizard-scroll-region', '');
+    scroll.hidden = true; form.insertBefore(scroll, back);
+    function sync(step) {
+      var later = step > 0, typeLabel = form.elements.type.closest('label');
+      var types = form.querySelector('.navo-trip-types'), banner = form.querySelector('.navo-trip-banner');
+      if (later) {
+        Array.prototype.slice.call(form.children).forEach(function (node) {
+          if (node === scroll || node === types || node === banner ||
+              node === form.elements.country.closest('label') || node === form.elements.city.closest('label') ||
+              node.matches('.destination-discovery,[data-wizard-back],[data-wizard-next],.create-trip')) return;
+          if (!node.matches('[data-wizard-panel],.trip-wizard-intro,.form-error,.trip-wizard-save-status')) return;
+          var marker = document.createComment('wizard-content-position');
+          form.insertBefore(marker, node); records.push({ node: node, marker: marker }); scroll.appendChild(node);
+        });
+        if (types && (types.parentNode !== scroll || typeLabel.nextElementSibling !== types)) typeLabel.after(types);
+        if (banner && (banner.parentNode !== scroll || scroll.lastElementChild !== banner)) scroll.appendChild(banner);
+      } else {
+        records.forEach(function (item) { form.insertBefore(item.node, item.marker); item.marker.remove(); });
+        records = [];
+        if (types && (types.parentNode !== form || typeLabel.nextElementSibling !== types)) typeLabel.after(types);
+        if (banner && (banner.parentNode !== form || banner.nextElementSibling !== back)) form.insertBefore(banner, back);
+      }
+      [types, banner].forEach(function (node) { if (node && node.hidden !== (step !== 2)) node.hidden = step !== 2; });
+      if (scroll.hidden !== !later) scroll.hidden = !later;
+      if (form.dataset.wizardScroll !== String(later)) form.dataset.wizardScroll = String(later);
+    }
+    function revealFocused() {
+      var focused = document.activeElement;
+      if (scroll.hidden || !focused || !scroll.contains(focused) || !focused.getClientRects().length) return;
+      focused.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+    }
+    return { sync: sync, revealFocused: revealFocused };
+  }
+
   function initDestinationWizard(form) {
     var modal = document.getElementById('modal-destination');
     var heading = form.querySelector('[data-wizard-heading]');
@@ -1540,6 +1577,7 @@
     var names = ['country', 'city', 'start', 'end', 'budget', 'type'];
     var titles = ['לאן רוצים לטוס?', 'מתי יוצאים לדרך?', 'איך תרצו לטייל?', 'הטיול שלכם, לפני שיוצאים'];
     var labels = ['יעד', 'תאריכים', 'העדפות ותקציב', 'סיכום'];
+    var scrollLayout = createWizardScrollLayout(form, back);
     var intro = form.querySelector('.trip-wizard-intro p');
     var descriptions = [intro.textContent, 'בחרו את יום היציאה ואת יום החזרה כדי לקבוע את משך הטיול.', 'בחרו את סוג הטיול והגדירו תקציב כולל באירו שמתאים לכם.', 'בדקו את פרטי הטיול המרוכזים כאן.'];
     function defaults() {
@@ -1589,6 +1627,7 @@
           form.querySelector('[data-wizard-summary="budget"]').textContent = new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value.budget);
         }
       }
+      scrollLayout.sync(state.step);
       var focusIdentity = identity(), focusRevision = ownership ? ownership.revision() : 0;
       if (focus) requestAnimationFrame(function () {
         if (!modal.classList.contains('open') || controller.snapshot().step !== state.step || identity() !== focusIdentity || ownership && (ownership.ownsFocus() || ownership.revision() !== focusRevision)) return;
@@ -1627,17 +1666,19 @@
       var changed = false;
       form.querySelectorAll('.navo-trip-types,.navo-trip-banner').forEach(function (node) {
         if (node.dataset.wizardPanel !== '2') { node.dataset.wizardPanel = '2'; changed = true; }
-        if (node.classList.contains('navo-trip-banner') && node.nextElementSibling !== back) { form.insertBefore(node, back); changed = true; }
       });
       if (changed) render(controller.snapshot(), '');
-    }).observe(form, { childList: true, subtree: true });
+      else scrollLayout.sync(controller.snapshot().step);
+    }).observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
     var dock = createWizardDockOwnership(modal, { isOpen: function () { return modal.classList.contains('open'); }, dismiss: function () { modal.querySelector('[data-close]').click(); } });
     var ownership = createWizardModalOwnership(modal, form, { dock: dock, identity: identity, snapshot: controller.snapshot, isOpen: function () { return modal.classList.contains('open'); }, dismiss: function () { modal.querySelector('[data-close]').click(); } });
     function measureViewport() {
       if (!modal.classList.contains('open')) return;
       var viewport = window.visualViewport;
+      modal.dataset.wizardCompact = String((viewport ? viewport.height : window.innerHeight) < 560);
       modal.style.setProperty('--tm-wizard-viewport-height', (viewport ? viewport.height : window.innerHeight) + 'px');
       modal.style.setProperty('--tm-wizard-viewport-top', (viewport ? viewport.offsetTop : 0) + 'px');
+      scrollLayout.revealFocused();
     }
     new MutationObserver(function () {
       if (modal.classList.contains('open')) {

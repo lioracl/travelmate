@@ -1038,6 +1038,21 @@ html body.home-page #modal-destination [data-wizard-step="2"] .navo-trip-banner 
 html body.home-page #modal-destination [data-wizard-step="2"] .navo-trip-banner button{background:var(--tm-action-primary);color:var(--tm-text-on-action);-webkit-text-fill-color:currentColor}
 
 
+
+/* Later-step content scrolls inside the native form; direct-child actions reserve their own row. */
+html body.home-page #modal-destination:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"]) .destination-modal{height:100%;min-height:0}
+html body.home-page #modal-destination .destination-form:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"])[data-wizard-scroll="true"]{flex:1;overflow:hidden;grid-template-rows:minmax(0,1fr) auto;gap:12px;padding:0 16px 12px;scroll-padding:0}
+html body.home-page #modal-destination .destination-form:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"])>.trip-wizard-scroll{grid-column:1/-1;grid-row:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;gap:20px 16px;padding:16px 4px;scroll-padding-block:16px}
+html body.home-page #modal-destination .destination-form:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"])>:is(.trip-wizard-back,.trip-wizard-next,.create-trip){position:static;grid-row:2;bottom:auto;margin:0}
+html body.home-page #modal-destination .destination-form:is([data-wizard-step="1"],[data-wizard-step="2"])>.trip-wizard-scroll>label:not([hidden]){display:grid;align-content:start;gap:10px;font-size:15px;font-weight:700;line-height:1.5}
+html body.home-page #modal-destination[data-wizard-compact="true"]:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"]) .destination-modal>header{padding:4px 12px;gap:8px;grid-template-columns:minmax(0,1fr) 44px;align-items:center}
+html body.home-page #modal-destination[data-wizard-compact="true"]:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"]) .destination-modal h2{margin:0;font-size:20px;line-height:1.2}
+html body.home-page #modal-destination[data-wizard-compact="true"]:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"]) .modal-close{min-width:44px;min-height:44px}
+html body.home-page #modal-destination[data-wizard-compact="true"]:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"]) .trip-wizard-progress{display:none}
+html body.home-page #modal-destination[data-wizard-compact="true"]:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"]) .destination-form{gap:8px;padding-bottom:8px}
+html body.home-page #modal-destination[data-wizard-compact="true"]:is([data-wizard-step="1"],[data-wizard-step="2"],[data-wizard-step="3"]) .trip-wizard-scroll{padding-block:8px;gap:12px;scroll-padding-block:8px}
+
+
 /* 2.16.0 profile strip: keep the signed-in profile directly below the top actions. */
 .home-page.is-authenticated .home-personal-summary{position:relative;z-index:18;min-height:82px;background:linear-gradient(135deg,color-mix(in srgb,var(--tm-surface-neutral,#f4f3ef) 64%,transparent),color-mix(in srgb,var(--tm-brand-primary,#147D92) 12%,transparent));border-color:color-mix(in srgb,var(--tm-brand-primary,#147D92) 28%,var(--tm-border-control,#cdd9d5));color:var(--tm-text-primary,#12383f);-webkit-text-fill-color:currentColor;-webkit-backdrop-filter:none;backdrop-filter:none}
 .home-page.is-authenticated .home-personal-summary .home-personal-copy h1{color:var(--tm-text-primary,#12383f);-webkit-text-fill-color:currentColor;text-shadow:0 1px 1px rgba(255,255,255,.28)}

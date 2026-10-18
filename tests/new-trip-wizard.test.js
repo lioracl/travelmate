@@ -392,3 +392,43 @@ test('all five canonical C1 action shades pair with on-action white above text A
  const luminance=hex=>hex.slice(1).match(/../g).map(n=>parseInt(n,16)/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4).reduce((v,x,i)=>v+x*[.2126,.7152,.0722][i],0);
  for(const r of rows)assert.ok(1.05/(luminance(r[3])+.05)>=4.5,r[1]+' canonical action shade');
 });
+
+function scrollLayoutHarness(){
+ let mutations=0;
+ class N{
+  constructor(tag,classes='',panel){this.tag=tag;this.nodeType=tag==='#comment'?8:1;this.className=classes;this.dataset={};if(panel!==undefined)this.dataset.wizardPanel=String(panel);this.nodes=[];this.parentNode=null;this.hidden=false;}
+  contains(n){return this===n||this.children.some(c=>c.contains(n));}
+  getClientRects(){return [{}];}
+  scrollIntoView(options){this.reveal=(this.reveal||0)+1;this.revealOptions=options;}
+  get children(){return this.nodes.filter(n=>n.nodeType===1);}
+  get nextSibling(){return this.parentNode?.nodes[this.parentNode.nodes.indexOf(this)+1]||null;}
+  get nextElementSibling(){let n=this.nextSibling;while(n&&n.nodeType!==1)n=n.nextSibling;return n;}
+  get lastElementChild(){return this.children.at(-1)||null;}
+  insertBefore(n,b){if(n.parentNode)n.parentNode.nodes.splice(n.parentNode.nodes.indexOf(n),1);const i=b?this.nodes.indexOf(b):this.nodes.length;assert(i>=0);this.nodes.splice(i,0,n);n.parentNode=this;mutations++;return n;}
+  appendChild(n){return this.insertBefore(n,null);}
+  after(n){this.parentNode.insertBefore(n,this.nextSibling);}
+  remove(){this.parentNode.nodes.splice(this.parentNode.nodes.indexOf(this),1);this.parentNode=null;mutations++;}
+  setAttribute(k,v){if(k.startsWith('data-'))this.dataset[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]=v;}
+  matches(selectors){return selectors.split(',').some(s=>s.startsWith('.')?this.className.split(' ').includes(s.slice(1)):s==='[data-wizard-panel]'?this.dataset.wizardPanel!==undefined:s==='[data-wizard-back]'?this===back:s==='[data-wizard-next]'?this===next:false);}
+  closest(s){return s==='label'&&this.tag==='label'?this:this.parentNode?.closest(s)||null;}
+  querySelector(s){for(const n of this.children){if(n.matches(s))return n;const found=n.querySelector(s);if(found)return found;}return null;}
+ }
+ const form=new N('form'),intro=new N('div','trip-wizard-intro'),discovery=new N('section','destination-discovery',0),country=new N('label','',0),city=new N('label','',0),start=new N('label','',1),end=new N('label','',1),budget=new N('label','',2),type=new N('label','',2),hint=new N('p','trip-wizard-hint',2),summary=new N('section','trip-wizard-summary',3),error=new N('p','form-error'),status=new N('p','trip-wizard-save-status'),back=new N('button'),next=new N('button'),confirm=new N('button','create-trip');
+ const original=[intro,discovery,country,city,start,end,budget,type,hint,summary,error,status,back,next,confirm];original.forEach(n=>form.appendChild(n));form.elements={};for(const[name,label]of Object.entries({country,city,start,end,budget,type})){const input=new N('input');input.value=name+' original';label.appendChild(input);form.elements[name]=input;}
+ const context={document:{createElement:t=>new N(t),createComment:()=>new N('#comment')}};
+ const code=source.slice(source.indexOf('  function createWizardScrollLayout('),source.indexOf('  function initDestinationWizard('));vm.runInNewContext(code+'\nthis.create=createWizardScrollLayout;',context);
+ const adapter=context.create(form,back),scroll=form.querySelector('.trip-wizard-scroll');function decorate(){const types=new N('fieldset','navo-trip-types'),banner=new N('aside','navo-trip-banner');type.after(types);form.insertBefore(banner,confirm);return{types,banner};}
+ return{form,original,adapter,scroll,type,back,confirm,decorate,document:context.document,get mutations(){return mutations;}};
+}
+for(const phase of [0,1,2,3])test('scroll layout preserves native hooks, node identity and lazy decorations at step '+phase,()=>{
+ const h=scrollLayoutHarness(),inputs={...h.form.elements};h.adapter.sync(phase);const {types,banner}=h.decorate();h.adapter.sync(phase);
+ for(const step of [phase,1,2,3,0,1,0]){
+  h.adapter.sync(step);const before=h.mutations;h.adapter.sync(step);assert.equal(h.mutations,before,'idempotent; no observer reparent loop');
+  h.document.activeElement=inputs.budget;const reveals=inputs.budget.reveal||0;h.adapter.revealFocused();assert.equal(inputs.budget.reveal||0,reveals+(step?1:0));if(step)assert.equal(inputs.budget.revealOptions.block,'nearest');h.document.activeElement=h.back;h.adapter.revealFocused();assert.equal(inputs.budget.reveal||0,reveals+(step?1:0),'does not act on focus outside scroll region');
+  for(const name of ['country','city'])assert.equal(inputs[name].closest('label').parentNode,h.form);
+  assert.equal(h.back.parentNode,h.form);assert.equal(h.confirm.parentNode,h.form);assert.equal(h.scroll.hidden,step===0);assert.equal(types.hidden,step!==2);assert.equal(banner.hidden,step!==2);
+  assert.equal(types.parentNode,step?h.scroll:h.form);assert.equal(banner.parentNode,step?h.scroll:h.form);assert.equal(h.type.nextElementSibling,types);
+  if(step){assert.equal(h.scroll.lastElementChild,banner);assert.equal(h.scroll.nextElementSibling,h.back);}else{assert.equal(banner.nextElementSibling,h.back);assert.deepEqual(h.form.children.filter(n=>n!==h.scroll&&n!==types&&n!==banner),h.original);assert.equal(h.scroll.children.length,0);}
+  for(const[name,input]of Object.entries(inputs)){assert.equal(h.form.elements[name],input);assert.equal(input.value,name+' original');}
+ }
+});
