@@ -230,3 +230,101 @@ test('a dispatch that never opens cancels after propagation, while stale cancell
  const h=nestedOwnershipHarness();h.control.opened();h.captureOnly(h.launch);await Promise.resolve();assert.equal(h.backdrop.inert,false);assert.equal(h.modal.inert,false);const stale=[...h.timers.values()][0];h.flushTimers();assert.equal(h.backdrop.inert,true);assert.equal(h.control.ownsFocus(),false);assert.equal(h.background.inert,true);
  h.click(h.launch);stale();assert.equal(h.backdrop.inert,false);assert.equal(h.modal.inert,true);h.click(h.close);assert.equal(h.timers.size,0);
 });
+
+function dockHarness({priorInert=false,closeAllowed=true}={}){
+ let open=true,closes=0;const listeners={},events={};
+ class Node{
+  constructor(kind){this.kind=kind;this.children=[];this.parentNode=null;this.inert=false;this.attrs={};this.listeners={};}
+  get nextSibling(){return this.parentNode?.children[this.parentNode.children.indexOf(this)+1]||null;}
+  appendChild(n){return this.insertBefore(n,null);}
+  insertBefore(n,next){if(n.parentNode)n.parentNode.children.splice(n.parentNode.children.indexOf(n),1);const i=next?this.children.indexOf(next):this.children.length;this.children.splice(i,0,n);n.parentNode=this;return n;}
+  contains(n){return n===this||this.children.some(c=>c.contains(n));}
+  setAttribute(k,v){this.attrs[k]=v;}getAttribute(k){return this.attrs[k]??null;}removeAttribute(k){delete this.attrs[k];}
+  addEventListener(k,f){this.listeners[k]=f;}focus(){document.activeElement=this;}
+  closest(){return this;}matches(s){return this.kind==='new'&&s==='[data-modal="destination"]';}
+ }
+ const body=new Node('body'),before=new Node('before'),dock=new Node('dock'),after=new Node('after'),host=new Node('host'),modal=new Node('modal'),document={activeElement:null,querySelector:()=>dock};
+ body.appendChild(before);body.appendChild(dock);body.appendChild(after);modal.appendChild(host);modal.querySelector=()=>host;
+ const center=new Node('new'),route=new Node('route'),profile=new Node('profile');[center,route,profile].forEach(n=>dock.appendChild(n));dock.inert=priorInert;
+ const window={addEventListener(k,f){events[k]=f;}},env={document,window};vm.runInNewContext(source.slice(source.indexOf('  function createWizardDockOwnership('),source.indexOf('  function createWizardModalOwnership('))+'\nthis.create=createWizardDockOwnership;',env);
+ const control=env.create(modal,{isOpen:()=>open,dismiss(){closes++;if(closeAllowed){open=false;control.closed();}}});
+ function click(target){const event={target,preventDefault(){this.prevented=true;},stopImmediatePropagation(){this.stopped=true;}};dock.listeners.click(event);return event;}
+ return{control,body,dock,host,modal,before,after,center,route,profile,document,events,click,get closes(){return closes;},get open(){return open;},set open(v){open=v;}};
+}
+test('wizard borrows the same dock and restores exact parent, sibling, marker and inert state without cloning',()=>{
+ const h=dockHarness();const children=h.dock.children.slice();h.dock.setAttribute('data-wizard-dock','original');h.control.opened();h.control.opened();assert.equal(h.host.children.length,1);assert.equal(h.host.children[0],h.dock);assert.deepEqual(h.dock.children,children);assert.equal(h.dock.inert,false);
+ h.control.closed();h.control.closed();assert.deepEqual(h.body.children,[h.before,h.dock,h.after]);assert.equal(h.dock.getAttribute('data-wizard-dock'),'original');assert.equal(h.dock.inert,false);
+});
+test('center action is idempotent; same-hash and Profile hand off after synchronous canonical close',()=>{
+ for(const key of ['route','profile']){const h=dockHarness();h.control.opened();const center=h.click(h.center);assert.equal(center.prevented,true);assert.equal(center.stopped,true);assert.equal(h.closes,0);assert.equal(h.open,true);
+ const event=h.click(h[key]);assert.equal(h.closes,1);assert.equal(h.open,false);assert.equal(h.dock.parentNode,h.body);assert.equal(h.document.activeElement,h[key]);assert.equal(event.prevented,undefined);assert.equal(event.stopped,undefined);}
+});
+test('nested recommendation suspension and existing inertness cannot activate the relocated dock',()=>{
+ const h=dockHarness();h.control.opened();h.control.suspend(true);const event=h.click(h.profile);assert.equal(event.prevented,true);assert.equal(h.closes,0);h.control.suspend(false);assert.equal(h.dock.inert,false);
+ const locked=dockHarness({priorInert:true});locked.control.opened();locked.control.suspend(false);assert.equal(locked.dock.inert,true);locked.click(locked.route);assert.equal(locked.closes,0);locked.control.closed();assert.equal(locked.dock.inert,true);
+});
+test('cancelled close cannot let a dock action escape; native Back/hash changes close without owning routing',()=>{
+ const denied=dockHarness({closeAllowed:false});denied.control.opened();const e=denied.click(denied.route);assert.equal(e.prevented,true);assert.equal(e.stopped,true);assert.equal(denied.dock.parentNode,denied.host);
+ for(const name of ['popstate','hashchange']){const h=dockHarness();h.control.opened();h.events[name]();assert.equal(h.open,false);assert.equal(h.closes,1);assert.equal(h.dock.parentNode,h.body);h.events[name]();assert.equal(h.closes,1);}
+});
+test('dock restore tolerates removed next sibling and reopened transaction without duplicating nodes',()=>{
+ const h=dockHarness();h.control.opened();h.body.children.splice(h.body.children.indexOf(h.after),1);h.after.parentNode=null;h.control.closed();assert.equal(h.body.children.at(-1),h.dock);assert.equal(h.dock.getAttribute('data-wizard-dock'),null);h.control.opened();assert.equal(h.host.children.length,1);h.control.closed();assert.equal(h.body.children.filter(n=>n===h.dock).length,1);
+});
+test('canonical dismissal restores background across an inter-listener body-mutation checkpoint and can reopen',async()=>{
+ const h=nestedOwnershipHarness();h.control.opened();h.captureOnly(h.wizardClose);await Promise.resolve();
+ h.observers.find(o=>o.target===h.document.body).cb();assert.equal(h.open,true,'target close has not run at the checkpoint');assert.equal(h.background.inert,false,'a relocated dock cannot cause the background ledger to be reacquired while closing');assert.equal(h.preInert.inert,true);
+ h.open=false;h.control.closed();h.open=true;h.control.opened();assert.equal(h.background.inert,true);h.open=false;h.control.closed();assert.equal(h.background.inert,false);assert.equal(h.preInert.inert,true);
+});
+
+function gradientProofCallback(file){
+ const s=fs.readFileSync(path.join(root,file),'utf8'),start=s.indexOf("evaluateAll(cards=>cards.map(card=>{"),end=s.indexOf("\n expect(proof.length)",start);
+ assert(start>0&&end>start);const expression=s.slice(start+'evaluateAll('.length,end).trim();assert(expression.endsWith('));'));return expression.slice(0,-2);
+}
+function gradientPaintFixture(){
+ // DOM/style evidence fixture, not a browser or a claim of rendered CSS.
+ const style=patch=>Object.assign({position:'static',zIndex:'auto',display:'block',content:'none',visibility:'visible',outlineStyle:'none',textShadow:'none',boxShadow:'none',backgroundBlendMode:'normal',opacity:'1',filter:'none',mixBlendMode:'normal',transform:'none',translate:'none',rotate:'none',scale:'none',zoom:'1',perspective:'none',clipPath:'none',clip:'auto',maskImage:'none',overflowX:'visible',overflowY:'visible',backgroundColor:'rgba(0, 0, 0, 0)',backgroundImage:'none',color:'rgb(255, 255, 255)',webkitTextFillColor:'rgb(255, 255, 255)',top:'0px',right:'0px',bottom:'0px',left:'0px',borderTopWidth:'2px',borderRightWidth:'2px',borderBottomWidth:'2px',borderLeftWidth:'2px',borderTopLeftRadius:'18px',borderTopRightRadius:'18px',borderBottomLeftRadius:'18px',borderBottomRightRadius:'18px',getPropertyValue(k){return k==='-webkit-text-stroke-width'?'0px':k.startsWith('padding-')||/^border-.*-width$/.test(k)?'0px':this[k]??'none';}},patch);
+ const rect=(left,top,width,height)=>({left,top,right:left+width,bottom:top+height,width,height});
+ const make=(tag,cls='')=>({tagName:tag,className:cls,nodeType:1,children:[],get childNodes(){return this.text?[this.text]:this.children;},parentElement:null,style:style(),pseudo:{},matches(selector){return selector.split(',').some(s=>s==='body'&&tag==='BODY'||s==='html'&&tag==='HTML'||s==='img'&&tag==='IMG'||s==='strong'&&tag==='STRONG'||s==='span'&&tag==='SPAN'||s==='span.'+cls&&tag==='SPAN'||s==='.'+cls);},getBoundingClientRect(){return this.rect||rect(0,0,0,0);}});
+ const card=make('BUTTON','destination-choice'),img=make('IMG'),status=make('SPAN','destination-image-status'),caption=make('SPAN','destination-choice-caption'),mark=make('SPAN','destination-choice-check'),city=make('STRONG'),country=make('SPAN'),ancestor=make('DIV','destination-modal'),body=make('BODY'),html=make('HTML');
+ card.dataset={destinationChoice:'rome',imageState:'ready'};card.rect=rect(0,0,168,120);card.style=style({position:'relative',isolation:'isolate',overflowX:'hidden',overflowY:'hidden'});
+ card.pseudo['::before']=style({position:'absolute',zIndex:'1',content:'""',backgroundImage:'linear-gradient(to top, rgba(0, 0, 0, 0.8) 0px, rgba(0, 0, 0, 0.64) 48px, rgba(0, 0, 0, 0) 72px)',backgroundSize:'auto',backgroundPosition:'0% 0%',backgroundRepeat:'repeat',backgroundAttachment:'scroll'});
+ img.style.position='absolute';caption.style.position='absolute';caption.style.zIndex='2';status.style.position='absolute';status.style.display='none';mark.style.position='absolute';mark.style.zIndex='2';mark.style.display='none';
+ card.children=[img,status,caption,mark];caption.children=[city,country];for(const n of card.children)n.parentElement=card;city.parentElement=country.parentElement=caption;card.parentElement=ancestor;ancestor.parentElement=body;body.parentElement=html;
+ city.text={nodeType:3,textContent:'Rome',rect:rect(98,74,60,20)};country.text={nodeType:3,textContent:'Italy',rect:rect(122,96,36,15)};card.querySelectorAll=()=>[img,status,caption,city,country,mark];caption.querySelectorAll=()=>[city,country];card.querySelector=s=>s==='img'?img:s==='.destination-choice-caption'?caption:null;
+ const document={createTreeWalker(text){let read=false;return{nextNode(){if(read)return null;read=true;return text.text;}};},createRange(){let text;return{selectNodeContents(n){text=n;},getClientRects(){return[text.rect];}};}};
+ const env={CSS:{supports(property,value){return value==='none'&&['backdrop-filter','-webkit-backdrop-filter'].includes(property);}},Node:{TEXT_NODE:3},NodeFilter:{SHOW_TEXT:4},document,getComputedStyle(n,pseudo){return pseudo?(n.pseudo[pseudo]||style()):n.style;}};
+ return{card,img,status,caption,mark,city,country,ancestor,env};
+}
+test('both browser specs use byte-identical bounded gradient paint proof',()=>{
+ assert.equal(gradientProofCallback('tests/e2e/new-trip-wizard.spec.js'),gradientProofCallback('tests/e2e/new-trip-release.spec.js'));
+});
+const paintAdversaries=[
+ ['elevated image','image is not below shade and caption',h=>{h.img.style.zIndex='3';}],
+ ['card after overlay','unsupported pseudo overlay: card::after',h=>{h.card.pseudo['::after']={...h.card.pseudo['::before'],zIndex:'5',backgroundImage:'none',backgroundColor:'white'};}],
+ ['caption after overlay','unsupported pseudo overlay: destination-choice-caption::after',h=>{h.caption.pseudo['::after']={...h.card.pseudo['::before'],zIndex:'5'};}],
+ ['ancestor after overlay','unsupported pseudo overlay: ancestor::after',h=>{h.ancestor.pseudo['::after']={...h.card.pseudo['::before'],zIndex:'5'};}],
+ ['clipped caption','unsupported clip or mask: destination-choice-caption',h=>{h.caption.style.clipPath='inset(0 0 50% 0)';}],
+ ['masked caption','unsupported clip or mask: destination-choice-caption',h=>{h.caption.style.maskImage='linear-gradient(transparent,black)';}],
+ ['clipped card','unsupported clip or mask: card',h=>{h.card.style.clipPath='inset(0 0 50% 0)';}],
+ ['masked ancestor','unsupported clip or mask: ancestor',h=>{h.ancestor.style.maskImage='linear-gradient(transparent,black)';}],
+ ['clipped ancestor','unsupported clip or mask: ancestor',h=>{h.ancestor.style.clipPath='inset(0 0 50% 0)';}],
+ ['blended shade','unsupported gradient paint',h=>{h.card.pseudo['::before'].backgroundColor='rgb(255, 255, 255)';h.card.pseudo['::before'].backgroundBlendMode='screen';}],
+ ['inset shade shadow','unsupported gradient paint',h=>{h.card.pseudo['::before'].boxShadow='inset 0 0 0 100px white';}],
+ ['auxiliary shadow','unsupported auxiliary paint coverage',h=>{h.mark.style.display='grid';h.mark.style.boxShadow='0 0 0 100px white';}],
+ ['text stroke','unsupported caption shadow paint',h=>{h.city.style['-webkit-text-stroke-width']='5px';const get=h.city.style.getPropertyValue;h.city.style.getPropertyValue=function(k){return k==='-webkit-text-stroke-width'?'5px':get.call(this,k);};}],
+ ['low opacity shade','unsupported compositing: shade',h=>{h.card.pseudo['::before'].opacity='.1';}]
+];
+for(const [name,reason,mutate]of paintAdversaries)test('gradient proof rejects '+name+' and verifies restored supported structure',()=>{
+ const h=gradientPaintFixture(),callback=vm.runInNewContext('('+gradientProofCallback('tests/e2e/new-trip-release.spec.js')+')',h.env);const valid=callback([h.card])[0];assert.equal(valid.status,'VERIFIED',JSON.stringify(valid));assert(valid.samples.every(s=>s.worstCaseWhiteImageContrast>=4.5));
+ mutate(h);const invalid=callback([h.card])[0];assert.equal(invalid.status,'UNVERIFIED');assert(invalid.issues.some(s=>s.includes(reason)),JSON.stringify(invalid));
+ const restored=gradientPaintFixture(),run=vm.runInNewContext('('+gradientProofCallback('tests/e2e/new-trip-release.spec.js')+')',restored.env);assert.equal(run([restored.card])[0].status,'VERIFIED');
+});
+
+test('gradient proof rejects each supported caption backdrop filter and verifies restoration',()=>{
+ for(const property of ['backdrop-filter','-webkit-backdrop-filter']){
+  const h=gradientPaintFixture();h.env.CSS.supports=(candidate,value)=>candidate===property&&value==='none';
+  const callback=vm.runInNewContext('('+gradientProofCallback('tests/e2e/new-trip-release.spec.js')+')',h.env);assert.equal(callback([h.card])[0].status,'VERIFIED');
+  h.caption.style[property]='brightness(10)';const invalid=callback([h.card])[0];assert.equal(invalid.status,'UNVERIFIED');assert(invalid.issues.includes('unsupported backdrop filter: destination-choice-caption'),JSON.stringify(invalid));
+  delete h.caption.style[property];const restored=callback([h.card])[0];assert.equal(restored.status,'VERIFIED');assert(restored.samples.every(s=>s.worstCaseWhiteImageContrast>=4.5));
+ }
+});

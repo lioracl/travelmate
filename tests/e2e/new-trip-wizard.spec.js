@@ -2,6 +2,73 @@
 const {test,expect}=require('@playwright/test');
 const home=require('./fixtures/all-trips-v3.cjs');
 const {readability}=require('./fixtures/six-screen-v3.cjs');
+async function gradientReadability(page,info,name){
+ // Component-local, instantaneous paint proof. Shared canonical scrolling may
+ // clip the entire card; this bounds contrast of its remaining visible glyphs.
+ // It does not certify viewport visibility or arbitrary page-wide occlusion.
+ const proof=await page.locator('#modal-destination [data-destination-choice]:visible').evaluateAll(cards=>cards.map(card=>{
+  const issues=[],samples=[],check=(ok,reason)=>{if(!ok&&!issues.includes(reason))issues.push(reason);};
+  const result=()=>({destination:card.dataset.destinationChoice,imageState:card.dataset.imageState,boundary:'SUPPORTED_CARD_PAINT_STACK_AT_CAPTURE',status:issues.length?'UNVERIFIED':'VERIFIED',minimum:4.5,issues,samples});
+  const children=[...card.children],img=children[0],status=children[1],caption=children[2],mark=children[3];
+  check(children.length===4&&img?.matches('img')&&status?.matches('span.destination-image-status')&&caption?.matches('span.destination-choice-caption')&&mark?.matches('span.destination-choice-check'),'unsupported card structure');
+  if(issues.length)return result();
+  const labels=[...caption.children];
+  check(labels.length===2&&labels[0].matches('strong')&&labels[1].matches('span')&&labels.every(n=>n.children.length===0),'unsupported caption structure');
+  check([card,caption].every(n=>[...n.childNodes].every(c=>c.nodeType!==Node.TEXT_NODE||!c.textContent.trim()))&&[status,mark].every(n=>n.children.length===0),'unsupported extra card content');
+  const cs=getComputedStyle(card),shade=getComputedStyle(card,'::before'),cap=getComputedStyle(caption),photo=getComputedStyle(img),box=card.getBoundingClientRect();
+  function unclippedStyle(s,where){
+   check(['backdrop-filter','-webkit-backdrop-filter'].every(property=>!CSS.supports(property,'none')||s.getPropertyValue(property)==='none'),'unsupported backdrop filter: '+where);
+   check(s.clipPath==='none'&&s.clip==='auto'&&s.maskImage==='none'&&['','none'].includes(s.getPropertyValue('-webkit-mask-image'))&&['','none'].includes(s.getPropertyValue('mask-border-source')),'unsupported clip or mask: '+where);
+   check(s.visibility==='visible'&&s.opacity==='1'&&s.filter==='none'&&s.mixBlendMode==='normal'&&s.transform==='none'&&['','none'].includes(s.translate)&&['','none'].includes(s.rotate)&&['','none'].includes(s.scale)&&['','1','normal'].includes(s.zoom)&&s.perspective==='none','unsupported compositing: '+where);
+  }
+  function noPseudo(node,side,where){const s=getComputedStyle(node,side);check(s.display==='none'||s.content==='none'||s.content==='normal','unsupported pseudo overlay: '+where+side);}
+  // No arbitrary extra elements or generated content may share the paint stack.
+  for(const node of [card,...card.querySelectorAll('*')]){
+   unclippedStyle(getComputedStyle(node),node===card?'card':node.className||node.tagName);
+   if(node!==card)noPseudo(node,'::before',node.className||node.tagName);
+   noPseudo(node,'::after',node===card?'card':node.className||node.tagName);
+  }
+  for(let node=card.parentElement;node;node=node.parentElement){
+   const s=getComputedStyle(node);unclippedStyle(s,'ancestor '+node.tagName+'.'+node.className);noPseudo(node,'::before','ancestor');noPseudo(node,'::after','ancestor');
+   // Only the existing form/dialog/backdrop/root may clip the whole isolated
+   // card. Other local overflow clips are outside this narrow proof boundary.
+   check((s.overflowX==='visible'&&s.overflowY==='visible')||node.matches('.destination-form,.destination-modal,#modal-destination,body,html'),'unsupported ancestor overflow clip');
+  }
+  check(cs.position==='relative'&&cs.isolation==='isolate'&&cs.zIndex==='auto'&&cs.overflowX==='hidden'&&cs.overflowY==='hidden'&&['top','right','bottom','left'].every(k=>parseFloat(cs.getPropertyValue('padding-'+k))===0),'unsupported isolated card stack');
+  check(photo.position==='absolute'&&photo.zIndex==='auto'&&['top','right','bottom','left'].every(k=>parseFloat(photo[k])===0),'image is not below shade and caption');
+  check(shade.position==='absolute'&&shade.zIndex==='1'&&shade.content==='""'&&['top','right','bottom','left'].every(k=>parseFloat(shade[k])===0)&&shade.backgroundSize==='auto'&&shade.backgroundPosition==='0% 0%'&&shade.backgroundRepeat==='repeat'&&shade.backgroundAttachment==='scroll','unsupported gradient geometry');
+  unclippedStyle(shade,'shade');
+  check(shade.backgroundColor==='rgba(0, 0, 0, 0)'&&shade.backgroundBlendMode==='normal'&&shade.boxShadow==='none'&&shade.outlineStyle==='none'&&['top','right','bottom','left'].every(k=>parseFloat(shade.getPropertyValue('border-'+k+'-width'))===0&&parseFloat(shade.getPropertyValue('padding-'+k))===0),'unsupported gradient paint');
+  check([caption,...labels].every(n=>{const s=getComputedStyle(n);return s.outlineStyle==='none'&&s.textShadow==='none'&&s.boxShadow==='none'&&['','0px'].includes(s.getPropertyValue('-webkit-text-stroke-width'))&&['','none'].includes(s.getPropertyValue('-webkit-box-reflect'));}),'unsupported caption shadow paint');
+  check(/^linear-gradient\(to top, rgba\(0, 0, 0, 0\.8\) 0px, rgba\(0, 0, 0, 0\.64\) 48px, rgba\(0, 0, 0, 0\) 72px\)$/.test(shade.backgroundImage),'unexpected gradient');
+  check(cap.position==='absolute'&&cap.zIndex==='2'&&cap.backgroundColor==='rgba(0, 0, 0, 0)'&&cap.backgroundImage==='none'&&cap.overflowX==='visible'&&cap.overflowY==='visible','caption is not above shade without clipping');
+  check(labels.every(n=>{const s=getComputedStyle(n);return s.position==='static'&&s.zIndex==='auto'&&s.overflowX==='visible'&&s.overflowY==='visible'&&s.backgroundImage==='none'&&s.backgroundColor==='rgba(0, 0, 0, 0)';}),'unsupported label paint');
+  for(const node of [status,mark]){const s=getComputedStyle(node);check(s.position==='absolute'&&s.zIndex===(node===mark?'2':'auto'),'unsupported auxiliary paint order');check(s.boxShadow==='none'&&s.textShadow==='none'&&s.outlineStyle==='none'&&['','0px'].includes(s.getPropertyValue('-webkit-text-stroke-width'))&&['','none'].includes(s.getPropertyValue('-webkit-box-reflect')),'unsupported auxiliary paint coverage');}
+  const bottom=box.bottom-parseFloat(cs.borderBottomWidth),left=box.left+parseFloat(cs.borderLeftWidth),right=box.right-parseFloat(cs.borderRightWidth),top=box.top+parseFloat(cs.borderTopWidth);
+  const alpha=y=>y<=48?.8-(.16*y/48):y<=72?.64*(72-y)/24:0,luminance=c=>c<=.04045?c/12.92:Math.pow((c+.055)/1.055,2.4);
+  const overlap=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+  check(cards.every(other=>other===card||!overlap(box,other.getBoundingClientRect())),'overlapping destination card stacks');
+  // The supported uniform circular card radius must not cut any text rectangle.
+  const radii=['borderTopLeftRadius','borderTopRightRadius','borderBottomLeftRadius','borderBottomRightRadius'].map(k=>cs[k]);
+  check(radii.every(v=>/^\d+(?:\.\d+)?px$/.test(v)&&parseFloat(v)===18),'unsupported card clipping radius');
+  const radius=18,inside=(x,y)=>{if(x<left||x>right||y<top||y>bottom)return false;const dx=Math.max(left+radius-x,0,x-(right-radius)),dy=Math.max(top+radius-y,0,y-(bottom-radius));return !dx||!dy||dx*dx+dy*dy<=radius*radius;};
+  for(const text of labels){
+   const s=getComputedStyle(text);check(s.color==='rgb(255, 255, 255)'&&s.webkitTextFillColor==='rgb(255, 255, 255)','foreground is not opaque white');
+   const walker=document.createTreeWalker(text,NodeFilter.SHOW_TEXT);let node;
+   while((node=walker.nextNode())){if(!node.textContent.trim())continue;const range=document.createRange();range.selectNodeContents(node);
+    for(const r of range.getClientRects()){
+     const distance=bottom-r.top,a=alpha(distance),ratio=1.05/(luminance(1-a)+.05);
+     check(r.width>0&&r.height>0&&[[r.left,r.top],[r.right,r.top],[r.left,r.bottom],[r.right,r.bottom]].every(([x,y])=>inside(x,y))&&distance>=0&&distance<=72,'glyph rectangle outside verified gradient/card clip');
+     check([status,mark].every(n=>getComputedStyle(n).display==='none'||!overlap(r,n.getBoundingClientRect())),'auxiliary content overlaps glyphs');
+     samples.push({text:node.textContent,top:r.top,bottom:r.bottom,distanceFromBottom:distance,minimumAlpha:a,worstCaseWhiteImageContrast:ratio});check(ratio>=4.5,'worst-case contrast below AA');
+    }
+   }
+  }
+  check(samples.length>=2,'missing measurable destination/country glyphs');return result();
+ }));
+ expect(proof.length).toBeGreaterThan(0);const file=info.outputPath(name+'-gradient-contrast.json');require('node:fs').mkdirSync(require('node:path').dirname(file),{recursive:true});require('node:fs').writeFileSync(file,JSON.stringify(proof,null,2)+'\n');await info.attach(name+'-gradient-contrast',{path:file,contentType:'application/json'});
+ try{for(const card of proof){expect(card.status,JSON.stringify(card)).toBe('VERIFIED');for(const sample of card.samples)expect(sample.worstCaseWhiteImageContrast).toBeGreaterThanOrEqual(4.5);}}catch(error){error.gradientProof=proof;throw error;}
+}
 test.use({serviceWorkers:'block'});
 test.afterEach(async({page},info)=>{
  const order=await page.evaluate(()=>window.recommendationEventOrder||null).catch(()=>null);if(!order)return;
@@ -173,27 +240,50 @@ async function syntheticDiscoveryImages(page){
 async function discoveryCapture(page,info,name){
  const path=info.outputPath(name+'.png');await page.screenshot({path});await info.attach(name,{path,contentType:'image/png'});
 }
+for(const width of [390,430])for(const theme of ['light','dark'])test(`canonical dock inside wizard restores routes, same-hash, Profile and draft ${width}/${theme}`,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});await boot(page,{theme});
+ await page.evaluate(()=>{const n=document.querySelector('.tm-home-dock');window.originalWizardDock={node:n,parent:n.parentNode,next:n.nextSibling,attrs:[...n.attributes].map(a=>[a.name,a.value])};});
+ const ui=await openWizard(page),dock=ui.modal.locator('.tm-home-dock'),profile=dock.locator('[data-cloud-account-open]');
+ await expect(dock).toHaveCount(1);await expect(dock).toBeVisible();await expect(dock).toHaveJSProperty('inert',false);
+ expect(await page.evaluate(()=>originalWizardDock.node===document.querySelector('.tm-home-dock'))).toBe(true);
+ const controls=dock.locator(':scope>a,:scope>button');await expect(controls).toHaveCount(5);
+ const positions=await controls.evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().x));expect(positions).toEqual([...positions].sort((a,b)=>b-a));
+ await ui.form.locator('[data-destination-search]').fill('Rome');await ui.form.locator('[data-destination-choice="rome"]').click();await ui.next.scrollIntoViewIfNeeded();
+ const button=await ui.next.boundingBox(),bar=await dock.boundingBox();expect(button.y+button.height).toBeLessThanOrEqual(bar.y);expect(bar.y+bar.height).toBeLessThanOrEqual(900);
+ await ui.modal.locator('[data-close]').focus();await page.keyboard.press('Shift+Tab');await expect(profile).toBeFocused();await page.keyboard.press('Tab');await expect(ui.modal.locator('[data-close]')).toBeFocused();
+ const length=await page.evaluate(()=>history.length);await dock.locator('[data-modal="destination"]').click();await expect(ui.modal).toHaveClass(/open/);await expect(ui.form.locator('[data-destination-search]')).toHaveValue('Rome');expect(await page.evaluate(()=>history.length)).toBe(length);
+ await discoveryCapture(page,info,'dock-selected-keyboard-'+width+'-'+theme);
+ async function restored(){expect(await page.evaluate(()=>{const o=originalWizardDock;return o.node===document.querySelector('.tm-home-dock')&&o.node.parentNode===o.parent&&o.node.nextSibling===o.next&&!o.node.hasAttribute('data-wizard-dock')&&!o.node.inert;})).toBe(true);await expect(ui.modal).not.toHaveClass(/open/);}
+ for(const [route,hash]of [['home','#home'],['home','#home'],['trips','#active-trips'],['places','#home-places']]){
+  await dock.locator('[data-home-route="'+route+'"]').click();await restored();await expect(page).toHaveURL(url=>url.hash===hash);await page.locator('.tm-home-dock [data-modal="destination"]').click();await expect(ui.form.locator('[data-destination-search]')).toHaveValue('Rome');
+ }
+ await profile.click();await restored();await expect(page.locator('[data-cloud-account-backdrop]')).toBeVisible();await expect(page.locator('[data-cloud-account-backdrop]')).toHaveJSProperty('inert',false);
+ await page.keyboard.press('Escape');await expect(page.locator('.tm-home-dock [data-cloud-account-open]')).toBeFocused();await ui.trigger.click();await expect(ui.form.locator('[data-destination-search]')).toHaveValue('Rome');
+ await page.goBack();await restored();await expect(page).toHaveURL(url=>url.hash==='#active-trips');await ui.trigger.click();await expect(ui.form.locator('[data-destination-search]')).toHaveValue('Rome');
+ await page.evaluate(()=>allTripsQA.emit('alltrips-B'));await expect(ui.form.locator('[data-destination-search]')).toHaveValue('');await expect(dock).toHaveJSProperty('inert',false);await expect(dock).toBeVisible();await expectZero(page);
+ await page.keyboard.press('Escape');await restored();await expect(ui.trigger).toBeFocused();
+});
 for(const width of [390,430])for(const theme of ['light','dark'])test(`discovery states and rendered synthetic image evidence ${width}/${theme}`,async({page},info)=>{
  await page.setViewportSize({width,height:900});await boot(page,{theme});await syntheticDiscoveryImages(page);const ui=await openWizard(page),cards=ui.form.locator('[data-destination-choice]'),search=ui.form.locator('[data-destination-search]');
  await info.attach('image-provenance',{body:Buffer.from('Deterministic SVG fixture; synthetic account; NOT genuine destination-photo or real-network proof. R07 is the layout reference.'),contentType:'text/plain'});
- await expect(cards).toHaveCount(6);await expect(ui.form.locator('[name=city]')).toBeHidden();await expect(ui.form.locator('[data-image-state="loading"]')).toHaveCount(6);await discoveryCapture(page,info,'discovery-loading-synthetic');
+ await expect(cards).toHaveCount(6);await expect(ui.form.locator('[name=city]')).toBeHidden();await expect(ui.form.locator('[data-image-state="loading"]')).toHaveCount(6);await gradientReadability(page,info,'discovery-loading');await discoveryCapture(page,info,'discovery-loading-synthetic');
  const sheet=await ui.modal.locator('.destination-modal').boundingBox();expect(sheet.height).toBeGreaterThanOrEqual(899);expect(sheet.width).toBe(width);
- expect(await page.locator('.tm-home-dock').evaluate(n=>n.inert)).toBe(true);await expect(page.locator('.tm-home-dock')).toHaveCount(1);
+ expect(await page.locator('.tm-home-dock').evaluate(n=>n.inert)).toBe(false);await expect(ui.modal.locator('.tm-home-dock')).toHaveCount(1);await expect(page.locator('.tm-home-dock')).toHaveCount(1);await expect(ui.modal.locator('.tm-home-dock')).toBeVisible();
  await page.evaluate(()=>{const late=document.createElement('button');late.id='discovery-late-background';late.textContent='Synthetic late utility';document.body.appendChild(late);});await expect(page.locator('#discovery-late-background')).toHaveJSProperty('inert',true);
  await page.evaluate(()=>discoveryImageQA.release());await expect(ui.form.locator('[data-image-state="ready"]')).toHaveCount(6);await discoveryCapture(page,info,'discovery-grid-synthetic');
  const imageLayout=await cards.evaluateAll(nodes=>nodes.map(node=>{const card=node.getBoundingClientRect(),photo=node.querySelector('img').getBoundingClientRect(),caption=node.querySelector('.destination-choice-caption').getBoundingClientRect();return{cardWidth:card.width,cardHeight:card.height,photoWidth:photo.width,photoHeight:photo.height,captionArea:caption.width*caption.height/(card.width*card.height)};}));for(const layout of imageLayout){expect(layout.photoWidth).toBeGreaterThanOrEqual(layout.cardWidth-4.1);expect(layout.photoHeight).toBeGreaterThanOrEqual(layout.cardHeight-4.1);expect(layout.captionArea).toBeLessThanOrEqual(.32);expect(layout.cardWidth/layout.cardHeight).toBeGreaterThanOrEqual(1.3);expect(layout.cardWidth/layout.cardHeight).toBeLessThanOrEqual(1.5);}
  const positions=await cards.evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height};}));expect(positions[0].y).toBe(positions[1].y);expect(positions[0].x).toBeGreaterThan(positions[1].x);expect(positions[2].y).toBeGreaterThan(positions[0].y);
  for(const box of positions){expect(box.w).toBeGreaterThanOrEqual(44);expect(box.h).toBeGreaterThanOrEqual(44);}
  const rome=cards.filter({hasText:'רומא'});await rome.click();await expect(rome).toHaveAttribute('aria-pressed','true');await expect(ui.form.locator('[data-destination-selection]')).toHaveText('היעד שנבחר: רומא, איטליה');await expectZero(page);await discoveryCapture(page,info,'discovery-selected-synthetic');
- await readability(page,info,'discovery-card-copy',['[data-destination-choice="rome"] .destination-choice-caption strong','[data-destination-choice="rome"] .destination-choice-caption>span','#modal-destination [data-destination-selection]']);
+ await gradientReadability(page,info,'discovery-card-copy');await readability(page,info,'discovery-card-copy',['#modal-destination [data-destination-selection]']);
  await search.fill('Japan');await expect(ui.form.locator('[data-destination-choice]:visible')).toHaveCount(1);await expect(ui.form.locator('[name=city]')).toHaveValue('');await expect(ui.form.locator('[name=country]')).toHaveValue('');await discoveryCapture(page,info,'discovery-search-synthetic');
  await search.fill('Unknown destination');await expect(ui.form.locator('[data-destination-choice]:visible')).toHaveCount(0);await expect(ui.form.locator('[data-destination-empty]')).toBeVisible();await search.press('Enter');await expect(ui.form.locator('[data-destination-manual]')).toBeFocused();await step(ui,0);await discoveryCapture(page,info,'discovery-empty-synthetic');
  await ui.form.locator('[data-destination-manual]').click();await expect(ui.form.locator('[name=city]')).toBeFocused();await ui.form.locator('[name=city]').fill('יעד ידני ABC');await ui.form.locator('[name=country]').fill('מדינה מפורשת');await expect(ui.form.locator('[name=city]')).toBeVisible();await discoveryCapture(page,info,'discovery-manual-synthetic');await expectZero(page);
  await ui.next.click();await step(ui,1);await ui.back.click();await step(ui,0);await expect(ui.form.locator('[name=city]')).toHaveValue('יעד ידני ABC');
  await page.keyboard.press('Escape');await expect(ui.trigger).toBeFocused();expect(await page.locator('.tm-home-dock').evaluate(n=>n.inert)).toBe(false);await expect(page.locator('#discovery-late-background')).toHaveJSProperty('inert',false);await page.locator('#discovery-late-background').evaluate(n=>n.remove());await ui.trigger.click();await expect(search).toHaveValue('Unknown destination');await expect(ui.form.locator('[name=city]')).toHaveValue('יעד ידני ABC');
- await page.evaluate(()=>{discoveryImageQA.mode='broken';allTripsQA.emit('alltrips-B');});await expect(search).toHaveValue('');await expect(ui.form.locator('[name=city]')).toHaveValue('');await expect(ui.form.locator('[data-image-state="unavailable"]')).toHaveCount(6);await discoveryCapture(page,info,'discovery-image-error-synthetic');
+ await page.evaluate(()=>{discoveryImageQA.mode='broken';allTripsQA.emit('alltrips-B');});await expect(search).toHaveValue('');await expect(ui.form.locator('[name=city]')).toHaveValue('');await expect(ui.form.locator('[data-image-state="unavailable"]')).toHaveCount(6);await gradientReadability(page,info,'discovery-unavailable');await discoveryCapture(page,info,'discovery-image-error-synthetic');
  await cards.first().click();await expect(ui.form.locator('[name=country]')).toHaveValue('יפן');await expectZero(page);
- await ui.modal.locator('[data-close]').focus();await page.keyboard.press('Shift+Tab');await expect(ui.next).toBeFocused();await page.keyboard.press('Tab');await expect(ui.modal.locator('[data-close]')).toBeFocused();
+ await ui.modal.locator('[data-close]').focus();await page.keyboard.press('Shift+Tab');await expect(ui.modal.locator('.tm-home-dock [data-cloud-account-open]')).toBeFocused();await page.keyboard.press('Tab');await expect(ui.modal.locator('[data-close]')).toBeFocused();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
@@ -245,7 +335,7 @@ for(const theme of ['light','dark'])test('actual optional Preferences recommenda
  // An external canonical wizard dismissal is intentionally programmatic here:
  // its button must remain inaccessible to pointer/keyboard under the child.
  await ui.modal.locator('[data-close]').evaluate(node=>node.click());await expect(backdrop).toBeHidden();await expect(ui.modal).not.toHaveClass(/open/);await expect(ui.modal).toHaveJSProperty('inert',false);await expect(ui.trigger).toBeFocused();await expect(page.locator('.tm-home-dock')).toHaveJSProperty('inert',false);await expect(page.locator('#nested-unrelated-dialog')).toHaveJSProperty('inert',false);await expect(page.locator('#nested-prior-inert')).toHaveJSProperty('inert',true);
- await ui.trigger.click();await step(ui,2);await openRecommendation();await page.evaluate(()=>allTripsQA.emit('alltrips-B'));await step(ui,0);await expect(backdrop).toBeHidden();await expect(backdrop).toHaveJSProperty('inert',true);await expect(ui.modal).toHaveJSProperty('inert',false);await expect(ui.modal.locator('[data-wizard-heading]')).toBeFocused();await expect(page.locator('.tm-home-dock')).toHaveJSProperty('inert',true);await expect(page.locator('#nested-unrelated-dialog')).toHaveJSProperty('inert',true);
+ await ui.trigger.click();await step(ui,2);await openRecommendation();await page.evaluate(()=>allTripsQA.emit('alltrips-B'));await step(ui,0);await expect(backdrop).toBeHidden();await expect(backdrop).toHaveJSProperty('inert',true);await expect(ui.modal).toHaveJSProperty('inert',false);await expect(ui.modal.locator('[data-wizard-heading]')).toBeFocused();await expect(ui.modal.locator('.tm-home-dock')).toHaveJSProperty('inert',false);await expect(page.locator('#nested-unrelated-dialog')).toHaveJSProperty('inert',true);
  expect(await page.evaluate(()=>nestedRecommendationRequests)).toBe(0);await expectZero(page);await page.keyboard.press('Escape');await expect(ui.trigger).toBeFocused();await expect(page.locator('#nested-prior-inert')).toHaveJSProperty('inert',true);
 });
 

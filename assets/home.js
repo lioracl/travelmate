@@ -1373,15 +1373,50 @@
       online: function () { cards.forEach(function (card) { if (card.button.dataset.imageState === 'unavailable') imageState(card, 'idle'); }); loadImages(); }
     };
   }
+  // The canonical dock keeps its nodes, direct handlers and route owner.
+  // Relocation makes it part of the existing dialog focus scope.
+  function createWizardDockOwnership(modal, options) {
+    var dock = document.querySelector('.tm-home-dock'), host = modal.querySelector('.destination-modal'), record = null;
+    function opened() {
+      if (!dock || !host || record || !options.isOpen()) return;
+      record = { parent: dock.parentNode, next: dock.nextSibling, inert: dock.inert, marker: dock.getAttribute('data-wizard-dock') };
+      dock.setAttribute('data-wizard-dock', ''); host.appendChild(dock);
+    }
+    function closed() {
+      if (!record) return;
+      var saved = record; record = null; dock.inert = saved.inert;
+      if (saved.marker === null) dock.removeAttribute('data-wizard-dock'); else dock.setAttribute('data-wizard-dock', saved.marker);
+      saved.parent.insertBefore(dock, saved.next && saved.next.parentNode === saved.parent ? saved.next : null);
+    }
+    if (dock) dock.addEventListener('click', function (event) {
+      if (!record || !options.isOpen()) return;
+      var action = event.target.closest('[data-modal="destination"],[data-home-route],[data-cloud-account-open]');
+      if (!action || !dock.contains(action)) return;
+      if (modal.inert || dock.inert) { event.preventDefault(); event.stopImmediatePropagation(); return; }
+      if (action.matches('[data-modal="destination"]')) {
+        // Already in this wizard: do not run app.js close/reopen or steal focus.
+        event.preventDefault(); event.stopImmediatePropagation(); return;
+      }
+      // Close synchronously before Profile's target handler or native link default.
+      // This also handles a same-hash link, which emits no hashchange event.
+      options.dismiss();
+      if (options.isOpen()) { event.preventDefault(); event.stopImmediatePropagation(); return; }
+      closed(); action.focus({ preventScroll: true });
+    }, true);
+    function leave() { if (record && options.isOpen()) options.dismiss(); }
+    window.addEventListener('popstate', leave);
+    window.addEventListener('hashchange', leave);
+    return { opened: opened, closed: closed, suspend: function (value) { if (record) dock.inert = value || record.inert; } };
+  }
   function createWizardModalOwnership(modal, form, options) {
-    var background = [], opener = null, nested = null, focusRevision = 0;
+    var background = [], opener = null, nested = null, focusRevision = 0, closing = false;
     function entryFor(node) {
       var entry = background.find(function (item) { return item.node === node; });
       if (!entry) { entry = { node: node, inert: node.inert }; background.push(entry); }
       return entry;
     }
     function inertBackground() {
-      if (!options.isOpen()) return;
+      if (!options.isOpen() || closing) return;
       if (nested && !current(nested)) release(nested, true, false);
       Array.prototype.forEach.call(document.body.children, function (node) {
         if (node === modal || /^(SCRIPT|STYLE|LINK)$/.test(node.tagName)) return;
@@ -1389,11 +1424,14 @@
       });
     }
     function restoreWizard(record) {
+      if (options.dock) options.dock.suspend(false);
       modal.inert = record.wizardInert;
       if (record.wizardModal === null) modal.removeAttribute('aria-modal'); else modal.setAttribute('aria-modal', record.wizardModal);
     }
     function closeOwnership() {
+      closing = false;
       if (nested) release(nested, true, false);
+      if (options.dock) options.dock.closed();
       background.forEach(function (entry) { entry.node.inert = entry.inert; }); background = [];
       if (opener && opener.isConnected && modal.contains(document.activeElement)) opener.focus({ preventScroll: true });
     }
@@ -1413,6 +1451,7 @@
       if (record.node.hidden) { release(record, false, true); return; }
       record.active = true; record.closing = false; clearTimeout(record.cancelTimer); modal.inert = true; modal.setAttribute('aria-modal', 'false');
       record.node.inert = false;
+      if (options.dock) options.dock.suspend(true);
       if (!record.sheet.contains(document.activeElement)) record.close.focus({ preventScroll: true });
     }
     function arm(trigger) {
@@ -1441,11 +1480,13 @@
       }, 0);
     }
     document.addEventListener('click', function (event) {
-      var trigger = event.target.closest('[data-modal="destination"]'); if (trigger) opener = trigger;
+      var trigger = event.target.closest('[data-modal="destination"]'); if (trigger && !options.isOpen()) opener = trigger;
       var launch = event.target.closest('.navo-trip-banner button'); if (launch && form.contains(launch)) arm(launch);
       if (nested && (event.target === nested.node || nested.close.contains(event.target))) { nested.closing = true; restoreWizard(nested); }
       if (options.isOpen() && (event.target === modal || event.target.closest('#modal-destination [data-close]'))) {
+        closing = true;
         if (nested) release(nested, true, false);
+        if (options.dock) options.dock.closed();
         background.forEach(function (entry) { entry.node.inert = entry.inert; }); background = [];
       }
     }, true);
@@ -1464,7 +1505,7 @@
         else if (!event.shiftKey && (document.activeElement === last || !record.sheet.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
         return;
       }
-      if (event.key === 'Escape' && options.isOpen()) { background.forEach(function (entry) { entry.node.inert = entry.inert; }); background = []; }
+      if (event.key === 'Escape' && options.isOpen()) { closing = true; if (options.dock) options.dock.closed(); background.forEach(function (entry) { entry.node.inert = entry.inert; }); background = []; }
     }, true);
     document.addEventListener('focusin', function (event) {
       var record = nested;
@@ -1482,7 +1523,7 @@
     }, true);
     new MutationObserver(inertBackground).observe(document.body, { childList: true });
     return {
-      opened: inertBackground,
+      opened: function () { closing = false; if (options.dock) options.dock.opened(); inertBackground(); },
       ownsFocus: function () { return Boolean(nested && current(nested) && !nested.node.hidden); },
       revision: function () { return focusRevision; },
       reset: function () { if (nested) release(nested, true, false); },
@@ -1587,7 +1628,8 @@
       });
       if (changed) render(controller.snapshot(), '');
     }).observe(form, { childList: true, subtree: true });
-    var ownership = createWizardModalOwnership(modal, form, { identity: identity, snapshot: controller.snapshot, isOpen: function () { return modal.classList.contains('open'); }, dismiss: function () { modal.querySelector('[data-close]').click(); } });
+    var dock = createWizardDockOwnership(modal, { isOpen: function () { return modal.classList.contains('open'); }, dismiss: function () { modal.querySelector('[data-close]').click(); } });
+    var ownership = createWizardModalOwnership(modal, form, { dock: dock, identity: identity, snapshot: controller.snapshot, isOpen: function () { return modal.classList.contains('open'); }, dismiss: function () { modal.querySelector('[data-close]').click(); } });
     function measureViewport() {
       if (!modal.classList.contains('open')) return;
       var viewport = window.visualViewport;
