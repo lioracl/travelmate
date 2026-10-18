@@ -2,7 +2,8 @@
 const {test,expect}=require('@playwright/test');
 const home=require('./fixtures/all-trips-v3.cjs');
 const overview=require('./fixtures/overview-v3.cjs');
-const {readability}=require('./fixtures/six-screen-v3.cjs');
+const six=require('./fixtures/six-screen-v3.cjs');
+const {readability}=six;
 test.use({serviceWorkers:'block'});
 
 for(const width of [360,390,430,768,1440])for(const theme of ['light','dark'])test(`V3 two contexts, physical RTL, utilities and asymmetric insets ${width}/${theme}`,async({page},info)=>{
@@ -98,4 +99,26 @@ test('Home Places primary action uses explicit consent, mocked GPS and handles c
  // Reloading the same account/trip fixture must retain the engine's trip mode.
  await page.locator('[data-home-route="trips"]').click();await page.locator('[data-cloud-trip="alltrips-rome"] a').click();await page.locator('[data-shell-view="places"]').click();
  const tripPanel=page.locator('#places [data-nearby-places]');await expect(tripPanel.locator('[data-nearby-mode="destination"]')).toBeVisible();await expect(tripPanel.locator('[data-nearby-mode="destination"]')).toBeEnabled();
+});
+
+
+// Token presence alone is insufficient. Record actual painted properties and
+// matching production declarations, then demand the intended role's exact ink.
+async function textPaintProvenance(locator,roleToken){
+ return locator.evaluate((node,roleToken)=>{
+  const css=getComputedStyle(node),raw=css.getPropertyValue(roleToken).trim(),probe=document.createElement('span');probe.style.color=raw;document.body.appendChild(probe);const normalized=getComputedStyle(probe).color;probe.remove();
+  const declarations=[];function walk(rules){for(const rule of rules){if(rule.conditionText&&rule.media&&!matchMedia(rule.conditionText).matches)continue;if(rule.selectorText&&rule.style){let matches=false;try{matches=node.matches(rule.selectorText);}catch(_){}if(matches&&(rule.style.color||rule.style.getPropertyValue('-webkit-text-fill-color')))declarations.push({selector:rule.selectorText,color:rule.style.color,fill:rule.style.getPropertyValue('-webkit-text-fill-color'),priority:rule.style.getPropertyPriority('color')});}if(rule.cssRules)walk(rule.cssRules);}}
+  for(const sheet of document.styleSheets)try{walk(sheet.cssRules);}catch(_){}
+  return {color:css.color,fill:css.getPropertyValue('-webkit-text-fill-color'),role:raw,normalized,secondary:css.getPropertyValue('--tm-text-secondary').trim(),declarations};
+ },roleToken);
+}
+for(const width of [390,430])for(const theme of ['light','dark'])test('consumed text role provenance '+width+'/'+theme,async({page,context},info)=>{
+ await page.setViewportSize({width,height:900});await six.boot(page,context,theme);
+ await page.locator('[data-cloud-trip="alltrips-rome"] a').click();await expect(page.locator('#overview [data-city]')).toHaveText('\u05e8\u05d5\u05de\u05d0');await page.waitForFunction(()=>window.TravelMateHistory&&window.TravelMateCloud&&window.TravelMateTripStore&&Array.from(document.styleSheets).some(sheet=>sheet.href&&sheet.href.includes('readable-glass.css')));await six.documents(page);
+ const label=page.locator('[data-overview-action="map-places"] span');await expect(label).toHaveCount(1);await expect(label).toBeVisible();
+ const map=await textPaintProvenance(label,'--tm-overview-label-ink');expect(map.role.toLowerCase()).toBe(theme==='dark'?'#7ae0cf':'#005b53');expect(map.color).toBe(map.normalized);expect(map.fill).toBe(map.normalized);expect(map.declarations.some(d=>d.color.includes('--tm-overview-label-ink')&&d.fill.includes('--tm-overview-label-ink'))).toBe(true);
+ await six.navigate(page,'documents');await expect(page.locator('.vault-library')).toHaveAttribute('data-vault-library-state','locked');await expect(page.locator('[data-document-id]:visible')).toHaveCount(2);
+ const note=await textPaintProvenance(page.locator('#documents .vault-unlock>small'),'--tm-note-text');expect(note.role.toUpperCase()).toBe(theme==='dark'?'#F1F8FF':'#102A4D');expect(note.secondary.toUpperCase()).toBe(theme==='dark'?'#B9CFDC':'#58718E');expect(note.color).toBe(theme==='dark'?'rgb(241, 248, 255)':'rgb(16, 42, 77)');expect(note.color).toBe(note.normalized);expect(note.fill).toBe(note.normalized);expect(note.declarations.some(d=>d.color.includes('--tm-note-text')&&d.fill.includes('--tm-note-text')&&d.priority==='important')).toBe(true);
+ await readability(page,info,'consumed-document-note',['#documents .vault-unlock>small']);
+ expect(await page.evaluate(()=>sixScreenQA.downloads)).toEqual([]);await info.attach('consumed-text-properties-and-role-owners',{body:JSON.stringify({map,note},null,2),contentType:'application/json'});
 });

@@ -134,7 +134,7 @@ test('legacy secondary Hero geometry retains exact padding fallbacks with V3-onl
 
 
 test('C1 warning note uses its own readable foreground and preserves global secondary and legacy tokens',()=>{
- const css=read('assets/document-vault.css');assert.match(css,/#documents \.vault-unlock>small\{\s*--tm-card-secondary:var\(--tm-warning-note-text,var\(--tm-surface-text-muted\)\)/);
+ const css=read('assets/document-vault.css');assert.match(css,/#documents \.vault-unlock>small\{\s*--tm-note-text:var\(--tm-warning-note-text\);\s*--tm-card-secondary:var\(--tm-warning-note-text,var\(--tm-surface-text-muted\)\)/);
  for(const mode of ['light','dark']){const t=theme({'travelmate-theme':mode}),get=k=>t.root.style.getPropertyValue(k);assert.equal(get('--tm-family-muted'),mode==='dark'?'#B9CFDC':'#58718E');assert.ok(contrast(get('--tm-warning-note-text'),mode==='dark'?'#203C55':'#F5F0EA')>=4.5);}
  const legacy=theme({'travelmate-accent':'ocean','travelmate-surface-theme':'warm-sand'},'legacy');assert.equal(legacy.root.style.getPropertyValue('--tm-warning-note-text'),'');assert.equal(legacy.root.style.getPropertyValue('--tm-brand-primary'),'#147D92');assert.equal(legacy.values.get('travelmate-surface-theme'),'warm-sand');
 });
@@ -160,4 +160,20 @@ test('signed-out Home suppresses duplicate shell branding and Weather retains lo
  assert.match(home,/:not\(\.is-authenticated\):not\(\.has-cached-trips\) :is\(\.tm-home-header,\[data-home-dashboard\]/);
  assert.match(css,/\.content>\.weather-top-widget\{\s*min-height:102px;[^}]*background:transparent/);
  assert.doesNotMatch(css,/\.content>\.weather-top-widget\{[^}]*background:var\(--tm-family-primary\)/);
+});
+
+
+test('text paint owners consume local note and action label roles for both color and WebKit fill',()=>{
+ const css=read('assets/readable-glass.css'),doc=read('assets/document-vault.css');
+ assert.match(css,/color:var\(--tm-note-text,var\(--tm-readable-muted\)\)!important;\s*-webkit-text-fill-color:var\(--tm-note-text,var\(--tm-readable-muted\)\)!important/);
+ assert.match(doc,/#documents \.vault-unlock>small\{\s*--tm-note-text:var\(--tm-warning-note-text\)/);
+ assert.match(css,/color:var\(--tm-overview-label-ink,var\(--tm-overview-muted\)\);\s*-webkit-text-fill-color:var\(--tm-overview-label-ink,var\(--tm-overview-muted\)\)/);
+ assert.match(css,/\[data-overview-action="map-places"\]\{--tm-overview-label-ink:var\(--tm-overview-map-ink\)/);
+ // Legacy roles remain the direct fallbacks when V3-local variables are absent.
+ assert.equal(theme({},'legacy').root.style.getPropertyValue('--tm-warning-note-text'),'');
+});
+
+test('utility action layout never matches a hidden control',()=>{
+ const css=read('assets/app-shell.css');assert.match(css,/\.tm-utilities :is\(a,button\):not\(:where\(\[hidden\]\)\)\{position:static;display:flex/);
+ assert.doesNotMatch(css,/\.tm-utilities :is\(a,button\)\{[^}]*display:flex/);
 });
