@@ -458,4 +458,3 @@ for(const width of [390,430])for(const theme of ['light','dark'])test('decorated
  await laterStepEvidence(page,info,ui,name);await laterBoundaryEvidence(page,info,name,['#modal-destination [name=budget]','#modal-destination .navo-trip-types button:not(.is-selected)']);await laterControlReachability(page,info,ui,name);
  await ui.next.click();await expect(ui.form.locator('[data-wizard-summary=preferences]')).toHaveText('סולו');await expect(ui.form.locator('.navo-trip-types')).toBeHidden();await expect(ui.form.locator('.navo-trip-banner')).toBeHidden();await expectZero(page);
 });
-

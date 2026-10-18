@@ -379,4 +379,3 @@ test('later wizard materials reuse canonical semantic tokens with an accessible 
  const pair=name=>theme.match(new RegExp("'--tm-family-"+name+"':dark\\?'(#[0-9A-Fa-f]{6})':'(#[0-9A-Fa-f]{6})'")).slice(1);
  for(const index of [0,1])for(const adjacent of ['solid','primary']){const a=luminance(pair('muted')[index]),b=luminance(pair(adjacent)[index]);assert.ok((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=3);}
 });
-
