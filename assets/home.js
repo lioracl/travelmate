@@ -1233,6 +1233,257 @@
     };
   }
   // New Trip DOM adapter: existing modal owns open/close, Back and focus return.
+  function createDestinationDiscovery(form, options) {
+    // A small, explicit suggestion list; canonical city/country inputs own the draft.
+    var suggestions = [
+      { id: 'tokyo', city: 'טוקיו', country: 'יפן', aliases: 'tokyo japan טוקיו יפן' },
+      { id: 'santorini', city: 'סנטוריני', country: 'יוון', aliases: 'santorini greece סנטוריני יוון' },
+      { id: 'rome', city: 'רומא', country: 'איטליה', aliases: 'rome roma italy רומא איטליה' },
+      { id: 'paris', city: 'פריז', country: 'צרפת', aliases: 'paris france פריז פאריס צרפת' },
+      { id: 'phuket', city: 'פוקט', country: 'תאילנד', aliases: 'phuket thailand פוקט תאילנד' },
+      { id: 'new-york', city: 'ניו יורק', country: 'ארצות הברית', aliases: 'new york newyork nyc united states usa us ניו יורק ארצות הברית ארהב' }
+    ];
+    var root = form.querySelector('[data-destination-discovery]');
+    var search = root.querySelector('[data-destination-search]'), clear = root.querySelector('[data-destination-clear]');
+    var manualButton = root.querySelector('[data-destination-manual]'), grid = root.querySelector('.destination-choices');
+    var empty = root.querySelector('[data-destination-empty]'), selection = root.querySelector('[data-destination-selection]');
+    var manualFields = form.querySelectorAll('[data-destination-manual-field]');
+    var manual = false, writing = false, active = false, generation = 0, cards = [];
+    function normalize(value) { return String(value || '').trim().toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f\u0591-\u05c7'"׳״.,-]/g, '').replace(/\s+/g, ' '); }
+    function matches(item, query) { return normalize(query).split(' ').every(function (word) { return normalize(item.aliases).indexOf(word) !== -1; }); }
+    function selected(item) { return normalize(form.elements.city.value) === normalize(item.city) && normalize(form.elements.country.value) === normalize(item.country); }
+    function editable() { return options.editable() && options.isOpen(); }
+    function notifyFields() {
+      writing = true;
+      ['country', 'city'].forEach(function (name) {
+        form.elements[name].dispatchEvent(new Event('input', { bubbles: true }));
+        form.elements[name].dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      writing = false;
+    }
+    function draw() {
+      var state = options.snapshot(), locked = state.busy || state.prepared, count = 0;
+      if (state.step === 0 && (state.field === 'city' || state.field === 'country')) manual = true;
+      search.disabled = clear.disabled = manualButton.disabled = locked;
+      clear.hidden = !search.value;
+      cards.forEach(function (card) {
+        var chosen = selected(card.item), visible = matches(card.item, search.value);
+        card.button.hidden = !visible; card.button.disabled = locked;
+        card.button.setAttribute('aria-pressed', String(chosen)); card.check.hidden = !chosen;
+        if (visible) count += 1;
+      });
+      empty.hidden = count !== 0;
+      manualFields.forEach(function (label) { label.hidden = state.step !== 0 || !manual; });
+      manualButton.setAttribute('aria-expanded', String(manual));
+      manualButton.textContent = manual ? 'סגירת ההזנה הידנית' : 'הזנת יעד אחר';
+      var city = form.elements.city.value.trim(), country = form.elements.country.value.trim();
+      var message = city && country ? 'היעד שנבחר: ' + city + ', ' + country : count ? count + ' הצעות. בחרו יעד או הזינו עיר ומדינה.' : 'אין התאמה בהצעות. אפשר להזין עיר ומדינה ידנית.';
+      if (selection.textContent !== message) selection.textContent = message;
+    }
+    function imageState(card, state) {
+      card.button.dataset.imageState = state;
+      card.image.hidden = state !== 'ready';
+      card.imageStatus.hidden = state === 'ready';
+      card.imageStatus.textContent = state === 'loading' ? 'טוען תמונה…' : 'תמונה אינה זמינה';
+    }
+    function stopImages(reset) {
+      generation += 1;
+      cards.forEach(function (card) {
+        clearTimeout(card.timer); card.timer = null; card.image.onload = card.image.onerror = null;
+        if (reset || card.button.dataset.imageState === 'loading') { card.image.removeAttribute('src'); imageState(card, 'idle'); }
+      });
+    }
+    function loadImages() {
+      if (!active || !options.isOpen()) return;
+      var owner = options.identity(), token = generation, helper = window.TravelMateDestinationImages;
+      cards.forEach(function (card) {
+        if (card.button.dataset.imageState !== 'idle') return;
+        function current() { return active && options.isOpen() && token === generation && owner === options.identity() && card.button.isConnected; }
+        function finish(state) { if (!current()) return; clearTimeout(card.timer); card.timer = null; card.image.onload = card.image.onerror = null; imageState(card, state); }
+        function paint(url) {
+          if (!current() || card.button.dataset.imageState !== 'loading') return;
+          // The helper's generic travel fallback is not a photograph of this destination.
+          if (!url || url === helper.fallback || !/^https:\/\//i.test(url)) { finish('unavailable'); return; }
+          card.image.onload = function () { finish(card.image.naturalWidth > 0 ? 'ready' : 'unavailable'); };
+          card.image.onerror = function () { finish('unavailable'); };
+          card.image.src = url;
+        }
+        imageState(card, 'loading');
+        card.timer = setTimeout(function () { finish('unavailable'); }, 12000);
+        try {
+          if (!helper) { finish('unavailable'); return; }
+          var cached = helper.cached(card.item.city, card.item.country);
+          if (cached) { paint(cached); return; }
+          if (navigator.onLine === false) { finish('unavailable'); return; }
+          Promise.resolve(helper.resolve(card.item.city, card.item.country)).then(paint, function () { finish('unavailable'); });
+        } catch (_) { finish('unavailable'); }
+      });
+    }
+    suggestions.forEach(function (item) {
+      var button = document.createElement('button'), img = document.createElement('img');
+      var caption = document.createElement('span'), city = document.createElement('strong'), country = document.createElement('span');
+      var check = document.createElement('span'), imageStatus = document.createElement('span');
+      button.type = 'button'; button.className = 'destination-choice'; button.dataset.destinationChoice = item.id;
+      button.setAttribute('aria-pressed', 'false'); button.setAttribute('aria-label', item.city + ', ' + item.country);
+      img.alt = ''; img.decoding = 'async'; img.hidden = true;
+      caption.className = 'destination-choice-caption'; city.textContent = item.city; country.textContent = item.country;
+      caption.appendChild(city); caption.appendChild(country);
+      check.className = 'destination-choice-check'; check.textContent = '✓'; check.hidden = true; check.setAttribute('aria-hidden', 'true');
+      imageStatus.className = 'destination-image-status'; imageStatus.setAttribute('aria-hidden', 'true');
+      button.appendChild(img); button.appendChild(imageStatus); button.appendChild(caption); button.appendChild(check); grid.appendChild(button);
+      var card = { item: item, button: button, image: img, check: check, imageStatus: imageStatus, timer: null }; cards.push(card); imageState(card, 'idle');
+      button.addEventListener('click', function () {
+        if (!editable()) return;
+        form.elements.city.value = item.city; form.elements.country.value = item.country; manual = false;
+        notifyFields(); draw();
+      });
+    });
+    search.addEventListener('input', function () {
+      if (!editable()) return;
+      var chosen = suggestions.find(selected);
+      if ((chosen && !matches(chosen, search.value)) || (!chosen && (form.elements.city.value || form.elements.country.value))) {
+        form.elements.city.value = ''; form.elements.country.value = ''; notifyFields();
+      }
+      draw();
+    });
+    search.addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); var first = cards.find(function (card) { return !card.button.hidden && !card.button.disabled; }); if (first) first.button.focus(); else manualButton.focus(); } });
+    clear.addEventListener('click', function () { if (!editable()) return; search.value = ''; draw(); search.focus(); });
+    manualButton.addEventListener('click', function () {
+      if (!editable()) return;
+      manual = !manual; draw(); if (manual) form.elements.city.focus();
+    });
+    ['country', 'city'].forEach(function (name) {
+      form.elements[name].addEventListener('input', function () { if (!writing) { manual = true; draw(); } });
+      form.elements[name].addEventListener('change', function () { if (!writing) draw(); });
+    });
+    grid.addEventListener('keydown', function (event) {
+      var visible = cards.filter(function (card) { return !card.button.hidden && !card.button.disabled; });
+      var index = visible.findIndex(function (card) { return card.button === event.target; });
+      if (index < 0 || !/^(ArrowRight|ArrowLeft|ArrowUp|ArrowDown|Home|End)$/.test(event.key)) return;
+      var rtl = document.documentElement.dir !== 'ltr', delta = event.key === 'ArrowDown' ? 2 : event.key === 'ArrowUp' ? -2 : event.key === 'ArrowRight' ? (rtl ? -1 : 1) : (rtl ? 1 : -1);
+      var next = event.key === 'Home' ? 0 : event.key === 'End' ? visible.length - 1 : Math.max(0, Math.min(visible.length - 1, index + delta));
+      event.preventDefault(); visible[next].button.focus();
+    });
+    return {
+      render: draw,
+      reset: function () { stopImages(true); search.value = ''; manual = false; },
+      opened: function () { active = true; cards.forEach(function (card) { if (card.button.dataset.imageState === 'unavailable') imageState(card, 'idle'); }); draw(); loadImages(); },
+      closed: function () { active = false; stopImages(false); },
+      refreshImages: loadImages,
+      online: function () { cards.forEach(function (card) { if (card.button.dataset.imageState === 'unavailable') imageState(card, 'idle'); }); loadImages(); }
+    };
+  }
+  function createWizardModalOwnership(modal, form, options) {
+    var background = [], opener = null, nested = null, focusRevision = 0;
+    function entryFor(node) {
+      var entry = background.find(function (item) { return item.node === node; });
+      if (!entry) { entry = { node: node, inert: node.inert }; background.push(entry); }
+      return entry;
+    }
+    function inertBackground() {
+      if (!options.isOpen()) return;
+      if (nested && !current(nested)) release(nested, true, false);
+      Array.prototype.forEach.call(document.body.children, function (node) {
+        if (node === modal || /^(SCRIPT|STYLE|LINK)$/.test(node.tagName)) return;
+        entryFor(node); node.inert = !(nested && current(nested) && nested.node === node);
+      });
+    }
+    function restoreWizard(record) {
+      modal.inert = record.wizardInert;
+      if (record.wizardModal === null) modal.removeAttribute('aria-modal'); else modal.setAttribute('aria-modal', record.wizardModal);
+    }
+    function closeOwnership() {
+      if (nested) release(nested, true, false);
+      background.forEach(function (entry) { entry.node.inert = entry.inert; }); background = [];
+      if (opener && opener.isConnected && modal.contains(document.activeElement)) opener.focus({ preventScroll: true });
+    }
+    function release(record, close, returnFocus) {
+      if (nested !== record) return;
+      nested = null; focusRevision += 1; record.observer.disconnect(); restoreWizard(record);
+      // Close through the canonical sheet action, never by emulating its state.
+      if (close && !record.node.hidden) record.close.click();
+      record.node.inert = options.isOpen() ? true : record.entry.inert;
+      if (returnFocus && options.isOpen() && options.identity() === record.identity && record.opener.isConnected && record.opener.getClientRects().length) record.opener.focus({ preventScroll: true });
+    }
+    function current(record) { return nested === record && options.isOpen() && options.identity() === record.identity; }
+    function reconcile(record) {
+      if (nested !== record) return;
+      var state = options.snapshot();
+      if (!current(record) || state.step !== 2 || state.busy || state.prepared) { release(record, true, false); return; }
+      if (record.node.hidden) { release(record, false, true); return; }
+      record.active = true; record.closing = false; modal.inert = true; modal.setAttribute('aria-modal', 'false');
+      record.node.inert = false;
+      if (!record.sheet.contains(document.activeElement)) record.close.focus({ preventScroll: true });
+    }
+    function arm(trigger) {
+      var state = options.snapshot();
+      if (nested || !options.isOpen() || state.step !== 2 || state.busy || state.prepared || trigger.disabled || !trigger.getClientRects().length) return;
+      // Only the actual optional wizard launcher may borrow the one canonical
+      // recommendation sheet. Other dialogs remain part of the inert background.
+      if (!window.TravelMateTripIntelligence || trigger !== form.querySelector('.navo-trip-banner button')) return;
+      var nodes = document.querySelectorAll('body>.navo-intelligence-backdrop');
+      if (nodes.length !== 1 || !nodes[0].hidden) return;
+      var node = nodes[0], sheet = node.querySelector('.navo-intelligence-sheet[role="dialog"][aria-labelledby="navo-intelligence-title"]');
+      var close = sheet && sheet.querySelector('[data-navo-close]');
+      if (!sheet || !close || !sheet.querySelector('#navo-intelligence-title')) return;
+      var entry = entryFor(node); if (entry.inert) return;
+      var record = { node: node, sheet: sheet, close: close, entry: entry, opener: trigger, identity: options.identity(), wizardInert: modal.inert, wizardModal: modal.getAttribute('aria-modal'), active: false, closing: false };
+      record.observer = new MutationObserver(function () { reconcile(record); }); nested = record; focusRevision += 1;
+      record.observer.observe(node, { attributes: true, attributeFilter: ['hidden'] });
+      // Release before openSheet's synchronous focus; suspend the wizard only
+      // after openSheet has retained its original return-focus element.
+      node.inert = false;
+      Promise.resolve().then(function () { if (nested === record && !record.active) reconcile(record); });
+    }
+    document.addEventListener('click', function (event) {
+      var trigger = event.target.closest('[data-modal="destination"]'); if (trigger) opener = trigger;
+      var launch = event.target.closest('.navo-trip-banner button'); if (launch && form.contains(launch)) arm(launch);
+      if (nested && (event.target === nested.node || nested.close.contains(event.target))) { nested.closing = true; restoreWizard(nested); }
+      if (options.isOpen() && (event.target === modal || event.target.closest('#modal-destination [data-close]'))) {
+        if (nested) release(nested, true, false);
+        background.forEach(function (entry) { entry.node.inert = entry.inert; }); background = [];
+      }
+    }, true);
+    document.addEventListener('keydown', function (event) {
+      var record = nested;
+      if (record && !current(record)) { release(record, true, false); record = null; }
+      if (record && !record.node.hidden && (event.key === 'Escape' || event.key === 'Tab')) {
+        // Both legacy document traps otherwise run for the same key. During
+        // this scoped handoff, only the active recommendation sheet owns it.
+        event.stopImmediatePropagation();
+        if (event.key === 'Escape') { event.preventDefault(); record.close.click(); reconcile(record); return; }
+        var controls = Array.prototype.filter.call(record.sheet.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]'), function (node) { return !node.hidden && node.getClientRects().length; });
+        var first = controls[0], last = controls[controls.length - 1];
+        if (!first) { event.preventDefault(); return; }
+        if (event.shiftKey && (document.activeElement === first || !record.sheet.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && (document.activeElement === last || !record.sheet.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+        return;
+      }
+      if (event.key === 'Escape' && options.isOpen()) { background.forEach(function (entry) { entry.node.inert = entry.inert; }); background = []; }
+    }, true);
+    document.addEventListener('focusin', function (event) {
+      var record = nested;
+      if (record && record.active && !record.closing && current(record) && !record.node.hidden && !record.sheet.contains(event.target)) record.close.focus({ preventScroll: true });
+    }, true);
+    // Ask Mate leaves this interaction scope. closeSheet has already hidden
+    // recommendations before emitting this canonical event. End the wizard's
+    // whole modal transaction before the assistant's own event/focus/history
+    // owner runs; never add the assistant to an inert exemption list.
+    window.addEventListener('travelmate:ask-ai', function (event) {
+      var record = nested, detail = event.detail || {};
+      if (!record || !current(record) || !record.node.hidden || detail.source !== 'mate-conversation' || !detail.context || detail.context.contextMode !== 'NEW_TRIP') return;
+      options.dismiss();
+      if (!options.isOpen()) closeOwnership();
+    }, true);
+    new MutationObserver(inertBackground).observe(document.body, { childList: true });
+    return {
+      opened: inertBackground,
+      ownsFocus: function () { return Boolean(nested && current(nested) && !nested.node.hidden); },
+      revision: function () { return focusRevision; },
+      reset: function () { if (nested) release(nested, true, false); },
+      closed: closeOwnership
+    };
+  }
   function initDestinationWizard(form) {
     var modal = document.getElementById('modal-destination');
     var heading = form.querySelector('[data-wizard-heading]');
@@ -1244,6 +1495,8 @@
     var titles = ['לאן רוצים לטוס?', 'מתי יוצאים לדרך?', 'איך תרצו לטייל?', 'הטיול שלכם, לפני שיוצאים'];
     var labels = ['יעד', 'תאריכים', 'העדפות ותקציב', 'סיכום'];
     function defaults() {
+      if (ownership) ownership.reset();
+      if (discovery) discovery.reset();
       form.reset();
       var today = new Date(), next = new Date(today.getTime() + 7 * 86400000);
       form.elements.start.value = localDateString(today); form.elements.end.value = localDateString(next);
@@ -1258,6 +1511,7 @@
     function identity() { try { return String(localStorage.getItem('travelmate-active-user') || ''); } catch (_) { return String(currentSession && currentSession.user && currentSession.user.id || ''); } }
     function render(state, focus) {
       form.dataset.wizardStep = String(state.step);
+      modal.dataset.wizardStep = String(state.step);
       if (state.preparedFields) names.forEach(function (name) { form.elements[name].value = state.preparedFields[name]; });
       form.querySelectorAll('[data-wizard-panel]').forEach(function (panel) { panel.hidden = Number(panel.dataset.wizardPanel) !== state.step; });
       modal.querySelectorAll('[data-wizard-progress]').forEach(function (item, index) {
@@ -1274,6 +1528,7 @@
       confirm.setAttribute('aria-busy', String(state.busy));
       names.forEach(function (name) { var input = form.elements[name]; input.disabled = state.busy || state.prepared; input.setAttribute('aria-invalid', String(state.field === name)); });
       form.querySelectorAll('[data-wizard-edit]').forEach(function (button) { button.disabled = state.busy || state.prepared; });
+      if (discovery) { discovery.render(); if (modal.classList.contains('open')) discovery.refreshImages(); }
       if (state.step === 3) {
         var result = validateDestinationFields(readFields());
         if (result.value) {
@@ -1285,8 +1540,9 @@
           form.querySelector('[data-wizard-summary="budget"]').textContent = new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value.budget);
         }
       }
+      var focusIdentity = identity(), focusRevision = ownership ? ownership.revision() : 0;
       if (focus) requestAnimationFrame(function () {
-        if (!modal.classList.contains('open') || controller.snapshot().step !== state.step) return;
+        if (!modal.classList.contains('open') || controller.snapshot().step !== state.step || identity() !== focusIdentity || ownership && (ownership.ownsFocus() || ownership.revision() !== focusRevision)) return;
         var target = focus === 'heading' ? heading : form.elements[focus];
         if (!target || !target.getClientRects().length) target = heading;
         target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'nearest' });
@@ -1308,6 +1564,10 @@
       cloudSave: function (trip, owner) { return cloud && typeof cloud.saveTrip === 'function' ? cloud.saveTrip(trip, owner) : Promise.resolve({ saved: false }); },
       openTrip: function (id) { location.href = 'trip/custom/index.html?id=' + encodeURIComponent(id); }
     });
+    var discovery = createDestinationDiscovery(form, {
+      identity: identity, snapshot: controller.snapshot, isOpen: function () { return modal.classList.contains('open'); },
+      editable: function () { if (controller.syncIdentity()) return false; var state = controller.snapshot(); return state.step === 0 && !state.busy && !state.prepared; }
+    });
     form.noValidate = true;
     next.addEventListener('click', controller.next); back.addEventListener('click', controller.back);
     form.addEventListener('submit', function (event) { event.preventDefault(); controller.confirm(); });
@@ -1322,7 +1582,24 @@
       });
       if (changed) render(controller.snapshot(), '');
     }).observe(form, { childList: true, subtree: true });
-    new MutationObserver(function () { if (modal.classList.contains('open')) controller.opened(); else controller.closed(); }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+    var ownership = createWizardModalOwnership(modal, form, { identity: identity, snapshot: controller.snapshot, isOpen: function () { return modal.classList.contains('open'); }, dismiss: function () { modal.querySelector('[data-close]').click(); } });
+    function measureViewport() {
+      if (!modal.classList.contains('open')) return;
+      var viewport = window.visualViewport;
+      modal.style.setProperty('--tm-wizard-viewport-height', (viewport ? viewport.height : window.innerHeight) + 'px');
+      modal.style.setProperty('--tm-wizard-viewport-top', (viewport ? viewport.offsetTop : 0) + 'px');
+    }
+    new MutationObserver(function () {
+      if (modal.classList.contains('open')) {
+        ownership.opened();
+        measureViewport(); controller.opened(); discovery.opened();
+      } else {
+        ownership.closed(); discovery.closed(); controller.closed();
+      }
+    }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+    if (window.visualViewport) { window.visualViewport.addEventListener('resize', measureViewport); window.visualViewport.addEventListener('scroll', measureViewport); }
+    window.addEventListener('resize', measureViewport);
+    window.addEventListener('online', function () { if (modal.classList.contains('open')) discovery.online(); });
     window.addEventListener('travelmate:account-context-changed', controller.syncIdentity);
     window.addEventListener('storage', function (event) { if (event.key === 'travelmate-active-user') controller.syncIdentity(); });
     render(controller.snapshot(), '');

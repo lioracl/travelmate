@@ -24,7 +24,7 @@ async function openWizard(page,guest=false){
  return{trigger,modal,form:modal.locator('[data-destination-form]'),next:modal.locator('[data-wizard-next]'),back:modal.locator('[data-wizard-back]'),confirm:modal.locator('.create-trip')};
 }
 async function step(ui,index){await expect(ui.form).toHaveAttribute('data-wizard-step',String(index));await expect(ui.modal.locator('[data-wizard-progress][aria-current="step"]')).toHaveCount(1);await expect(ui.modal.locator('[data-wizard-progress]').nth(index)).toHaveAttribute('aria-current','step');}
-async function destination(ui,{country='איטליה',city='רומא'}={}){await ui.form.locator('[name=country]').fill(country);await ui.form.locator('[name=city]').fill(city);await ui.next.click();await step(ui,1);}
+async function destination(ui,{country='איטליה',city='רומא'}={}){if(await ui.form.locator('[name=country]').isHidden())await ui.form.locator('[data-destination-manual]').click();await ui.form.locator('[name=country]').fill(country);await ui.form.locator('[name=city]').fill(city);await ui.next.click();await step(ui,1);}
 async function dates(ui,start='2026-01-01',end=start){await ui.form.locator('[name=start]').fill(start);await ui.form.locator('[name=end]').fill(end);await ui.next.click();await step(ui,2);}
 async function summary(ui,budget='2500'){await ui.form.locator('[name=budget]').fill(budget);await ui.next.click();await step(ui,3);}
 async function counts(page){return page.evaluate(()=>({local:wizardQA.local.length,cloud:wizardQA.cloud.length,attach:wizardQA.attach}));}
@@ -63,7 +63,7 @@ for(const width of [390,430])for(const theme of ['light','dark'])test('four wiza
  await page.setViewportSize({width,height:900});await boot(page,{theme});
  await page.evaluate(()=>{for(const [side,value]of Object.entries({top:32,right:12,bottom:24,left:44}))document.documentElement.style.setProperty('--safe-area-inset-'+side,value+'px');});
  const ui=await openWizard(page);const historyLength=await page.evaluate(()=>history.length);await step(ui,0);await expect(ui.form.locator('[name=start]')).toBeHidden();await ui.form.evaluate(form=>{form.elements.start.value='';form.elements.end.value='';});
- await ui.form.locator('[name=country]').fill('   ');await ui.next.click();await expect(ui.form.locator('[name=country]')).toBeFocused();await expect(ui.form.locator('[data-form-error]')).toBeVisible();await step(ui,0);await readability(page,info,'wizard-error',['#modal-destination [data-form-error]','#modal-destination [aria-current="step"] b']);
+ await ui.form.locator('[data-destination-manual]').click();await ui.form.locator('[name=country]').fill('   ');await ui.next.click();await expect(ui.form.locator('[name=country]')).toBeFocused();await expect(ui.form.locator('[data-form-error]')).toBeVisible();await step(ui,0);await readability(page,info,'wizard-error',['#modal-destination [data-form-error]','#modal-destination [aria-current="step"] b']);
  await destination(ui,{city:'<img src=x onerror="window.wizardXss=1">'});await dates(ui);await summary(ui,'');
  await expect(ui.form.locator('[data-wizard-summary="destination"]')).toContainText('<img');await expect(ui.form.locator('[data-wizard-summary="destination"] img')).toHaveCount(0);expect(await page.evaluate(()=>window.wizardXss)).toBeUndefined();await expect(ui.form.locator('[data-wizard-summary="days"]')).toHaveText('יום אחד');await expect(ui.form.locator('[data-wizard-summary="budget"]')).toContainText('2,500');
  await ui.form.locator('[data-wizard-edit="0"]').click();await step(ui,0);await ui.form.locator('[name=city]').fill('Tokyo');await ui.next.click();await ui.next.click();await ui.next.click();await step(ui,3);await expect(ui.form.locator('[data-wizard-summary="destination"]')).toContainText('Tokyo');
@@ -107,7 +107,7 @@ test('cloud failure keeps one saved trip and offers opening it without another s
 });
 test('actual account change invalidates a pending completion and clears the draft; refresh does not',async({page})=>{
  await boot(page,{mode:'pending-cloud'});const ui=await openWizard(page);await destination(ui);await dates(ui);await summary(ui);await page.evaluate(()=>allTripsQA.emit('alltrips-A'));await step(ui,3);await expect(ui.form.locator('[name=city]')).toHaveValue('רומא');await ui.confirm.click();expect(await counts(page)).toEqual({local:1,cloud:1,attach:1});const before=page.url();
- await page.evaluate(()=>allTripsQA.emit('alltrips-B'));await step(ui,0);await expect(ui.form.locator('[name=city]')).toHaveValue('');await ui.form.locator('[name=city]').fill('B draft');await page.evaluate(()=>wizardQA.resolve());await expect(ui.form.locator('[name=city]')).toHaveValue('B draft');expect(page.url()).toBe(before);expect(await counts(page)).toEqual({local:1,cloud:1,attach:1});
+ await page.evaluate(()=>allTripsQA.emit('alltrips-B'));await step(ui,0);await expect(ui.form.locator('[name=city]')).toHaveValue('');await ui.form.locator('[data-destination-manual]').click();await ui.form.locator('[name=city]').fill('B draft');await page.evaluate(()=>wizardQA.resolve());await expect(ui.form.locator('[name=city]')).toHaveValue('B draft');expect(page.url()).toBe(before);expect(await counts(page)).toEqual({local:1,cloud:1,attach:1});
  expect(await page.evaluate(()=>TravelMateCloud.getCachedTrips().some(t=>t.ownerId==='alltrips-A'))).toBe(false);
 });
 test('optional intelligence decorator remains within its wizard step and does not attach before confirmation',async({page})=>{
@@ -142,4 +142,111 @@ test('partial canonical write retry preserves actual consumed recommendation and
  // Tampering with a disabled input cannot silently change the approved payload.
  await ui.form.locator('[name=city]').evaluate(n=>n.value='Changed after failure');await ui.confirm.click();await expect(ui.form.locator('[name=city]')).toHaveValue('רומא');expect(await counts(page)).toEqual({local:1,cloud:0,attach:1});await ui.confirm.click();
  await expectOverviewRoute(page,id);const evidence=await captured.read();expect(evidence.id).toBe(id);expect(evidence.local).toHaveLength(2);expect(evidence.cloud).toHaveLength(1);expect(evidence.attach).toBe(1);expect(evidence.pendingSave).toBe(false);expect(evidence.trip.ownerId).toBe('alltrips-A');expect(evidence.trip.aiNotes).toHaveLength(1);expect(evidence.trip.aiNotes[0].answer).toBe('Approved source recommendation');expect(evidence.trip.activities[0].id).toBe('canonical-activity');expect(evidence.trip.savedPlaces[0].id).toBe('canonical-place');expect(evidence.trip.dayNotes['2026-01-01']).toBe('Preserve canonical note');expect(evidence.trip.extraCanonicalField).toEqual({keep:true});
+});
+
+// Deterministic SVG imagery proves rendering/lifecycle only, not real destination
+// photography. The separate real-network evidence case records that distinction.
+async function syntheticDiscoveryImages(page){
+ await page.route('https://discovery-images.invalid/**',route=>route.request().url().includes('/broken')?route.abort():route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="600" height="420"><rect width="600" height="420" fill="#8fc4e7"/><circle cx="450" cy="90" r="48" fill="#fff2c2"/><path d="M0 330 180 110 330 300 440 200 600 330V420H0Z" fill="#386686"/></svg>'}));
+ await page.evaluate(()=>{
+  window.discoveryImageQA={pending:[],mode:'pending',release(){this.pending.splice(0).forEach(({city,resolve})=>resolve('https://discovery-images.invalid/'+encodeURIComponent(city)+'.svg'));}};
+  TravelMateDestinationImages.cached=()=>discoveryImageQA.mode==='broken'?'https://discovery-images.invalid/broken.jpg':'';
+  TravelMateDestinationImages.resolve=city=>new Promise(resolve=>discoveryImageQA.pending.push({city,resolve}));
+ });
+}
+async function discoveryCapture(page,info,name){
+ const path=info.outputPath(name+'.png');await page.screenshot({path});await info.attach(name,{path,contentType:'image/png'});
+}
+for(const width of [390,430])for(const theme of ['light','dark'])test(`discovery states and rendered synthetic image evidence ${width}/${theme}`,async({page},info)=>{
+ await page.setViewportSize({width,height:900});await boot(page,{theme});await syntheticDiscoveryImages(page);const ui=await openWizard(page),cards=ui.form.locator('[data-destination-choice]'),search=ui.form.locator('[data-destination-search]');
+ await info.attach('image-provenance',{body:Buffer.from('Deterministic SVG fixture; synthetic account; NOT genuine destination-photo or real-network proof. R07 is the layout reference.'),contentType:'text/plain'});
+ await expect(cards).toHaveCount(6);await expect(ui.form.locator('[name=city]')).toBeHidden();await expect(ui.form.locator('[data-image-state="loading"]')).toHaveCount(6);await discoveryCapture(page,info,'discovery-loading-synthetic');
+ const sheet=await ui.modal.locator('.destination-modal').boundingBox();expect(sheet.height).toBeGreaterThanOrEqual(899);expect(sheet.width).toBe(width);
+ expect(await page.locator('.tm-home-dock').evaluate(n=>n.inert)).toBe(true);await expect(page.locator('.tm-home-dock')).toHaveCount(1);
+ await page.evaluate(()=>{const late=document.createElement('button');late.id='discovery-late-background';late.textContent='Synthetic late utility';document.body.appendChild(late);});await expect(page.locator('#discovery-late-background')).toHaveJSProperty('inert',true);
+ await page.evaluate(()=>discoveryImageQA.release());await expect(ui.form.locator('[data-image-state="ready"]')).toHaveCount(6);await discoveryCapture(page,info,'discovery-grid-synthetic');
+ const positions=await cards.evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height};}));expect(positions[0].y).toBe(positions[1].y);expect(positions[0].x).toBeGreaterThan(positions[1].x);expect(positions[2].y).toBeGreaterThan(positions[0].y);
+ for(const box of positions){expect(box.w).toBeGreaterThanOrEqual(44);expect(box.h).toBeGreaterThanOrEqual(44);}
+ const rome=cards.filter({hasText:'רומא'});await rome.click();await expect(rome).toHaveAttribute('aria-pressed','true');await expect(ui.form.locator('[data-destination-selection]')).toHaveText('היעד שנבחר: רומא, איטליה');await expectZero(page);await discoveryCapture(page,info,'discovery-selected-synthetic');
+ await readability(page,info,'discovery-card-copy',['[data-destination-choice="rome"] .destination-choice-caption strong','[data-destination-choice="rome"] .destination-choice-caption>span','#modal-destination [data-destination-selection]']);
+ await search.fill('Japan');await expect(ui.form.locator('[data-destination-choice]:visible')).toHaveCount(1);await expect(ui.form.locator('[name=city]')).toHaveValue('');await expect(ui.form.locator('[name=country]')).toHaveValue('');await discoveryCapture(page,info,'discovery-search-synthetic');
+ await search.fill('Unknown destination');await expect(ui.form.locator('[data-destination-choice]:visible')).toHaveCount(0);await expect(ui.form.locator('[data-destination-empty]')).toBeVisible();await search.press('Enter');await expect(ui.form.locator('[data-destination-manual]')).toBeFocused();await step(ui,0);await discoveryCapture(page,info,'discovery-empty-synthetic');
+ await ui.form.locator('[data-destination-manual]').click();await expect(ui.form.locator('[name=city]')).toBeFocused();await ui.form.locator('[name=city]').fill('יעד ידני ABC');await ui.form.locator('[name=country]').fill('מדינה מפורשת');await expect(ui.form.locator('[name=city]')).toBeVisible();await discoveryCapture(page,info,'discovery-manual-synthetic');await expectZero(page);
+ await ui.next.click();await step(ui,1);await ui.back.click();await step(ui,0);await expect(ui.form.locator('[name=city]')).toHaveValue('יעד ידני ABC');
+ await page.keyboard.press('Escape');await expect(ui.trigger).toBeFocused();expect(await page.locator('.tm-home-dock').evaluate(n=>n.inert)).toBe(false);await expect(page.locator('#discovery-late-background')).toHaveJSProperty('inert',false);await page.locator('#discovery-late-background').evaluate(n=>n.remove());await ui.trigger.click();await expect(search).toHaveValue('Unknown destination');await expect(ui.form.locator('[name=city]')).toHaveValue('יעד ידני ABC');
+ await page.evaluate(()=>{discoveryImageQA.mode='broken';allTripsQA.emit('alltrips-B');});await expect(search).toHaveValue('');await expect(ui.form.locator('[name=city]')).toHaveValue('');await expect(ui.form.locator('[data-image-state="unavailable"]')).toHaveCount(6);await discoveryCapture(page,info,'discovery-image-error-synthetic');
+ await cards.first().click();await expect(ui.form.locator('[name=country]')).toHaveValue('יפן');await expectZero(page);
+ await ui.modal.locator('[data-close]').focus();await page.keyboard.press('Shift+Tab');await expect(ui.next).toBeFocused();await page.keyboard.press('Tab');await expect(ui.modal.locator('[data-close]')).toBeFocused();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('discovery keyboard, offline fallback, asymmetric safe areas and simulated IME at 360',async({page},info)=>{
+ await page.setViewportSize({width:360,height:800});await page.emulateMedia({reducedMotion:'reduce'});await boot(page,{state:'offline'});
+ await page.evaluate(()=>{window.discoveryResolveCalls=0;TravelMateDestinationImages.cached=()=>'';TravelMateDestinationImages.resolve=()=>{discoveryResolveCalls++;return Promise.resolve('');};for(const [side,value]of Object.entries({top:28,right:12,bottom:20,left:24}))document.documentElement.style.setProperty('--safe-area-inset-'+side,value+'px');});
+ const ui=await openWizard(page),cards=ui.form.locator('[data-destination-choice]');await expect(ui.form.locator('[data-image-state="unavailable"]')).toHaveCount(6);expect(await page.evaluate(()=>discoveryResolveCalls)).toBe(0);
+ await cards.first().focus();await page.keyboard.press('ArrowLeft');await expect(cards.nth(1)).toBeFocused();await page.keyboard.press('ArrowDown');await expect(cards.nth(3)).toBeFocused();await page.keyboard.press('Space');await expect(cards.nth(3)).toHaveAttribute('aria-pressed','true');await expectZero(page);
+ await expect(cards.first()).toHaveCSS('transition-duration','0s');await ui.next.scrollIntoViewIfNeeded();const button=await ui.next.boundingBox();expect(button.x).toBeGreaterThanOrEqual(24);expect(button.x+button.width).toBeLessThanOrEqual(348);expect(button.y+button.height).toBeLessThanOrEqual(780);
+ // Deterministic visualViewport fixture, explicitly a simulated keyboard.
+ await page.evaluate(()=>{const viewport=new EventTarget();viewport.height=420;viewport.offsetTop=0;Object.defineProperty(window,'visualViewport',{configurable:true,value:viewport});window.dispatchEvent(new Event('resize'));});
+ await ui.form.locator('[data-destination-manual]').click();await ui.form.locator('[name=city]').fill('בדיקת מקלדת');await ui.next.scrollIntoViewIfNeeded();const ime=await ui.next.boundingBox();expect(ime.y+ime.height).toBeLessThanOrEqual(400);await discoveryCapture(page,info,'discovery-simulated-ime-offline');await expectZero(page);
+ await page.keyboard.press('Escape');await expect(ui.trigger).toBeFocused();
+});
+
+test('discovery ignores a late image response after account replacement and close/reopen',async({page})=>{
+ await boot(page);await syntheticDiscoveryImages(page);const ui=await openWizard(page);
+ await ui.form.locator('[data-destination-choice="rome"]').click();await expect(ui.form.locator('[name=city]')).toHaveValue('רומא');
+ await page.evaluate(()=>{window.oldDiscoveryImages=discoveryImageQA.pending.splice(0);allTripsQA.emit('alltrips-B');});await expect(ui.form.locator('[name=city]')).toHaveValue('');
+ await page.evaluate(()=>oldDiscoveryImages.forEach(({resolve})=>resolve('https://discovery-images.invalid/stale-owner.svg')));
+ await expect(ui.form.locator('img[src*="stale-owner"]')).toHaveCount(0);
+ await page.keyboard.press('Escape');await page.evaluate(()=>discoveryImageQA.release());await ui.trigger.click();await expect(ui.form.locator('[data-image-state="loading"]')).toHaveCount(6);await expect(ui.form.locator('img[src*="stale-owner"]')).toHaveCount(0);
+ await page.evaluate(()=>discoveryImageQA.release());await expect(ui.form.locator('[data-image-state="ready"]')).toHaveCount(6);await expectZero(page);
+});
+
+for(const theme of ['light','dark'])test('actual optional Preferences recommendation sheet coordinates nested focus and inert lifecycle '+theme,async({page},info)=>{
+ await page.setViewportSize({width:390,height:900});await boot(page,{theme,intelligence:false});
+ // Keep every production function unchanged. This test-only lexical seam primes
+ // an approved synthetic response so opening the real sheet never generates.
+ const fs=require('node:fs'),path=require('node:path'),original=fs.readFileSync(path.join(__dirname,'../../assets/trip-intelligence.js'),'utf8');
+ const anchor='  window.TravelMateTripIntelligence =';expect(original.split(anchor)).toHaveLength(2);
+ const primed=original.replace(anchor,'  window.primeWizardRecommendationFixture=function(){bindContext(formContext(document.querySelector("[data-destination-form]")));state.recommendation=recommendationFor(state.context,"Synthetic approved recommendation; no generation");state.fingerprint=fingerprint(state.context);state.stale=false;state.responseData={};};\n'+anchor);
+ await page.route('**/assets/trip-intelligence.js*',route=>route.fulfill({contentType:'application/javascript',body:primed}));
+ await page.evaluate(()=>{window.nestedRecommendationRequests=0;const prior=document.createElement('button');prior.id='nested-prior-inert';prior.inert=true;prior.textContent='Synthetic preexisting inert control';document.body.appendChild(prior);});
+ const ui=await openWizard(page);await page.evaluate(()=>TravelMateFeatures.load('intelligence'));await page.waitForFunction(()=>Boolean(window.primeWizardRecommendationFixture&&window.TravelMateTripIntelligence));
+ await page.evaluate(()=>{window.TravelMateNavo={request(){nestedRecommendationRequests++;throw Error('Generation forbidden in nested modal regression');},formatResponse(){return '<p>Synthetic approved recommendation; no generation</p>';},responseIncomplete(){return false;}};});
+ await destination(ui);await dates(ui);await step(ui,2);const launch=ui.form.locator('.navo-trip-banner button');await expect(launch).toBeVisible();
+ const backdrop=page.locator('body>.navo-intelligence-backdrop'),sheet=backdrop.locator('.navo-intelligence-sheet'),close=sheet.locator('[data-navo-close]'),last=sheet.locator('[data-navo-ask]');
+ await expect(backdrop).toHaveJSProperty('inert',true);
+ async function openRecommendation(){await page.evaluate(()=>primeWizardRecommendationFixture());await launch.click();await expect(backdrop).toBeVisible();await expect(backdrop).toHaveJSProperty('inert',false);await expect(ui.modal).toHaveJSProperty('inert',true);await expect(ui.modal).toHaveAttribute('aria-modal','false');await expect(close).toBeFocused();await expect(page.locator('.tm-home-dock')).toHaveJSProperty('inert',true);}
+ await openRecommendation();await expect(sheet.locator('[data-navo-content]')).toContainText('Synthetic approved recommendation');
+ await close.focus();await page.keyboard.press('Shift+Tab');await expect(last).toBeFocused();await page.keyboard.press('Tab');await expect(close).toBeFocused();
+ const pointer=await close.evaluate(node=>{const box=node.getBoundingClientRect();return node.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));});expect(pointer).toBe(true);
+ await page.evaluate(()=>{const foreign=document.createElement('section');foreign.id='nested-unrelated-dialog';foreign.setAttribute('role','dialog');foreign.innerHTML='<button>Unrelated synthetic dialog</button>';document.body.appendChild(foreign);});await expect(page.locator('#nested-unrelated-dialog')).toHaveJSProperty('inert',true);
+ await discoveryCapture(page,info,'canonical-recommendation-nested-'+theme);await close.click();await expect(backdrop).toBeHidden();await expect(backdrop).toHaveJSProperty('inert',true);await expect(ui.modal).toHaveJSProperty('inert',false);await expect(ui.modal).toHaveAttribute('aria-modal','true');await expect(launch).toBeFocused();await expect(ui.modal).toHaveClass(/open/);await expectZero(page);
+ await openRecommendation();await page.keyboard.press('Escape');await expect(backdrop).toBeHidden();await expect(launch).toBeFocused();await step(ui,2);await expect(ui.modal).toHaveClass(/open/);await expectZero(page);
+ await openRecommendation();
+ // An external canonical wizard dismissal is intentionally programmatic here:
+ // its button must remain inaccessible to pointer/keyboard under the child.
+ await ui.modal.locator('[data-close]').evaluate(node=>node.click());await expect(backdrop).toBeHidden();await expect(ui.modal).not.toHaveClass(/open/);await expect(ui.modal).toHaveJSProperty('inert',false);await expect(ui.trigger).toBeFocused();await expect(page.locator('.tm-home-dock')).toHaveJSProperty('inert',false);await expect(page.locator('#nested-unrelated-dialog')).toHaveJSProperty('inert',false);await expect(page.locator('#nested-prior-inert')).toHaveJSProperty('inert',true);
+ await ui.trigger.click();await step(ui,2);await openRecommendation();await page.evaluate(()=>allTripsQA.emit('alltrips-B'));await step(ui,0);await expect(backdrop).toBeHidden();await expect(backdrop).toHaveJSProperty('inert',true);await expect(ui.modal).toHaveJSProperty('inert',false);await expect(ui.modal.locator('[data-wizard-heading]')).toBeFocused();await expect(page.locator('.tm-home-dock')).toHaveJSProperty('inert',true);await expect(page.locator('#nested-unrelated-dialog')).toHaveJSProperty('inert',true);
+ expect(await page.evaluate(()=>nestedRecommendationRequests)).toBe(0);await expectZero(page);await page.keyboard.press('Escape');await expect(ui.trigger).toBeFocused();await expect(page.locator('#nested-prior-inert')).toHaveJSProperty('inert',true);
+});
+
+for(const theme of ['light','dark'])test('actual Ask Mate continuation hands off to assistant and reopens the preserved wizard '+theme,async({page},info)=>{
+ await page.setViewportSize({width:430,height:900});await boot(page,{theme,intelligence:false});
+ // Only downstream generation transport is intercepted. Real recommendation,
+ // openConversation, ask-ai, assistant setOpen, focus, history and account code run.
+ await page.evaluate(()=>{window.continuationTransport=[];window.__travelMateSupabaseClient.functions={invoke:async(name,request)=>{continuationTransport.push({name,messages:request.body.messages,context:request.body.context});return{data:{answer:'Synthetic transport response '+continuationTransport.length,complete:true},error:null};}};});
+ await page.evaluate(()=>TravelMateFeatures.ensureAssistant());await page.waitForFunction(()=>Boolean(window.__travelMateAiAssistantLoaded&&window.TravelMateNavo?.openConversation));
+ const ui=await openWizard(page);await page.evaluate(()=>TravelMateFeatures.load('intelligence'));await page.waitForFunction(()=>Boolean(window.TravelMateTripIntelligence&&document.querySelector('.navo-trip-banner button')));
+ await ui.form.locator('[data-destination-search]').fill('Rome');await ui.form.locator('[data-destination-choice="rome"]').click();await ui.next.click();await step(ui,1);await dates(ui,'2026-11-01','2026-11-04');await ui.form.locator('[name=budget]').fill('1450');await ui.form.locator('[name=type]').selectOption('חברים');
+ const launch=ui.form.locator('.navo-trip-banner button'),recommendations=page.locator('body>.navo-intelligence-backdrop'),ask=recommendations.locator('[data-navo-ask]');await launch.click();await expect(recommendations.locator('[data-navo-content]')).toContainText('Synthetic transport response 1');await expectZero(page);
+ const baseURL=page.url(),baseHistory=await page.evaluate(()=>history.length);const panel=page.locator('#travelmate-ai-panel'),input=panel.locator('textarea');
+ await ask.click();await expect(recommendations).toBeHidden();await expect(ui.modal).not.toHaveClass(/open/);await expect(panel).toBeVisible();await expect(panel).toHaveJSProperty('inert',false);await expect(input).toBeFocused();await expect(input).toHaveValue(/המשך את המלצות היעד/);expect(page.url()).toBe(baseURL);expect(await page.evaluate(()=>history.length)).toBe(baseHistory+1);expect(await page.evaluate(()=>history.state.travelMateOverlay)).toBe('ai');await expectZero(page);
+ const controls=panel.locator('button:enabled:visible,a[href]:visible,input:enabled:visible,select:enabled:visible,textarea:enabled:visible,[tabindex]:not([tabindex="-1"]):visible');await controls.first().focus();await page.keyboard.press('Shift+Tab');await expect(controls.last()).toBeFocused();await page.keyboard.press('Tab');await expect(controls.first()).toBeFocused();
+ const send=panel.locator('[data-ai-send]');const pointer=await send.evaluate(node=>{const box=node.getBoundingClientRect();return node.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));});expect(pointer).toBe(true);await input.fill('Synthetic typed continuation only');await send.click();await expect(panel.locator('[data-ai-chat]')).toContainText('Synthetic transport response 2');expect(await page.evaluate(()=>continuationTransport.length)).toBe(2);await expectZero(page);
+ await discoveryCapture(page,info,'actual-assistant-continuation-'+theme);await page.goBack();await expect(panel).toBeHidden();await expect(page.locator('.ai-orb')).toBeFocused();await expect(page.locator('body')).not.toHaveClass(/ai-assistant-open/);expect(page.url()).toBe(baseURL);
+ await ui.trigger.click();await step(ui,2);await expect(ui.form.locator('[name=city]')).toHaveValue('רומא');await expect(ui.form.locator('[name=country]')).toHaveValue('איטליה');await expect(ui.form.locator('[name=start]')).toHaveValue('2026-11-01');await expect(ui.form.locator('[name=end]')).toHaveValue('2026-11-04');await expect(ui.form.locator('[name=budget]')).toHaveValue('1450');await expect(ui.form.locator('[name=type]')).toHaveValue('חברים');await expect(ui.form.locator('[data-destination-search]')).toHaveValue('Rome');await expectZero(page);
+ await launch.click();await expect(recommendations).toBeVisible();await ask.click();await expect(panel).toBeVisible();await expect(input).toBeFocused();await expect(input).toHaveValue(/המשך את המלצות/);await page.evaluate(()=>allTripsQA.emit('alltrips-B'));await expect(input).toHaveValue('');await expect(panel).toBeVisible();await expect(panel).toHaveJSProperty('inert',false);await input.fill('Synthetic B draft');await expect(input).toHaveValue('Synthetic B draft');await page.keyboard.press('Escape');await expect(panel).toBeHidden();await expect(page.locator('.ai-orb')).toBeFocused();
+ await ui.trigger.click();await step(ui,0);await expect(ui.form.locator('[name=city]')).toHaveValue('');await expect(ui.form.locator('[name=country]')).toHaveValue('');await expect(ui.form.locator('[data-destination-search]')).toHaveValue('');await expectZero(page);
+ await info.attach('actual-continuation-boundary',{body:Buffer.from(JSON.stringify({realRecommendationAndAssistantSource:true,onlyGenerationTransportIntercepted:true,syntheticAccounts:true,microphoneActivated:false,transport:await page.evaluate(()=>continuationTransport)},null,2)),contentType:'application/json'});
 });

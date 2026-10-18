@@ -5,6 +5,7 @@
   <title>הטיולים שלי</title><meta name="description" content="TravelMate - סוכן הנסיעות האישי שלך">
   <meta name="theme-color" content="#12383F"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="48x48" href="assets/icons/travelmate-48.png"><link rel="apple-touch-icon" sizes="180x180" href="assets/icons/travelmate-180.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><link rel="stylesheet" href="assets/styles.css?v=20261015-03"><link rel="stylesheet" href="assets/cloud-sync.css?v=20261015-03"><link rel="stylesheet" href="assets/profile-wizard.css?v=20261015-03">
+  <link rel="stylesheet" href="assets/trip-intelligence.css?v=20261015-03"><link rel="stylesheet" href="assets/ai-assistant.css?v=20261015-03">
   <link rel="stylesheet" href="assets/home-organizer.css?v=20261015-03">
   <link rel="stylesheet" href="assets/phone-visual-qa.css?v=20261015-03&patch=2">
 <link rel="stylesheet" href="assets/app-shell.css?v=20261015-03">
@@ -93,9 +94,16 @@
     <ol class="trip-wizard-progress" aria-label="שלבי יצירת הטיול"><li data-wizard-progress aria-current="step"><b aria-hidden="true">1</b><span>יעד</span></li><li data-wizard-progress><b aria-hidden="true">2</b><span>תאריכים</span></li><li data-wizard-progress><b aria-hidden="true">3</b><span>העדפות</span></li><li data-wizard-progress><b aria-hidden="true">4</b><span>סיכום</span></li></ol>
     <form class="destination-form" data-destination-form novalidate data-wizard-step="0">
       <div class="trip-wizard-intro"><h3 id="wizard-step-title" data-wizard-heading tabindex="-1">לאן רוצים לטוס?</h3><p>הטיול מתחיל בעיר ובמדינה שתבחרו.</p></div>
-      <label data-wizard-panel="0">מדינה<input name="country" required autocomplete="country-name" placeholder="לדוגמה: איטליה" aria-describedby="destination-error"></label>
-      <label data-wizard-panel="0">עיר<input name="city" required autocomplete="address-level2" placeholder="לדוגמה: רומא" aria-describedby="destination-error"></label>
-      <p class="trip-wizard-hint" data-wizard-panel="0">אפשר להזין כל יעד. אין צורך לבחור מזהה או לאפשר גישה למיקום.</p>
+      <section class="destination-discovery" data-destination-discovery data-wizard-panel="0" aria-label="בחירת יעד">
+        <div class="destination-search-row"><label class="destination-search"><span class="discovery-sr-only">חיפוש בהצעות לפי יעד, עיר או מדינה</span><input type="search" data-destination-search placeholder="חיפוש יעד, עיר או מדינה…" autocomplete="off" aria-describedby="destination-search-help" aria-controls="destination-choices" dir="auto"><span class="destination-search-icon" aria-hidden="true">⌕</span></label><button type="button" data-destination-clear hidden aria-label="ניקוי החיפוש">ניקוי</button></div>
+        <p id="destination-search-help" class="discovery-search-help">חיפוש בשש ההצעות שלנו. יעד אחר? אפשר להזין אותו ידנית.</p>
+        <div class="destination-discovery-heading"><h4>יעדים שכדאי להכיר</h4><button type="button" data-destination-manual aria-expanded="false" aria-controls="destination-country-field destination-city-field">הזנת יעד אחר</button></div>
+        <div id="destination-choices" class="destination-choices" role="group" aria-label="הצעות ליעדים"></div>
+        <p class="destination-empty" data-destination-empty hidden>אין התאמה בין ההצעות. אפשר לנקות את החיפוש או להזין עיר ומדינה ידנית.</p>
+        <p class="destination-selection" data-destination-selection role="status" aria-live="polite" aria-atomic="true">בחרו יעד או הזינו עיר ומדינה.</p>
+      </section>
+      <label id="destination-country-field" data-destination-manual-field data-wizard-panel="0" hidden>מדינה<input name="country" required autocomplete="country-name" placeholder="לדוגמה: איטליה" aria-describedby="destination-error"></label>
+      <label id="destination-city-field" data-destination-manual-field data-wizard-panel="0" hidden>עיר<input name="city" required autocomplete="address-level2" placeholder="לדוגמה: רומא" aria-describedby="destination-error"></label>
       <label data-wizard-panel="1" hidden>תאריך יציאה<input name="start" type="date" required aria-describedby="destination-error"></label>
       <label data-wizard-panel="1" hidden>תאריך חזרה<input name="end" type="date" required aria-describedby="destination-error"></label>
       <p class="trip-wizard-hint" data-wizard-panel="1" hidden>אפשר לתכנן בין יום אחד ל־60 ימים, כולל יום היציאה ויום החזרה.</p>

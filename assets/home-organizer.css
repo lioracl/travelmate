@@ -885,6 +885,12 @@ html[data-theme="dark"] body.home-page #modal-destination .destination-modal{
 @media(max-width:700px){.home-page.has-cached-trips main.content{padding:14px 14px 100px}}
 
 /* New Trip wizard: the existing sheet owns C1 material, progress and scroll. */
+html body.home-page #modal-destination{
+  top:calc(var(--tm-safe-top,0px) + var(--tm-wizard-viewport-top,0px));bottom:auto;
+  height:calc(var(--tm-wizard-viewport-height,100dvh) - var(--tm-safe-top,0px) - var(--tm-safe-bottom,0px));
+  max-height:calc(var(--tm-wizard-viewport-height,100dvh) - var(--tm-safe-top,0px) - var(--tm-safe-bottom,0px));
+  overflow:hidden;padding:12px
+}
 html body.home-page #modal-destination .destination-modal{
   --tm-overlay-surface:var(--tm-family-primary,color-mix(in srgb,var(--tm-surface-neutral,#F4F3EF) 94%,transparent));
   --surface:var(--tm-overlay-surface);
@@ -894,7 +900,7 @@ html body.home-page #modal-destination .destination-modal{
   --tm-overlay-blur:none;
   width:min(680px,100%);border-radius:var(--tm-overlay-radius,22px);
   background:var(--tm-overlay-surface);color:var(--tm-overlay-text);
-  max-height:calc(var(--tm-shell-height,100dvh) - var(--tm-safe-top,0px) - var(--tm-safe-bottom,0px) - 24px);
+  max-height:100%;max-block-size:100%;
   overflow:auto;overscroll-behavior:contain;scroll-padding-block:16px 80px
 }
 html body.home-page #modal-destination .destination-modal>header{display:grid;grid-template-columns:minmax(0,1fr) 48px;align-items:start;gap:12px;background:transparent;padding:20px 20px 12px}
@@ -934,6 +940,46 @@ html body.home-page #modal-destination button:disabled{cursor:default}
 @media(max-width:600px){html body.home-page #modal-destination .destination-form{grid-template-columns:repeat(2,minmax(0,1fr))}html body.home-page #modal-destination .destination-form label{grid-column:1/-1}}
 @media(prefers-reduced-motion:reduce){html body.home-page #modal-destination .trip-wizard-progress li{transition:none}}
 
+/* Step 1 discovery stays inside the wizard material and lifecycle owner. */
+html body.home-page #modal-destination .destination-discovery{grid-column:1/-1;min-width:0;display:grid;gap:12px}
+html body.home-page #modal-destination .discovery-sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+html body.home-page #modal-destination .destination-search-row{display:flex;align-items:center;gap:8px;min-width:0}
+html body.home-page #modal-destination .destination-search{position:relative;flex:1;min-width:0}
+html body.home-page #modal-destination .destination-search input{padding-inline:40px 14px;border-radius:18px;font-size:16px}
+html body.home-page #modal-destination .destination-search input::placeholder{color:var(--tm-overlay-muted);opacity:1}
+html body.home-page #modal-destination .destination-search-icon{position:absolute;inset-inline-start:14px;top:50%;transform:translateY(-50%);font-size:26px;line-height:1;color:var(--tm-overlay-muted);pointer-events:none}
+html body.home-page #modal-destination :is([data-destination-clear],[data-destination-manual]){min-width:44px;min-height:44px;padding:8px 10px;border:1px solid var(--tm-overlay-border);border-radius:12px;background:var(--tm-family-control);color:var(--tm-overlay-text);-webkit-text-fill-color:currentColor;font:inherit;font-size:13px;font-weight:700;white-space:normal}
+html body.home-page #modal-destination :is(.discovery-search-help,.destination-empty,.destination-selection){margin:0;font-size:13px;line-height:1.45;color:var(--tm-overlay-muted);-webkit-text-fill-color:currentColor}
+html body.home-page #modal-destination .destination-discovery-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+html body.home-page #modal-destination .destination-discovery-heading h4{margin:0;font-size:18px;line-height:1.35;color:var(--tm-overlay-text)}
+html body.home-page #modal-destination .destination-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+html body.home-page #modal-destination .destination-choice{position:relative;isolation:isolate;display:block;min-width:0;min-height:124px;aspect-ratio:1.4;border:2px solid transparent;border-radius:18px;overflow:hidden;padding:0;background:#183249;color:#fff;-webkit-text-fill-color:currentColor;font:inherit;text-align:start;box-shadow:none;transition:border-color 160ms ease}
+html body.home-page #modal-destination .destination-choice img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+html body.home-page #modal-destination .destination-choice-caption{position:absolute;inset-inline:0;bottom:0;display:grid;gap:2px;padding:8px 10px;background:#102A4D;color:#fff;-webkit-text-fill-color:currentColor;line-height:1.2}
+html body.home-page #modal-destination .destination-choice-caption strong{font-size:18px;color:inherit;-webkit-text-fill-color:currentColor}
+html body.home-page #modal-destination .destination-choice-caption>span{font-size:12px;color:inherit;-webkit-text-fill-color:currentColor}
+html body.home-page #modal-destination .destination-image-status{position:absolute;inset-inline:8px;top:12px;font-size:12px;line-height:1.4;text-align:center;color:#fff;-webkit-text-fill-color:currentColor}
+html body.home-page #modal-destination .destination-choice[aria-pressed="true"]{border-color:var(--tm-action-primary);box-shadow:0 0 0 2px var(--tm-action-primary)}
+html body.home-page #modal-destination .destination-choice-check{position:absolute;top:8px;inset-inline-end:8px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--tm-action-primary);color:#fff;-webkit-text-fill-color:currentColor;font-weight:900}
+html body.home-page #modal-destination .destination-selection{color:var(--tm-overlay-text);min-height:20px;overflow-wrap:anywhere}
+html body.home-page #modal-destination .destination-empty{padding:16px;border:1px dashed var(--tm-overlay-border);border-radius:14px;background:var(--tm-family-control)}
+html body.home-page #modal-destination [data-wizard-step="0"] .trip-wizard-intro{text-align:center}
+html body.home-page #modal-destination [data-wizard-step="0"] .trip-wizard-next{margin-top:auto;border-radius:20px;box-shadow:0 0 0 8px var(--tm-overlay-surface)}
+@media(max-width:700px){
+  html body.home-page #modal-destination[data-wizard-step="0"]{padding:0;align-items:stretch}
+  html body.home-page #modal-destination[data-wizard-step="0"] .destination-modal{width:100%;height:100%;border-radius:0;display:flex;flex-direction:column;border:0;box-shadow:none}
+  html body.home-page #modal-destination[data-wizard-step="0"] .destination-modal>header{flex-shrink:0;padding:12px 16px 4px;align-items:center;gap:8px}
+  html body.home-page #modal-destination[data-wizard-step="0"] .destination-modal>header>div{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+  html body.home-page #modal-destination[data-wizard-step="0"] .destination-modal h2{order:-1;font-size:22px}
+  html body.home-page #modal-destination[data-wizard-step="0"] .trip-wizard-progress{flex-shrink:0;padding:4px 16px;gap:6px}
+  html body.home-page #modal-destination[data-wizard-step="0"] .trip-wizard-progress li{padding-bottom:4px;gap:3px}
+  html body.home-page #modal-destination[data-wizard-step="0"] .destination-form{display:flex;flex:1;flex-direction:column;gap:12px;padding:12px 16px 12px}
+  html body.home-page #modal-destination[data-wizard-step="0"] .destination-form>*{flex-shrink:0}
+  html body.home-page #modal-destination[data-wizard-step="0"] .trip-wizard-intro h3{font-size:28px;margin:0 0 6px}
+  html body.home-page #modal-destination[data-wizard-step="0"] .trip-wizard-intro p{font-size:14px}
+  html body.home-page #modal-destination[data-wizard-step="0"] .destination-discovery{gap:10px}
+}
+@media(prefers-reduced-motion:reduce){html body.home-page #modal-destination .destination-choice{transition:none}}
 
 /* 2.16.0 profile strip: keep the signed-in profile directly below the top actions. */
 .home-page.is-authenticated .home-personal-summary{position:relative;z-index:18;min-height:82px;background:linear-gradient(135deg,color-mix(in srgb,var(--tm-surface-neutral,#f4f3ef) 64%,transparent),color-mix(in srgb,var(--tm-brand-primary,#147D92) 12%,transparent));border-color:color-mix(in srgb,var(--tm-brand-primary,#147D92) 28%,var(--tm-border-control,#cdd9d5));color:var(--tm-text-primary,#12383f);-webkit-text-fill-color:currentColor;-webkit-backdrop-filter:none;backdrop-filter:none}
