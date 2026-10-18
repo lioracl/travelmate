@@ -1035,6 +1035,7 @@ html body.home-page #modal-destination [data-wizard-step="2"] .navo-trip-types b
 html body.home-page #modal-destination [data-wizard-step="2"] .navo-trip-types button.is-selected{background:var(--tm-action-primary);color:var(--tm-text-on-action);border-color:var(--tm-action-primary);box-shadow:none}
 html body.home-page #modal-destination [data-wizard-step="2"] .navo-trip-banner{background:var(--tm-later-control);color:var(--tm-overlay-text);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
 html body.home-page #modal-destination [data-wizard-step="2"] .navo-trip-banner p{color:var(--tm-overlay-muted)}
+html body.home-page #modal-destination [data-wizard-step="2"] .navo-trip-banner button{background:var(--tm-action-primary);color:var(--tm-text-on-action);-webkit-text-fill-color:currentColor}
 
 
 /* 2.16.0 profile strip: keep the signed-in profile directly below the top actions. */

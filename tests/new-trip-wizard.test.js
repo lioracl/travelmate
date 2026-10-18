@@ -379,3 +379,16 @@ test('later wizard materials reuse canonical semantic tokens with an accessible 
  const pair=name=>theme.match(new RegExp("'--tm-family-"+name+"':dark\\?'(#[0-9A-Fa-f]{6})':'(#[0-9A-Fa-f]{6})'")).slice(1);
  for(const index of [0,1])for(const adjacent of ['solid','primary']){const a=luminance(pair('muted')[index]),b=luminance(pair(adjacent)[index]);assert.ok((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=3);}
 });
+
+test('preferences recommendation action resets inherited modal ink to its semantic action foreground',()=>{
+ const css=fs.readFileSync(path.join(root,'assets/home-organizer.css'),'utf8'),rule=css.match(/html body\.home-page #modal-destination \[data-wizard-step="2"\] \.navo-trip-banner button\{([^}]+)\}/);
+ assert.ok(rule,'Scoped preferences banner action owner must exist');
+ for(const declaration of ['background:var(--tm-action-primary)','color:var(--tm-text-on-action)','-webkit-text-fill-color:currentColor'])assert.ok(rule[1].split(';').includes(declaration),declaration);
+ assert.match(fs.readFileSync(path.join(root,'assets/readable-glass.css'),'utf8'),/-webkit-text-fill-color:var\(--tm-overlay-text\)/,'Ancestor ink inheritance remains unchanged; child must reset it');
+});
+test('all five canonical C1 action shades pair with on-action white above text AA',()=>{
+ const theme=fs.readFileSync(path.join(root,'assets/theme.js'),'utf8'),section=theme.slice(theme.indexOf('var C1_ACCENTS'),theme.indexOf('function effectiveAccent')),rows=[...section.matchAll(/(\w+): Object\.freeze\(\{label:'[^']+',primary:'(#[0-9A-F]+)',action:'(#[0-9A-F]+)'/g)];
+ assert.deepEqual(rows.map(r=>r[1]),['ocean','plum','pink','sunset','emerald']);assert.match(theme,/'--tm-text-on-action':'#FFFFFF'/);
+ const luminance=hex=>hex.slice(1).match(/../g).map(n=>parseInt(n,16)/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4).reduce((v,x,i)=>v+x*[.2126,.7152,.0722][i],0);
+ for(const r of rows)assert.ok(1.05/(luminance(r[3])+.05)>=4.5,r[1]+' canonical action shade');
+});

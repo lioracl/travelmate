@@ -458,3 +458,21 @@ for(const width of [390,430])for(const theme of ['light','dark'])test('decorated
  await laterStepEvidence(page,info,ui,name);await laterBoundaryEvidence(page,info,name,['#modal-destination [name=budget]','#modal-destination .navo-trip-types button:not(.is-selected)']);await laterControlReachability(page,info,ui,name);
  await ui.next.click();await expect(ui.form.locator('[data-wizard-summary=preferences]')).toHaveText('סולו');await expect(ui.form.locator('.navo-trip-types')).toBeHidden();await expect(ui.form.locator('.navo-trip-banner')).toBeHidden();await expectZero(page);
 });
+
+for(const theme of ['light','dark'])test('preferences recommendation actual action ink across all C1 accents '+theme,async({page},info)=>{
+ await page.setViewportSize({width:390,height:900});await boot(page,{theme,intelligence:false});const ui=await openWizard(page);
+ await page.evaluate(()=>TravelMateFeatures.load('intelligence'));await page.waitForFunction(()=>window.TravelMateTripIntelligence);await destination(ui);await dates(ui);
+ const button=ui.form.locator('.navo-trip-banner button');await expect(button).toBeVisible();
+ for(const accent of ['ocean','plum','pink','sunset','emerald']){
+  await page.evaluate(accent=>TravelMateTheme.setAccent(accent),accent);
+  for(const interaction of ['rest','hover-focus']){
+   if(interaction==='hover-focus'){await button.hover();await button.focus();}
+   const paint=await button.evaluate(n=>{const s=getComputedStyle(n),root=getComputedStyle(document.documentElement);return{color:s.color,fill:s.webkitTextFillColor,background:s.backgroundColor,action:root.getPropertyValue('--tm-action-primary').trim(),onAction:root.getPropertyValue('--tm-text-on-action').trim()};});
+   const rgb=hex=>'rgb('+hex.slice(1).match(/../g).map(n=>parseInt(n,16)).join(', ')+')';
+   expect(paint.background).toBe(rgb(paint.action));expect(paint.color).toBe(rgb(paint.onAction));expect(paint.fill).toBe(paint.color);
+   await readability(page,info,'preferences-action-'+theme+'-'+accent+'-'+interaction,['#modal-destination .navo-trip-banner button:visible']);
+  }
+  await page.mouse.move(0,0);await ui.form.locator('[data-wizard-heading]').focus();
+ }
+ await expectZero(page);await ui.back.click();await expect(button).toBeHidden();await ui.back.click();await expect(button).toBeHidden();await expectZero(page);
+});
