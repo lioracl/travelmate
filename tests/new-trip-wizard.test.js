@@ -432,3 +432,30 @@ for(const phase of [0,1,2,3])test('scroll layout preserves native hooks, node id
   for(const[name,input]of Object.entries(inputs)){assert.equal(h.form.elements[name],input);assert.equal(input.value,name+' original');}
  }
 });
+
+function wizardHitProofFixture(stylePatch={}){
+ const spec=fs.readFileSync(path.join(root,'tests/e2e/new-trip-wizard.spec.js'),'utf8'),start=spec.indexOf('function wizardControlHitProof('),end=spec.indexOf('async function wizardFocusedControl(',start);assert(start>0&&end>start);
+ const box={left:69,right:345,top:412.484375,bottom:464.484375,width:276,height:52},parent={tagName:'LABEL',id:'fixture-label',className:'date-label'},child={tagName:'SPAN',id:'fixture-child',className:'native-part'},occluder={tagName:'DIV',id:'fixture-interior-occluder',className:'proof-fixture'},node={tagName:'INPUT',id:'fixture-date',className:'date-control',getBoundingClientRect:()=>box,contains:n=>n===child};
+ let blocked=null,forceAncestor=false,descendant=false;
+ // Independent rounded-rectangle reference for this fixture's uniform radius14.
+ const painted=(x,y)=>{const dx=Math.max(box.left+14-x,0,x-(box.right-14)),dy=Math.max(box.top+14-y,0,y-(box.bottom-14));return x>box.left&&x<box.right&&y>box.top&&y<box.bottom&&(!dx||!dy||dx*dx+dy*dy<14*14);};
+ const hit=(x,y)=>blocked&&Math.abs(x-blocked.x)<1&&Math.abs(y-blocked.y)<1?occluder:forceAncestor?parent:painted(x,y)?descendant?child:node:parent;
+ const style={borderTopLeftRadius:'14px',borderTopRightRadius:'14px',borderBottomRightRadius:'14px',borderBottomLeftRadius:'14px',transform:'none',...stylePatch},env={getComputedStyle:()=>style,document:{elementFromPoint:hit,elementsFromPoint:(x,y)=>{const top=hit(x,y);return top===occluder?[occluder,node,parent]:top===node?[node,parent]:top===child?[child,node,parent]:[parent];}}};
+ vm.runInNewContext(spec.slice(start,end)+'\nthis.proof=wizardControlHitProof;',env);
+ return{read:()=>JSON.parse(JSON.stringify(env.proof(node))),box,node,parent,painted,block:point=>blocked=point,ancestor:value=>forceAncestor=value,descendant:value=>descendant=value,style};
+}
+test('radius-aware hit proof samples actual painted input interior at reported CI geometry',t=>{
+ const f=wizardHitProofFixture(),b=f.box;for(const[x,y]of [[b.left+3,b.top+3],[b.right-3,b.top+3],[b.right-3,b.bottom-3],[b.left+3,b.bottom-3]])assert.equal(f.painted(x,y),false,'old rectangular-corner sample is outside radius14');
+ const row=f.read();assert.equal(row.passed,true);assert.equal(row.samples.length,9);assert(row.samples.every(s=>s.interior&&s.accepted&&s.hit.tag==='INPUT'));assert.deepEqual(row.computedRadii,{topLeft:'14px',topRight:'14px',bottomRight:'14px',bottomLeft:'14px'});assert(row.samples.filter(s=>s.name.includes('-')&&!s.name.includes('edge')).every(s=>Math.min(Math.abs(s.x-b.left),Math.abs(b.right-s.x))>4.1));t.diagnostic('Synthetic geometry proof only: '+JSON.stringify(row));
+});
+test('every interior hit sample rejects a real occluder and passes after restoration',()=>{
+ const f=wizardHitProofFixture(),clear=f.read();assert.equal(clear.passed,true);
+ for(const point of clear.samples){f.block(point);const failed=f.read();assert.equal(failed.passed,false,point.name);const sample=failed.samples.find(s=>s.name===point.name);assert.equal(sample.interior,true);assert.equal(sample.accepted,false);assert.equal(sample.hit.id,'fixture-interior-occluder');assert.equal(sample.stack[0].id,'fixture-interior-occluder');assert(failed.samples.some(s=>s.accepted),'any-hit would incorrectly pass');f.block(null);assert.equal(f.read().passed,true,'restored '+point.name);}
+});
+test('control hit proof rejects ancestor hits and accepts only target or actual descendants',()=>{
+ const f=wizardHitProofFixture();f.ancestor(true);const row=f.read();assert.equal(row.passed,false);assert(row.samples.every(s=>s.interior&&!s.accepted&&s.hit.tag==='LABEL'&&s.stack[0].id==='fixture-label'));f.ancestor(false);f.descendant(true);assert.equal(f.read().passed,true);assert(f.read().samples.every(s=>s.hit.id==='fixture-child'));
+});
+test('control hit proof resolves elliptical percentage radii, overlap scaling and fails closed on unsupported geometry',()=>{
+ const f=wizardHitProofFixture({borderTopLeftRadius:'80% 50%',borderTopRightRadius:'80% 50%',borderBottomRightRadius:'80% 50%',borderBottomLeftRadius:'80% 50%'});let row=f.read();assert.equal(row.radiusScale,.625);assert.deepEqual(row.radii.topLeft,{x:138,y:16.25});assert(row.samples.every(s=>s.interior));assert.equal(row.passed,true);
+ f.style.borderTopLeftRadius='calc(5px + 1%)';row=f.read();assert.equal(row.passed,false);assert(row.issues.some(s=>s.includes('unsupported computed radius')));f.style.borderTopLeftRadius='14px';f.style.transform='matrix(1,0,0,1,1,0)';assert.equal(f.read().passed,false);
+});

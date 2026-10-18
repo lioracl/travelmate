@@ -505,11 +505,38 @@ async function wizardScrollProof(page,info,ui,name,{minimum=96}={}){
  for(const visible of result.visible){expect(visible.clip.bottom).toBeLessThanOrEqual(result.actionTop);expect(visible.hit,JSON.stringify(visible)).toBe(true);}
  await expect(ui.modal.locator('.tm-home-dock')).toHaveCount(1);return result;
 }
+// Axis-aligned control border-box proof. Every sample must be strictly inside
+// its computed rounded shape and hit the target or a descendant.
+function wizardControlHitProof(n){
+ const b=n.getBoundingClientRect(),style=getComputedStyle(n),describe=e=>e?{tag:e.tagName,id:e.id||'',class:typeof e.className==='string'?e.className:''}:null;
+ const raw={topLeft:style.borderTopLeftRadius,topRight:style.borderTopRightRadius,bottomRight:style.borderBottomRightRadius,bottomLeft:style.borderBottomLeftRadius},issues=[];
+ function length(value,size){const m=/^(\d+(?:\.\d+)?|\.\d+)(px|%)?$/.exec(value);if(!m||(!m[2]&&Number(m[1])!==0))return NaN;return Number(m[1])*(m[2]==='%'?size/100:1);}
+ const radii={};for(const [corner,value]of Object.entries(raw)){const parts=value.trim().split(/\s+/);radii[corner]={x:length(parts[0],b.width),y:length(parts[1]||parts[0],b.height)};if(parts.length>2||!Object.values(radii[corner]).every(Number.isFinite))issues.push('unsupported computed radius: '+corner);}
+ if(!(b.width>0&&b.height>0))issues.push('empty control box');
+ if(style.transform!=='none')issues.push('transformed control box');
+ if(issues.length)return{passed:false,target:describe(n),computedRadii:raw,radii,issues,samples:[]};
+ const tl=radii.topLeft,tr=radii.topRight,br=radii.bottomRight,bl=radii.bottomLeft;
+ const factor=Math.min(1,...[[b.width,tl.x+tr.x],[b.width,bl.x+br.x],[b.height,tl.y+bl.y],[b.height,tr.y+br.y]].filter(([,sum])=>sum>0).map(([size,sum])=>size/sum));
+ for(const radius of Object.values(radii)){radius.x*=factor;radius.y*=factor;}
+ const ix=Math.min(3,b.width/4),iy=Math.min(3,b.height/4),diagonal=1-Math.SQRT1_2;
+ const corner=(name,radius,left,top)=>({name,x:left?b.left+Math.min(b.width/2,Math.max(ix,radius.x*diagonal+1)):b.right-Math.min(b.width/2,Math.max(ix,radius.x*diagonal+1)),y:top?b.top+Math.min(b.height/2,Math.max(iy,radius.y*diagonal+1)):b.bottom-Math.min(b.height/2,Math.max(iy,radius.y*diagonal+1))});
+ const points=[{name:'center',x:(b.left+b.right)/2,y:(b.top+b.bottom)/2},{name:'top-edge',x:(b.left+b.right)/2,y:b.top+iy},{name:'right-edge',x:b.right-ix,y:(b.top+b.bottom)/2},{name:'bottom-edge',x:(b.left+b.right)/2,y:b.bottom-iy},{name:'left-edge',x:b.left+ix,y:(b.top+b.bottom)/2},corner('top-left',tl,true,true),corner('top-right',tr,false,true),corner('bottom-right',br,false,false),corner('bottom-left',bl,true,false)];
+ function inside(x,y){
+  if(!(x>b.left&&x<b.right&&y>b.top&&y<b.bottom))return false;
+  for(const[radius,cx,cy,left,top]of [[tl,b.left+tl.x,b.top+tl.y,true,true],[tr,b.right-tr.x,b.top+tr.y,false,true],[br,b.right-br.x,b.bottom-br.y,false,false],[bl,b.left+bl.x,b.bottom-bl.y,true,false]]){
+   if(radius.x>0&&radius.y>0&&(left?x<cx:x>cx)&&(top?y<cy:y>cy)&&((x-cx)/radius.x)**2+((y-cy)/radius.y)**2>=1)return false;
+  }return true;
+ }
+ const samples=points.map(point=>{const interior=inside(point.x,point.y),hit=document.elementFromPoint(point.x,point.y),accepted=interior&&(hit===n||n.contains(hit));return{...point,interior,accepted,hit:describe(hit),...(accepted?{}:{stack:document.elementsFromPoint(point.x,point.y).map(describe)})};});
+ return{passed:samples.length===9&&samples.every(point=>point.interior&&point.accepted),target:describe(n),box:{top:b.top,bottom:b.bottom,left:b.left,right:b.right,width:b.width,height:b.height},computedRadii:raw,radii,radiusScale:factor,issues,samples};
+}
+
+
 async function wizardFocusedControl(page,info,ui,selector,name,{reveal=true}={}){
  const control=ui.form.locator(selector);if(reveal){await control.focus();await control.evaluate(n=>n.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));}await expect(control).toBeFocused();
- const row=await control.evaluate(n=>{const b=n.getBoundingClientRect(),s=n.closest('.trip-wizard-scroll').getBoundingClientRect(),samples=[[b.left+3,b.top+3],[b.right-3,b.top+3],[b.left+3,b.bottom-3],[b.right-3,b.bottom-3]].map(([x,y])=>{const hit=document.elementFromPoint(x,y);return hit===n||n.contains(hit);});return{top:b.top,bottom:b.bottom,left:b.left,right:b.right,scrollTop:s.top,scrollBottom:s.bottom,scrollLeft:s.left,scrollRight:s.right,hits:samples};});
+ const hitProof=await control.evaluate(wizardControlHitProof),row=await control.evaluate(n=>{const b=n.getBoundingClientRect(),s=n.closest('.trip-wizard-scroll').getBoundingClientRect();return{top:b.top,bottom:b.bottom,left:b.left,right:b.right,scrollTop:s.top,scrollBottom:s.bottom,scrollLeft:s.left,scrollRight:s.right};});row.hitProof=hitProof;
  const path=info.outputPath(name+'-focused-control.json');require('node:fs').mkdirSync(require('node:path').dirname(path),{recursive:true});require('node:fs').writeFileSync(path,JSON.stringify({testRequestedScroll:reveal,...row},null,2));await info.attach(name+'-focused-control',{path,contentType:'application/json'});
- expect(row.top).toBeGreaterThanOrEqual(row.scrollTop-.5);expect(row.bottom).toBeLessThanOrEqual(row.scrollBottom+.5);expect(row.left).toBeGreaterThanOrEqual(row.scrollLeft-.5);expect(row.right).toBeLessThanOrEqual(row.scrollRight+.5);expect(row.hits.every(Boolean),JSON.stringify(row)).toBe(true);await wizardScrollProof(page,info,ui,name);await discoveryCapture(page,info,name+'-focused');
+ expect(row.top).toBeGreaterThanOrEqual(row.scrollTop-.5);expect(row.bottom).toBeLessThanOrEqual(row.scrollBottom+.5);expect(row.left).toBeGreaterThanOrEqual(row.scrollLeft-.5);expect(row.right).toBeLessThanOrEqual(row.scrollRight+.5);expect(row.hitProof.passed,JSON.stringify(row)).toBe(true);await wizardScrollProof(page,info,ui,name);await discoveryCapture(page,info,name+'-focused');
 }
 for(const width of [390,430])for(const theme of ['light','dark'])test('reserved wizard action row, long decorated content, shrink and restore '+width+'/'+theme,async({page},info)=>{
  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});await boot(page,{theme,intelligence:false});
@@ -529,4 +556,15 @@ for(const width of [390,430])for(const theme of ['light','dark'])test('reserved 
  await ui.form.locator('[data-wizard-edit="0"]').click();await step(ui,0);
  expect(await ui.form.evaluate(f=>f.querySelector('.trip-wizard-intro').parentElement===f&&Object.entries(scrollIdentity.fields).every(([k,n])=>f.elements[k]===n)&&scrollIdentity.dock===document.querySelector('.tm-home-dock')&&f.querySelector('.trip-wizard-scroll').hidden&&f.querySelector('.trip-wizard-scroll').children.length===0&&f.elements.country.closest('label').parentElement===f&&f.elements.city.closest('label').parentElement===f&&f.querySelector('.create-trip').parentElement===f&&f.querySelector('[data-wizard-back]').parentElement===f)).toBe(true);
  await expect(ui.form.locator('.navo-trip-banner')).toBeHidden();await expect(ui.form.locator('.navo-trip-types')).toBeHidden();await expectZero(page);await ui.modal.locator('[data-close]').click();await expect(ui.trigger).toBeFocused();
+});
+
+test('rounded wizard control hit proof rejects an interior occluder and recovers after removal',async({page},info)=>{
+ await page.setViewportSize({width:390,height:900});await boot(page,{intelligence:false});const ui=await openWizard(page);await destination(ui);const control=ui.form.locator('[name=start]');
+ await control.focus();await control.evaluate(n=>n.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));await expect(control).toBeFocused();
+ const before=await control.evaluate(wizardControlHitProof);expect(before.passed,JSON.stringify(before)).toBe(true);
+ await control.evaluate(n=>{const b=n.getBoundingClientRect(),occluder=document.createElement('div');occluder.id='wizard-interior-occluder';Object.assign(occluder.style,{position:'fixed',left:((b.left+b.right)/2-6)+'px',top:((b.top+b.bottom)/2-6)+'px',width:'12px',height:'12px',background:'#F45D70',zIndex:'2147483647',pointerEvents:'auto'});n.closest('#modal-destination').appendChild(occluder);});
+ let blocked;try{blocked=await control.evaluate(wizardControlHitProof);}finally{await ui.modal.locator('#wizard-interior-occluder').evaluate(n=>n.remove());}
+ const restored=await control.evaluate(wizardControlHitProof),path=info.outputPath('rounded-control-negative-proof.json');require('node:fs').mkdirSync(require('node:path').dirname(path),{recursive:true});require('node:fs').writeFileSync(path,JSON.stringify({scope:'Synthetic interior occluder on actual date control',before,blocked,restored},null,2));await info.attach('rounded-control-negative-proof',{path,contentType:'application/json'});
+ expect(blocked.passed,JSON.stringify(blocked)).toBe(false);const center=blocked.samples.find(s=>s.name==='center');expect(center.interior).toBe(true);expect(center.accepted).toBe(false);expect(center.hit.id).toBe('wizard-interior-occluder');expect(center.stack[0].id).toBe('wizard-interior-occluder');expect(blocked.samples.some(s=>s.accepted)).toBe(true);
+ expect(restored.passed,JSON.stringify(restored)).toBe(true);await expect(control).toBeFocused();await expectZero(page);await ui.modal.locator('[data-close]').click();await expect(ui.trigger).toBeFocused();
 });
