@@ -2,22 +2,22 @@
 html:not([data-theme="dark"]) body.tm-new-design:not(.home-page){--tm-photo-scrim-start:rgba(24,35,38,.08);--tm-photo-scrim-mid:rgba(24,35,38,.11);--tm-photo-scrim-end:rgba(24,35,38,.14)}
 html[data-theme="dark"]{color-scheme:dark}
 html[data-theme="dark"] body.tm-new-design:not(.home-page){--tm-photo-scrim-start:rgba(24,35,38,.10);--tm-photo-scrim-mid:rgba(24,35,38,.13);--tm-photo-scrim-end:rgba(24,35,38,.16)}
-html[data-theme="light"] body.tm-new-design.home-page{
+html[data-theme="light"] body.tm-new-design.home-page:not(:where([data-design="v3"])){
   background-color:#d8e0dc!important;
   background-image:linear-gradient(90deg,var(--tm-photo-scrim-start,rgba(3,12,10,.3)),var(--tm-photo-scrim-mid,rgba(3,12,10,.4)) 72%,var(--tm-photo-scrim-end,rgba(3,12,10,.5))),var(--trip-bg-image,linear-gradient(135deg,#0e614b,#071611))!important
 }
 html[data-theme="light"] body.tm-new-design .custom-hero :where(.hero-copy,h1,.hero-country-line,p,.hero-back,.share){
   color:#fff!important;text-shadow:0 1px 12px rgba(0,0,0,.34)
 }
-html[data-theme="dark"] body{
+html[data-theme="dark"] body:not(:where([data-design="v3"])){
   --text:#f3f5f4;--muted:#c0c7c4;--dark:#f3f5f4;
   --line:rgba(255,255,255,.16);color:#f3f5f4
 }
-html[data-theme="dark"] body.tm-new-design.home-page{
+html[data-theme="dark"] body.tm-new-design.home-page:not(:where([data-design="v3"])){
   background-color:#071611!important;
   background-image:linear-gradient(90deg,var(--tm-photo-scrim-start,rgba(3,12,10,.7)),var(--tm-photo-scrim-mid,rgba(3,12,10,.78)) 72%,var(--tm-photo-scrim-end,rgba(3,12,10,.84))),var(--trip-bg-image,linear-gradient(135deg,#0e614b,#071611))!important
 }
-html[data-theme="dark"] body.tm-new-design{
+html[data-theme="dark"] body.tm-new-design:not(:where([data-design="v3"])){
   --surface:rgba(6,18,15,.52);--text:#f3f5f4;--muted:#c0c7c4;
   --dark:#f3f5f4;--line:rgba(255,255,255,.16);color:#f3f5f4;
 }
@@ -145,3 +145,12 @@ html body.tm-new-design main.content :is(input,textarea,[contenteditable="true"]
 /* 1.42.4 — mobile metadata spacing and focused contrast repairs. */
 
 /* Budget layout/material moved to trip-experience.css and readable-glass.css in Phase 1B. */
+
+/* V3 theme owns the semantic canvas and plain body material. Component tokens
+   remain with their existing material owners; saved legacy choices stay stored. */
+html body[data-design="v3"]{--text:var(--tm-family-text);--muted:var(--tm-family-muted);--dark:var(--tm-family-text);--bg:var(--tm-v3-canvas);background-color:var(--tm-v3-canvas);color:var(--tm-family-text)}
+html body[data-design="v3"]::before{display:none}
+/* C1 has one material base. Stored legacy surface preferences remain intact
+   for compatibility; V3 exposes only Light/Dark and the five Accent choices. */
+html body[data-design="v3"] .settings-row-surface,
+html body[data-design="v3"] .settings-accent-picker button[hidden]{display:none}

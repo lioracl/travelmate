@@ -105,6 +105,7 @@
   }
 
   (function initHomeHeaderUtilities() {
+    if (document.body.dataset.design === 'v3') return; // App Shell owns the utility dialog.
     var sidebar = document.querySelector('.home-sidebar');
     var menu = sidebar && sidebar.querySelector('[data-home-more-menu]');
     var toggle = sidebar && sidebar.querySelector('[data-home-more-toggle]');
@@ -414,6 +415,7 @@
     updateCounts();
     filterHomeTrips();
     renderAdaptiveHome(canonicalTrips);
+    if (window.TravelMateAppShell) window.TravelMateAppShell.syncHomeRoute();
     handlePwaShortcut(canonicalTrips);
   }
 

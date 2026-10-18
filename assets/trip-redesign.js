@@ -47,8 +47,7 @@
     document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !mapDialog.hidden) closeMap(); });
   }
 
-  var sidebar = document.querySelector('.sidebar');
-  if (!sidebar) return;
+  var sidebar = document.querySelector('[data-shell-utilities]') || document.querySelector('.sidebar') || document.createElement('div');
 
   var content = document.querySelector('.content');
   var viewParams = new URLSearchParams(window.location.search);

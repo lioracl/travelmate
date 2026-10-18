@@ -47,8 +47,8 @@ test('shared zero/nonzero badge and panel refresh, account switch/logout isolati
 for(const width of [360,390,430])test(`authenticated home inset remains intact ${width}`,async({page})=>{
  await page.setViewportSize({width,height:844});
  await page.addInitScript(()=>{localStorage.setItem('travelmate-active-user','A');localStorage.setItem('travelmate-trips',JSON.stringify([{id:'qa-home',ownerId:'A',city:'QA',country:'Italy',start:'2026-10-10',end:'2026-10-12',days:3,activities:[],savedPlaces:[],expenses:[]}]));document.addEventListener('DOMContentLoaded',()=>document.documentElement.style.setProperty('--safe-area-inset-top','32px'));});
- await page.goto('/');await expect(page.locator('body')).toHaveClass(/has-cached-trips/);const header=await page.locator('.home-sidebar').boundingBox();expect(header.y).toBeGreaterThanOrEqual(32);
- const padding=await page.locator('main.content').evaluate(el=>parseFloat(getComputedStyle(el).paddingTop));expect(padding).toBeGreaterThanOrEqual(header.y+header.height);
+ await page.goto('/');await expect(page.locator('body')).toHaveClass(/has-cached-trips/);const header=await page.locator('.tm-home-header').boundingBox();expect(header.y).toBeGreaterThanOrEqual(32);
+ const dashboard=await page.locator('[data-home-dashboard]').boundingBox();expect(dashboard.y).toBeGreaterThanOrEqual(header.y+header.height);
 });
 test('planned saved place has one canonical ratings action after detail expansion',async({page})=>{
  await page.setViewportSize({width:390,height:844});

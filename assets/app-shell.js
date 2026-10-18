@@ -2,50 +2,129 @@
   'use strict';
   if (window.TravelMateAppShell) return;
   var root = document.documentElement;
-  var header = document.querySelector('body.home-page .home-sidebar, body:not(.home-page) .mobile-header');
+  var header = document.querySelector('body.home-page .tm-home-header, body:not(.home-page) .mobile-header');
   function measureHeader() {
     var height = header && header.getBoundingClientRect().height;
     if (height > 0) root.style.setProperty('--tm-shell-header-height', Math.ceil(height) + 'px');
   }
   if (header && window.ResizeObserver) new ResizeObserver(measureHeader).observe(header);
   measureHeader();
-  // The dock is an optional shell surface; History remains the navigation owner.
+  var isV3 = document.body.dataset.design === 'v3';
+  var isHome = document.body.classList.contains('home-page');
   var dock = document.querySelector('.tm-trip-dock');
-  if (dock) {
-    var shellLinks = dock.querySelectorAll('[data-shell-view]');
-    var drawer = document.querySelector('.workspace>.sidebar');
-    if (drawer) {
-      if (!drawer.id) drawer.id = 'tm-trip-menu';
-      dock.querySelector('[data-shell-more]').setAttribute('aria-controls', drawer.id);
+  var utilities = document.querySelector('[data-shell-utilities]');
+  var utilityOpener = null;
+  var backgroundStates = [];
+  function closeUtilities() {
+    if (!utilities || utilities.hidden) return;
+    utilities.hidden = true;
+    document.body.classList.remove('mobile-menu-open');
+    document.querySelectorAll('[data-shell-more]').forEach(function (button) { button.setAttribute('aria-expanded', 'false'); });
+    backgroundStates.forEach(function (item) { item.node.inert = item.inert; });
+    backgroundStates = [];
+    if (utilityOpener && utilityOpener.isConnected) utilityOpener.focus({preventScroll:true});
+  }
+  function openUtilities(opener) {
+    if (!utilities) return;
+    if (!utilities.hidden) { closeUtilities(); return; }
+    utilityOpener = opener;
+    utilities.hidden = false;
+    document.body.classList.add('mobile-menu-open');
+    document.querySelectorAll('[data-shell-more]').forEach(function (button) { button.setAttribute('aria-expanded', 'true'); });
+    [document.querySelector('main.content'), dock].filter(Boolean).forEach(function (node) {
+      backgroundStates.push({node:node,inert:node.inert}); node.inert = true;
+    });
+    var close = utilities.querySelector('[data-shell-close]');
+    if (close) close.focus({preventScroll:true});
+  }
+  function utilityKeydown(event) {
+    if (!utilities || utilities.hidden) return;
+    if (event.key === 'Escape') {
+      event.preventDefault(); event.stopImmediatePropagation(); closeUtilities(); return;
     }
-    function syncDock() {
-      var view = document.body.dataset.tripPrimaryView || 'overview';
-      shellLinks.forEach(function (link) {
-        var url = new URL(location.href);
-        url.hash = '';
-        url.searchParams.set('view', link.dataset.shellView);
-        link.href = url.href;
-        if (view === link.dataset.shellView) link.setAttribute('aria-current', 'page');
-        else link.removeAttribute('aria-current');
+    if (event.key !== 'Tab') return;
+    var controls = Array.prototype.filter.call(utilities.querySelectorAll('a[href],button,input,select,textarea,[tabindex="0"]'), function (node) {
+      return !node.disabled && !node.hidden && node.getClientRects().length > 0;
+    });
+    var first = controls[0], last = controls[controls.length - 1];
+    if (!first) { event.preventDefault(); return; }
+    if (event.shiftKey && (document.activeElement === first || !utilities.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && (document.activeElement === last || !utilities.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+  }
+  function syncDock() {
+    if (!dock) return;
+    var view = document.body.dataset.tripPrimaryView || 'overview';
+    dock.querySelectorAll('[data-shell-view]').forEach(function (link) {
+      var url = new URL(location.href); url.hash = ''; url.searchParams.set('view', link.dataset.shellView); link.href = url.href;
+      if (view === link.dataset.shellView) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current');
+    });
+    var more = dock.querySelector('[data-shell-more]');
+    if (more) more.classList.toggle('is-active', !/^(overview|plan|places)$/.test(view));
+  }
+  // Outside-trip URLs use the browser's native hash history. Inside-trip view
+  // and overlay entries retain TravelMateHistory as their only state owner.
+  // Home has no trip destination responder. Reuse the existing mode controls;
+  // selecting GPS changes UI only, while the engine owns explicit search/consent.
+  function configureHomeNearby() {
+    if (!isHome || !isV3) return;
+    var panel = document.querySelector('#home-places [data-nearby-places]');
+    if (!panel || !window.TravelMateNearby) return;
+    window.TravelMateNearby.init(panel);
+    var destination = panel.querySelector('[data-nearby-mode="destination"]');
+    var gps = panel.querySelector('[data-nearby-mode="gps"]');
+    if (destination) { destination.hidden = true; destination.disabled = true; }
+    if (gps && panel.dataset.searchMode === 'destination') gps.click();
+  }
+  function syncHomeRoute() {
+    if (!isHome || !isV3) return;
+    var route = /^(#active-trips|#trip-archive)$/.test(location.hash) ? 'trips' : location.hash === '#home-places' ? 'places' : 'home';
+    document.body.dataset.homeView = route;
+    if (dock) dock.querySelectorAll('[data-home-route]').forEach(function (link) {
+      if (link.dataset.homeRoute === route) link.setAttribute('aria-current','page'); else link.removeAttribute('aria-current');
+    });
+    // Hidden sections retain their canonical nodes, forms, filters and cached data.
+    document.querySelectorAll('[data-home-trip-browser],[data-trip-list],[data-trip-archive],.trip-area-head').forEach(function (node) { node.inert = route !== 'trips'; });
+    if (route === 'places' && window.TravelMateFeatures) {
+      window.TravelMateFeatures.load('home-nearby').then(function (ready) {
+        if (ready !== false) configureHomeNearby();
+        var status = document.querySelector('#home-places [data-nearby-status]');
+        if (ready === false && status) status.textContent = 'טעינת מקומות לא הושלמה. אפשר לנסות שוב בכניסה למסך.';
+      }).catch(function () {
+        var status = document.querySelector('#home-places [data-nearby-status]');
+        if (status) status.textContent = 'מקומות אינם זמינים כרגע. אפשר לחזור ולנסות שוב.';
       });
-      dock.querySelector('[data-shell-more]').setAttribute('aria-expanded', String(document.body.classList.contains('mobile-menu-open')));
-      dock.querySelector('[data-shell-more]').classList.toggle('is-active', !/^(overview|plan|places)$/.test(view));
     }
-    dock.addEventListener('click', function (event) {
+    closeUtilities();
+  }
+  if (isV3) {
+    if (utilities) {
+      if (!utilities.id) utilities.id = 'tm-utilities';
+      document.querySelectorAll('[data-shell-more]').forEach(function (button) { button.setAttribute('aria-controls',utilities.id); });
+    }
+    document.addEventListener('keydown', utilityKeydown, true);
+    document.addEventListener('click', function (event) {
+      var more = event.target.closest('[data-shell-more]');
+      if (more) { event.preventDefault(); openUtilities(more); return; }
+      if (event.target.closest('[data-shell-close]')) { closeUtilities(); return; }
+      if (utilities && !utilities.hidden && event.target.closest('[data-shell-utilities] a,[data-shell-utilities] button')) closeUtilities();
+    });
+    if (dock) dock.addEventListener('click', function (event) {
       var link = event.target.closest('[data-shell-view]');
       if (link && !event.defaultPrevented && event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && window.TravelMateHistory) {
-        event.preventDefault();
-        window.TravelMateHistory.navigate(link.dataset.shellView);
-      }
-      if (event.target.closest('[data-shell-more]')) {
-        var menu = document.querySelector('[data-mobile-menu]');
-        if (menu) menu.click();
+        event.preventDefault(); window.TravelMateHistory.navigate(link.dataset.shellView);
       }
     });
-    new MutationObserver(syncDock).observe(document.body, {attributes:true,attributeFilter:['class','data-trip-primary-view']});
     window.addEventListener('travelmate:viewchange', syncDock);
-    syncDock();
+    if (!isHome) new MutationObserver(syncDock).observe(document.body,{attributes:true,attributeFilter:['data-trip-primary-view']});
+    window.addEventListener('hashchange',syncHomeRoute);
+    window.addEventListener('travelmate:home-auth',function (event) {
+      if (event.detail && event.detail.authenticated === false && !document.body.classList.contains('has-cached-trips')) { var homeUrl=new URL(location.href);homeUrl.hash='home';history.replaceState(history.state,'',homeUrl.href); }
+      syncHomeRoute();
+    });
+    document.addEventListener('DOMContentLoaded',syncHomeRoute,{once:true});
+    syncDock(); syncHomeRoute();
   }
+
   var capacitor = window.Capacitor;
   var bars = null;
   if (capacitor && capacitor.isNativePlatform && capacitor.isNativePlatform()) {
@@ -294,5 +373,5 @@
   window.TravelMateAppShell = {snapshot:function () {
     var style = getComputedStyle(root);
     return {top:style.getPropertyValue('--tm-safe-top').trim(),bottom:style.getPropertyValue('--tm-safe-bottom').trim(),headerHeight:style.getPropertyValue('--tm-shell-header-height').trim(),viewportHeight:window.visualViewport ? window.visualViewport.height : innerHeight};
-  }, syncTripProfileHero:syncTripProfileHero, enhanceNearbyFreeSearch:enhanceNearbyFreeSearch};
+  }, v3:isV3, closeUtilities:closeUtilities, configureHomeNearby:configureHomeNearby, syncHomeRoute:syncHomeRoute, syncTripProfileHero:syncTripProfileHero, enhanceNearbyFreeSearch:enhanceNearbyFreeSearch};
 })();

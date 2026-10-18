@@ -46,7 +46,7 @@ async function open(page,{theme='light',state='ready',records=trips,guest=false}
   },rpc:async()=>({data:[],error:null})};
   window.__travelMateSupabaseClient=client;
  },{theme,state,records,guest});
- await page.goto('http://127.0.0.1:4173/index.html',{waitUntil:'domcontentloaded'});
+ await page.goto('http://127.0.0.1:4173/index.html#active-trips',{waitUntil:'domcontentloaded'});
  await expect(page.locator('[data-home-trip-browser]')).toBeAttached();
  await page.waitForFunction(theme=>document.documentElement.dataset.theme===theme&&Array.from(document.querySelectorAll('link[rel="stylesheet"]')).filter(link=>link.href.startsWith(location.origin)).every(link=>link.sheet),theme);
  if(!guest)await expect(page.locator('body')).toHaveClass(state==='offline'?/has-cached-trips/:/is-authenticated/);

@@ -222,12 +222,16 @@
       button.classList.toggle('active', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
+    if (window.TravelMateTheme && window.TravelMateTheme.refreshAccentChoices) {
+      window.TravelMateTheme.refreshAccentChoices();
+    } else {
     document.querySelectorAll('[data-accent-choice]').forEach(function (button) {
       var choice = window.TravelMateTheme && window.TravelMateTheme.normalizeAccent ? window.TravelMateTheme.normalizeAccent(button.dataset.accentChoice) : button.dataset.accentChoice;
       var selected = choice === accent;
       button.classList.toggle('active', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
+    }
   }
 
   function closeDialog() {

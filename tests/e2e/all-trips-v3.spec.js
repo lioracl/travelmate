@@ -5,7 +5,7 @@ for(const width of [360,390,430,768,1440])for(const theme of ['light','dark'])te
  await page.setViewportSize({width,height:900});await open(page,{theme});
  await expect(page.locator('[data-home-trip-browser]')).toBeVisible();
  await expect(page.locator('#active-trips>[data-cloud-trip]')).toHaveCount(2);
- await expect(page.locator('.tm-trip-dock')).toHaveCount(0);
+ await expect(page.locator('.tm-home-dock')).toHaveCount(1);await expect(page.locator('.tm-home-dock')).toBeVisible();await expect(page.locator('.tm-home-dock > *')).toHaveCount(5);await expect(page.locator('.tm-home-dock [data-shell-view],.tm-home-dock .ai-orb')).toHaveCount(0);
  await expect(page.locator('[data-home-greeting]')).toContainText('דנה');
  expect(await page.locator('html').getAttribute('dir')).toBe('rtl');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
