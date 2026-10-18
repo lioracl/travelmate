@@ -87,6 +87,29 @@
   <a href="#active-trips" data-home-route="trips"><span aria-hidden="true">▣</span><span>הטיולים שלי</span></a>
   <button type="button" data-cloud-account-open><span aria-hidden="true">♙</span><span>פרופיל</span></button>
 </nav>
-<section id="modal-destination" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="destination-title"><div class="modal destination-modal"><header><div><span>טיול חדש</span><h2 id="destination-title">לאן תרצי לטוס?</h2><p>אפשר להקליד כל מדינה ועיר בעולם, למשל פראג, צ׳כיה או ברלין, גרמניה.</p></div><button class="modal-close" type="button" data-close aria-label="סגירה"><span aria-hidden="true">×</span></button></header><form class="destination-form" data-destination-form><label>מדינה<input name="country" required autocomplete="country-name" placeholder="לדוגמה: גרמניה"></label><label>עיר<input name="city" required autocomplete="address-level2" placeholder="לדוגמה: ברלין"></label><label>תאריך יציאה<input name="start" type="date" required></label><label>תאריך חזרה<input name="end" type="date" required></label><label>תקציב משוער (€) — יוצג גם במטבע המקומי<input name="budget" type="number" min="100" step="50" value="2500"></label><label>סוג הטיול<select name="type"><option>זוגי</option><option>משפחתי</option><option>חברים</option><option>סולו</option></select></label><p class="form-error" data-form-error role="alert"></p><button class="create-trip" type="submit"><i class="fa-solid fa-wand-magic-sparkles"></i> בניית הטיול אוטומטית</button></form></div></section>
+<section id="modal-destination" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="destination-title">
+  <div class="modal destination-modal">
+    <header><div><span data-wizard-progress-label role="status" aria-live="polite">שלב 1 מתוך 4 · יעד</span><h2 id="destination-title">טיול חדש</h2></div><button class="modal-close" type="button" data-close aria-label="ביטול וסגירת טיול חדש"><span aria-hidden="true">x</span></button></header>
+    <ol class="trip-wizard-progress" aria-label="שלבי יצירת הטיול"><li data-wizard-progress aria-current="step"><b aria-hidden="true">1</b><span>יעד</span></li><li data-wizard-progress><b aria-hidden="true">2</b><span>תאריכים</span></li><li data-wizard-progress><b aria-hidden="true">3</b><span>העדפות</span></li><li data-wizard-progress><b aria-hidden="true">4</b><span>סיכום</span></li></ol>
+    <form class="destination-form" data-destination-form novalidate data-wizard-step="0">
+      <div class="trip-wizard-intro"><h3 id="wizard-step-title" data-wizard-heading tabindex="-1">לאן רוצים לטוס?</h3><p>הטיול מתחיל בעיר ובמדינה שתבחרו.</p></div>
+      <label data-wizard-panel="0">מדינה<input name="country" required autocomplete="country-name" placeholder="לדוגמה: איטליה" aria-describedby="destination-error"></label>
+      <label data-wizard-panel="0">עיר<input name="city" required autocomplete="address-level2" placeholder="לדוגמה: רומא" aria-describedby="destination-error"></label>
+      <p class="trip-wizard-hint" data-wizard-panel="0">אפשר להזין כל יעד. אין צורך לבחור מזהה או לאפשר גישה למיקום.</p>
+      <label data-wizard-panel="1" hidden>תאריך יציאה<input name="start" type="date" required aria-describedby="destination-error"></label>
+      <label data-wizard-panel="1" hidden>תאריך חזרה<input name="end" type="date" required aria-describedby="destination-error"></label>
+      <p class="trip-wizard-hint" data-wizard-panel="1" hidden>אפשר לתכנן בין יום אחד ל־60 ימים, כולל יום היציאה ויום החזרה.</p>
+      <label data-wizard-panel="2" hidden>תקציב משוער (€) — יוצג גם במטבע המקומי<input name="budget" type="number" min="100" step="50" value="2500" aria-describedby="destination-error"></label>
+      <label data-wizard-panel="2" hidden>סוג הטיול<select name="type" aria-describedby="destination-error"><option>זוגי</option><option>משפחתי</option><option>חברים</option><option>סולו</option></select></label>
+      <p class="trip-wizard-hint" data-wizard-panel="2" hidden>השארת תקציב ריק תשתמש בברירת המחדל: 2,500 אירו. אפשר לשנות את התקציב בהמשך.</p>
+      <section class="trip-wizard-summary" data-wizard-panel="3" hidden aria-label="סיכום הטיול לפני אישור"><dl><div><dt>היעד</dt><dd data-wizard-summary="destination"></dd></div><div><dt>תאריכים</dt><dd><bdi data-wizard-summary="dates"></bdi><small data-wizard-summary="days"></small></dd></div><div><dt>סוג הטיול</dt><dd data-wizard-summary="preferences"></dd></div><div><dt>תקציב כולל</dt><dd><bdi data-wizard-summary="budget"></bdi></dd></div></dl><div class="trip-wizard-edit"><button type="button" data-wizard-edit="0">עריכת יעד</button><button type="button" data-wizard-edit="1">עריכת תאריכים</button><button type="button" data-wizard-edit="2">עריכת העדפות</button></div><p>הטיול ייווצר רק בלחיצה על אישור ויצירת הטיול.</p></section>
+      <p class="form-error" id="destination-error" data-form-error role="alert" hidden></p>
+      <p class="trip-wizard-save-status" data-wizard-save-status role="status" aria-live="polite" hidden></p>
+      <button class="trip-wizard-back" data-wizard-back type="button" hidden>חזרה</button>
+      <button class="trip-wizard-next" data-wizard-next type="button">המשך ←</button>
+      <button class="create-trip" type="submit" hidden>אישור ויצירת הטיול</button>
+    </form>
+  </div>
+</section>
 <script src="assets/network-usage.js?v=20261015-03" defer></script><script src="assets/supabase-config.js?v=20261015-03" defer></script><script src="assets/cloud-sync.js?v=20261015-03" defer></script><script src="assets/trip-store.js?v=20261015-03" defer></script><script src="assets/event-contracts.js?v=20261015-03" defer></script><script src="assets/destination-images.js?v=20261015-03" defer></script><script src="assets/app-shell.js?v=20261015-03" defer></script><script src="assets/app.js?v=20261015-03" defer></script><script src="assets/home.js?v=20261015-03" defer></script><script src="assets/profile-wizard.js?v=20261015-03" defer></script>
 </body></html>

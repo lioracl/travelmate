@@ -28,6 +28,7 @@
   var list = document.querySelector('[data-trip-list]');
   var addButton = list && list.querySelector('.add-destination');
   var cloud = window.TravelMateCloud;
+  var destinationWizard = null;
   var currentSession = null;
   var sessionGeneration = 0;
   var authSubscriptionPending = false;
@@ -837,6 +838,7 @@
     }
     sessionGeneration += 1;
     currentSession = session;
+    if (destinationWizard) destinationWizard.syncIdentity();
     var user = session && session.user;
     var profile = personalizedUser(user);
     document.body.classList.toggle('is-authenticated', Boolean(session));
@@ -1106,27 +1108,228 @@
     setMessage('הסיסמה עודכנה בהצלחה והחשבון מחובר.');
   });
 
-  if (form) {
-    var today = new Date();
-    var next = new Date(today.getTime() + 7 * 86400000);
-    form.elements.start.value = localDateString(today);
-    form.elements.end.value = localDateString(next);
-    form.addEventListener('submit', async function (event) {
-      event.preventDefault();
-      var error = form.querySelector('[data-form-error]');
-      var days = daysBetween(form.elements.start.value, form.elements.end.value);
-      if (days < 1) { error.textContent = 'תאריך החזרה חייב להיות אחרי תאריך היציאה.'; return; }
-      if (days > 60) { error.textContent = 'אפשר לבנות כרגע טיול של עד 60 ימים.'; return; }
-      var trip = { id: String(Date.now()), country: form.elements.country.value.trim(), city: form.elements.city.value.trim(), start: form.elements.start.value, end: form.elements.end.value, budget: Number(form.elements.budget.value || 2500), type: form.elements.type.value, days: days, savedPlaces: [], activities: [], dayNotes: {} };
-      if (window.TravelMateTripIntelligence) window.TravelMateTripIntelligence.attachPendingToTrip(trip);
-      cloud.upsertLocalTrip(trip);
-      if (currentSession) {
-        try { await cloud.saveTrip(trip); }
-        catch (saveError) { console.error('Initial cloud trip save failed', saveError); }
-      }
-      location.href = 'trip/custom/index.html?id=' + encodeURIComponent(trip.id);
-    });
+  // New Trip wizard core: transient form state; canonical writers remain external.
+  function validateDestinationFields(raw, onlyStep) {
+    function failure(step, field, message) { return { error: message, step: step, field: field }; }
+    function dateDay(value) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return NaN;
+      var bits = value.split('-').map(Number), date = new Date(0);
+      if (bits[0] < 1) return NaN;
+      date.setUTCFullYear(bits[0], bits[1] - 1, bits[2]); date.setUTCHours(0, 0, 0, 0);
+      return date.toISOString().slice(0, 10) === value ? date.getTime() / 86400000 : NaN;
+    }
+    var country = String(raw.country || '').trim(), city = String(raw.city || '').trim();
+    var start = String(raw.start || ''), end = String(raw.end || '');
+    var first = dateDay(start), last = dateDay(end), days = last - first + 1;
+    var budgetText = String(raw.budget == null ? '' : raw.budget).trim();
+    var budget = budgetText === '' ? 2500 : Number(budgetText), type = String(raw.type || '');
+    if (onlyStep == null || onlyStep === 0) {
+      if (!country) return failure(0, 'country', 'יש להזין מדינה.');
+      if (!city) return failure(0, 'city', 'יש להזין עיר.');
+    }
+    if (onlyStep == null || onlyStep === 1) {
+      if (!Number.isFinite(first)) return failure(1, 'start', 'יש לבחור תאריך יציאה תקין.');
+      if (!Number.isFinite(last)) return failure(1, 'end', 'יש לבחור תאריך חזרה תקין.');
+      if (days < 1) return failure(1, 'end', 'תאריך החזרה אינו יכול להיות לפני תאריך היציאה.');
+      if (days > 60) return failure(1, 'end', 'אפשר לבנות כרגע טיול של עד 60 ימים.');
+    }
+    if (onlyStep == null || onlyStep === 2) {
+      if (raw.budgetBadInput || !Number.isFinite(budget) || budget < 100 || (budget - 100) % 50 !== 0) return failure(2, 'budget', 'יש להזין תקציב של לפחות 100 אירו, בקפיצות של 50.');
+      if (!Array.isArray(raw.allowedTypes) || raw.allowedTypes.indexOf(type) === -1) return failure(2, 'type', 'יש לבחור סוג טיול מהרשימה.');
+    }
+    return { value: { country: country, city: city, start: start, end: end, budget: budget, type: type, days: days } };
   }
+
+  function createDestinationWizard(options) {
+    var identity = String(options.identity() || ''), epoch = 0, visibility = 0, open = false;
+    var step = 0, busy = false, committed = null, prepared = null, attachmentAttempted = false, reservedId = null, operation = null;
+    var navigationStarted = false;
+    var error = '', field = '', status = '';
+    function preparedFields() { if (!prepared) return null; var fields = {}; ['country','city','start','end','budget','type','days'].forEach(function (name) { fields[name] = prepared[name]; }); return fields; }
+    function snapshot() { return { step: step, busy: busy, created: Boolean(committed), prepared: Boolean(prepared), preparedFields: preparedFields(), error: error, field: field, status: status }; }
+    function emit(focus) { options.render(snapshot(), focus); }
+    function syncIdentity() {
+      var next = String(options.identity() || '');
+      if (next === identity) return false;
+      identity = next; epoch += 1; navigationStarted = false; operation = null; busy = false; committed = null; prepared = null; attachmentAttempted = false; reservedId = null; step = 0;
+      error = open ? 'החשבון השתנה. פרטי הטיול נוקו.' : ''; field = ''; status = '';
+      options.resetFields(); emit(open ? 'heading' : ''); return true;
+    }
+    function validate(activeOnly) {
+      var result = validateDestinationFields(options.readFields(), activeOnly ? step : null);
+      if (result.error) { step = result.step; error = result.error; field = result.field; status = ''; emit(field); return null; }
+      error = ''; field = ''; return result.value;
+    }
+    function next() { if (syncIdentity() || busy || prepared || step === 3) return; if (validate(true)) { step += 1; emit('heading'); } }
+    function back() { if (syncIdentity() || busy || prepared || step === 0) return; step -= 1; error = ''; field = ''; emit('heading'); }
+    function edit(index) { if (syncIdentity() || busy || prepared || !Number.isInteger(index) || index < 0 || index > 2) return; step = index; error = ''; field = ''; emit('heading'); }
+    function owned(op) { return operation === op && op.epoch === epoch && String(options.identity() || '') === op.identity; }
+    function openCommitted() { if (!navigationStarted) { navigationStarted = true; options.openTrip(committed.id); } }
+    function navigate(op) { if (owned(op) && open && (!options.isOpen || options.isOpen()) && visibility === op.visibility) openCommitted(); }
+    async function confirm() {
+      if (syncIdentity() || busy || !open || options.isOpen && !options.isOpen()) return;
+      if (step !== 3) { next(); return; }
+      if (committed) { openCommitted(); return; }
+      var current = prepared ? validateDestinationFields(options.readFields()) : null;
+      if (prepared && (current.error || Object.keys(current.value).some(function (name) { return current.value[name] !== prepared[name]; }))) { step = 3; error = 'הפרטים כבר הוכנו לשמירה ונשמרים כפי שאושרו. הניסיון החוזר משתמש באותם פרטים.'; emit('heading'); return; }
+      var value = validate(false); if (!value) return;
+      if (typeof options.localSave !== 'function' || options.canSaveLocal && !options.canSaveLocal()) { error = 'השמירה במכשיר אינה זמינה כרגע. הפרטים נשארו בזיכרון; אין מעבר לטיול.'; emit('heading'); return; }
+      busy = true; status = 'שומר את הטיול במכשיר…'; error = ''; field = '';
+      var op = operation = { epoch: epoch, identity: identity, visibility: visibility };
+      if (reservedId === null) reservedId = String(options.newId());
+      var retry = Boolean(prepared);
+      if (!prepared) {
+        prepared = Object.assign({ id: reservedId }, value, { savedPlaces: [], activities: [], dayNotes: {} });
+        if (identity) prepared.ownerId = identity;
+      }
+      var trip = prepared;
+      emit('');
+      try {
+        if (!owned(op)) return;
+        if (!attachmentAttempted) { attachmentAttempted = true; if (options.attachPending) options.attachPending(trip); }
+        if (!owned(op)) return;
+        // A primary write may have succeeded before the account snapshot failed.
+        // Recover canonical additions instead of replacing them with empty arrays.
+        if (retry && typeof options.readLocalTrip === 'function') {
+          var existing = options.readLocalTrip(trip.id, identity);
+          if (!owned(op)) return;
+          if (existing) {
+            if (String(existing.id) !== trip.id || String(existing.ownerId || '') !== identity) throw new Error('LOCAL_IDENTITY_MISMATCH');
+            Object.assign(trip, JSON.parse(JSON.stringify(existing)));
+            emit('');
+          }
+        }
+        if (!owned(op)) return;
+        var saved = options.localSave(trip);
+        if (saved && typeof saved.then === 'function') saved = await saved;
+        if (!owned(op)) return;
+        if (!saved || String(saved.id) !== trip.id) throw new Error('LOCAL_SAVE_UNCONFIRMED');
+        committed = trip;
+        if (typeof options.shouldCloudSave === 'function' && options.shouldCloudSave(identity) && typeof options.cloudSave === 'function') {
+          status = 'נשמר במכשיר. מסנכרן לענן…'; emit('');
+          if (!owned(op)) return;
+          try {
+            var result = await options.cloudSave(trip, identity);
+            if (!owned(op)) return;
+            if (!result || result.saved !== true) throw new Error('CLOUD_SAVE_UNCONFIRMED');
+            status = 'הטיול נשמר במכשיר ובענן.';
+          } catch (cloudError) {
+            if (!owned(op)) return;
+            status = 'הטיול נשמר במכשיר. הסנכרון לענן לא הושלם; אפשר לפתוח את הטיול שנשמר.';
+            return;
+          }
+        } else status = 'הטיול נשמר במכשיר.';
+        navigate(op);
+      } catch (localError) {
+        if (!owned(op)) return;
+        error = 'לא ניתן לאשר את השמירה במכשיר. הפרטים שהוכנו נשמרים בזיכרון לניסיון חוזר, ללא שינוי או יצירת טיול נוסף.'; status = '';
+      } finally {
+        if (owned(op)) { busy = false; emit(error ? 'heading' : ''); }
+      }
+    }
+    return { next: next, back: back, edit: edit, confirm: confirm, syncIdentity: syncIdentity, snapshot: snapshot,
+      opened: function () { syncIdentity(); if (!open) { open = true; visibility += 1; } emit('heading'); },
+      closed: function () { if (open) { open = false; visibility += 1; } }
+    };
+  }
+  // New Trip DOM adapter: existing modal owns open/close, Back and focus return.
+  function initDestinationWizard(form) {
+    var modal = document.getElementById('modal-destination');
+    var heading = form.querySelector('[data-wizard-heading]');
+    var progress = modal.querySelector('[data-wizard-progress-label]');
+    var next = form.querySelector('[data-wizard-next]'), back = form.querySelector('[data-wizard-back]');
+    var confirm = form.querySelector('.create-trip'), error = form.querySelector('[data-form-error]');
+    var status = form.querySelector('[data-wizard-save-status]');
+    var names = ['country', 'city', 'start', 'end', 'budget', 'type'];
+    var titles = ['לאן רוצים לטוס?', 'מתי יוצאים לדרך?', 'איך תרצו לטייל?', 'הטיול שלכם, לפני שיוצאים'];
+    var labels = ['יעד', 'תאריכים', 'העדפות ותקציב', 'סיכום'];
+    function defaults() {
+      form.reset();
+      var today = new Date(), next = new Date(today.getTime() + 7 * 86400000);
+      form.elements.start.value = localDateString(today); form.elements.end.value = localDateString(next);
+      names.forEach(function (name) { form.elements[name].dispatchEvent(new Event('change', { bubbles: true })); });
+    }
+    function readFields() {
+      var value = { budget: Number(form.elements.budget.value || 2500) }; names.forEach(function (name) { if (name !== 'budget') value[name] = form.elements[name].value; });
+      value.budgetBadInput = Boolean(form.elements.budget.validity && form.elements.budget.validity.badInput);
+      value.allowedTypes = Array.prototype.map.call(form.elements.type.options, function (option) { return option.value; });
+      return value;
+    }
+    function identity() { try { return String(localStorage.getItem('travelmate-active-user') || ''); } catch (_) { return String(currentSession && currentSession.user && currentSession.user.id || ''); } }
+    function render(state, focus) {
+      form.dataset.wizardStep = String(state.step);
+      if (state.preparedFields) names.forEach(function (name) { form.elements[name].value = state.preparedFields[name]; });
+      form.querySelectorAll('[data-wizard-panel]').forEach(function (panel) { panel.hidden = Number(panel.dataset.wizardPanel) !== state.step; });
+      modal.querySelectorAll('[data-wizard-progress]').forEach(function (item, index) {
+        if (index === state.step) item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
+        item.dataset.complete = String(index < state.step);
+      });
+      heading.textContent = titles[state.step];
+      progress.textContent = 'שלב ' + (state.step + 1) + ' מתוך 4 · ' + labels[state.step];
+      error.textContent = state.error; status.textContent = state.status;
+      error.hidden = !state.error; status.hidden = !state.status;
+      next.hidden = state.step === 3; confirm.hidden = state.step !== 3; back.hidden = state.step === 0;
+      next.disabled = state.busy || state.prepared; back.disabled = state.busy || state.prepared; confirm.disabled = state.busy;
+      confirm.textContent = state.busy ? 'שומר…' : state.created ? 'פתיחת הטיול שנשמר' : state.prepared ? 'ניסיון שמירה נוסף' : 'אישור ויצירת הטיול';
+      confirm.setAttribute('aria-busy', String(state.busy));
+      names.forEach(function (name) { var input = form.elements[name]; input.disabled = state.busy || state.prepared; input.setAttribute('aria-invalid', String(state.field === name)); });
+      form.querySelectorAll('[data-wizard-edit]').forEach(function (button) { button.disabled = state.busy || state.prepared; });
+      if (state.step === 3) {
+        var result = validateDestinationFields(readFields());
+        if (result.value) {
+          var value = result.value;
+          form.querySelector('[data-wizard-summary="destination"]').textContent = value.city + ', ' + value.country;
+          form.querySelector('[data-wizard-summary="dates"]').textContent = formatDate(value.start) + ' – ' + formatDate(value.end);
+          form.querySelector('[data-wizard-summary="days"]').textContent = value.days === 1 ? 'יום אחד' : value.days + ' ימים';
+          form.querySelector('[data-wizard-summary="preferences"]').textContent = value.type;
+          form.querySelector('[data-wizard-summary="budget"]').textContent = new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value.budget);
+        }
+      }
+      if (focus) requestAnimationFrame(function () {
+        if (!modal.classList.contains('open') || controller.snapshot().step !== state.step) return;
+        var target = focus === 'heading' ? heading : form.elements[focus];
+        if (!target || !target.getClientRects().length) target = heading;
+        target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'nearest' });
+      });
+    }
+    defaults();
+    var controller = createDestinationWizard({
+      identity: identity, readFields: readFields, resetFields: defaults, render: render,
+      isOpen: function () { return modal.classList.contains('open'); },
+      newId: function () { return String(Date.now()); },
+      canSaveLocal: function () { return Boolean(cloud && typeof cloud.upsertLocalTrip === 'function'); },
+      localSave: function (trip) { return cloud.upsertLocalTrip(trip); },
+      readLocalTrip: function (id, owner) {
+        if (!cloud || typeof cloud.getLocalTrips !== 'function') return null;
+        return cloud.getLocalTrips().find(function (trip) { return String(trip.id) === id && String(trip.ownerId || '') === owner; }) || null;
+      },
+      attachPending: function (trip) { if (window.TravelMateTripIntelligence) window.TravelMateTripIntelligence.attachPendingToTrip(trip); },
+      shouldCloudSave: function (owner) { return Boolean(owner && currentSession && currentSession.user && String(currentSession.user.id) === owner && navigator.onLine !== false); },
+      cloudSave: function (trip, owner) { return cloud && typeof cloud.saveTrip === 'function' ? cloud.saveTrip(trip, owner) : Promise.resolve({ saved: false }); },
+      openTrip: function (id) { location.href = 'trip/custom/index.html?id=' + encodeURIComponent(id); }
+    });
+    form.noValidate = true;
+    next.addEventListener('click', controller.next); back.addEventListener('click', controller.back);
+    form.addEventListener('submit', function (event) { event.preventDefault(); controller.confirm(); });
+    form.addEventListener('click', function (event) { var button = event.target.closest('[data-wizard-edit]'); if (button) controller.edit(Number(button.dataset.wizardEdit)); });
+    // Retain compatibility with optional existing intelligence decorators: both
+    // destination labels and the final submit stay direct children of this form.
+    new MutationObserver(function () {
+      var changed = false;
+      form.querySelectorAll('.navo-trip-types,.navo-trip-banner').forEach(function (node) {
+        if (node.dataset.wizardPanel !== '2') { node.dataset.wizardPanel = '2'; changed = true; }
+        if (node.classList.contains('navo-trip-banner') && node.nextElementSibling !== back) { form.insertBefore(node, back); changed = true; }
+      });
+      if (changed) render(controller.snapshot(), '');
+    }).observe(form, { childList: true, subtree: true });
+    new MutationObserver(function () { if (modal.classList.contains('open')) controller.opened(); else controller.closed(); }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('travelmate:account-context-changed', controller.syncIdentity);
+    window.addEventListener('storage', function (event) { if (event.key === 'travelmate-active-user') controller.syncIdentity(); });
+    render(controller.snapshot(), '');
+    return controller;
+  }
+
+  if (form) destinationWizard = initDestinationWizard(form);
 
   prepareStaticTrips();
   organizeStaticTrips();
