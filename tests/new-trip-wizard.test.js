@@ -328,3 +328,30 @@ test('gradient proof rejects each supported caption backdrop filter and verifies
   delete h.caption.style[property];const restored=callback([h.card])[0];assert.equal(restored.status,'VERIFIED');assert(restored.samples.every(s=>s.worstCaseWhiteImageContrast>=4.5));
  }
 });
+
+function circularChipCallback(){
+ const text=fs.readFileSync(path.join(root,'tests/e2e/new-trip-release.spec.js'),'utf8'),start=text.indexOf('evaluateAll(chips=>chips.map(chip=>{'),end=text.indexOf('\n const file=info.outputPath',start);assert(start>0&&end>start);const expression=text.slice(start+'evaluateAll('.length,end).trim();assert(expression.endsWith('));'));return expression.slice(0,-2);
+}
+function circularChipFixture(){
+ const h=gradientPaintFixture(),s=h.mark.style;s.display='grid';s.backgroundColor='rgb(15, 100, 232)';s.backgroundImage='none';s.backgroundClip='border-box';
+ for(const key of ['borderTopLeftRadius','borderTopRightRadius','borderBottomLeftRadius','borderBottomRightRadius'])s[key]='50%';
+ h.mark.rect={left:132,top:8,right:160,bottom:36,width:28,height:28};h.mark.text={nodeType:3,textContent:'✓',rect:{left:140,top:13,right:152,bottom:31,width:12,height:18}};
+ return h;
+}
+function circularFixtureProof(h){
+ const paint=vm.runInNewContext('('+gradientProofCallback('tests/e2e/new-trip-release.spec.js')+')',h.env)([h.card])[0];
+ if(paint.status!=='VERIFIED')return{status:'UNVERIFIED',stage:'CARD_PAINT_SCOPE',issues:paint.issues};
+ return vm.runInNewContext('('+circularChipCallback()+')',h.env)([h.mark])[0];
+}
+test('opaque circular chip proves measured percentage/pixel radius, all glyph corners and AA',()=>{
+ const h=circularChipFixture();let result=circularFixtureProof(h);assert.equal(result.status,'VERIFIED',JSON.stringify(result));assert(result.contrast>=4.5);assert(result.glyphs.every(g=>g.inside));assert.equal(result.radii.length,4);
+ for(const key of ['borderTopLeftRadius','borderTopRightRadius','borderBottomLeftRadius','borderBottomRightRadius'])h.mark.style[key]='14px';result=circularFixtureProof(h);assert.equal(result.status,'VERIFIED',JSON.stringify(result));
+});
+for(const [name,reason,mutate]of [
+ ['insufficient contrast','chip contrast below AA',h=>{h.mark.style.backgroundColor='rgb(255, 255, 255)';}],
+ ['insufficient glyph coverage','chip glyph rectangle exceeds opaque circular coverage',h=>{h.mark.text.rect={left:128,top:2,right:164,bottom:42,width:36,height:40};}],
+ ['occluding pseudo overlay','unsupported pseudo overlay: destination-choice-check::after',h=>{h.mark.pseudo['::after']={...h.card.pseudo['::before'],zIndex:'9'};}],
+ ['translucent background','chip background is not proven opaque',h=>{h.mark.style.backgroundColor='rgba(15, 100, 232, 0.5)';}]
+])test('circular chip rejects '+name+' and verifies restoration',()=>{
+ const h=circularChipFixture();assert.equal(circularFixtureProof(h).status,'VERIFIED');mutate(h);const invalid=circularFixtureProof(h);assert.equal(invalid.status,'UNVERIFIED');assert(invalid.issues.some(issue=>issue.includes(reason)),JSON.stringify(invalid));assert.equal(circularFixtureProof(circularChipFixture()).status,'VERIFIED');
+});

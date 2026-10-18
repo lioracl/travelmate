@@ -156,7 +156,9 @@ for(const width of [390,430])for(const theme of ['light','dark'])test('four wiza
  const footer=await ui.confirm.boundingBox();expect(footer.y+footer.height).toBeLessThanOrEqual(900-24);expect(footer.x).toBeGreaterThanOrEqual(44);expect(footer.x+footer.width).toBeLessThanOrEqual(width-12);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await readability(page,info,'wizard-summary',['#modal-destination [data-wizard-heading]','#modal-destination [data-wizard-summary="destination"]','#modal-destination [data-wizard-summary="budget"]']);
  await page.emulateMedia({reducedMotion:'reduce'});await expect(ui.modal.locator('[data-wizard-progress]').first()).toHaveCSS('transition-duration','0s');
- await ui.modal.locator('[data-close]').focus();await page.keyboard.press('Shift+Tab');await expect(ui.confirm).toBeFocused();await page.keyboard.press('Tab');await expect(ui.modal.locator('[data-close]')).toBeFocused();
+ const close=ui.modal.locator('[data-close]'),profile=ui.modal.locator('.tm-home-dock [data-cloud-account-open]'),firstDock=ui.modal.locator('.tm-home-dock [data-home-route="home"]');
+ await close.focus();await page.keyboard.press('Shift+Tab');await expect(profile).toBeFocused();await page.keyboard.press('Tab');await expect(close).toBeFocused();
+ await ui.confirm.focus();await page.keyboard.press('Tab');await expect(firstDock).toBeFocused();await page.keyboard.press('Shift+Tab');await expect(ui.confirm).toBeFocused();
  await page.keyboard.press('Escape');await expect(ui.modal).not.toHaveClass(/open/);await expect(ui.trigger).toBeFocused();await expectZero(page);
  await ui.trigger.click();await step(ui,3);await expect(ui.form.locator('[data-wizard-summary="destination"]')).toContainText('Tokyo');await ui.modal.locator('[data-close]').click();await expect(ui.trigger).toBeFocused();await expectZero(page);
 });

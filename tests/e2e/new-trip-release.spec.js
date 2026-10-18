@@ -1,4 +1,75 @@
 const {test,expect}=require('@playwright/test');
+async function discoveryScrollEvidence(page,info,modal,width,theme){
+ const form=modal.locator('[data-destination-form]'),heading=modal.locator('[data-wizard-heading]'),cards=modal.locator('[data-destination-choice]'),rows=[];
+ const frame=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(resolve)));
+ const persist=()=>{const file=info.outputPath('genuine-discovery-scroll-reachability.json');require('node:fs').mkdirSync(require('node:path').dirname(file),{recursive:true});require('node:fs').writeFileSync(file,JSON.stringify({width,theme,scope:'Separate top, individually centered cards and bottom; no one frame claims all content',rows},null,2)+'\n');};
+ async function capture(mode){const path=info.outputPath('genuine-discovery-'+width+'-'+theme+'-'+mode+'.png');await page.screenshot({path});await info.attach('genuine-discovery-'+mode,{path,contentType:'image/png'});}
+ await form.evaluate(n=>{n.scrollTop=0;});await frame();
+ const top=await heading.boundingBox(),viewport=await form.boundingBox();rows.push({position:'top',heading:top,form:viewport,scrollTop:await form.evaluate(n=>n.scrollTop)});persist();expect(top.y).toBeGreaterThanOrEqual(viewport.y);expect(top.y+top.height).toBeLessThanOrEqual(viewport.y+viewport.height);await expect(heading).toBeVisible();
+ await capture('top');
+ async function measure(card,position){
+  const row=await card.evaluate((node,position)=>{
+   const form=node.closest('[data-destination-form]'),next=form.querySelector('[data-wizard-next]'),dock=document.querySelector('#modal-destination .tm-home-dock'),caption=node.querySelector('.destination-choice-caption'),f=form.getBoundingClientRect(),c=node.getBoundingClientRect(),label=caption.getBoundingClientRect(),cta=next.getBoundingClientRect(),nav=dock.getBoundingClientRect();
+   const rect=r=>({left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}),limit=Math.min(f.bottom,cta.top-8,nav.top,innerHeight),hits=[];
+   for(const [x,y]of [[label.left+1,label.top+1],[label.right-1,label.top+1],[label.left+1,label.bottom-1],[label.right-1,label.bottom-1]])hits.push(node.contains(document.elementFromPoint(x,y)));
+   return{position,destination:node.dataset.destinationChoice,scrollTop:form.scrollTop,card:rect(c),caption:rect(label),form:rect(f),continue:rect(cta),dock:rect(nav),contentBottom:limit,hits};
+  },position);
+  rows.push(row);persist();expect(row.card.top).toBeGreaterThanOrEqual(row.form.top-.1);expect(row.card.bottom).toBeLessThanOrEqual(row.contentBottom+.1);expect(row.caption.top).toBeGreaterThanOrEqual(row.form.top);expect(row.caption.bottom).toBeLessThanOrEqual(row.contentBottom);expect(row.hits.every(Boolean),JSON.stringify(row)).toBe(true);
+ }
+ for(const card of await cards.all()){await card.evaluate(n=>n.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));await frame();await measure(card,'reachable-center');if(await card.getAttribute('data-destination-choice')==='rome')await capture('selected-center');}
+ await form.evaluate(n=>{n.scrollTop=n.scrollHeight;});await frame();for(const index of [4,5])await measure(cards.nth(index),'bottom');
+ rows.push({position:'bottom',scrollTop:await form.evaluate(n=>n.scrollTop),headingMayBeAboveScrollViewport:true});persist();await capture('bottom');
+ const file=info.outputPath('genuine-discovery-scroll-reachability.json');require('node:fs').mkdirSync(require('node:path').dirname(file),{recursive:true});require('node:fs').writeFileSync(file,JSON.stringify({width,theme,scope:'Separate top, individually centered cards and bottom; no one frame claims all content',rows},null,2)+'\n');await info.attach('genuine-discovery-scroll-reachability',{path:file,contentType:'application/json'});
+}
+for(const theme of ['light','dark'])test('selected circular chip contrast proof rejects unsupported paint and restores '+theme,async({page},info)=>{
+ await page.setViewportSize({width:430,height:900});await page.emulateMedia({reducedMotion:'reduce'});
+ await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());await require('./fixtures/all-trips-v3.cjs').open(page,{theme});
+ await page.locator('.tm-home-dock [data-modal="destination"]').click();await page.locator('[data-destination-choice="rome"]').click();
+ await circularSelectionReadability(page,info,'chip-valid-'+theme);
+ for(const [id,css,reason]of [
+  ['contrast','.destination-choice-check{background:#fff!important}','chip contrast below AA'],
+  ['coverage','.destination-choice-check{font-size:40px!important;line-height:1!important}','chip glyph rectangle exceeds opaque circular coverage'],
+  ['overlay','.destination-choice-check::after{content:"";position:absolute;inset:0;background:white;z-index:9;pointer-events:none}','unsupported pseudo overlay: destination-choice-check::after'],
+  ['translucent','.destination-choice-check{background:rgba(15,100,232,.5)!important}','chip background is not proven opaque']
+ ]){
+  const style=await page.addStyleTag({content:css});let failure;
+  try{await circularSelectionReadability(page,info,'chip-expected-unverified-'+id+'-'+theme);}catch(error){failure=error;}finally{await style.evaluate(n=>n.remove());}
+  expect(failure?.chipProof,'must reject through structured chip/card proof').toBeDefined();expect(failure.chipProof[0].status).toBe('UNVERIFIED');expect(failure.chipProof[0].issues.some(issue=>issue.includes(reason)),JSON.stringify(failure.chipProof)).toBe(true);
+  await circularSelectionReadability(page,info,'chip-restored-'+id+'-'+theme);
+ }
+});
+async function circularSelectionReadability(page,info,name){
+ let proof;
+ try{await gradientReadability(page,info,name+'-card-paint');}
+ catch(error){if(!error.gradientProof)throw error;proof=[{status:'UNVERIFIED',stage:'CARD_PAINT_SCOPE',minimum:4.5,issues:error.gradientProof.flatMap(card=>card.issues),cardPaintProof:error.gradientProof}];}
+ if(!proof)proof=await page.locator('#modal-destination [data-destination-choice][aria-pressed="true"] .destination-choice-check').evaluateAll(chips=>chips.map(chip=>{
+  // Shared card proof has verified isolated paint order, compositing, masks,
+  // pseudo overlays and auxiliary ink bounds. This measures the opaque circle.
+  const s=getComputedStyle(chip),box=chip.getBoundingClientRect(),issues=[],glyphs=[],check=(ok,reason)=>{if(!ok&&!issues.includes(reason))issues.push(reason);};
+  const color=value=>{const m=/^rgba?\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\s*\)$/.exec(value);return m?{rgb:m.slice(1,4).map(Number),alpha:m[4]===undefined?1:Number(m[4])}:null;};
+  const background=color(s.backgroundColor),foreground=color(s.color),fill=color(s.webkitTextFillColor);
+  check(background&&background.alpha===1&&background.rgb.every(v=>v>=0&&v<=255),'chip background is not proven opaque');
+  check(foreground&&fill&&foreground.alpha===1&&fill.alpha===1&&foreground.rgb.every((v,i)=>v===fill.rgb[i])&&foreground.rgb.every(v=>v===255),'chip foreground is not opaque white');
+  check(s.position==='absolute'&&s.zIndex==='2'&&s.display==='grid'&&s.backgroundImage==='none'&&s.backgroundClip==='border-box'&&['top','right','bottom','left'].every(k=>parseFloat(s.getPropertyValue('border-'+k+'-width'))===0&&parseFloat(s.getPropertyValue('padding-'+k))===0),'unsupported chip paint geometry');
+  check(Math.abs(box.width-28)<.1&&Math.abs(box.height-28)<.1&&Math.abs(box.width-box.height)<.1,'chip is not the supported 28px circle');
+  const radius=(value,size)=>/^\d+(?:\.\d+)?%$/.test(value)?parseFloat(value)*size/100:/^\d+(?:\.\d+)?px$/.test(value)?parseFloat(value):NaN;
+  const radii=['borderTopLeftRadius','borderTopRightRadius','borderBottomLeftRadius','borderBottomRightRadius'].map(k=>{const tokens=s[k].trim().split(/\s+/);return{computed:s[k],x:radius(tokens[0],box.width),y:radius(tokens[1]||tokens[0],box.height)};});
+  check(radii.every(r=>Math.abs(r.x-box.width/2)<.1&&Math.abs(r.y-box.height/2)<.1),'chip radius does not prove circular opaque coverage');
+  const cx=box.left+box.width/2,cy=box.top+box.height/2,r=Math.min(box.width,box.height)/2;
+  const walker=document.createTreeWalker(chip,NodeFilter.SHOW_TEXT);let node;
+  while((node=walker.nextNode())){if(!node.textContent.trim())continue;const range=document.createRange();range.selectNodeContents(node);for(const rect of range.getClientRects()){
+   const corners=[[rect.left,rect.top],[rect.right,rect.top],[rect.left,rect.bottom],[rect.right,rect.bottom]],inside=corners.every(([x,y])=>(x-cx)**2+(y-cy)**2<=r*r);
+   check(rect.width>0&&rect.height>0&&inside,'chip glyph rectangle exceeds opaque circular coverage');glyphs.push({text:node.textContent,corners,inside});
+  }}
+  check(glyphs.length===1&&glyphs[0].text.trim()==='✓','missing canonical measured check glyph');
+  const luminance=rgb=>rgb.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+  const contrast=background&&foreground?(Math.max(luminance(background.rgb),luminance(foreground.rgb))+.05)/(Math.min(luminance(background.rgb),luminance(foreground.rgb))+.05):null;
+  check(contrast!==null&&contrast>=4.5,'chip contrast below AA');
+  return{status:issues.length?'UNVERIFIED':'VERIFIED',stage:'CIRCLE_GEOMETRY_CONTRAST',paintScopeVerified:true,minimum:4.5,background,foreground,contrast,box:{left:box.left,top:box.top,width:box.width,height:box.height},radii,glyphs,issues};
+ }));
+ const file=info.outputPath(name+'-circular-chip-contrast.json');require('node:fs').mkdirSync(require('node:path').dirname(file),{recursive:true});require('node:fs').writeFileSync(file,JSON.stringify(proof,null,2)+'\n');await info.attach(name+'-circular-chip-contrast',{path:file,contentType:'application/json'});
+ try{expect(proof).toHaveLength(1);expect(proof[0].status,JSON.stringify(proof)).toBe('VERIFIED');expect(proof[0].contrast).toBeGreaterThanOrEqual(4.5);}catch(error){error.chipProof=proof;throw error;}
+}
 for(const theme of ['light','dark'])test('gradient AA bound is verified on white imagery and fails closed without its shade '+theme,async({page},info)=>{
  await page.setViewportSize({width:390,height:900});await page.emulateMedia({reducedMotion:'reduce'});
  await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort());
@@ -124,7 +195,7 @@ for(const theme of ['light','dark'])test('discovery C1 text and selection contra
  const modal=page.locator('#modal-destination');await expect(modal.locator('[data-wizard-heading]')).toBeFocused();await modal.locator('[data-destination-choice="rome"]').click();
  for(const accent of ['ocean','plum','pink','sunset','emerald']){
   await page.evaluate(accent=>TravelMateTheme.setAccent(accent),accent);
-  await gradientReadability(page,info,'discovery-'+theme+'-'+accent);await readability(page,info,'discovery-'+theme+'-'+accent,['#wizard-step-title','#modal-destination [data-destination-manual]','#modal-destination [data-destination-selection]','#modal-destination [data-wizard-next]','[data-destination-choice="rome"] .destination-choice-check']);
+  await gradientReadability(page,info,'discovery-'+theme+'-'+accent);await circularSelectionReadability(page,info,'selection-'+theme+'-'+accent);await readability(page,info,'discovery-'+theme+'-'+accent,['#wizard-step-title','#modal-destination [data-destination-manual]','#modal-destination [data-destination-selection]','#modal-destination [data-wizard-next]']);
  }
  await expect(modal.locator('[data-destination-choice="rome"]')).toHaveCSS('transition-duration','0s');
  await page.screenshot({path:info.outputPath('discovery-five-accent-'+theme+'.png')});
@@ -146,9 +217,10 @@ for(const width of [390,430])for(const theme of ['light','dark'])test('discovery
  const loaded=evidence.filter(item=>item.state==='ready');for(const item of loaded){expect(item.width).toBeGreaterThan(0);expect(item.url).toMatch(/^https:\/\//);}
  const status=loaded.length?'GENUINE_NETWORK_IMAGES_RENDERED_REQUIRES_HUMAN_DESTINATION_REVIEW':'GENUINE_NETWORK_IMAGES_UNAVAILABLE';
  await gradientReadability(page,info,'genuine-'+width+'-'+theme);await modal.locator('[data-destination-choice="rome"]').click();await modal.locator('[data-wizard-next]').scrollIntoViewIfNeeded();const continueBox=await modal.locator('[data-wizard-next]').boundingBox(),dockBox=await modal.locator('.tm-home-dock').boundingBox();expect(continueBox.y+continueBox.height).toBeLessThanOrEqual(dockBox.y);expect(dockBox.y+dockBox.height).toBeLessThanOrEqual(900);await expect(modal.locator('.tm-home-dock')).toBeVisible();
+ await discoveryScrollEvidence(page,info,modal,width,theme);
  const imageEvidence={status,width,theme,dockBox,continueBox,syntheticAccount:true,imageFixtures:false,loaded:loaded.length,total:6,items:evidence};
  const evidencePath=info.outputPath('genuine-network-image-evidence.json');require('node:fs').mkdirSync(require('node:path').dirname(evidencePath),{recursive:true});require('node:fs').writeFileSync(evidencePath,JSON.stringify(imageEvidence,null,2)+'\n','utf8');await info.attach('genuine-network-image-evidence',{path:evidencePath,contentType:'application/json'});
- const path=info.outputPath('discovery-'+status.toLowerCase()+'.png');await page.screenshot({path});await info.attach('genuine-network-image-render',{path,contentType:'image/png'});
+ const path=info.outputPath('discovery-'+status.toLowerCase()+'-bottom-context.png');await page.screenshot({path});await info.attach('genuine-network-image-render',{path,contentType:'image/png'});
  // Network availability never controls whether a valid destination can proceed.
  await modal.locator('[data-destination-choice="rome"]').click();await modal.locator('[data-wizard-next]').click();await expect(modal.locator('[data-destination-form]')).toHaveAttribute('data-wizard-step','1');
  expect(await page.evaluate(()=>TravelMateCloud.getLocalTrips().filter(t=>/^\d+$/.test(t.id)).length)).toBe(0);
