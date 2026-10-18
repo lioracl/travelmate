@@ -544,6 +544,30 @@ async function wizardFocusedControl(page,info,ui,selector,name,{reveal=true}={})
  const path=info.outputPath(name+'-focused-control.json');require('node:fs').mkdirSync(require('node:path').dirname(path),{recursive:true});require('node:fs').writeFileSync(path,JSON.stringify({testRequestedScroll:reveal,...row},null,2));await info.attach(name+'-focused-control',{path,contentType:'application/json'});
  expect(row.top).toBeGreaterThanOrEqual(row.scrollTop-.5);expect(row.bottom).toBeLessThanOrEqual(row.scrollBottom+.5);expect(row.left).toBeGreaterThanOrEqual(row.scrollLeft-.5);expect(row.right).toBeLessThanOrEqual(row.scrollRight+.5);expect(row.hitProof.passed,JSON.stringify(row)).toBe(true);await wizardScrollProof(page,info,ui,name);await discoveryCapture(page,info,name+'-focused');
 }
+// Commit the real editable budget before installing a synthetic layout condition.
+// Production input/change listeners stay active; there is exactly one text injection.
+async function installLongWizardRecommendation(page,info,ui,text){
+ const budget=ui.form.locator('[name=budget]'),cta=ui.form.locator('.navo-trip-banner button');
+ await ui.form.evaluate(form=>{
+  const state=window.wizardLongContentSetup={changes:[],paragraph:null,expected:''};
+  function changed(event){if(event.target!==form.elements.budget)return;state.changes.push({type:event.type,trusted:event.isTrusted,value:event.target.value,canonicalText:form.querySelector('.navo-trip-banner p').textContent});form.removeEventListener('change',changed);}
+  form.addEventListener('change',changed);
+ });
+ await budget.fill('3500');await cta.focus();await expect(cta).toBeFocused();
+ await expect.poll(()=>page.evaluate(()=>wizardLongContentSetup.changes.length)).toBe(1);
+ const commit=await page.evaluate(()=>wizardLongContentSetup.changes[0]),path=info.outputPath('long-content-budget-commit.json');
+ require('node:fs').mkdirSync(require('node:path').dirname(path),{recursive:true});require('node:fs').writeFileSync(path,JSON.stringify(commit,null,2));await info.attach('long-content-budget-commit',{path,contentType:'application/json'});
+ expect(commit.type).toBe('change');expect(commit.value).toBe('3500');expect(commit.canonicalText.length).toBeGreaterThan(0);expect(commit.canonicalText.length).toBeLessThan(500);await expect(ui.form.locator('.navo-trip-banner p')).toHaveText(commit.canonicalText);
+ await ui.form.locator('.navo-trip-banner p').evaluate((node,text)=>{wizardLongContentSetup.paragraph=node;wizardLongContentSetup.expected=text;node.textContent=text;},text);
+ await assertLongWizardRecommendation(page,info,ui,'installed');
+}
+async function assertLongWizardRecommendation(page,info,ui,name){
+ const result=await ui.form.evaluate(form=>{const node=form.querySelector('.navo-trip-banner p'),state=window.wizardLongContentSetup;return{sameNode:node===state.paragraph,mounted:node.isConnected&&form.contains(node),length:node.textContent.length,expectedLength:state.expected.length,exactText:node.textContent===state.expected,budget:form.elements.budget.value,commit:state.changes[0]};});
+ const path=info.outputPath('long-content-'+name+'.json');require('node:fs').mkdirSync(require('node:path').dirname(path),{recursive:true});require('node:fs').writeFileSync(path,JSON.stringify(result,null,2));await info.attach('long-content-'+name,{path,contentType:'application/json'});
+ expect(result.sameNode).toBe(true);expect(result.mounted).toBe(true);expect(result.length).toBeGreaterThan(500);expect(result.exactText).toBe(true);expect(result.budget).toBe('3500');
+}
+
+
 for(const width of [390,430])for(const theme of ['light','dark'])test('reserved wizard action row, long decorated content, shrink and restore '+width+'/'+theme,async({page},info)=>{
  await page.setViewportSize({width,height:900});await page.emulateMedia({reducedMotion:'reduce'});await boot(page,{theme,intelligence:false});
  await page.evaluate(()=>{for(const[side,value]of Object.entries({top:32,right:12,bottom:24,left:24}))document.documentElement.style.setProperty('--safe-area-inset-'+side,value+'px');});
@@ -551,11 +575,14 @@ for(const width of [390,430])for(const theme of ['light','dark'])test('reserved 
  await destination(ui);await page.evaluate(()=>TravelMateFeatures.load('intelligence'));await page.waitForFunction(()=>window.TravelMateTripIntelligence);
  async function viewport(height){await page.evaluate(height=>{const viewport=new EventTarget();viewport.height=height;viewport.offsetTop=0;Object.defineProperty(window,'visualViewport',{configurable:true,value:viewport});window.dispatchEvent(new Event('resize'));},height);}
  for(const [phase,height] of [['full',900],['shrunk',420],['restored',900]]){await viewport(height);await expect(ui.modal).toHaveAttribute('data-wizard-compact',String(height<560));await expect(ui.modal.locator('[data-wizard-progress-label]')).toBeVisible();await wizardFocusedControl(page,info,ui,'[name=start]','dates-start-'+width+'-'+theme+'-'+phase);await wizardFocusedControl(page,info,ui,'[name=end]','dates-end-'+width+'-'+theme+'-'+phase);}
- await dates(ui);await expect(ui.form.locator('.navo-trip-types')).toBeVisible();await ui.form.locator('[name=budget]').fill('3500');await ui.form.locator('.navo-trip-banner p').evaluate(n=>n.textContent='תוכן המלצות ארוך לבדיקת גלילה ושמירת מקום לפעולות. '.repeat(18));
- for(const [phase,height] of [['full',900],['shrunk',420],['restored',900]]){await ui.form.locator('[name=budget]').focus();await viewport(height);await expect(ui.form.locator('[name=budget]')).toBeFocused();await expect(ui.form.locator('[name=budget]')).toHaveValue('3500');
+ await dates(ui);await expect(ui.form.locator('.navo-trip-types')).toBeVisible();await installLongWizardRecommendation(page,info,ui,'תוכן המלצות ארוך לבדיקת גלילה ושמירת מקום לפעולות. '.repeat(18));
+ for(const [phase,height] of [['full',900],['shrunk',420],['restored',900]]){await assertLongWizardRecommendation(page,info,ui,phase+'-before-viewport');await ui.form.locator('[name=budget]').focus();await viewport(height);await expect(ui.form.locator('[name=budget]')).toBeFocused();await expect(ui.form.locator('[name=budget]')).toHaveValue('3500');
   await wizardFocusedControl(page,info,ui,'[name=budget]','preferences-budget-'+width+'-'+theme+'-'+phase,{reveal:false});
+  await assertLongWizardRecommendation(page,info,ui,phase+'-after-budget-focus');
   for(const position of ['top','middle','bottom']){await ui.form.locator('.trip-wizard-scroll').evaluate((n,position)=>{const banner=n.querySelector('.navo-trip-banner'),b=banner.getBoundingClientRect(),r=n.getBoundingClientRect(),start=n.scrollTop+b.top-r.top;n.scrollTop=position==='top'?start:position==='middle'?start+(b.height-r.height)/2:start+b.height-r.height;},position);expect(await ui.form.locator('.navo-trip-banner p').evaluate(n=>n.textContent.length)).toBeGreaterThan(500);const proof=await wizardScrollProof(page,info,ui,'recommendation-'+width+'-'+theme+'-'+phase+'-'+position);expect(proof.visible.some(n=>n.kind==='ASIDE')).toBe(true);await discoveryCapture(page,info,'recommendation-'+width+'-'+theme+'-'+phase+'-'+position);}
+  await assertLongWizardRecommendation(page,info,ui,phase+'-before-cta');
   await wizardFocusedControl(page,info,ui,'.navo-trip-banner button','recommendation-cta-'+width+'-'+theme+'-'+phase);
+  await assertLongWizardRecommendation(page,info,ui,phase+'-after-cta');
  }
  await ui.next.click();await step(ui,3);await expect(ui.form.locator('[data-wizard-summary=budget]')).toContainText('3,500');
  for(const [phase,height] of [['full',900],['shrunk',420],['restored',900]]){await viewport(height);await wizardFocusedControl(page,info,ui,'[data-wizard-edit="2"]','summary-edit-'+width+'-'+theme+'-'+phase);await expect(ui.confirm).toBeVisible();}

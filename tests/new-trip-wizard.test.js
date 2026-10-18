@@ -459,3 +459,20 @@ test('control hit proof resolves elliptical percentage radii, overlap scaling an
  const f=wizardHitProofFixture({borderTopLeftRadius:'80% 50%',borderTopRightRadius:'80% 50%',borderBottomRightRadius:'80% 50%',borderBottomLeftRadius:'80% 50%'});let row=f.read();assert.equal(row.radiusScale,.625);assert.deepEqual(row.radii.topLeft,{x:138,y:16.25});assert(row.samples.every(s=>s.interior));assert.equal(row.passed,true);
  f.style.borderTopLeftRadius='calc(5px + 1%)';row=f.read();assert.equal(row.passed,false);assert(row.issues.some(s=>s.includes('unsupported computed radius')));f.style.borderTopLeftRadius='14px';f.style.transform='matrix(1,0,0,1,1,0)';assert.equal(f.read().passed,false);
 });
+
+function wizardBannerCommitFixture(){
+ const code=fs.readFileSync(path.join(root,'assets/trip-intelligence.js'),'utf8'),handlers={},paragraph={textContent:''},title={textContent:''},button={addEventListener(){}},banner={hidden:true,querySelector:s=>s==='p'?paragraph:s==='button'?button:title},submit={},form={dataset:{},elements:{budget:{value:'2500'},city:{closest:()=>null},country:{closest:()=>null}},querySelector:()=>submit,insertBefore(node,anchor){assert.equal(node,banner);assert.equal(anchor,submit);},addEventListener(type,handler){handlers[type]=handler;}};
+ const state={recommendation:null},env={document:{querySelector:()=>form,createElement:()=>banner},ui:{},state,formContext:()=>({destination:'Rome',tripType:types[0],durationDays:0,budget:Number(form.elements.budget.value)}),bindContext:context=>state.context=context,enhanceTripType(){},enhanceDateDisplays(){}};
+ const sync=code.slice(code.indexOf('  function syncNewTrip('),code.indexOf('  function enhanceTripType(')),init=code.slice(code.indexOf('  function initNewTrip('),code.indexOf('  var existingTransientTypes'));
+ vm.runInNewContext(sync+init+'\ninitNewTrip();',env);
+ let pending=false,changes=0;return{paragraph,state,fill(value){form.elements.budget.value=value;handlers.input();pending=true;},commit(){if(pending){handlers.change();pending=false;changes++;}},get changes(){return changes;}};
+}
+test('canonical banner change listener replaces an uncommitted synthetic long paragraph',()=>{
+ const f=wizardBannerCommitFixture(),long='Synthetic long recommendation content. '.repeat(24);f.fill('3500');const canonical=f.paragraph.textContent;assert(canonical.length>0&&canonical.length<500);f.paragraph.textContent=long;assert(f.paragraph.textContent.length>500);
+ // Explicitly model the native edit commit identified by the browser trace.
+ f.commit();assert.equal(f.paragraph.textContent,canonical);assert.equal(f.state.context.budget,3500);assert.equal(f.changes,1);
+});
+test('committing budget before long-content setup retains the mounted paragraph on unchanged focus transitions',()=>{
+ const f=wizardBannerCommitFixture(),node=f.paragraph,long='Synthetic long recommendation content. '.repeat(24);f.fill('3500');f.commit();assert.equal(f.changes,1);assert(f.paragraph.textContent.length<500);f.paragraph.textContent=long;
+ for(const phase of ['full-cta','shrunk-budget','shrunk-cta','restored-budget','restored-cta']){f.commit();assert.equal(f.paragraph,node,phase);assert.equal(f.paragraph.textContent,long,phase);assert(f.paragraph.textContent.length>500);assert.equal(f.changes,1);assert.equal(f.state.context.budget,3500);}
+});

@@ -1,5 +1,13 @@
 (function(){
-function init(){var container=document.querySelector('[data-generated-days]');if(!container||container.dataset.enhanced)return;container.dataset.enhanced='true';var id=new URLSearchParams(location.search).get('id'),trips=getTrips(),trip=trips.find(function(item){return item.id===id});if(!trip)return;trip=JSON.parse(JSON.stringify(trip));var planBaseline=JSON.parse(JSON.stringify(trip)),planUserId=String(localStorage.getItem('travelmate-active-user')||'');trip.activities=trip.activities||[];trip.dayNotes=trip.dayNotes||{};trip.savedPlaces=trip.savedPlaces||[];var start=new Date(trip.start+'T12:00:00'),dateOptions=[],templates=[['09:30','סיור היכרות במרכז העיר','תרבות',120],['10:00','אטרקציה מרכזית מומלצת','אטרקציה',120],['12:30','ארוחה מקומית מומלצת','אוכל',75],['15:00','שכונה מיוחדת וזמן חופשי','סיור',120],['18:30','שקיעה, תצפית או בילוי ערב','ערב',90]];
+// Resource loading is not activation. Bind initialization to one live view/account
+// attempt, then read the canonical trip again after hydration has completed.
+var accountGeneration=0,pendingActivation=null;
+function activePlan(){return(document.body&&document.body.dataset.tripView||new URLSearchParams(location.search).get('view')||'overview')==='plan'}
+function activeUser(){return String(localStorage.getItem('travelmate-active-user')||'')}
+function invalidateAccount(){accountGeneration++;pendingActivation=null}
+window.addEventListener('travelmate:account-context-changed',invalidateAccount);
+window.addEventListener('storage',function(event){if(event.key==='travelmate-active-user')invalidateAccount()});
+function init(container,trip,planUserId,planAccountGeneration){container.dataset.enhanced='true';trip=JSON.parse(JSON.stringify(trip));var planBaseline=JSON.parse(JSON.stringify(trip));trip.activities=trip.activities||[];trip.dayNotes=trip.dayNotes||{};trip.savedPlaces=trip.savedPlaces||[];var start=new Date(trip.start+'T12:00:00'),dateOptions=[],templates=[['09:30','סיור היכרות במרכז העיר','תרבות',120],['10:00','אטרקציה מרכזית מומלצת','אטרקציה',120],['12:30','ארוחה מקומית מומלצת','אוכל',75],['15:00','שכונה מיוחדת וזמן חופשי','סיור',120],['18:30','שקיעה, תצפית או בילוי ערב','ערב',90]];
 for(var d=0;d<trip.days;d++){var date=new Date(start.getFullYear(),start.getMonth(),start.getDate()+d,12),value=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');dateOptions.push({value:value,label:'יום '+(d+1)+' · '+new Intl.DateTimeFormat('he-IL',{day:'numeric',month:'long'}).format(date)})}
 if(!trip.activities.length&&!trip.planInitialized){dateOptions.forEach(function(date,index){var template=templates[index%templates.length];trip.activities.push(makeActivity(date.value,template[0],index===0?'התמקמות וסיור ראשון ב'+trip.city:index===dateOptions.length-1?'בוקר חופשי והתארגנות לחזרה':template[1],template[2],template[3]))});trip.planInitialized=true;save()}else if(!trip.planInitialized){trip.planInitialized=true;save()}
 var toolbar=document.createElement('div');toolbar.className='planner-toolbar';toolbar.innerHTML='<div class="planner-progress"><strong data-planner-progress-label>התקדמות הטיול</strong><div class="planner-progress-track"><i data-planner-progress-bar></i></div><small class="trip-calendar-hint"><i class="fa-solid fa-calendar-days"></i> יומן TravelMate פנימי ומסונכרן</small></div><div class="planner-toolbar-actions"><button class="planner-action primary" type="button" data-open-trip-calendar><i class="fa-solid fa-calendar-days"></i> היומן</button><button class="planner-action" type="button" data-new-activity><i class="fa-solid fa-plus"></i> פעילות חדשה</button><details class="planner-more"><summary><i class="fa-solid fa-ellipsis"></i> עוד פעולות</summary><div class="planner-more-menu"><button class="planner-action" type="button" data-smart-build><i class="fa-solid fa-wand-magic-sparkles"></i> השלמה חכמה</button><button class="planner-action" type="button" data-export-calendar><i class="fa-solid fa-file-export"></i> ייצוא יומן (.ics)</button><button class="planner-action planner-danger" type="button" data-clear-plan><i class="fa-solid fa-trash-can"></i> מחיקת כל הפעילויות</button></div></details></div>';container.parentNode.insertBefore(toolbar,container);
@@ -54,7 +62,7 @@ function applyScheduleFields(record,form){
 }
 function applyTravelFields(record,form){var mode=String(form.elements.travelMode&&form.elements.travelMode.value||'auto');if(mode==='auto')delete record.travelMode;else record.travelMode=mode}
 function sortChronologically(){trip.activities.sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||String(a.time||'').localeCompare(String(b.time||''))})}
-function save(){sortChronologically();var store=window.TravelMateTripStore;if(!store||!store.saveTripFields)return;var saved=store.saveTripFields(trip,planBaseline,['activities','dayNotes','savedPlaces','planInitialized'],{userId:planUserId});if(saved){trip=JSON.parse(JSON.stringify(saved));planBaseline=JSON.parse(JSON.stringify(saved))}}
+function save(){if(planAccountGeneration!==accountGeneration||planUserId!==activeUser())return;sortChronologically();var store=window.TravelMateTripStore;if(!store||!store.saveTripFields)return;var saved=store.saveTripFields(trip,planBaseline,['activities','dayNotes','savedPlaces','planInitialized'],{userId:planUserId});if(saved){trip=JSON.parse(JSON.stringify(saved));planBaseline=JSON.parse(JSON.stringify(saved))}}
 var noteSaveTimer=0;
 function scheduleNoteSave(){clearTimeout(noteSaveTimer);noteSaveTimer=setTimeout(function(){noteSaveTimer=0;save()},450)}
 function flushNoteSave(){if(!noteSaveTimer)return;clearTimeout(noteSaveTimer);noteSaveTimer=0;save()}
@@ -95,7 +103,27 @@ toolbar.querySelector('[data-smart-build]').addEventListener('click',function(){
   return true
 }};sortChronologically();render();document.dispatchEvent(new CustomEvent('travelmate:planner-ready'))
 }
-function start(){Promise.resolve(window.travelMateTripReady).then(init).catch(function(error){console.error('TravelMate planner startup failed',error)})}
+function start(){
+  if(!activePlan())return;
+  var container=document.querySelector('[data-generated-days]');if(!container||container.dataset.enhanced)return;
+  var id=new URLSearchParams(location.search).get('id'),userId=activeUser(),store=window.TravelMateTripStore;
+  if(!id)return;
+  var current=store&&store.getTrip(id),ownerId=current?String(current.ownerId||''):null,readiness=window.travelMateTripReady;
+  if(pendingActivation&&pendingActivation.id===id&&pendingActivation.userId===userId&&pendingActivation.ownerId===ownerId&&pendingActivation.readiness===readiness&&pendingActivation.store===store)return pendingActivation.promise;
+  var attempt={id:id,userId:userId,ownerId:ownerId,store:store,readiness:readiness,generation:accountGeneration};
+  pendingActivation=attempt;
+  attempt.promise=Promise.resolve(readiness).then(function(){
+    if(pendingActivation!==attempt||attempt.generation!==accountGeneration||attempt.userId!==activeUser()||!activePlan())return;
+    if(new URLSearchParams(location.search).get('id')!==attempt.id||document.querySelector('[data-generated-days]')!==container||container.dataset.enhanced)return;
+    var canonical=window.TravelMateTripStore;
+    if(!canonical||attempt.store&&canonical!==attempt.store)return;
+    var fresh=canonical.getTrip(attempt.id,attempt.ownerId);
+    if(!fresh||String(fresh.id)!==attempt.id||attempt.ownerId!==null&&String(fresh.ownerId||'')!==attempt.ownerId)return;
+    init(container,fresh,attempt.userId,attempt.generation);
+  }).catch(function(error){console.error('TravelMate planner startup failed',error)}).then(function(){if(pendingActivation===attempt)pendingActivation=null});
+  return attempt.promise
+}
+window.addEventListener('travelmate:viewchange',function(event){if(!event.detail||event.detail.view!=='plan'){pendingActivation=null;return}start()});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 
@@ -141,7 +169,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     })
   }
   function enhancePastDays(){
-    var container=document.querySelector('[data-generated-days]'),trip=tripData();if(!container||!trip||!window.TravelMateToday)return;
+    var container=document.querySelector('[data-generated-days]'),trip=tripData();if(!container||!container.dataset.enhanced||!trip||!window.TravelMateToday)return;
     var today=window.TravelMateToday.localDateKey(new Date()),active=window.TravelMateToday.phase(trip,today).name==='active';
     var parts=String(trip.start||'').split('-').map(Number),cards=[].slice.call(container.querySelectorAll('.generated-day')),past=[];
     cards.forEach(function(card,index){

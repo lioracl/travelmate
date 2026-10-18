@@ -171,8 +171,9 @@ var appAssetVersion=(function(){try{return new URL(appScript.src,location.href).
     Promise.all([baseReady,loadStyle(finalStyle),coreReady,featureReady,initialView==='overview'?baseReady.then(loadTodayActivities):Promise.resolve(true)]).then(function(){if(initialView==='overview')scheduleIdleFeature('intelligence',250)});
   }
   window.addEventListener('travelmate:viewchange',function(event){var view=event.detail&&event.detail.view;loadFeature(view).then(function(){if(view==='overview'){loadTodayActivities();scheduleIdleFeature('intelligence',250)}})});
-  document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview'){loadTodayActivities();loadFeature('intelligence')}}},{capture:true,passive:true});
-  document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link){loadFeature(link.dataset.view);if(link.dataset.view==='overview')loadFeature('intelligence')}},{capture:true,passive:true});
+  // Plan scripts can initialize trip data: execute them only on actual navigation.
+  document.addEventListener('pointerenter',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link&&link.dataset.view!=='plan'){loadFeature(link.dataset.view);if(link.dataset.view==='overview'){loadTodayActivities();loadFeature('intelligence')}}},{capture:true,passive:true});
+  document.addEventListener('touchstart',function(event){var link=event.target.closest&&event.target.closest('[data-view]');if(link&&link.dataset.view!=='plan'){loadFeature(link.dataset.view);if(link.dataset.view==='overview')loadFeature('intelligence')}},{capture:true,passive:true});
   document.addEventListener('click',function(event){var button=event.target.closest&&event.target.closest('[data-lazy-about]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();loadFeature('about').then(function(ready){if(ready===false)return;button.removeAttribute('data-lazy-about');button.click()})},true);
   document.addEventListener('click',function(event){
     var button=event.target.closest&&event.target.closest('[data-lazy-account],[data-smart-hub-open]');
