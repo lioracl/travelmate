@@ -759,7 +759,8 @@ html body.home-page.is-authenticated #active-trips>.trip-card-shell .trip-activi
 /* New-trip modal isolation: the trip gallery must never bleed through the creation flow. */
 body.home-page #modal-destination.modal-backdrop{
   z-index:1400;
-  padding:max(12px,var(--tm-safe-top,0px)) max(12px,var(--tm-safe-right,0px)) max(12px,var(--tm-safe-bottom,0px)) max(12px,var(--tm-safe-left,0px));
+  /* The wizard viewport below already reserves vertical safe areas. */
+  padding:12px max(12px,var(--tm-safe-right,0px)) 12px max(12px,var(--tm-safe-left,0px));
   background:var(--bg,#fdfcf8);
   -webkit-backdrop-filter:none;
   backdrop-filter:none
@@ -889,7 +890,7 @@ html body.home-page #modal-destination{
   top:calc(var(--tm-safe-top,0px) + var(--tm-wizard-viewport-top,0px));bottom:auto;
   height:calc(var(--tm-wizard-viewport-height,100dvh) - var(--tm-safe-top,0px) - var(--tm-safe-bottom,0px));
   max-height:calc(var(--tm-wizard-viewport-height,100dvh) - var(--tm-safe-top,0px) - var(--tm-safe-bottom,0px));
-  overflow:hidden;padding:12px
+  overflow:hidden
 }
 html body.home-page #modal-destination .destination-modal{
   --tm-overlay-surface:var(--tm-family-primary,color-mix(in srgb,var(--tm-surface-neutral,#F4F3EF) 94%,transparent));
