@@ -144,7 +144,7 @@
         found.add(element);
         if (overlays.has(element)) return;
         var returnFocus = lastOutsideFocus;
-        overlays.set(element, { dom: true, close: function () {
+        overlays.set(element, { dom: true, returnFocus: returnFocus, close: function () {
           var button = element.querySelector(adapter[1]);
           if (button) button.click();
           if (returnFocus && returnFocus.isConnected && (!document.activeElement || document.activeElement === document.body || element.contains(document.activeElement))) returnFocus.focus();
@@ -158,7 +158,16 @@
         var button = document.querySelector('[data-mobile-menu]'); if (button) button.focus();
       } });
     }
-    overlays.forEach(function (overlay, id) { if (overlay.dom && !found.has(id)) overlays.delete(id); });
+    overlays.forEach(function (overlay, id) {
+      if (!overlay.dom || found.has(id)) return;
+      overlays.delete(id);
+      // A V3 utility dialog may close through its own Escape control. Its old
+      // opener is now hidden; retain History's surviving outside focus target.
+      var target = overlay.returnFocus;
+      var active = document.activeElement;
+      if (target && target.isConnected && target.matches('[data-shell-more]') &&
+          (!active || active === document.body || !active.getClientRects().length)) target.focus({preventScroll:true});
+    });
     syncEntry();
   }
   document.addEventListener('focusin', function (event) {

@@ -19,28 +19,26 @@
   <link rel="stylesheet" href="../../assets/phone-visual-qa.css?v=20261015-03&patch=2">
 <link rel="stylesheet" href="../../assets/app-shell.css?v=20261015-03">
 </head>
-<body class="tm-new-design" data-trip-kind="custom">
+<body class="tm-new-design" data-trip-kind="custom" data-design="v3">
 <script>(function(){var v=new URLSearchParams(location.search).get('view')||location.hash.slice(1)||'overview';if(v==='car-rental')v='transport';document.body.dataset.tripView=v;document.body.dataset.tripPrimaryView=/^(places|transport|getaways|destination-info)$/.test(v)?'places':v})()</script>
 <a class="tm-skip-link" href="#main-content">דלג לתוכן הראשי</a>
 <div class="workspace">
-  <aside class="sidebar">
-    <a class="logo" href="../../index.html" aria-label="TravelMate"><span class="brand-dot"><i class="fa-solid fa-route" aria-hidden="true"></i></span><strong>TravelMate</strong></a>
-    <a class="back" href="../../index.html"><i class="fa-solid fa-arrow-right"></i> כל הטיולים</a>
-    <div class="destination-mini"><span data-country-flag aria-hidden="true">🌍</span><div><strong data-country></strong><small data-dates></small></div></div>
-    <nav aria-label="אזורי הטיול"><a class="active" href="#overview" data-view="overview"><i class="fa-solid fa-house"></i><span class="tip">סקירה</span></a><a href="#plan" data-view="plan"><i class="fa-solid fa-calendar-days"></i><span class="tip">תוכנית</span></a><a href="#places" data-view="places"><i class="fa-solid fa-location-dot"></i><span class="tip">מקומות</span></a><a href="#budget" data-view="budget"><i class="fa-solid fa-wallet"></i><span class="tip">תקציב</span></a><a href="#documents" data-view="documents"><i class="fa-solid fa-folder-open"></i><span class="tip">מסמכים</span></a></nav>
-    <details class="trip-sidebar-more" data-trip-sidebar-more>
-      <summary aria-label="כלים נוספים"><i class="fa-solid fa-ellipsis"></i><span class="tip">עוד</span></summary>
+  <aside class="sidebar tm-utilities" data-shell-utilities id="tm-utilities" role="dialog" aria-modal="true" aria-labelledby="tm-utilities-title" hidden>
+    <header><h2 id="tm-utilities-title">כלים לטיול</h2><button type="button" data-shell-close aria-label="סגירת כלים">✕</button></header>
+
+    <nav aria-label="כלים בטיול"><a class="active" href="#overview" data-view="overview"><i class="fa-solid fa-house"></i><span class="tip">סקירה</span></a><a href="#plan" data-view="plan"><i class="fa-solid fa-calendar-days"></i><span class="tip">תוכנית</span></a><a href="#places" data-view="places"><i class="fa-solid fa-location-dot"></i><span class="tip">מקומות</span></a><a href="#budget" data-view="budget"><i class="fa-solid fa-wallet"></i><span class="tip">תקציב</span></a><a href="#documents" data-view="documents"><i class="fa-solid fa-folder-open"></i><span class="tip">מסמכים</span></a></nav>
+    <div class="trip-sidebar-more" data-trip-sidebar-more>
       <div class="trip-sidebar-more-menu">
         <a href="#group" data-view="group"><i class="fa-solid fa-user-group"></i><span>שיתוף וקבוצה</span></a>
         <a href="#memories" data-view="memories"><i class="fa-solid fa-images"></i><span>זיכרונות וסיכום</span></a>
         <button type="button" class="smart-hub-launch" data-smart-hub-open><i class="fa-solid fa-brain" aria-hidden="true"></i><span>מרכז חכם <small>20 כלים</small></span></button>
         <button type="button" data-about-open data-lazy-about><i class="fa-solid fa-circle-info"></i><span>אודות TravelMate</span></button>
       </div>
-    </details>
+    </div>
     <button type="button" class="security-center-launcher" data-security-open data-lazy-account aria-label="פתיחת הגדרות"><i class="fa-solid fa-gear" aria-hidden="true"></i><span class="security-launcher-label">הגדרות</span></button>
   </aside>
   <main tabindex="-1" id="main-content" class="content">
-    <header class="mobile-header"><a href="../../index.html" class="mobile-trip-back" aria-label="חזרה לכל הטיולים" title="חזרה לכל הטיולים"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a><strong><a class="mobile-destination-map" data-maps target="_blank" rel="noopener noreferrer" aria-label="פתיחת מפת היעד" title="פתיחת מפת היעד"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span class="mobile-action-label">מפה</span></a><span class="mobile-country-flag" data-country-flag aria-hidden="true">🌍</span><button type="button" class="mobile-trip-whatsapp" data-trip-share-whatsapp aria-label="שיתוף הטיול ב־WhatsApp" title="שיתוף הטיול ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span class="mobile-action-label">שיתוף</span></button><span data-country></span></strong></header>
+    <header class="mobile-header"><a href="../../index.html#active-trips" class="mobile-trip-back" aria-label="חזרה לכל הטיולים" title="חזרה לכל הטיולים"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a><strong><a class="mobile-destination-map" data-maps target="_blank" rel="noopener noreferrer" aria-label="פתיחת מפת היעד" title="פתיחת מפת היעד"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span class="mobile-action-label">מפה</span></a><span class="mobile-country-flag" data-country-flag aria-hidden="true">🌍</span><button type="button" class="mobile-trip-whatsapp" data-trip-share-whatsapp aria-label="שיתוף הטיול ב־WhatsApp" title="שיתוף הטיול ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span class="mobile-action-label">שיתוף</span></button><span data-country></span></strong></header>
     <aside class="trip-sync-conflict-banner" data-sync-conflict role="status" aria-live="polite" aria-atomic="true">
       <span class="trip-sync-conflict-icon" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>
       <div class="trip-sync-conflict-copy"><strong>יש התנגשות בין שתי גרסאות של הטיול</strong><p>השינויים המקומיים נשמרו. בחר איזו גרסה להשאיר לפני שהסנכרון ממשיך.</p></div>
@@ -53,7 +51,29 @@
       <i class="fa-solid fa-eye" aria-hidden="true"></i>
       <span>הטיול הזה מוגדר לצפייה בלבד. שינוי שלא היה מורשה בוטל והוחזרה הגרסה העדכנית מהענן.</span>
     </div>
-    <section id="overview" class="hero custom-hero section"><a href="../../index.html" class="hero-back">חזרה לכל הטיולים</a><div class="hero-copy"><span class="status">הטיול החדש שלך</span><h1><span data-city></span></h1><div class="hero-country-line"><span data-country-flag aria-hidden="true">🌍</span><span data-country></span></div><p><span data-days></span> ימים · טיול <span data-type></span></p></div><div class="hero-share-actions"><button type="button" class="share trip-whatsapp-share" data-trip-share-whatsapp aria-label="שיתוף ב־WhatsApp" title="שיתוף ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></button></div></section><button type="button" class="weather-top-widget weather-master-card" data-card-style="weather" data-weather-top-widget aria-haspopup="dialog" aria-expanded="false" aria-label="פתיחת תחזית מזג האוויר המלאה"><span class="weather-top-icon"><i class="fa-solid fa-cloud-sun" aria-hidden="true"></i></span><span class="weather-top-copy"><small>מזג האוויר</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><span class="weather-top-action">פתח תחזית <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></button>
+    <section id="overview" class="hero custom-hero section">
+      <a href="../../index.html#active-trips" class="hero-back">חזרה לכל הטיולים</a>
+      <div class="tm-overview-brand" dir="ltr">Travel<span>Mate</span> <span aria-hidden="true">⌁</span></div>
+      <div class="hero-copy">
+        <span class="status">הטיול שלך</span>
+        <h1><span data-city></span></h1>
+        <div class="hero-country-line"><span data-country-flag aria-hidden="true">🌍</span><span data-country></span></div>
+        <p class="tm-hero-dates"><span data-dates></span></p>
+        <p><span data-days></span> ימים · טיול <span data-type></span></p>
+      </div>
+      <div class="hero-share-actions"><button type="button" class="share trip-whatsapp-share" data-trip-share-whatsapp aria-label="שיתוף ב־WhatsApp" title="שיתוף ב־WhatsApp"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></button></div>
+    </section>
+    <button type="button" class="weather-top-widget weather-master-card" data-card-style="weather" data-weather-top-widget aria-haspopup="dialog" aria-expanded="false" aria-label="פתיחת תחזית מזג האוויר המלאה"><span class="weather-top-icon"><i class="fa-solid fa-cloud-sun" aria-hidden="true"></i></span><span class="weather-top-copy"><small>מזג האוויר</small><strong data-weather-summary>טוען תחזית עדכנית…</strong></span><span class="weather-top-temperature" data-weather-temperature>--°</span><span class="weather-top-action">פתח תחזית <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></button>
+    <section class="trip-home-actions" aria-labelledby="trip-home-actions-title">
+      <div><p>פעולות מהירות</p><h2 id="trip-home-actions-title">מה עושים עכשיו?</h2></div>
+      <nav aria-label="פעולות מרכזיות בטיול">
+        <a href="#plan" data-overview-action="plan"><i class="fa-regular fa-calendar-plus"></i><span>להתחיל לתכנן</span></a>
+        <a href="#budget" data-overview-action="budget" data-budget-converter-open aria-label="פתיחת המרת מטבע מהירה"><i class="fa-solid fa-money-bill-transfer"></i><span>המרת מטבע</span></a>
+        <a href="#documents"><i class="fa-regular fa-folder-open"></i><span>להעלות מסמכים</span></a>
+        <a href="#places" data-overview-action="map-places"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>למצוא מקום</span><i class="fa-solid fa-bookmark overview-saved-accent" aria-hidden="true"></i></a>
+        <a href="#group"><i class="fa-solid fa-user-group"></i><span>לשתף את הטיול</span></a>
+      </nav>
+    </section>
     <section class="card trip-today" data-trip-today aria-labelledby="trip-today-title" hidden></section>
     <section class="trip-overview-summary overview-control-center" data-overview-control-center aria-label="מצב הטיול עכשיו">
       <article class="card overview-status-card" data-overview-next>
@@ -78,16 +98,6 @@
       </article>
     </section>
     <aside class="navo-trip-banner navo-existing-trip-banner" data-navo-trip-banner aria-busy="true"><span><i class="fa-solid fa-compass" aria-hidden="true"></i></span><div><small class="navo-trip-state" data-navo-state>Mate</small><strong>Mate מכיר את הטיול</strong><p>מכין את ההמלצות המותאמות…</p><div class="navo-existing-type-setup" data-navo-existing-types hidden></div></div><button type="button" data-navo-open disabled><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> לצפייה בהמלצות</button></aside>
-    <section class="trip-home-actions" aria-labelledby="trip-home-actions-title">
-      <div><p>פעולות מהירות</p><h2 id="trip-home-actions-title">מה עושים עכשיו?</h2></div>
-      <nav aria-label="פעולות מרכזיות בטיול">
-        <a href="#plan"><i class="fa-regular fa-calendar-plus"></i><span>להתחיל לתכנן</span></a>
-        <a href="#budget" data-budget-converter-open aria-label="פתיחת המרת מטבע מהירה"><i class="fa-solid fa-money-bill-transfer"></i><span>המרת מטבע</span></a>
-        <a href="#documents"><i class="fa-regular fa-folder-open"></i><span>להעלות מסמכים</span></a>
-        <a href="#group"><i class="fa-solid fa-user-group"></i><span>לשתף את הטיול</span></a>
-        <a href="#places"><i class="fa-solid fa-location-dot"></i><span>למצוא מקום</span></a>
-      </nav>
-    </section>
     <nav class="places-hub-nav" data-places-hub aria-label="כלי מקומות" hidden>
       <a href="#places" data-view="places"><i class="fa-solid fa-location-dot"></i><span>מקומות</span></a>
       <a href="#transport" data-view="transport"><i class="fa-solid fa-train-subway"></i><span>תחבורה</span></a>
@@ -102,4 +112,11 @@
   </main>
 </div>
 <script src="../../assets/network-usage.js?v=20261015-03" defer></script><script src="../../assets/supabase-config.js?v=20261015-03" defer></script><script src="../../assets/cloud-sync.js?v=20261015-03" defer></script><script src="../../assets/trip-store.js?v=20261015-03" defer></script><script src="../../assets/event-contracts.js?v=20261015-03" defer></script><script src="../../assets/destination-images.js?v=20261015-03" defer></script><script src="../../assets/custom-trip.js?v=20261015-03" defer></script><script src="../../assets/today-brief.js?v=20261015-03" defer></script><script src="../../assets/app-shell.js?v=20261015-03" defer></script><script src="../../assets/app.js?v=20261015-03" defer></script><script src="../../assets/trip-change-notifications.js?v=20261015-03" defer></script>
+<nav class="tm-trip-dock" aria-label="ניווט ראשי בטיול">
+  <a href="?view=overview" data-shell-view="overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z"/></svg><span>סקירה</span></a>
+  <a href="?view=plan" data-shell-view="plan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v16H4ZM8 2v6m8-6v6M4 11h16m-11 4h2m3 0h2m-7 3h2m3 0h2"/></svg><span>תוכנית</span></a>
+  <span class="tm-trip-dock-mate" data-shell-mate></span>
+  <a href="?view=places" data-shell-view="places"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>מקומות</span></a>
+  <button type="button" class="mobile-menu-button" data-mobile-menu data-shell-more aria-expanded="false"><span aria-hidden="true">•••</span><span>עוד</span></button>
+</nav>
 </body></html>

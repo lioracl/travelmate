@@ -8,12 +8,13 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf8'); }
 
-test('custom trip exposes exactly five primary navigation areas', () => {
+test('custom trip exposes exactly five canonical dock areas in RTL source order', () => {
   const html = read('trip/custom/index.html');
-  const match = html.match(/<nav aria-label="אזורי הטיול">([\s\S]*?)<\/nav>/);
-  assert.ok(match, 'primary trip navigation must exist');
-  const views = Array.from(match[1].matchAll(/data-view="([^"]+)"/g), (item) => item[1]);
-  assert.deepEqual(views, ['overview', 'plan', 'places', 'budget', 'documents']);
+  const match = html.match(/<nav class="tm-trip-dock"[\s\S]*?<\/nav>/);
+  assert.ok(match, 'primary trip dock must exist');
+  const views = Array.from(match[0].matchAll(/data-shell-view="([^"]+)"|data-shell-mate|data-shell-more/g), item => item[1] || (item[0] === 'data-shell-mate' ? 'mate' : 'more'));
+  assert.deepEqual(views, ['overview', 'plan', 'mate', 'places', 'more']);
+  assert.match(html, /<html[^>]*dir="rtl"/);
 });
 
 test('Places hub groups discovery, transport, getaways and destination info', () => {
@@ -24,17 +25,17 @@ test('Places hub groups discovery, transport, getaways and destination info', ()
   assert.deepEqual(views, ['places', 'transport', 'getaways', 'destination-info']);
 });
 
-test('secondary tools stay grouped under More while Settings is a separate sidebar action', () => {
+test('secondary tools stay grouped in the utility dialog with a distinct Settings action', () => {
   const html = read('trip/custom/index.html');
-  const more = html.match(/<details class="trip-sidebar-more"[\s\S]*?<\/details>/);
+  const more = html.match(/<div class="trip-sidebar-more"[\s\S]*?<\/div>\s*<\/div>/);
   assert.ok(more, 'More menu must exist');
   assert.match(more[0], /data-view="group"/);
   assert.match(more[0], /data-view="memories"/);
   assert.match(more[0], /data-smart-hub-open/);
   assert.match(more[0], /data-about-open/);
   assert.doesNotMatch(more[0], /data-security-open|trip-archive/);
-  assert.match(html, /<\/details>\s*<button[^>]*class="security-center-launcher"[^>]*data-security-open[^>]*data-lazy-account/);
-  const primary = html.match(/<nav aria-label="אזורי הטיול">([\s\S]*?)<\/nav>/)[1];
+  assert.match(html, /<\/div>\s*<button[^>]*class="security-center-launcher"[^>]*data-security-open[^>]*data-lazy-account/);
+  const primary = html.match(/<aside[^>]*data-shell-utilities[\s\S]*?<nav[^>]*>([\s\S]*?)<\/nav>/)[1];
   assert.doesNotMatch(primary, /transport|getaways|group|memories|about|security|archive|smart-hub/);
 });
 

@@ -80,7 +80,7 @@ test('Overview mobile chrome keeps on-photo contrast in both themes',()=>{
 
 test('custom trip mobile drawer keeps a crisp readable material and desktop chrome stays desktop-only',()=>{
   const css=read('assets/readable-glass.css');
-  assert.match(css,/\.workspace>\.sidebar\{[^}]*background:var\(--tm-surface-control,var\(--tm-card-bg\)\)/);
+  assert.match(css,/\.workspace>\.sidebar:not\(:where\(\.tm-utilities\)\)\{[^}]*background:var\(--tm-surface-control,var\(--tm-card-bg\)\)/);
   assert.match(css,/--tm-drawer-text:var\(--tm-surface-text/);
   assert.match(css,/@media\(min-width:1001px\)/);
 });

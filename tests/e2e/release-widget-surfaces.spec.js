@@ -39,11 +39,13 @@ for(const width of [390,430,768,1440]) for(const theme of ['light','dark']) {
    window.travelMateTripReady=Promise.resolve({id:'release-ui',ownerId:'qa-A'});
    window.TravelMateCloud={getSession:async()=>({user:{id:'qa-A'}}),onAuthChange:()=>{},listTripChangeEvents:async()=>{releaseQA.reads++;return events.slice();},getTripChangeReadState:async()=>({last_read_event_id:lastRead}),listTripMembers:async()=>[{user_id:'qa-A'},{user_id:'qa-B',display_name:'משתמש בדיקה'}],subscribeToTripChangeEvents:async()=>()=>{},markTripChangesRead:async(_owner,_trip,id)=>{lastRead=id;return id;}};
   },theme);
+  await page.addScriptTag({url:'/assets/app-shell.js'});
+  const more=page.locator('[data-shell-more]'),utilities=page.locator('[data-shell-utilities]');await expect(more).toHaveCount(1);await expect(more).toBeVisible();await more.click();await expect(utilities).toBeVisible();
   await page.addScriptTag({url:'/assets/trip-change-notifications.js'});
-  const launcher=page.locator('.trip-notification-launcher:visible').first();await expect(launcher).toBeVisible();await launcher.click();
+  const launcher=utilities.locator('.trip-notification-launcher:not(.trip-notification-mobile)');await expect(launcher).toHaveCount(1);await expect(launcher).toBeVisible();await launcher.click();await expect(utilities).toBeHidden();
   const panel=page.locator('.trip-notification-panel');await expect(panel).toBeVisible();await expect(panel.locator('[data-trip-change-id]')).toHaveCount(1);
   await panel.locator('[data-trip-notification-read-all]').click();await expect.poll(()=>page.evaluate(()=>TravelMateTripChangeContext.snapshot().unreadCount)).toBe(0);
-  await context.setOffline(true);await panel.locator('[data-trip-notification-close]').click();await launcher.click();await expect(panel.locator('[data-trip-notification-status]')).toContainText('לא מקוון');
+  await context.setOffline(true);await panel.locator('[data-trip-notification-close]').click();await more.click();await expect(utilities).toBeVisible();await expect(launcher).toBeVisible();await launcher.click();await expect(utilities).toBeHidden();await expect(panel.locator('[data-trip-notification-status]')).toContainText('לא מקוון');
   await page.evaluate(()=>releaseQA.events.push({id:2,actor_user_id:'qa-B',entity_type:'place',action:'added',created_at:new Date().toISOString()}));
   await context.setOffline(false);await expect(panel.locator('[data-trip-change-id]')).toHaveCount(2);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);

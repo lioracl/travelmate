@@ -427,7 +427,7 @@ test('Phase 7 keeps shared frame, Mate and Transport ownership out of Theme', ()
   const transport = read(path.join(root, 'assets/transport-planner.css'));
 
   assert.match(redesign, /Phase 7 — trip frame and hero geometry authority/);
-  assert.match(redesign, /data-trip-view\]:not\(\[data-trip-view="overview"\]\)[\s\S]*min-height:56px/);
+  assert.match(redesign, /data-trip-view\]:not\(\[data-trip-view="overview"\]\)[\s\S]*min-height:var\(--tm-secondary-hero-height,56px\)/);
   assert.match(ai, /Phase 7 — Mate launcher and header visual authority/);
   assert.match(ai, /body\.tm-new-design \.ai-orb\{[\s\S]*width:48px;/);
   assert.match(transport, /#transport \.transport-note\{[^}]*background:linear-gradient\(135deg,#315d4d,#21493b\)!important/);

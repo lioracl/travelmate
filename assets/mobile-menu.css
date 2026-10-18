@@ -6,21 +6,21 @@
 @media(max-width:1000px){
   body.mobile-menu-open{overflow:hidden}
 
-  body:not(.home-page) .workspace>.sidebar{
+  body:not(.home-page) .workspace>.sidebar:not(:where(.tm-utilities)){
     transform:translateX(110%);
     visibility:hidden;
     pointer-events:none;
     transition:transform .25s ease
   }
-  body:not(.home-page).mobile-menu-open .workspace>.sidebar{
+  body:not(.home-page).mobile-menu-open .workspace>.sidebar:not(:where(.tm-utilities)){
     transform:translateX(0);
     visibility:visible;
     pointer-events:auto
   }
-  html[dir="ltr"] body:not(.home-page) .workspace>.sidebar{
+  html[dir="ltr"] body:not(.home-page) .workspace>.sidebar:not(:where(.tm-utilities)){
     transform:translateX(-110%)
   }
-  html[dir="ltr"] body:not(.home-page).mobile-menu-open .workspace>.sidebar{
+  html[dir="ltr"] body:not(.home-page).mobile-menu-open .workspace>.sidebar:not(:where(.tm-utilities)){
     transform:translateX(0)
   }
 
@@ -41,5 +41,5 @@
 }
 
 @media(prefers-reduced-motion:reduce){
-  body:not(.home-page) .workspace>.sidebar{transition:none}
+  body:not(.home-page) .workspace>.sidebar:not(:where(.tm-utilities)){transition:none}
 }
