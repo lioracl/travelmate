@@ -476,3 +476,49 @@ test('committing budget before long-content setup retains the mounted paragraph 
  const f=wizardBannerCommitFixture(),node=f.paragraph,long='Synthetic long recommendation content. '.repeat(24);f.fill('3500');f.commit();assert.equal(f.changes,1);assert(f.paragraph.textContent.length<500);f.paragraph.textContent=long;
  for(const phase of ['full-cta','shrunk-budget','shrunk-cta','restored-budget','restored-cta']){f.commit();assert.equal(f.paragraph,node,phase);assert.equal(f.paragraph.textContent,long,phase);assert(f.paragraph.textContent.length>500);assert.equal(f.changes,1);assert.equal(f.state.context.budget,3500);}
 });
+
+function wizardActionBudgetStyle(){
+ const css=fs.readFileSync(path.join(root,'assets/home-organizer.css'),'utf8');
+ const rule=css.match(/html body\.home-page #modal-destination :is\(\.trip-wizard-next,\.trip-wizard-back,\.create-trip\)\{([^}]+)\}/);
+ assert.ok(rule,'one shared wizard action size owner');
+ const declarations=Object.fromEntries(rule[1].split(';').filter(Boolean).map(d=>{const i=d.indexOf(':');return[d.slice(0,i),d.slice(i+1)];}));
+ const padding=declarations.padding.split(/\s+/).map(parseFloat);
+ return{declarations,minimum:parseFloat(declarations['min-height']),blockPadding:padding[0]*2};
+}
+
+test('reported summary compact budget retains 96px for a wrapped create label and bordered Back',()=>{
+ const style=wizardActionBudgetStyle();
+ // CI39176844843: two text lines occupy 36px; 12px padding on both sides
+ // made a 60px row. This is a numerical regression fixture, not browser proof.
+ const form=187.125,gap=8,bottom=8,scrollPadding=16;
+ const usable=row=>Math.floor(form-gap-bottom-row)-scrollPadding;
+ assert.equal(usable(60),95,'reported original summary failure');
+ const back=Math.max(style.minimum,18+style.blockPadding+2);
+ const next=Math.max(style.minimum,18+style.blockPadding);
+ const create=Math.max(style.minimum,36+style.blockPadding);
+ assert.ok(back>=44&&next>=44&&create>=44,'target sizes cannot fund the fix');
+ assert.equal(create,next,'two-line summary shares the earlier action row budget');
+ assert.equal(back,next,'Back includes both border edges');
+ assert.ok(usable(Math.max(back,create))>=96,'summary usable content requirement remains 96px');
+ assert.equal(usable(Math.max(back,create)),103,'same compact capacity as dates/preferences');
+ assert.equal(style.declarations.font,'inherit');assert.equal(style.declarations['font-weight'],'800');
+ assert.equal(style.declarations['white-space'],'normal');
+});
+
+test('wizard actions can grow for longer retry/loading labels without fixed-height clipping',()=>{
+ const style=wizardActionBudgetStyle(),css=fs.readFileSync(path.join(root,'assets/home-organizer.css'),'utf8');
+ for(const key of ['height','max-height','block-size','max-block-size','overflow','text-overflow','font-size','line-height'])assert.equal(style.declarations[key],undefined,key+' must not clip or shrink labels');
+ const long=Math.max(style.minimum,54+style.blockPadding);assert.ok(long>style.minimum,'three-line label retains intrinsic height');
+ const back=css.match(/html body\.home-page #modal-destination \.trip-wizard-back\{([^}]+)\}/)[1];
+ assert.match(back,/border:1px solid var\(--tm-overlay-border\)/);
+ assert.match(css,/:is\(button,input,select,\[tabindex="-1"\]\):focus-visible\{outline:3px solid var\(--tm-action-primary\);outline-offset:3px\}/);
+});
+
+test('compact browser proof records every action label rectangle and preserves the 96px floor',()=>{
+ const spec=fs.readFileSync(path.join(root,'tests/e2e/new-trip-wizard.spec.js'),'utf8');
+ const proof=spec.slice(spec.indexOf('async function wizardScrollProof('),spec.indexOf('// Axis-aligned control border-box proof.'));
+ assert.match(proof,/minimum=96/);assert.match(proof,/range\.selectNodeContents\(n\)/);assert.match(proof,/range\.getClientRects\(\)/);
+ for(const edge of ['top','bottom','left','right'])assert.ok(proof.includes('rect.'+edge),'measure '+edge);
+ assert.match(proof,/expect\(action\.height,JSON\.stringify\(result\)\)\.toBe\(52\)/);
+ assert.match(proof,/scroll\.usableHeight,JSON\.stringify\(result\)\)\.toBeGreaterThanOrEqual\(minimum\)/);
+});

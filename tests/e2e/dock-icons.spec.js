@@ -12,6 +12,72 @@ const homeHooks = ['home', 'places', 'destination', 'trips', 'account'];
 const tripHooks = ['overview', 'plan', 'mate', 'places', 'more'];
 const codepoints = { house: 0xf015, 'location-dot': 0xf3c5, plus: 0x2b, suitcase: 0xf0f2, user: 0xf007, 'calendar-days': 0xf073, ellipsis: 0xf141 };
 
+const dockControlSemantics = {
+  home: {
+    home: { label: 'בית', name: 'בית' },
+    places: { label: 'מקומות', name: 'מקומות' },
+    destination: { label: 'טיול חדש', name: 'טיול חדש' },
+    trips: { label: 'הטיולים שלי', name: 'הטיולים שלי' },
+    // home.js owns the session-dependent aria-label; Profile is the visible
+    // dock label. These were intentionally different before the icon change.
+    account: { label: 'פרופיל', name: { authenticated: 'החשבון שלי', guest: 'התחברות' } }
+  },
+  trip: {
+    overview: { label: 'סקירה', name: 'סקירה' },
+    plan: { label: 'תוכנית', name: 'תוכנית' },
+    places: { label: 'מקומות', name: 'מקומות' },
+    more: { label: 'עוד', name: 'עוד' }
+  }
+};
+
+function expectedDockControl(kind, hook, session = 'authenticated') {
+  const control = dockControlSemantics[kind]?.[hook];
+  if (!control) throw new Error('Unknown dock control: ' + kind + '/' + hook);
+  const name = typeof control.name === 'string' ? control.name : control.name[session];
+  if (!name) throw new Error('Unknown account session: ' + session);
+  return { label: control.label, name };
+}
+
+async function assertDockControlSemantics(control, expected, options = {}) {
+  const label = control.locator(':scope > span');
+  await expect(label).toBeVisible(options);
+  expect(await label.textContent()).toMatch(/[\u0590-\u05ff]/);
+  await expect(label).toHaveText(expected.label, options);
+  await expect(control).toHaveAccessibleName(expected.name, options);
+}
+
+async function assertDockNameNegatives(page) {
+  const account = page.locator('.tm-home-dock > button[data-cloud-account-open]');
+  const expected = expectedDockControl('home', 'account');
+  await assertDockControlSemantics(account, expected);
+  await expect(account).toHaveAttribute('aria-label', expected.name);
+  const originalName = await account.getAttribute('aria-label');
+  try {
+    for (const invalid of ['שם שגוי', null]) {
+      await account.evaluate((node, value) => value === null ? node.removeAttribute('aria-label') : node.setAttribute('aria-label', value), invalid);
+      expect(await account.getAttribute('aria-label')).toBe(invalid);
+      // Exercise the same semantic-name gate used by all 21 cases. A missing
+      // aria-label falls back to Profile, which must not pass as My Account.
+      await expect(assertDockControlSemantics(account, expected, { timeout: 100 })).rejects.toThrow();
+    }
+  } finally {
+    await account.evaluate((node, value) => node.setAttribute('aria-label', value), originalName);
+  }
+  await assertDockControlSemantics(account, expected);
+  const homeLink = page.locator('.tm-home-dock > a[data-home-route="home"]');
+  const icon = homeLink.locator(':scope > i');
+  const originalDecoration = await icon.textContent();
+  await expect(icon).toHaveAttribute('aria-hidden', 'true');
+  try {
+    // The text-named Home link proves aria-hidden decoration is ignored even
+    // without an aria-label overriding all descendant content.
+    await icon.evaluate(node => { node.textContent = 'decorative QA sentinel'; });
+    await assertDockControlSemantics(homeLink, expectedDockControl('home', 'home'));
+  } finally {
+    await icon.evaluate((node, value) => { node.textContent = value; }, originalDecoration);
+  }
+}
+
 async function installNetworkBoundary(context, { failFonts = false } = {}) {
   // One fresh Playwright context per test, blocked service workers, and routing
   // disable the HTTP cache. Reuse successful CDN bytes only within this test to
@@ -75,7 +141,7 @@ async function failedIconFont(page, info, name, network, previousAttempts = 0) {
   return network.blockedFonts.length;
 }
 
-async function structure(page, kind) {
+async function structure(page, kind, session = 'authenticated') {
   const dock = page.locator('.tm-trip-dock');
   await expect(dock).toHaveCount(1);
   await expect(page.locator('.tm-trip-dock:visible')).toHaveCount(1);
@@ -93,11 +159,9 @@ async function structure(page, kind) {
     expect(url.searchParams.get('id')).toBe('alltrips-rome');
     expect(url.searchParams.get('view')).toBe(n.hook);
   }
-  for (const control of await dock.locator(':scope > a, :scope > button').all()) {
-    const label = control.locator(':scope > span');
-    await expect(label).toBeVisible();
-    expect(await label.textContent()).toMatch(/[\u0590-\u05ff]/);
-    await expect(control).toHaveAccessibleName((await label.textContent()).trim());
+  const controlHooks = kind === 'home' ? homeHooks : tripHooks.filter(hook => hook !== 'mate');
+  for (const [index, control] of (await dock.locator(':scope > a, :scope > button').all()).entries()) {
+    await assertDockControlSemantics(control, expectedDockControl(kind, controlHooks[index], session));
     const rect = await control.boundingBox();
     expect(rect.width).toBeGreaterThanOrEqual(44);
     expect(rect.height).toBeGreaterThanOrEqual(44);
@@ -223,6 +287,7 @@ test('font failure preserves Hebrew dock names, order and wizard reparenting', a
   // Fail both supported font formats while retaining the real stylesheet.
   await home.open(page);
   const dock = await structure(page, 'home');
+  await assertDockNameNegatives(page);
   const homeAttempts = await failedIconFont(page, info, 'home', network);
   await readability(page, info, 'font-failure-home-labels', ['.tm-trip-dock > a > span', '.tm-trip-dock > button > span']);
   await dock.locator('[data-modal="destination"]').click();

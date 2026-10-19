@@ -931,7 +931,8 @@ html body.home-page #modal-destination .trip-wizard-summary dd{margin:6px 0 0;co
 html body.home-page #modal-destination .trip-wizard-summary small{display:block;margin-top:4px;color:var(--tm-overlay-muted);font-weight:400}
 html body.home-page #modal-destination .trip-wizard-edit{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 html body.home-page #modal-destination .trip-wizard-edit button{min-height:44px;border:1px solid var(--tm-overlay-border);border-radius:12px;padding:8px 12px;background:var(--tm-family-control);color:var(--tm-overlay-text);font:inherit}
-html body.home-page #modal-destination :is(.trip-wizard-next,.trip-wizard-back,.create-trip){position:sticky;bottom:0;z-index:2;min-height:52px;border-radius:16px;padding:12px 16px;font:inherit;font-weight:800;white-space:normal}
+/* The two-line create label shares the same 52px action budget as Next/Back. */
+html body.home-page #modal-destination :is(.trip-wizard-next,.trip-wizard-back,.create-trip){position:sticky;bottom:0;z-index:2;min-height:52px;border-radius:16px;padding:8px 16px;font:inherit;font-weight:800;white-space:normal}
 html body.home-page #modal-destination .trip-wizard-back{grid-column:1;border:1px solid var(--tm-overlay-border);background:var(--tm-overlay-surface);color:var(--tm-overlay-text)}
 html body.home-page #modal-destination :is(.trip-wizard-next,.create-trip){grid-column:2;border:0;background:var(--tm-action-primary,#0F64E8);color:var(--tm-text-on-action,#fff);-webkit-text-fill-color:currentColor}
 html body.home-page #modal-destination [data-wizard-step="0"] .trip-wizard-next{grid-column:1/-1}

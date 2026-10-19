@@ -161,3 +161,48 @@ test('dedicated browser network boundary permits only local origin and exact FA 
   assert.equal(failure.evidence.blockedFonts.length, 4);
   assert.deepEqual([...failure.evidence.allowed], [css], 'fresh context cannot inherit successful font cache');
 });
+
+test('account controller preserves explicit authenticated/guest names separately from the Profile dock label', () => {
+  const vm = require('node:vm');
+  const register = () => {}; register.use = () => {};
+  const context = { URL, require(name) {
+    if (name === '@playwright/test') return { test: register, expect() {} };
+    if (name.startsWith('./fixtures/')) return {};
+    throw new Error('Unexpected dedicated spec dependency: ' + name);
+  } };
+  vm.runInNewContext(read('tests/e2e/dock-icons.spec.js') + '\nthis.expectedControl = expectedDockControl;', context);
+  const accountNode = dockTree(read('index.html')).children[4];
+  assert.equal(accountNode.attrs['data-cloud-account-open'], '');
+  assert.equal(accountNode.children[1].text, 'פרופיל');
+  const home = read('assets/home.js');
+  const start = home.indexOf('    accountOpenButtons.forEach(function (button) {', home.indexOf('    sessionPanel.hidden = !session;'));
+  assert.ok(start >= 0, 'canonical account-render callback');
+  const end = home.indexOf('\n    });', start);
+  assert.ok(end > start);
+  const callback = home.slice(start, end + '\n    });'.length);
+  for (const [sessionState, name] of [['authenticated', 'החשבון שלי'], ['guest', 'התחברות']]) {
+    const attributes = {}, button = {
+      classList: { contains() { return false; } },
+      setAttribute(key, value) { attributes[key] = value; },
+      querySelector() { return null; }
+    };
+    vm.runInNewContext(callback, { accountOpenButtons: [button], session: sessionState === 'authenticated' ? { user: { id: 'synthetic-account' } } : null });
+    const expected = context.expectedControl('home', 'account', sessionState);
+    assert.equal(expected.label, 'פרופיל');
+    assert.equal(expected.name, name);
+    assert.equal(attributes['aria-label'], expected.name, 'test expectation follows the actual canonical session renderer');
+    assert.equal(attributes.title, expected.name);
+    assert.notEqual(expected.name, expected.label);
+  }
+  for (const [file, kind] of [['index.html', 'home'], ['trip/custom/index.html', 'trip']]) {
+    for (const node of dockTree(read(file)).children.filter(n => n.tag === 'a' || n.tag === 'button')) {
+      const attrs = node.attrs;
+      const hook = attrs['data-home-route'] || attrs['data-shell-view'] || attrs['data-modal'] || ('data-cloud-account-open' in attrs ? 'account' : 'more');
+      const expected = context.expectedControl(kind, hook);
+      assert.equal(expected.label, node.children[1].text, 'exact visible Hebrew label');
+      if (hook !== 'account') assert.equal(expected.name, node.children[1].text, 'text-named canonical control');
+    }
+  }
+  assert.throws(() => context.expectedControl('home', 'account', 'unknown'), /Unknown account session/);
+  assert.throws(() => context.expectedControl('home', 'unknown'), /Unknown dock control/);
+});
