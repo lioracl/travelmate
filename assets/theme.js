@@ -21,6 +21,34 @@
     plum: Object.freeze({ label: 'שזיף', primary: '#674177', strong: '#59376A', dark: '#492D58', soft: '#E8DDED' }),
     pink: Object.freeze({ label: 'ורוד', primary: '#A23D6F', strong: '#8F345F', dark: '#74294D', soft: '#F4DCE8' })
   });
+  // C1 is a presentation palette. Legacy storage keys and surface choices are
+  // retained; the V3 material base is independent of those older glass presets.
+  var v3 = Boolean(document.body && document.body.dataset && document.body.dataset.design === 'v3');
+  var C1_ACCENTS = Object.freeze({
+    ocean: Object.freeze({label:'כחול',primary:'#1877F2',action:'#0F64E8',strong:'#0B55C6',dark:'#0847A6',soft:'#E8F1FF'}),
+    plum: Object.freeze({label:'סגול',primary:'#7951E8',action:'#6840D0',strong:'#5931BA',dark:'#47239C',soft:'#F0EAFF'}),
+    pink: Object.freeze({label:'ורוד',primary:'#EB4E89',action:'#BA225D',strong:'#A21B50',dark:'#881640',soft:'#FFEAF1'}),
+    sunset: Object.freeze({label:'כתום',primary:'#F6A623',action:'#955900',strong:'#7E4900',dark:'#633900',soft:'#FFF1D9'}),
+    emerald: Object.freeze({label:'ירוק',primary:'#18B87B',action:'#087A50',strong:'#086842',dark:'#075435',soft:'#E3F8EF'})
+  });
+  function effectiveAccent(value) { return v3 && value === 'teal' ? 'ocean' : value; }
+  function applyC1Base(theme) {
+    if (!v3) return;
+    var dark = theme === 'dark';
+    var tokens = {
+      '--tm-family-solid':dark?'#0E2134':'#F3F8FD', '--tm-family-primary':dark?'#183249':'#FFFFFF',
+      '--tm-family-nested':dark?'#203C55':'#F9FCFF', '--tm-family-control':dark?'#183249':'#FFFFFF',
+      '--tm-family-control-hover':dark?'#25455F':'#E8F1FF', '--tm-family-control-active':dark?'#2B506D':'#D8E8FF',
+      '--tm-family-text':dark?'#F1F8FF':'#102A4D', '--tm-family-muted':dark?'#B9CFDC':'#58718E',
+      '--tm-family-border':dark?'#53738D':'#A9BED5', '--tm-family-chrome':dark?'#183249':'#FFFFFF',
+      '--tm-text-primary':dark?'#F1F8FF':'#102A4D', '--tm-text-secondary':dark?'#B9CFDC':'#58718E',
+      '--tm-text-on-action':'#FFFFFF', '--tm-surface-neutral':dark?'#0E2134':'#F3F8FD',
+      '--tm-semantic-turquoise':'#14B8C5', '--tm-semantic-mate':'#7951E8', '--tm-semantic-success':'#18B87B',
+      '--tm-semantic-orange':'#F6A623', '--tm-semantic-coral':'#F45D70',
+      '--tm-warning-note-text':dark?'#F1F8FF':'#102A4D', '--tm-secondary-hero-height':'140px', '--tm-secondary-hero-padding':'16px', '--tm-canvas-image':'none', '--bg':dark?'#0E2134':'#F3F8FD', '--tm-v3-canvas':dark?'#0E2134':'#F3F8FD'
+    };
+    Object.keys(tokens).forEach(function (key) { root.style.setProperty(key,tokens[key]); });
+  }
   var root = document.documentElement;
 
   function normalizeSurfaceTheme(value) {
@@ -81,7 +109,12 @@
         button.style.setProperty('--accent-swatch-soft', palette.soft);
         if (!button.getAttribute('title')) button.setAttribute('title', palette.label);
       }
-      var selected = choice === accent;
+      if (v3) {
+        button.hidden = button.dataset.accentChoice === 'teal';
+        var c1 = C1_ACCENTS[effectiveAccent(choice)];
+        if (c1) { button.style.setProperty('--accent-swatch',c1.primary); button.style.setProperty('--accent-swatch-soft',c1.soft); button.setAttribute('aria-label',c1.label); button.setAttribute('title',c1.label); var label=button.querySelector('span'); if(label)label.textContent=c1.label; }
+      }
+      var selected = !button.hidden && effectiveAccent(choice) === effectiveAccent(accent);
       button.classList.toggle('active', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
@@ -89,13 +122,13 @@
 
   function applyAccent(accent) {
     accent = normalizeAccent(accent);
-    var palette = ACCENTS[accent];
+    var palette = v3 ? C1_ACCENTS[effectiveAccent(accent)] : ACCENTS[accent];
     root.dataset.accent = accent;
     root.style.setProperty('--tm-brand-primary', palette.primary);
     root.style.setProperty('--tm-brand-primary-strong', palette.strong);
     root.style.setProperty('--tm-brand-primary-dark', palette.dark);
     root.style.setProperty('--tm-brand-soft', palette.soft);
-    root.style.setProperty('--tm-action-primary', palette.primary);
+    root.style.setProperty('--tm-action-primary', palette.action || palette.primary);
     root.style.setProperty('--tm-action-primary-hover', palette.strong);
     root.style.setProperty('--tm-action-primary-active', palette.dark);
     root.style.setProperty('--tm-accent-soft', palette.soft);
@@ -115,6 +148,7 @@
     theme = theme === 'dark' ? 'dark' : 'light';
     root.dataset.theme = theme;
     root.style.colorScheme = theme;
+    applyC1Base(theme);
     document.querySelectorAll('[data-theme-toggle]').forEach(function (button) {
       var dark = theme === 'dark';
       var label = dark ? 'מעבר למצב בהיר' : 'מעבר למצב כהה';
@@ -168,7 +202,7 @@
     set: saveTheme,
     getAccent: readAccent,
     setAccent: saveAccent,
-    accents: ACCENTS,
+    accents: v3 ? C1_ACCENTS : ACCENTS,
     normalizeAccent: normalizeAccent,
     refreshAccentChoices: function () { decorateAccentChoices(readAccent()); }
   };

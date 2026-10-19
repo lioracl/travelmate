@@ -5,8 +5,8 @@ test.beforeEach(async({page})=>{await page.route('**/*',r=>new URL(r.request().u
 for(const width of [360,390,430])for(const theme of ['light','dark'])test(`public landing inset ${width} ${theme}`,async({page})=>{
  await page.setViewportSize({width,height:844});
  await page.addInitScript(theme=>{localStorage.setItem('travelmate-theme',theme);document.addEventListener('DOMContentLoaded',()=>{document.documentElement.style.setProperty('--safe-area-inset-top','32px');document.documentElement.dataset.nativeShell='android';});},theme);
- await page.goto('/');await expect(page.locator('.landing-login')).toBeVisible();
- const bar=await page.evaluate(()=>getComputedStyle(document.documentElement,'::before').backgroundColor);expect(bar).toBe(theme==='dark'?'rgb(38, 48, 51)':'rgb(244, 243, 239)');
+ await page.goto('/');await expect(page.locator('.landing-login')).toBeVisible();await expect(page.locator('[data-home-carousel]')).toBeVisible();await expect(page.locator('.tm-home-header')).toBeHidden();await expect(page.locator('[data-home-dashboard]')).toBeHidden();
+ const bar=await page.evaluate(()=>getComputedStyle(document.documentElement,'::before').backgroundColor);expect(bar).toBe(theme==='dark'?'rgb(14, 33, 52)':'rgb(243, 248, 253)');
  const box=await page.locator('.landing-login').boundingBox();expect(box.y).toBeGreaterThanOrEqual(32);
  const nav=await page.locator('.landing-nav').evaluate(el=>({padding:parseFloat(getComputedStyle(el).paddingTop),bottom:el.getBoundingClientRect().bottom}));expect(nav.padding).toBeGreaterThanOrEqual(32);
  await page.locator('.landing-login').click();await expect(page.locator('.cloud-account-backdrop')).toBeVisible();
@@ -22,6 +22,8 @@ async function notifications(page,shared){
   window.travelMateTripReady=Promise.resolve({id:'qa',ownerId:'A'});
   window.TravelMateCloud={getSession:async()=>({user:{id:'A'}}),onAuthChange:cb=>{qa.auth=cb;},listTripMembers:async()=>qa.members,listTripChangeEvents:async()=>{qa.reads++;return qa.events;},getTripChangeReadState:async()=>({last_read_event_id:0}),subscribeToTripChangeEvents:async()=>()=>{}};
  },shared);
+ await page.addScriptTag({url:'/assets/app-shell.js'});
+ await expect(page.locator('[data-shell-more]')).toHaveCount(1);await expect(page.locator('[data-shell-more]')).toBeVisible();await page.locator('[data-shell-more]').click();await expect(page.locator('[data-shell-utilities]')).toBeVisible();
  await page.addScriptTag({url:'/assets/trip-change-notifications.js'});
  await expect.poll(()=>page.evaluate(()=>typeof qa.auth)).toBe('function');
 }
@@ -32,11 +34,11 @@ test('solo launcher and zero badges stay hidden, including stale clicks and reco
  await context.setOffline(true);await context.setOffline(false);for(const button of await buttons.all())await expect(button).toBeHidden();
 });
 test('shared zero/nonzero badge and panel refresh, account switch/logout isolation',async({page,context})=>{
- await notifications(page,true);const button=page.locator('.trip-notification-launcher:visible').first();await expect(button).toBeVisible();
+ await notifications(page,true);const button=page.locator('[data-shell-utilities] .trip-notification-launcher:not(.trip-notification-mobile)');await expect(button).toHaveCount(1);await expect(button).toBeVisible();
  for(const badge of await page.locator('[data-trip-notification-badge]').all())await expect(badge).toBeHidden();
- await button.click();await expect(page.locator('.trip-notification-panel')).toBeVisible();
+ await button.click();await expect(page.locator('[data-shell-utilities]')).toBeHidden();await expect(page.locator('.trip-notification-panel')).toBeVisible();
  await page.evaluate(()=>{qa.events=[{id:1,actor_user_id:'B',entity_type:'activity',action:'added'}];dispatchEvent(new Event('travelmate:sync-restored'));});
- await expect(button.locator('[data-trip-notification-badge]')).toHaveText('1');await expect(button.locator('[data-trip-notification-badge]')).toBeVisible();await expect(page.locator('.trip-notification-panel')).toBeVisible();
+ await expect(button.locator('[data-trip-notification-badge]')).toHaveText('1');await page.locator('[data-shell-more]').click();await expect(page.locator('[data-shell-utilities]')).toBeVisible();await expect(button).toBeVisible();await expect(button.locator('[data-trip-notification-badge]')).toBeVisible();await expect(page.locator('.trip-notification-panel')).toBeVisible();
  await context.setOffline(true);await page.evaluate(()=>qa.auth('SIGNED_IN',{user:{id:'C'}}));
  for(const el of await page.locator('.trip-notification-launcher').all())await expect(el).toBeHidden();await expect(page.locator('.trip-notification-panel')).toBeHidden();
  await page.evaluate(()=>{qa.members=[{user_id:'C'}];qa.events=[];});await context.setOffline(false);
@@ -47,8 +49,8 @@ test('shared zero/nonzero badge and panel refresh, account switch/logout isolati
 for(const width of [360,390,430])test(`authenticated home inset remains intact ${width}`,async({page})=>{
  await page.setViewportSize({width,height:844});
  await page.addInitScript(()=>{localStorage.setItem('travelmate-active-user','A');localStorage.setItem('travelmate-trips',JSON.stringify([{id:'qa-home',ownerId:'A',city:'QA',country:'Italy',start:'2026-10-10',end:'2026-10-12',days:3,activities:[],savedPlaces:[],expenses:[]}]));document.addEventListener('DOMContentLoaded',()=>document.documentElement.style.setProperty('--safe-area-inset-top','32px'));});
- await page.goto('/');await expect(page.locator('body')).toHaveClass(/has-cached-trips/);const header=await page.locator('.home-sidebar').boundingBox();expect(header.y).toBeGreaterThanOrEqual(32);
- const padding=await page.locator('main.content').evaluate(el=>parseFloat(getComputedStyle(el).paddingTop));expect(padding).toBeGreaterThanOrEqual(header.y+header.height);
+ await page.goto('/');await expect(page.locator('body')).toHaveClass(/has-cached-trips/);const header=await page.locator('.tm-home-header').boundingBox();expect(header.y).toBeGreaterThanOrEqual(32);
+ const dashboard=await page.locator('[data-home-dashboard]').boundingBox();expect(dashboard.y).toBeGreaterThanOrEqual(header.y+header.height);
 });
 test('planned saved place has one canonical ratings action after detail expansion',async({page})=>{
  await page.setViewportSize({width:390,height:844});
@@ -68,4 +70,18 @@ for(const width of [360,390,430])test(`short landing remains scrollable with ful
  const geometry=await page.locator('.destination-slide.active').evaluate(el=>({slide:el.getBoundingClientRect().toJSON(),scene:el.closest('.home-landing').getBoundingClientRect().toJSON()}));
  expect(geometry.slide.bottom).toBeLessThanOrEqual(geometry.scene.bottom-48);expect(geometry.slide.bottom).toBeLessThanOrEqual(568-48+1);expect(geometry.slide.top).toBeGreaterThanOrEqual(geometry.scene.top);
  await page.screenshot({path:test.info().outputPath('short-landing.png')});
+});
+
+
+for(const theme of ['light','dark'])test('legacy native inset material remains unchanged '+theme,async({page})=>{
+ await page.route('**/legacy-shell-material.html',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html dir="rtl" data-native-shell="android"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/readable-glass.css"><link rel="stylesheet" href="/assets/app-shell.css"><body class="home-page"><script src="/assets/theme.js"></script></body></html>'}));
+ await page.addInitScript(theme=>localStorage.setItem('travelmate-theme',theme),theme);await page.goto('/legacy-shell-material.html');await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
+ expect(await page.evaluate(()=>getComputedStyle(document.documentElement,'::before').backgroundColor)).toBe(theme==='dark'?'rgb(38, 48, 51)':'rgb(244, 243, 239)');
+});
+
+
+for(const width of [390,1440])test('hidden utility action invariant '+width,async({page})=>{
+ await page.setViewportSize({width,height:900});await notifications(page,true);const utilities=page.locator('[data-shell-utilities]');await expect(utilities).toBeVisible();
+ await utilities.evaluate(root=>{for(const tag of ['a','button']){const action=document.createElement(tag);action.dataset.qaHiddenAction=tag;action.textContent='Synthetic hidden utility';if(tag==='a')action.href='#synthetic-hidden';else action.type='button';action.hidden=true;root.appendChild(action);}});
+ for(const tag of ['a','button']){const action=utilities.locator('[data-qa-hidden-action="'+tag+'"]');await expect(action).toBeHidden();expect(await action.evaluate(n=>({hidden:n.hidden,display:getComputedStyle(n).display}))).toEqual({hidden:true,display:'none'});await action.evaluate(n=>n.hidden=false);await expect(action).toBeVisible();await expect(action).toHaveCSS('display','flex');await action.evaluate(n=>n.hidden=true);await expect(action).toBeHidden();}
 });

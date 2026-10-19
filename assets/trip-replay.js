@@ -95,8 +95,9 @@ function prepareRouteMap(card,data){
   if(points.length<2){mapNode.hidden=true;button.setAttribute('aria-expanded','false');return}
   status.textContent=points.length+' נקודות ביקור עם מיקום שמור. הקווים מחברים רק ביקורים מאותו יום והם המחשה משוערת, לא תיעוד GPS. המפה נטענת רק בלחיצה; OpenFreeMap מקבל את אזור המפה, ללא בקשת GPS חדשה.';
   button.onclick=async function(){
+    if(replayDisposed)return;
     var opening=mapNode.hidden;mapNode.hidden=!opening;button.setAttribute('aria-expanded',String(opening));button.querySelector('span').textContent=opening?'הסתר מפת ביקורים':'הצג מפת ביקורים';if(!opening)return;
-    if(summaryMap&&summaryMapSignature===signature){setTimeout(function(){summaryMap.resize()},40);return}
+    if(summaryMap&&summaryMapSignature===signature){setTimeout(function(){if(!replayDisposed&&summaryMap&&summaryMapSignature===signature)summaryMap.resize()},40);return}
     var requestId=++summaryMapRequestId;status.textContent='טוען מפת ביקורים מסכמת…';
     try{var MapLibre=await loadSummaryMapLibrary();if(requestId!==summaryMapRequestId||signature!==summaryMapDataSignature||mapNode.hidden)return;
       summaryMapSignature=signature;summaryMap=new MapLibre.Map({container:mapNode,style:'https://tiles.openfreemap.org/styles/liberty',center:[points[0].lon,points[0].lat],zoom:12,attributionControl:false});
@@ -105,6 +106,7 @@ function prepareRouteMap(card,data){
     }catch(error){if(requestId!==summaryMapRequestId)return;mapNode.hidden=true;button.setAttribute('aria-expanded','false');button.querySelector('span').textContent='הצג מפת ביקורים';status.textContent=navigator.onLine===false?'המפה דורשת חיבור לרשת. סיכום הטיול נשאר זמין גם Offline.':'לא הצלחנו לטעון את המפה כרגע.'}
   }
 }
+var replayDisposed=false;
 function ensureCard(){
   var section=document.getElementById('memories');if(!section)return null;
   var existing=section.querySelector('[data-trip-replay]');if(existing)return existing;
@@ -112,12 +114,14 @@ function ensureCard(){
   card.innerHTML='<header class="trip-replay-head"><div><small>Trip Summary & Replay · 2.12</small><h2>הטיול שלך, לפי מה שבאמת קרה</h2><p data-trip-replay-summary></p></div><button type="button" data-trip-replay-ai><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>סיפור עם Mate</span></button></header><div class="trip-summary-confidence" data-trip-summary-confidence aria-label="אמינות נתוני הסיכום"></div><div class="trip-replay-stats" data-trip-replay-stats></div><section class="trip-summary-expenses" data-trip-summary-expenses></section><section class="trip-summary-days" data-trip-summary-days aria-label="סיכום לפי יום"></section><section class="trip-summary-map-shell" data-trip-summary-map-shell hidden><header><div><h3>מפת נקודות הביקור</h3><p data-trip-summary-map-status></p></div><button type="button" data-trip-summary-map-toggle aria-expanded="false"><i class="fa-solid fa-map-location-dot" aria-hidden="true"></i><span>הצג מפת ביקורים</span></button></header><div class="trip-summary-map" data-trip-summary-map role="region" aria-label="מפת נקודות הביקור" hidden></div></section><div class="trip-replay-timeline" data-trip-replay-timeline></div>';
   var summary=section.querySelector('.trip-summary-card');if(summary&&summary.parentNode)summary.parentNode.insertBefore(card,summary);else section.appendChild(card);
   card.querySelector('[data-trip-replay-ai]').addEventListener('click',function(){
+    if(replayDisposed)return;
     var current=trip(),data=buildReplay(current||{});
     if(window.TravelMateEvents&&window.TravelMateEvents.emit)window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi,{prompt:prompt(data),source:'trip-replay'});
   });
   return card
 }
 function render(){
+  if(replayDisposed)return;
   var current=trip(),card=ensureCard();if(!current||!card)return;
   var data=buildReplay(current),summary=card.querySelector('[data-trip-replay-summary]'),stats=card.querySelector('[data-trip-replay-stats]'),timeline=card.querySelector('[data-trip-replay-timeline]');
   summary.textContent=narrative(data);
@@ -146,6 +150,24 @@ function render(){
 window.TravelMateTripReplay=Object.freeze({build:buildReplay,narrative:narrative,prompt:prompt,render:render});
 window.addEventListener('travelmate:feature-ready',function(event){if(event.detail&&/^(memories|summary)$/.test(event.detail.view||''))render()});
 document.addEventListener('travelmate:planner-rendered',function(){if(document.getElementById('memories'))render()});
-window.addEventListener('travelmate:places-updated',function(){if(document.getElementById('memories'))render()});
+function placesUpdated(event){
+  var changedTripId=clean(event.detail&&event.detail.tripId),currentTripId=new URLSearchParams(location.search).get('id');
+  if(changedTripId&&changedTripId!==currentTripId)return;
+  if(document.getElementById('memories'))render()
+}
+var events=window.TravelMateEvents,placesEvent=events&&events.names&&events.names.placesUpdated||'travelmate:places-updated';
+var stopPlacesUpdates;
+if(events&&typeof events.on==='function')stopPlacesUpdates=events.on(placesEvent,placesUpdated);
+else{document.addEventListener(placesEvent,placesUpdated);stopPlacesUpdates=function(){document.removeEventListener(placesEvent,placesUpdated)}}
+window.addEventListener('travelmate:account-context-changed',function(){
+  // app.js re-enters trip pages on account changes. Retire this page's Replay
+  // immediately, including async work, while that navigation is pending.
+  replayDisposed=true;summaryMapRequestId+=1;
+  if(typeof stopPlacesUpdates==='function')stopPlacesUpdates();
+  if(summaryMap){summaryMap.remove();summaryMap=null}
+  summaryMapSignature='';summaryMapDataSignature='';
+  var section=document.getElementById('memories'),card=section&&section.querySelector('[data-trip-replay]');
+  if(card)card.remove()
+},{once:true});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(render,0)});else setTimeout(render,0);
 })();

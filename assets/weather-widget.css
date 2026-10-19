@@ -518,7 +518,14 @@ html body #modal-weather-live .weather-live-day[data-weather-day="storm"] .weath
 html body #modal-weather-live .weather-live-day[data-weather-day="snow"] .weather-live-day-icon{background:rgba(137,208,229,.38)}
 html body #modal-weather-live .weather-live-day[data-weather-day="fog"] .weather-live-day-icon{background:rgba(126,176,165,.34)}
 @media(max-width:650px){html body #modal-weather-live .weather-live-scene.weather-atmosphere{min-height:104px;height:104px;margin:12px 12px 2px}}
-@media(prefers-reduced-motion:reduce){.weather-atmosphere[data-weather-atmosphere] *{animation:none}.weather-atmosphere[data-weather-atmosphere="clouds"] .weather-atmosphere__cloud--one,.weather-atmosphere[data-weather-atmosphere="rain"] .weather-atmosphere__cloud--one{transform:none}}
+@media(prefers-reduced-motion:reduce){
+  .weather-atmosphere[data-weather-atmosphere] *{animation:none}
+  /* V3 component boundaries also cover the later partly-cloudy state rules. */
+  body[data-design="v3"] [data-weather-top-widget] .weather-atmosphere [class],
+  body[data-design="v3"] #modal-weather-live .weather-atmosphere [class]{animation:none;transition:none}
+  .weather-atmosphere[data-weather-atmosphere="clouds"] .weather-atmosphere__cloud--one,
+  .weather-atmosphere[data-weather-atmosphere="rain"] .weather-atmosphere__cloud--one{transform:none}
+}
 
 @media(prefers-reduced-transparency:reduce){body[data-trip-kind="custom"].tm-new-design[data-trip-view="overview"] .content>.weather-top-widget[data-weather-atmosphere]{background:var(--tm-family-solid);border-color:var(--tm-border-control)}}
 

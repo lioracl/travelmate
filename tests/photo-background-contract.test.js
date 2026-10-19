@@ -28,6 +28,6 @@ test('trip content stays transparent and cards use glass surfaces', () => {
 
 test('dark mobile background keeps the destination image with a darker scrim', () => {
   const css = read('assets/readable-glass.css');
-  assert.match(css, /--tm-destination-canvas:linear-gradient\(90deg,var\(--tm-photo-scrim-start\)/);
+  assert.match(css, /--tm-destination-canvas:var\(--tm-canvas-image,linear-gradient\(90deg,var\(--tm-photo-scrim-start\)/);
   assert.match(read('assets/theme.css'), /html\[data-theme="dark"\] body\.tm-new-design:not\(\.home-page\)\{[^}]*--tm-photo-scrim-end:rgba\(24,35,38,\.16\)/);
 });

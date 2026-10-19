@@ -16,6 +16,7 @@ for (const width of [360, 390, 430]) for (const theme of ['light', 'dark']) {
     test('All Trips date editing opens, restores focus and persists dates', async ({ page }) => {
       const errors = []; page.on('pageerror', error => errors.push(String(error)));
       await seed(page, theme); await page.goto('/');
+      const trips=page.locator('[data-home-route="trips"]');await expect(trips).toHaveCount(1);await expect(trips).toBeVisible();await trips.click();await expect(page.locator('[data-home-trip-browser]')).toBeVisible();expect(await page.locator('[data-trip-list]').evaluate(n=>n.inert)).toBe(false);
       const opener = page.locator('[data-trip-edit-dates]').first(); await opener.click();
       const editor = page.locator('.trip-date-editor'); await expect(editor).toBeVisible();
       await expect(editor.locator('[name=start]')).toBeFocused();

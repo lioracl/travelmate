@@ -5,29 +5,50 @@
   <title>הטיולים שלי</title><meta name="description" content="TravelMate - סוכן הנסיעות האישי שלך">
   <meta name="theme-color" content="#12383F"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="48x48" href="assets/icons/travelmate-48.png"><link rel="apple-touch-icon" sizes="180x180" href="assets/icons/travelmate-180.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><link rel="stylesheet" href="assets/styles.css?v=20261015-03"><link rel="stylesheet" href="assets/cloud-sync.css?v=20261015-03"><link rel="stylesheet" href="assets/profile-wizard.css?v=20261015-03">
+  <link rel="stylesheet" href="assets/trip-intelligence.css?v=20261015-03"><link rel="stylesheet" href="assets/ai-assistant.css?v=20261015-03">
   <link rel="stylesheet" href="assets/home-organizer.css?v=20261015-03">
   <link rel="stylesheet" href="assets/phone-visual-qa.css?v=20261015-03&patch=2">
 <link rel="stylesheet" href="assets/app-shell.css?v=20261015-03">
 </head>
-<body class="home-page">
+<body class="home-page" data-design="v3">
 <a class="tm-skip-link" href="#main-content">דלג לתוכן הראשי</a>
-<aside class="home-sidebar" aria-label="תפריט כל הטיולים">
-  <a class="home-sidebar-logo" href="index.html" aria-label="TravelMate"><i class="fa-solid fa-route" aria-hidden="true"></i><span class="tip">TravelMate</span></a>
-  <nav aria-label="פעולות במסך כל הטיולים">
-    <a class="active home-current-view" href="#active-trips" aria-current="page"><i class="fa-solid fa-map fa-fw" aria-hidden="true"></i><span class="tip">כל הטיולים</span></a>
-    <button class="home-new-trip-action" type="button" data-modal="destination" aria-label="טיול חדש"><i class="fa-solid fa-square-plus fa-fw" aria-hidden="true"></i><span class="tip">טיול חדש</span></button>
-    <a class="home-archive-action" href="#trip-archive" aria-label="ארכיון הטיולים"><i class="fa-solid fa-folder-open fa-fw" aria-hidden="true"></i><span class="tip">ארכיון הטיולים</span></a>
-    <button class="home-more-toggle" type="button" data-home-more-toggle aria-label="פעולות נוספות" aria-expanded="false" aria-controls="home-more-menu"><i class="fa-solid fa-ellipsis fa-fw" aria-hidden="true"></i><span class="tip">עוד</span></button>
-  </nav>
-  <div class="home-sidebar-utilities" id="home-more-menu" data-home-more-menu aria-label="פעולות חשבון והגדרות">
-    <button type="button" data-cloud-account-open><i class="fa-solid fa-user" data-account-icon aria-hidden="true"></i><span class="home-sidebar-avatar" data-user-avatar hidden aria-hidden="true"></span><span class="tip">החשבון שלי</span></button>
-    <button type="button" data-about-open data-lazy-about><i class="fa-solid fa-circle-question" aria-hidden="true"></i><span class="tip">אודות</span></button>
+<aside class="home-sidebar tm-utilities" data-shell-utilities id="tm-utilities" role="dialog" aria-modal="true" aria-labelledby="tm-utilities-title" hidden>
+  <header><h2 id="tm-utilities-title">כלים והגדרות</h2><button type="button" data-shell-close aria-label="סגירת כלים">✕</button></header>
+  <div class="home-sidebar-utilities" data-home-more-menu>
+    <button type="button" class="security-center-launcher" data-security-open data-lazy-account>הגדרות ופרטיות</button>
+    <button type="button" data-cloud-account-open>החשבון שלי</button>
+    <a href="#trip-archive" class="home-archive-action">ארכיון הטיולים</a>
+    <button type="button" data-about-open data-lazy-about>אודות TravelMate</button>
   </div>
 </aside>
 <main tabindex="-1" id="main-content" class="content" style="max-width:1280px;margin:auto">
+  <header class="tm-home-header"><a href="#home" aria-label="TravelMate בית">TravelMate</a><button type="button" data-shell-more aria-expanded="false">כלים והגדרות</button></header>
+  <section class="home-personal-summary" data-home-personal-summary hidden aria-labelledby="home-personal-greeting">
+    <button type="button" class="home-profile-launcher" data-cloud-account-open aria-label="פתיחת הפרופיל">
+      <span class="home-profile-avatar" data-user-avatar hidden aria-hidden="true"></span>
+    </button>
+    <div class="home-personal-copy">
+      <small data-home-context-kicker>הפרופיל שלי</small>
+      <h2 id="home-personal-greeting" data-home-greeting>שלום</h2>
+      <p data-home-context>טוען את מצב הטיולים שלך…</p>
+    </div>
+    <a class="home-context-action" data-home-context-action href="#active-trips">לטיולים שלי <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a>
+  </section>
+  <section class="tm-home-dashboard" data-home-dashboard aria-labelledby="tm-home-title">
+    <h1 id="tm-home-title">המסע הבא מתחיל כאן</h1><p>הטיול שלך, המקומות שבדרך וכל מה שצריך למסע.</p>
+    <div class="tm-home-shortcuts"><a href="#active-trips">הטיולים שלי</a><a href="#home-places">מקומות בסביבה</a><button type="button" data-modal="destination">תכנון טיול חדש</button></div>
+  </section>
+  <section id="home-places" class="tm-home-places" aria-labelledby="tm-home-places-title">
+    <h1 id="tm-home-places-title">מקומות בסביבה</h1><p>המיקום יתקבל רק אחרי בחירה מפורשת בחיפוש GPS ואישור. בחיפוש ללא הרשאה אפשר לבחור אזור במפה.</p>
+    <div class="nearby-panel" data-nearby-places data-destination-lat="0" data-destination-lon="0" data-destination-name="">
+      <div class="nearby-controls"><label>קטגוריה<select data-nearby-category><option value="all">הכול</option></select></label><label>מרחק<select data-nearby-radius><option value="1000">קילומטר</option><option value="3000">3 ק״מ</option></select></label><button type="button" data-nearby-search>חיפוש לפי GPS</button><button type="button" data-nearby-map-button>בחירת אזור במפה</button></div>
+      <div class="nearby-map-shell" data-nearby-map-shell hidden><div class="nearby-map" data-nearby-map></div><div class="nearby-map-footer"><span data-nearby-map-hint>בחרו אזור לחיפוש</span><button type="button" data-nearby-map-search disabled>חיפוש באזור</button></div></div>
+      <p data-nearby-status role="status" aria-live="polite">לא התבקש מיקום. בחרו כיצד לחפש.</p><div data-nearby-results class="nearby-results"></div>
+    </div>
+  </section>
   <header class="home-landing" data-home-carousel>
     <nav class="landing-nav" aria-label="ניווט ראשי"><a class="landing-brand" href="index.html"><i class="fa-solid fa-route"></i><strong>TravelMate</strong></a><div class="landing-menu"><a href="#active-trips">הטיולים שלי</a><a href="#active-trips">יעדים</a><button type="button" data-about-open data-lazy-about>אודות</button></div><button class="landing-login" type="button" data-cloud-account-open><span data-account-label>התחברות</span><span class="landing-user-avatar" data-user-avatar hidden aria-hidden="true"></span></button></nav>
-    <div class="landing-intro"><h1>לגלות את העולם</h1><p>תכנן את הטיול הכי טוב בעולם</p></div>
+    <div class="landing-intro"><h1>לגלות את העולם</h1><p>תכנן את הטיול הכי טוב בעולם</p><button class="landing-create-trip" type="button" data-modal="destination">טיול חדש</button></div>
     <div class="destination-carousel">
       <div class="carousel-track">
         <article class="destination-slide" data-carousel-slide data-slide-image="url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&amp;fit=crop&amp;w=1000&amp;q=86')"><div><small>יפן</small><h2>טוקיו</h2><p>אורות, טעמים ומסורת בלב העיר.</p><a href="trip/japan-2027/index.html">לצאת לדרך <i class="fa-solid fa-arrow-left"></i></a></div></article>
@@ -39,23 +60,64 @@
     </div>
     <div class="carousel-dots" data-carousel-dots aria-label="בחירת יעד"></div>
   </header>
-  <section class="home-personal-summary" data-home-personal-summary hidden aria-labelledby="home-personal-greeting">
-    <button type="button" class="home-profile-launcher" data-cloud-account-open aria-label="פתיחת הפרופיל">
-      <span class="home-profile-avatar" data-user-avatar hidden aria-hidden="true"></span>
-    </button>
-    <div class="home-personal-copy">
-      <small data-home-context-kicker>הפרופיל שלי</small>
-      <h1 id="home-personal-greeting" data-home-greeting>שלום</h1>
-      <p data-home-context>טוען את מצב הטיולים שלך…</p>
+
+  <section class="home-trip-browser" data-home-trip-browser aria-labelledby="home-trips-title">
+    <h1 id="home-trips-title">הטיולים שלי</h1>
+    <div class="home-trip-tools">
+      <label class="home-trip-search"><span class="sr-only">חיפוש בטיולים לפי יעד או מדינה</span><input type="search" data-home-trip-search placeholder="חיפוש טיול, יעד או מדינה…" autocomplete="off" aria-controls="active-trips trip-archive"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></label>
+      <button type="button" class="home-trip-create" data-modal="destination"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i> טיול חדש</button>
     </div>
-    <a class="home-context-action" data-home-context-action href="#active-trips">לטיולים שלי <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a>
+    <div class="home-trip-filters" role="group" aria-label="סינון טיולים">
+      <button type="button" data-home-filter="active" aria-pressed="true" aria-controls="active-trips">פעילים <span data-home-active-count>0</span></button>
+      <button type="button" data-home-filter="archive" aria-pressed="false" aria-controls="trip-archive">ארכיון <span data-home-archive-count>0</span></button>
+    </div>
+    <p class="home-trip-state" data-home-trip-state role="status" aria-live="polite"></p>
+    <button type="button" class="home-trip-retry" data-home-trip-retry hidden>ניסיון סנכרון נוסף</button>
+    <p class="home-trip-results" data-home-trip-results role="status" aria-live="polite"></p>
   </section>
-  <section id="active-trips" class="modules trip-list" data-trip-list>
+  <section id="active-trips" class="modules trip-list" data-trip-list aria-label="טיולים פעילים">
     <a class="trip-card" data-static-id="japan-2027" data-country="יפן" data-start="2027-10-14" data-end="2027-10-28" data-days="14" href="trip/japan-2027/index.html" style="background-image:url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&amp;fit=crop&amp;w=1600&amp;q=85')"><span class="trip-overlay"></span><span class="trip-flag">🇯🇵</span><span class="trip-copy"><h2>יפן</h2><p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> טוקיו, קיוטו ואוסקה</p><span class="tag">14-28 באוקטובר 2027</span> <span class="tag">14 ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></strong></span></a>
     <a class="trip-card" data-static-id="italy-2028" data-country="איטליה" data-start="2028-04-12" data-end="2028-04-19" data-days="7" href="trip/italy-2028/index.html" style="background-image:url('https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&amp;fit=crop&amp;w=1600&amp;q=85')"><span class="trip-overlay"></span><span class="trip-flag">🇮🇹</span><span class="trip-copy"><h2>איטליה</h2><p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> רומא וטוסקנה</p><span class="tag">12-19 באפריל 2028</span> <span class="tag">7 ימים</span><strong>פתיחת הטיול <i class="fa-solid fa-arrow-left" aria-hidden="true"></i></strong></span></a>
     <button class="module add-destination" data-modal="destination"><span class="icon"><i class="fa-solid fa-plus"></i></span><strong>הוספת יעד חדש</strong><small>בחר מדינה, עיר ותאריכים — כל הטיול ייבנה אוטומטית.</small></button>
   </section>
 </main>
-<section id="modal-destination" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="destination-title"><div class="modal destination-modal"><header><div><span>טיול חדש</span><h2 id="destination-title">לאן תרצי לטוס?</h2><p>אפשר להקליד כל מדינה ועיר בעולם, למשל פראג, צ׳כיה או ברלין, גרמניה.</p></div><button class="modal-close" type="button" data-close aria-label="סגירה"><span aria-hidden="true">×</span></button></header><form class="destination-form" data-destination-form><label>מדינה<input name="country" required autocomplete="country-name" placeholder="לדוגמה: גרמניה"></label><label>עיר<input name="city" required autocomplete="address-level2" placeholder="לדוגמה: ברלין"></label><label>תאריך יציאה<input name="start" type="date" required></label><label>תאריך חזרה<input name="end" type="date" required></label><label>תקציב משוער (€) — יוצג גם במטבע המקומי<input name="budget" type="number" min="100" step="50" value="2500"></label><label>סוג הטיול<select name="type"><option>זוגי</option><option>משפחתי</option><option>חברים</option><option>סולו</option></select></label><p class="form-error" data-form-error role="alert"></p><button class="create-trip" type="submit"><i class="fa-solid fa-wand-magic-sparkles"></i> בניית הטיול אוטומטית</button></form></div></section>
+<nav class="tm-trip-dock tm-home-dock" aria-label="ניווט ראשי">
+  <a href="#home" data-home-route="home"><i class="fa-solid fa-house" aria-hidden="true"></i><span>בית</span></a>
+  <a href="#home-places" data-home-route="places"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>מקומות</span></a>
+  <button type="button" data-modal="destination" class="tm-new-trip"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>טיול חדש</span></button>
+  <a href="#active-trips" data-home-route="trips"><i class="fa-solid fa-suitcase" aria-hidden="true"></i><span>הטיולים שלי</span></a>
+  <button type="button" data-cloud-account-open><i class="fa-solid fa-user" aria-hidden="true"></i><span>פרופיל</span></button>
+</nav>
+<section id="modal-destination" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="destination-title">
+  <div class="modal destination-modal">
+    <header><div><span data-wizard-progress-label role="status" aria-live="polite">שלב 1 מתוך 4 · יעד</span><h2 id="destination-title">טיול חדש</h2></div><button class="modal-close" type="button" data-close aria-label="ביטול וסגירת טיול חדש"><span aria-hidden="true">x</span></button></header>
+    <ol class="trip-wizard-progress" aria-label="שלבי יצירת הטיול"><li data-wizard-progress aria-current="step"><b aria-hidden="true">1</b><span>יעד</span></li><li data-wizard-progress><b aria-hidden="true">2</b><span>תאריכים</span></li><li data-wizard-progress><b aria-hidden="true">3</b><span>העדפות</span></li><li data-wizard-progress><b aria-hidden="true">4</b><span>סיכום</span></li></ol>
+    <form class="destination-form" data-destination-form novalidate data-wizard-step="0">
+      <div class="trip-wizard-intro"><h3 id="wizard-step-title" data-wizard-heading tabindex="-1">לאן רוצים לטוס?</h3><p>הטיול מתחיל בעיר ובמדינה שתבחרו.</p></div>
+      <section class="destination-discovery" data-destination-discovery data-wizard-panel="0" aria-label="בחירת יעד">
+        <div class="destination-search-row"><label class="destination-search"><span class="discovery-sr-only">חיפוש בהצעות לפי יעד, עיר או מדינה</span><input type="search" data-destination-search placeholder="חיפוש יעד, עיר או מדינה…" autocomplete="off" aria-describedby="destination-search-help" aria-controls="destination-choices" dir="auto"><span class="destination-search-icon" aria-hidden="true">⌕</span></label><button type="button" data-destination-clear hidden aria-label="ניקוי החיפוש">ניקוי</button></div>
+        <p id="destination-search-help" class="discovery-search-help">חיפוש בשש ההצעות שלנו. יעד אחר? אפשר להזין אותו ידנית.</p>
+        <div class="destination-discovery-heading"><h4>יעדים שכדאי להכיר</h4><button type="button" data-destination-manual aria-expanded="false" aria-controls="destination-country-field destination-city-field">הזנת יעד אחר</button></div>
+        <div id="destination-choices" class="destination-choices" role="group" aria-label="הצעות ליעדים"></div>
+        <p class="destination-empty" data-destination-empty hidden>אין התאמה בין ההצעות. אפשר לנקות את החיפוש או להזין עיר ומדינה ידנית.</p>
+        <p class="destination-selection" data-destination-selection role="status" aria-live="polite" aria-atomic="true">בחרו יעד או הזינו עיר ומדינה.</p>
+      </section>
+      <label id="destination-country-field" data-destination-manual-field data-wizard-panel="0" hidden>מדינה<input name="country" required autocomplete="country-name" placeholder="לדוגמה: איטליה" aria-describedby="destination-error"></label>
+      <label id="destination-city-field" data-destination-manual-field data-wizard-panel="0" hidden>עיר<input name="city" required autocomplete="address-level2" placeholder="לדוגמה: רומא" aria-describedby="destination-error"></label>
+      <label data-wizard-panel="1" hidden>תאריך יציאה<input name="start" type="date" required dir="ltr" aria-describedby="wizard-dates-hint destination-error"></label>
+      <label data-wizard-panel="1" hidden>תאריך חזרה<input name="end" type="date" required dir="ltr" aria-describedby="wizard-dates-hint destination-error"></label>
+      <p class="trip-wizard-hint" id="wizard-dates-hint" data-wizard-panel="1" hidden>אפשר לתכנן בין יום אחד ל־60 ימים, כולל יום היציאה ויום החזרה.</p>
+      <label data-wizard-panel="2" hidden>תקציב משוער (€) — יוצג גם במטבע המקומי<input name="budget" type="number" min="100" step="50" value="2500" dir="ltr" aria-describedby="wizard-budget-hint destination-error"></label>
+      <label data-wizard-panel="2" hidden>סוג הטיול<select name="type" aria-describedby="destination-error"><option>זוגי</option><option>משפחתי</option><option>חברים</option><option>סולו</option></select></label>
+      <p class="trip-wizard-hint" id="wizard-budget-hint" data-wizard-panel="2" hidden>התקציב הכולל באירו: לפחות 100, במדרגות של 50. שדה ריק ישתמש ב־2,500 אירו. אפשר לשנות את התקציב בהמשך.</p>
+      <section class="trip-wizard-summary" data-wizard-panel="3" hidden aria-label="סיכום הטיול לפני אישור"><dl><div><dt>היעד</dt><dd dir="auto" data-wizard-summary="destination"></dd></div><div><dt>תאריכים</dt><dd><bdi data-wizard-summary="dates"></bdi><small data-wizard-summary="days"></small></dd></div><div><dt>סוג הטיול</dt><dd data-wizard-summary="preferences"></dd></div><div><dt>תקציב כולל</dt><dd><bdi data-wizard-summary="budget"></bdi></dd></div></dl><div class="trip-wizard-edit"><button type="button" data-wizard-edit="0">עריכת יעד</button><button type="button" data-wizard-edit="1">עריכת תאריכים</button><button type="button" data-wizard-edit="2">עריכת העדפות</button></div><p>הטיול ייווצר רק בלחיצה על אישור ויצירת הטיול.</p></section>
+      <p class="form-error" id="destination-error" data-form-error role="alert" hidden></p>
+      <p class="trip-wizard-save-status" data-wizard-save-status role="status" aria-live="polite" hidden></p>
+      <button class="trip-wizard-back" data-wizard-back type="button" hidden>חזרה</button>
+      <button class="trip-wizard-next" data-wizard-next type="button">המשך ←</button>
+      <button class="create-trip" type="submit" hidden>אישור ויצירת הטיול</button>
+    </form>
+  </div>
+</section>
 <script src="assets/network-usage.js?v=20261015-03" defer></script><script src="assets/supabase-config.js?v=20261015-03" defer></script><script src="assets/cloud-sync.js?v=20261015-03" defer></script><script src="assets/trip-store.js?v=20261015-03" defer></script><script src="assets/event-contracts.js?v=20261015-03" defer></script><script src="assets/destination-images.js?v=20261015-03" defer></script><script src="assets/app-shell.js?v=20261015-03" defer></script><script src="assets/app.js?v=20261015-03" defer></script><script src="assets/home.js?v=20261015-03" defer></script><script src="assets/profile-wizard.js?v=20261015-03" defer></script>
 </body></html>

@@ -9,7 +9,7 @@ for(const width of [390,430])for(const theme of ['light','dark'])for(const botto
  await page.goto('/trip/custom/index.html?id=shell-qa&view=overview');await page.locator('[data-weather-top-widget]').click();const overlay=page.locator('#modal-weather-live');await expect(overlay).toBeVisible();const modalBox=await overlay.boundingBox();expect(modalBox.y).toBeGreaterThanOrEqual(bottom?32:0);expect(modalBox.y+modalBox.height).toBeLessThanOrEqual(844-bottom+1);
  await page.keyboard.press('Escape');await page.screenshot({path:test.info().outputPath('overview-shell.png')});
  await page.goto('/');await expect(page.locator('body')).toHaveClass(/has-cached-trips/);
- const home=page.locator('.home-sidebar');await expect(home).toBeVisible();const homeBox=await home.boundingBox();expect(homeBox.y).toBeGreaterThanOrEqual(bottom?32:0);const padding=await page.locator('main.content').evaluate(el=>parseFloat(getComputedStyle(el).paddingTop));expect(padding).toBeGreaterThanOrEqual(homeBox.y+homeBox.height);
+ const home=page.locator('.tm-home-header');await expect(home).toBeVisible();const homeBox=await home.boundingBox();expect(homeBox.y).toBeGreaterThanOrEqual(bottom?32:0);const dashboard=await page.locator('[data-home-dashboard]').boundingBox();expect(dashboard.y).toBeGreaterThanOrEqual(homeBox.y+homeBox.height);
 
 });
 test('landscape cutout protects both sides of header and scroll content',async({page})=>{

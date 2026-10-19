@@ -124,7 +124,7 @@ for (const viewport of [
       expect(pageErrors, pageErrors.join('\n')).toEqual([]);
     });
 
-    test('Overview Today card is compact and reversible', async ({ page }) => {
+    test('Overview V3 Today starts collapsed with a summary and expands accessibly', async ({ page }) => {
       await seed(page);
       await page.goto('/trip/custom/index.html?id=qa-playwright&view=overview', { waitUntil: 'domcontentloaded' });
 
@@ -132,14 +132,21 @@ for (const viewport of [
       await expect(todayCard).toBeVisible();
       await expect(todayCard).toHaveClass(/today-activities-card/);
       const toggle = todayCard.locator('.today-activities-toggle');
+      // The approved compact default remains part of the V3 UX contract.
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(todayCard.locator('.today-activities-expanded')).toBeHidden();
+      await expect(todayCard.locator('.today-activities-summary')).toBeVisible();
       await expect(todayCard.locator('[data-next-title]')).not.toHaveText('');
+      await expect(toggle).toHaveAttribute('aria-controls', await todayCard.locator('.today-activities-expanded').getAttribute('id'));
 
-      await toggle.click();
+      await toggle.focus();
+      await page.keyboard.press('Enter');
       await expect(toggle).toHaveAttribute('aria-expanded', 'true');
       await expect(todayCard.locator('.today-activities-expanded')).toBeVisible();
       await todayCard.locator('.today-activities-less').click();
       await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(toggle).toBeFocused();
+      await expect(todayCard.locator('.today-activities-summary')).toBeVisible();
 
       expect(await noHorizontalOverflow(page)).toBeTruthy();
     });
@@ -190,3 +197,116 @@ for (const viewport of [
     });
   });
 }
+
+// Synthetic local trips only. These browser regressions need the supported CI
+// preview; they do not exercise real accounts, cloud writes or physical devices.
+async function seedUninitializedPlan(page, baseURL, view = 'overview') {
+  const value = { ...trip, activities: [], savedPlaces: [], dayNotes: {} };
+  delete value.planInitialized;
+  const origin = new URL(baseURL).origin;
+  await page.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+  await page.addInitScript(value => {
+    localStorage.removeItem('travelmate-active-user');
+    localStorage.setItem('travelmate-trips', JSON.stringify([value]));
+    localStorage.setItem('travelmate-theme', 'light');
+  }, value);
+  await page.goto('/trip/custom/index.html?id=qa-playwright&view=' + view, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => window.TravelMateFeatures && window.TravelMateNavigation);
+  if (view === 'plan') { await page.evaluate(() => window.travelMateTripReady); return value; }
+  await page.evaluate(async () => {
+    await window.travelMateTripReady;
+    const store = window.TravelMateTripStore;
+    window.__planActivationWrites = [];
+    window.TravelMateTripStore = Object.assign({}, store, {
+      saveTripFields(...args) {
+        if (args[2].includes('planInitialized')) window.__planActivationWrites.push(args[0].id);
+        return store.saveTripFields(...args);
+      }
+    });
+  });
+  return value;
+}
+
+for (const gesture of ['pointerenter', 'touchstart']) {
+  test('Plan speculative ' + gesture + ' is read-only until explicit navigation', async ({ page, baseURL }) => {
+    await seedUninitializedPlan(page, baseURL);
+    const before = await page.evaluate(() => JSON.stringify(window.TravelMateTripStore.getTrip('qa-playwright')));
+    await page.locator('[data-view="plan"]').first().dispatchEvent(gesture);
+    // Drain any speculative feature request deterministically without starting it.
+    await page.evaluate(async () => {
+      await window.TravelMateFeatures.load('overview');
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    expect(await page.evaluate(() => JSON.stringify(window.TravelMateTripStore.getTrip('qa-playwright')))).toBe(before);
+    expect(await page.evaluate(() => window.__planActivationWrites)).toEqual([]);
+    await expect(page.locator('link[data-travelmate-style="auto-planner.css"]')).toHaveCount(0);
+    await expect(page.locator('script[src*="/auto-planner.js"]')).toHaveCount(0);
+    await expect(page.locator('.planner-toolbar')).toHaveCount(0);
+    await page.evaluate(() => window.TravelMateNavigation.open('plan'));
+    await expect(page.locator('.planner-toolbar')).toHaveCount(1);
+    await expect(page.locator('.planner-composer')).toHaveCount(1);
+    await expect.poll(() => page.evaluate(() => window.__planActivationWrites.length)).toBe(1);
+    expect(await page.evaluate(() => window.TravelMateTripStore.getTrip('qa-playwright').activities.length)).toBe(trip.days);
+    await page.evaluate(() => window.TravelMateNavigation.open('overview'));
+    await page.evaluate(() => window.TravelMateNavigation.open('plan'));
+    await expect(page.locator('.planner-toolbar')).toHaveCount(1);
+    expect(await page.evaluate(() => window.__planActivationWrites.length)).toBe(1);
+  });
+}
+
+test('pending Plan readiness cannot initialize after leaving and re-entry retries', async ({ page, baseURL }) => {
+  await seedUninitializedPlan(page, baseURL);
+  await page.evaluate(() => {
+    window.travelMateTripReady = new Promise(resolve => { window.__resolvePlanReadiness = resolve; });
+    window.TravelMateNavigation.open('plan');
+  });
+  await page.evaluate(() => window.TravelMateFeatures.load('plan'));
+  await expect(page.locator('body')).toHaveAttribute('data-trip-view', 'plan');
+  await page.evaluate(() => window.TravelMateNavigation.open('overview'));
+  await expect(page.locator('body')).toHaveAttribute('data-trip-view', 'overview');
+  await page.evaluate(async () => { window.__resolvePlanReadiness(); await window.travelMateTripReady; });
+  await expect(page.locator('.planner-toolbar')).toHaveCount(0);
+  expect(await page.locator('[data-generated-days]').getAttribute('data-enhanced')).toBeNull();
+  expect(await page.evaluate(() => window.__planActivationWrites)).toEqual([]);
+  expect(await page.evaluate(() => window.TravelMateTripStore.getTrip('qa-playwright').planInitialized)).toBeUndefined();
+  await page.evaluate(() => window.TravelMateNavigation.open('plan'));
+  await expect(page.locator('.planner-toolbar')).toHaveCount(1);
+  expect(await page.evaluate(() => window.__planActivationWrites.length)).toBe(1);
+});
+
+test('Plan reads canonical activities arriving during readiness', async ({ page, baseURL }) => {
+  await seedUninitializedPlan(page, baseURL);
+  await page.evaluate(() => {
+    window.travelMateTripReady = new Promise(resolve => { window.__resolvePlanReadiness = resolve; });
+    window.TravelMateNavigation.open('plan');
+  });
+  await page.evaluate(() => window.TravelMateFeatures.load('plan'));
+  await expect(page.locator('body')).toHaveAttribute('data-trip-view', 'plan');
+  await page.evaluate(() => {
+    const store = window.TravelMateTripStore;
+    const fresh = JSON.parse(JSON.stringify(store.getTrip('qa-playwright')));
+    fresh.activities = [{ id: 'arrived-during-readiness', title: 'Keep canonical activity', date: fresh.start, time: '12:00', duration: 60 }];
+    fresh.budget = 4321;
+    store.saveTrip(fresh, { queue: false });
+    window.__resolvePlanReadiness();
+  });
+  await expect(page.locator('.planner-toolbar')).toHaveCount(1);
+  const current = await page.evaluate(() => window.TravelMateTripStore.getTrip('qa-playwright'));
+  expect(current.activities.map(item => item.id)).toEqual(['arrived-during-readiness']);
+  expect(current.budget).toBe(4321);
+  expect(current.planInitialized).toBe(true);
+  expect(await page.evaluate(() => window.__planActivationWrites.length)).toBe(1);
+});
+
+test('direct Plan startup still supplies first-entry defaults once', async ({ page, baseURL }) => {
+  await seedUninitializedPlan(page, baseURL, 'plan');
+  await expect(page.locator('.planner-toolbar')).toHaveCount(1);
+  await expect(page.locator('.planner-composer')).toHaveCount(1);
+  const current = await page.evaluate(() => window.TravelMateTripStore.getTrip('qa-playwright'));
+  expect(current.planInitialized).toBe(true);
+  expect(current.activities).toHaveLength(trip.days);
+  await page.evaluate(() => window.TravelMateNavigation.open('overview'));
+  await page.evaluate(() => window.TravelMateNavigation.open('plan'));
+  await expect(page.locator('.planner-toolbar')).toHaveCount(1);
+  expect(await page.evaluate(() => window.TravelMateTripStore.getTrip('qa-playwright').activities)).toEqual(current.activities);
+});
