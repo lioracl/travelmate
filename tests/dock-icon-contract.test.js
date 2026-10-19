@@ -206,3 +206,40 @@ test('account controller preserves explicit authenticated/guest names separately
   assert.throws(() => context.expectedControl('home', 'account', 'unknown'), /Unknown account session/);
   assert.throws(() => context.expectedControl('home', 'unknown'), /Unknown dock control/);
 });
+
+test('shared icon sizing excludes canonical docks without changing ordinary sizing', () => {
+  const css = read('assets/phone-visual-qa.css');
+  const selector = 'html body :is(button,a[href],[role="button"]):not(:where(.tm-trip-dock *)) > :is(i.fa-solid,i.fa-regular,i.fa-brands,i.fa)';
+  const firstRule = css.match(/html body :is\(button,a\[href\],\[role="button"\]\)[^{}]*\{([^}]+)\}/);
+  assert.ok(firstRule, 'existing shared direct-icon rule');
+  assert.equal(firstRule[0].slice(0, firstRule[0].indexOf('{')).trim(), selector, 'exclude dock descendants through a zero-specificity boundary at the existing owner');
+  const declarations = Object.fromEntries(firstRule[1].split(';').map(s => s.trim()).filter(Boolean).map(s => s.split(':')));
+  assert.equal(declarations['inline-size'], '1.12em');
+  assert.equal(declarations['min-inline-size'], '1.12em');
+  assert.equal(declarations['block-size'], '1.12em');
+  assert.equal(declarations.flex, '0 0 1.12em');
+  assert.equal(declarations['line-height'], '1');
+  assert.match(css, /html body :is\(button,a\[href\],\[role="button"\]\) > :is\(i\.fa-solid,i\.fa-regular,i\.fa-brands,i\.fa\) \+ :is\(span,strong,small\)\{\s*vertical-align:middle;\s*\}/, 'unrelated sibling-label rule remains intact');
+  const shell = read('assets/app-shell.css');
+  assert.match(shell, /\.tm-trip-dock :is\(a,button\)>\.fa-solid\{[^}]*width:24px;height:24px;[^}]*font-size:24px;line-height:1/);
+  assert.equal((css.match(/:not\(:where\(\.tm-trip-dock \*\)\)/g) || []).length, 1, 'one owner-boundary edit, no additional override layer');
+});
+
+test('exact browser box gates independently reject width and height regressions', () => {
+  const vm = require('node:vm');
+  const register = () => {}; register.use = () => {};
+  const context = { URL, require(name) {
+    if (name === '@playwright/test') return { test: register, expect(value) { return { toBe(expected) { assert.equal(value, expected); } }; } };
+    if (name.startsWith('./fixtures/')) return {};
+    throw new Error('Unexpected dedicated spec dependency: ' + name);
+  } };
+  vm.runInNewContext(read('tests/e2e/dock-icons.spec.js') + '\nthis.widthGate = assertIconWidth; this.heightGate = assertIconHeight;', context);
+  assert.doesNotThrow(() => context.widthGate({ width: 24, height: 24 }));
+  assert.doesNotThrow(() => context.heightGate({ width: 24, height: 24 }));
+  assert.throws(() => context.widthGate({ width: 26.875, height: 24 }), /26\.875/);
+  assert.doesNotThrow(() => context.heightGate({ width: 26.875, height: 24 }));
+  assert.throws(() => context.heightGate({ width: 24, height: 26.875 }), /26\.875/);
+  assert.doesNotThrow(() => context.widthGate({ width: 24, height: 26.875 }));
+  assert.throws(() => context.widthGate({ width: 26.875, height: 26.875 }), /26\.875/);
+  assert.throws(() => context.heightGate({ width: 26.875, height: 26.875 }), /26\.875/);
+});

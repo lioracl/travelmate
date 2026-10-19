@@ -169,24 +169,50 @@ async function structure(page, kind, session = 'authenticated') {
   return dock;
 }
 
-async function paintedGlyphs(page, info, name, expected) {
-  await expect(page.locator(`link[href="${FA_CSS}"]`)).toHaveCount(1);
-  await page.waitForFunction(() => [...document.fonts].some(f =>
-    f.family.replace(/["']/g, '') === 'Font Awesome 6 Free' && f.weight === '900' && f.status === 'loaded'), null, { timeout: FONT_READY_MS });
-  const icons = page.locator('.tm-trip-dock > :is(a,button) > i.fa-solid');
-  await expect(icons).toHaveCount(expected.length);
-  const evidence = [];
-  for (const [index, iconName] of expected.entries()) {
-    const icon = icons.nth(index);
-    await expect(icon).toHaveAttribute('aria-hidden', 'true');
-    const glyph = String.fromCodePoint(codepoints[iconName]);
-    // Require loaded FontFace objects, not just a declared family or a sized box.
-    // No font stubs or substitute downloads: use the entrypoint's existing CDN.
-    const data = await icon.evaluate(async (node, glyph) => {
-      const faces = await document.fonts.load('900 24px "Font Awesome 6 Free"', glyph);
-      const style = getComputedStyle(node), pseudo = getComputedStyle(node, '::before');
-      const rect = node.getBoundingClientRect();
-      const labelStyle = getComputedStyle(node.nextElementSibling);
+function assertIconWidth(data) { expect(data.width).toBe(24); }
+function assertIconHeight(data) { expect(data.height).toBe(24); }
+
+async function collectIconEvidence(page, expected, selector = '.tm-trip-dock > :is(a,button) > i.fa-solid') {
+  return page.locator(selector).evaluateAll(async (nodes, options) => {
+    const names = Object.keys(options.codepoints);
+    function metrics(node) {
+      const style = getComputedStyle(node), box = node.getBoundingClientRect();
+      const values = {};
+      for (const key of ['display', 'width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight', 'inlineSize', 'blockSize', 'minInlineSize', 'minBlockSize', 'maxInlineSize', 'maxBlockSize', 'boxSizing', 'padding', 'borderWidth', 'fontSize', 'lineHeight', 'flexBasis', 'flexGrow', 'flexShrink', 'flexDirection', 'direction', 'writingMode', 'transform', 'scale', 'translate', 'zoom']) values[key] = style[key];
+      return { tag: node.tagName, id: node.id, className: node.className, rect: { x: box.x, y: box.y, width: box.width, height: box.height }, offsetWidth: node.offsetWidth, offsetHeight: node.offsetHeight, computed: values, inlineStyle: node.getAttribute('style') };
+    }
+    function owners(node) {
+      const matched = [], inaccessible = [];
+      const properties = ['width', 'height', 'inline-size', 'block-size', 'min-width', 'min-height', 'min-inline-size', 'min-block-size', 'flex', 'flex-basis', 'flex-grow', 'flex-shrink', 'font-size', 'line-height', 'transform', 'scale', 'zoom'];
+      function walk(rules, sheet, conditions = []) {
+        for (const rule of rules) {
+          if (rule.selectorText && rule.style) {
+            let matches = false; try { matches = node.matches(rule.selectorText); } catch (_) {}
+            if (matches) {
+              const declarations = Object.fromEntries(properties.filter(key => rule.style.getPropertyValue(key)).map(key => [key, { value: rule.style.getPropertyValue(key), priority: rule.style.getPropertyPriority(key) }]));
+              if (Object.keys(declarations).length) matched.push({ sheet, selector: rule.selectorText, conditions, declarations });
+            }
+          }
+          if (rule.cssRules) walk(rule.cssRules, sheet, rule.conditionText ? [...conditions, rule.conditionText] : conditions);
+        }
+      }
+      for (const sheet of document.styleSheets) try { walk(sheet.cssRules, sheet.href || 'test-local style'); } catch (error) { inaccessible.push({ sheet: sheet.href, reason: error.name }); }
+      return { matched, inaccessible };
+    }
+    // Collect every icon before any acceptance assertion. One failed load must
+    // not discard the geometry or diagnostic state of the remaining icons.
+    return Promise.all(nodes.map(async (node, index) => {
+      const iconName = options.expected[index] || names.find(name => node.classList.contains('fa-' + name));
+      const glyph = String.fromCodePoint(options.codepoints[iconName] || options.codepoints.house);
+      let faces = [], fontError = null, timer;
+      try {
+        faces = await Promise.race([
+          document.fonts.load('900 24px "Font Awesome 6 Free"', glyph),
+          new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Bounded glyph load exceeded')), options.timeout); })
+        ]);
+      } catch (error) { fontError = error.message; } finally { clearTimeout(timer); }
+      const style = getComputedStyle(node), pseudo = getComputedStyle(node, '::before'), box = node.getBoundingClientRect();
+      const labelStyle = getComputedStyle(node.nextElementSibling || node);
       function raster(font) {
         const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64;
         const ctx = canvas.getContext('2d'); ctx.font = font; ctx.fillStyle = '#000'; ctx.fillText(glyph, 8, 40);
@@ -194,38 +220,100 @@ async function paintedGlyphs(page, info, name, expected) {
         return { pixels: Array.from(pixels), ink: pixels.filter((_, i) => i % 4 === 3 && pixels[i] > 0).length };
       }
       const loaded = raster('900 24px "Font Awesome 6 Free", monospace'), fallback = raster('900 24px monospace');
+      const ancestors = []; for (let parent = node.parentElement; parent; parent = parent.parentElement) ancestors.push(metrics(parent));
       return {
+        icon: iconName, ariaHidden: node.getAttribute('aria-hidden'), fontError,
         faces: faces.map(f => ({ family: f.family, status: f.status, weight: f.weight })),
         checked: document.fonts.check('900 24px "Font Awesome 6 Free"', glyph),
         family: pseudo.fontFamily, weight: pseudo.fontWeight, content: pseudo.content,
         display: style.display, visibility: style.visibility, opacity: style.opacity,
         pseudoDisplay: pseudo.display, pseudoVisibility: pseudo.visibility, pseudoOpacity: pseudo.opacity,
-        color: pseudo.color, fill: pseudo.webkitTextFillColor, labelColor: labelStyle.color, labelFill: labelStyle.webkitTextFillColor, width: rect.width, height: rect.height,
+        pseudo: { fontSize: pseudo.fontSize, lineHeight: pseudo.lineHeight, width: pseudo.width, height: pseudo.height, content: pseudo.content, display: pseudo.display, visibility: pseudo.visibility, opacity: pseudo.opacity, transform: pseudo.transform, scale: pseudo.scale, zoom: pseudo.zoom },
+        color: pseudo.color, fill: pseudo.webkitTextFillColor, labelColor: labelStyle.color, labelFill: labelStyle.webkitTextFillColor, width: box.width, height: box.height,
         inkPixels: loaded.ink, differsFromFallback: loaded.pixels.some((v, i) => v !== fallback.pixels[i]),
-        hit: node.closest('a,button').contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2))
+        hit: node.closest('a,button').contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)),
+        host: metrics(node), parent: metrics(node.parentElement), ancestors, rules: owners(node)
       };
-    }, glyph);
-    expect(data.faces.length, 'existing FA CDN font must load; an unavailable font is a failure, never a visibility pass').toBeGreaterThan(0);
-    expect(data.faces.every(f => f.status === 'loaded' && f.family.replace(/["']/g, '') === 'Font Awesome 6 Free' && f.weight === '900')).toBe(true);
-    expect(data.checked).toBe(true);
-    expect(data.family).toContain('Font Awesome 6 Free');
-    expect(data.weight).toBe('900');
-    expect(data.content.replace(/^["']|["']$/g, '')).toBe(glyph);
-    expect(data.pseudoDisplay).not.toBe('none');
-    expect(data.pseudoVisibility).toBe('visible');
-    expect(Number(data.pseudoOpacity)).toBeGreaterThan(0);
-    expect(data.inkPixels).toBeGreaterThan(0);
-    expect(data.differsFromFallback).toBe(true);
-    expect(data.width).toBe(24); expect(data.height).toBe(24);
-    expect(data.display).not.toBe('none');
-    expect(data.visibility).toBe('visible'); expect(Number(data.opacity)).toBeGreaterThan(0);
-    expect(data.color).toBe(data.labelColor); expect(data.fill).toBe(data.labelFill);
-    expect(data.hit).toBe(true);
-    evidence.push({ icon: iconName, ...data });
+    }));
+  }, { expected, codepoints, timeout: FONT_READY_MS });
+}
+
+async function paintedGlyphs(page, info, name, expected) {
+  let readinessError = null;
+  try {
+    try {
+      await page.waitForFunction(() => [...document.fonts].some(f =>
+        f.family.replace(/["']/g, '') === 'Font Awesome 6 Free' && f.weight === '900' && f.status === 'loaded'), null, { timeout: FONT_READY_MS });
+    } catch (error) { readinessError = error; }
+    const evidence = await collectIconEvidence(page, expected);
+    await info.attach(name + '-font-paint-evidence', { body: JSON.stringify({ readinessError: readinessError?.message || null, icons: evidence }, null, 2), contentType: 'application/json' });
+    // Evidence is durable even when the first icon fails one of these gates.
+    if (readinessError) throw readinessError;
+    await expect(page.locator(`link[href="${FA_CSS}"]`)).toHaveCount(1);
+    const icons = page.locator('.tm-trip-dock > :is(a,button) > i.fa-solid');
+    await expect(icons).toHaveCount(expected.length);
+    for (const [index, iconName] of expected.entries()) {
+      const data = evidence[index], glyph = String.fromCodePoint(codepoints[iconName]);
+      await expect(icons.nth(index)).toHaveAttribute('aria-hidden', 'true');
+      expect(data.fontError).toBeNull();
+      expect(data.faces.length, 'existing FA CDN font must load; an unavailable font is a failure, never a visibility pass').toBeGreaterThan(0);
+      expect(data.faces.every(f => f.status === 'loaded' && f.family.replace(/["']/g, '') === 'Font Awesome 6 Free' && f.weight === '900')).toBe(true);
+      expect(data.checked).toBe(true);
+      expect(data.family).toContain('Font Awesome 6 Free');
+      expect(data.weight).toBe('900');
+      expect(data.content.replace(/^["']|["']$/g, '')).toBe(glyph);
+      expect(data.pseudoDisplay).not.toBe('none');
+      expect(data.pseudoVisibility).toBe('visible');
+      expect(Number(data.pseudoOpacity)).toBeGreaterThan(0);
+      expect(data.inkPixels).toBeGreaterThan(0);
+      expect(data.differsFromFallback).toBe(true);
+      assertIconWidth(data); assertIconHeight(data);
+      expect(data.display).not.toBe('none');
+      expect(data.visibility).toBe('visible'); expect(Number(data.opacity)).toBeGreaterThan(0);
+      expect(data.color).toBe(data.labelColor); expect(data.fill).toBe(data.labelFill);
+      expect(data.hit).toBe(true);
+    }
+    await readability(page, info, name + '-labels', ['.tm-trip-dock > a > span', '.tm-trip-dock > button > span']);
+  } finally {
+    await info.attach(name + '-capture', { body: await page.screenshot({ fullPage: false }), contentType: 'image/png' });
   }
-  await info.attach(name + '-font-paint-evidence', { body: JSON.stringify(evidence, null, 2), contentType: 'application/json' });
-  await readability(page, info, name + '-labels', ['.tm-trip-dock > a > span', '.tm-trip-dock > button > span']);
-  await info.attach(name + '-capture', { body: await page.screenshot({ fullPage: false }), contentType: 'image/png' });
+}
+
+async function proveSizingBoundary(page, info, name, expected) {
+  const fixture = await page.evaluateHandle(() => {
+    const button = document.createElement('button'); button.type = 'button'; button.dataset.dockBoundaryOrdinary = '';
+    button.style.cssText = 'position:fixed;left:-1000px;top:0;display:flex;flex-direction:column;align-items:center';
+    button.innerHTML = '<i class="fa-solid fa-house" aria-hidden="true" style="font-size:24px"></i><span>Synthetic ordinary control</span>';
+    document.body.appendChild(button); return button;
+  });
+  let perturbation;
+  const rejects = fn => { try { fn(); return false; } catch (_) { return true; } };
+  try {
+    const ordinary = await collectIconEvidence(page, ['house'], '[data-dock-boundary-ordinary] > i');
+    const original = await collectIconEvidence(page, expected);
+    await info.attach(name + '-ordinary-versus-dock', { body: JSON.stringify({ ordinary, dock: original }, null, 2), contentType: 'application/json' });
+    expect(ordinary).toHaveLength(1);
+    for (const dimension of ['width', 'height']) expect(Math.abs(ordinary[0][dimension] - 24 * 1.12)).toBeLessThanOrEqual(1 / 64);
+    expect(ordinary[0].host.computed.fontSize).toBe('24px');
+    expect(ordinary[0].host.computed.flexBasis).toBe('26.88px');
+    for (const data of original) { assertIconWidth(data); assertIconHeight(data); }
+    perturbation = await page.evaluateHandle(() => {
+      const style = document.createElement('style');
+      style.textContent = 'html body[data-design="v3"] .tm-trip-dock :is(a,button)>.fa-solid{min-inline-size:1.12em;flex:0 0 1.12em}';
+      document.head.appendChild(style); return style;
+    });
+    const perturbed = await collectIconEvidence(page, expected);
+    // Evaluate both dimension gates for every icon before asserting any result.
+    const rejection = perturbed.map(data => ({ icon: data.icon, widthRejected: rejects(() => assertIconWidth(data)), heightRejected: rejects(() => assertIconHeight(data)) }));
+    await info.attach(name + '-old-sizing-negative', { body: JSON.stringify({ icons: perturbed, rejection }, null, 2), contentType: 'application/json' });
+    for (const result of rejection) { expect(result.widthRejected).toBe(true); expect(result.heightRejected).toBe(true); }
+  } finally {
+    if (perturbation) { await perturbation.evaluate(node => node.remove()); await perturbation.dispose(); }
+    await fixture.evaluate(node => node.remove()); await fixture.dispose();
+    const restored = await collectIconEvidence(page, expected);
+    await info.attach(name + '-restored-sizing', { body: JSON.stringify(restored, null, 2), contentType: 'application/json' });
+    for (const data of restored) { assertIconWidth(data); assertIconHeight(data); }
+  }
 }
 
 for (const width of [390, 430]) for (const theme of ['light', 'dark']) for (const accent of ['ocean', 'plum', 'pink', 'sunset', 'emerald']) {
@@ -240,6 +328,7 @@ for (const width of [390, 430]) for (const theme of ['light', 'dark']) for (cons
     await page.evaluate(accent => TravelMateTheme.setAccent(accent), accent);
     const dock = await structure(page, 'home');
     await paintedGlyphs(page, info, 'home', ['house', 'location-dot', 'plus', 'suitcase', 'user']);
+    await proveSizingBoundary(page, info, 'home', ['house', 'location-dot', 'plus', 'suitcase', 'user']);
     await expect(dock.locator('[data-home-route="trips"]')).toHaveAttribute('aria-current', 'page');
     const homeLink = dock.locator('[data-home-route="home"]');
     await homeLink.focus(); await page.keyboard.press('Enter');
@@ -254,6 +343,7 @@ for (const width of [390, 430]) for (const theme of ['light', 'dark']) for (cons
     await expect(page.locator('#modal-destination .tm-home-dock[data-wizard-dock]')).toHaveCount(1);
     await structure(page, 'home');
     await paintedGlyphs(page, info, 'wizard', ['house', 'location-dot', 'plus', 'suitcase', 'user']);
+    await proveSizingBoundary(page, info, 'wizard', ['house', 'location-dot', 'plus', 'suitcase', 'user']);
     await page.keyboard.press('Escape');
     await expect(dock.locator('[data-modal="destination"]')).toBeFocused();
     expect(await dock.evaluate((node, original) => node === original, identity)).toBe(true);
@@ -265,6 +355,7 @@ for (const width of [390, 430]) for (const theme of ['light', 'dark']) for (cons
     await expect(page.locator('[data-shell-mate] > .ai-orb')).toBeVisible();
     await expect(dock.locator('[data-shell-view="overview"]')).toHaveAttribute('aria-current', 'page');
     await paintedGlyphs(page, info, 'trip', ['house', 'calendar-days', 'location-dot', 'ellipsis']);
+    await proveSizingBoundary(page, info, 'trip', ['house', 'calendar-days', 'location-dot', 'ellipsis']);
     await dock.locator('[data-shell-more]').focus(); await page.keyboard.press('Enter');
     await expect(dock.locator('[data-shell-more]')).toHaveAttribute('aria-expanded', 'true');
     await expect(page.locator('[data-shell-utilities]')).toBeVisible();

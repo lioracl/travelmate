@@ -2,7 +2,7 @@
 
 /* Shared Font Awesome label contract. It normalizes glyph boxes without changing
    the layout model of the surrounding control. */
-html body :is(button,a[href],[role="button"]) > :is(i.fa-solid,i.fa-regular,i.fa-brands,i.fa){
+html body :is(button,a[href],[role="button"]):not(:where(.tm-trip-dock *)) > :is(i.fa-solid,i.fa-regular,i.fa-brands,i.fa){
   display:inline-grid;
   place-items:center;
   inline-size:1.12em;
