@@ -343,6 +343,50 @@
     archive.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // R06 card composition only: reuse canonical metadata and action nodes.
+  function composeTripCard(shell, trip) {
+    var link = shell.querySelector('.trip-card');
+    var copy = shell.querySelector('.trip-copy');
+    var openLabel = copy.querySelector('strong');
+    var photo = document.createElement('span');
+    photo.className = 'trip-card-photo';
+    photo.setAttribute('aria-hidden', 'true');
+    link.insertBefore(photo, link.firstChild);
+
+    function metadataIcon(name) {
+      var icon = document.createElement('i');
+      icon.className = 'fa-solid ' + name;
+      icon.setAttribute('aria-hidden', 'true');
+      return icon;
+    }
+    var date = copy.querySelector('.trip-date-range');
+    var days = copy.querySelectorAll('.tag')[1];
+    if (trip.start && trip.end) {
+      var calendar = document.createElement('span');
+      calendar.className = 'trip-calendar';
+      copy.insertBefore(calendar, date);
+      calendar.appendChild(metadataIcon('fa-calendar-days'));
+      calendar.appendChild(date);
+    } else {
+      date.remove();
+    }
+    var metrics = document.createElement('span');
+    metrics.className = 'trip-card-metrics';
+    if (trip.days !== '' && Number.isFinite(Number(trip.days)) && Number(trip.days) > 0) {
+      days.classList.add('trip-day-count');
+      days.insertBefore(metadataIcon('fa-sun'), days.firstChild);
+      metrics.appendChild(days);
+    } else {
+      days.remove();
+    }
+    var places = copy.querySelector('.trip-place-count');
+    if (places) {
+      places.insertBefore(metadataIcon('fa-location-dot'), places.firstChild);
+      metrics.appendChild(places);
+    }
+    if (metrics.childElementCount) copy.insertBefore(metrics, openLabel);
+  }
+
   function cardShell(trip, isStatic, href, background) {
     var state = dateState(trip);
     var shell = document.createElement('article');
@@ -373,6 +417,7 @@
       places.textContent = trip.savedPlaces.length === 1 ? 'מקום שמור אחד' : trip.savedPlaces.length + ' מקומות שמורים';
       shell.querySelector('.trip-copy').insertBefore(places, shell.querySelector('.trip-copy>strong'));
     }
+    if (document.body.dataset.design === 'v3') composeTripCard(shell, trip);
     return shell;
   }
 

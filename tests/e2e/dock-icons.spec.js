@@ -3,6 +3,29 @@ const { test, expect } = require('@playwright/test');
 const home = require('./fixtures/all-trips-v3.cjs');
 const { readability } = require('./fixtures/six-screen-v3.cjs');
 
+function durableTestInfo(info) {
+  let sequence = 0;
+  return new Proxy(info, {
+    get(target, key) {
+      if (key === 'attach') return async (name, options) => {
+        if (options.body === undefined) return target.attach(name, options);
+        const type = (options.contentType || '').split(';')[0].trim();
+        const extension = type === 'image/png' ? 'png' : type === 'application/json' ? 'json' : 'bin';
+        const safeName = String(name).replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 96) || 'artifact';
+        const file = target.outputPath(`dock-${String(++sequence).padStart(3, '0')}-${safeName}.${extension}`);
+        const fs = require('node:fs');
+        fs.mkdirSync(require('node:path').dirname(file), { recursive: true });
+        // Preserve the supplied JSON/PNG bytes, including screenshot buffers.
+        // Unique test output paths and exclusive writes prevent replacement.
+        fs.writeFileSync(file, options.body, { flag: 'wx' });
+        return target.attach(name, { path: file, contentType: options.contentType });
+      };
+      const value = Reflect.get(target, key, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    }
+  });
+}
+
 test.use({ serviceWorkers: 'block' });
 const FA_CSS = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
 const FA_FONT = /^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/font-awesome\/6\.5\.2\/webfonts\/fa-solid-900\.(?:woff2|ttf)$/;
@@ -318,6 +341,7 @@ async function proveSizingBoundary(page, info, name, expected) {
 
 for (const width of [390, 430]) for (const theme of ['light', 'dark']) for (const accent of ['ocean', 'plum', 'pink', 'sunset', 'emerald']) {
   test(`canonical dock FA glyphs and captures ${width}/${theme}/${accent}`, async ({ page, context }, info) => {
+    info = durableTestInfo(info);
     const network = await installNetworkBoundary(context);
     const fontResponses = [];
     page.on('response', response => { if (FA_FONT.test(response.url())) fontResponses.push({ url: response.url(), status: response.status() }); });
@@ -372,6 +396,7 @@ for (const width of [390, 430]) for (const theme of ['light', 'dark']) for (cons
 }
 
 test('font failure preserves Hebrew dock names, order and wizard reparenting', async ({ page, context }, info) => {
+  info = durableTestInfo(info);
   const network = await installNetworkBoundary(context, { failFonts: true });
   await page.setViewportSize({ width: 390, height: 900 });
   // A fresh isolated context prevents successful-font cache contamination.
