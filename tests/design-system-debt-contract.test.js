@@ -91,7 +91,7 @@ test('document vault style is feature-scoped and feature reloads reuse the exist
   const source = read(path.join(root, 'assets/app.js'));
 
   assert.doesNotMatch(source, /baseStyles=\[[^\]]*'document-vault\.css'\]/);
-  assert.match(source, /documents:\{styles:\['document-vault\.css'\],scripts:\['document-vault\.js'\]\}/);
+  assert.match(source, /documents:\{styles:\['document-vault\.css'\],scripts:\['mate-notes\.js','document-vault\.js'\]\}/);
   assert.match(source, /function loadStyle\(file\)\{[\s\S]*?if\(loadedStyles\[file\]\)return loadedStyles\[file\]/);
 });
 

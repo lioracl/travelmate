@@ -92,7 +92,7 @@ test('Nearby and Document Vault are feature-scoped on custom trips', () => {
   const app = read('assets/app.js');
   const custom = read('trip/custom/index.html');
   assert.match(app, /places:\{styles:\['nearby\.css','place-planner\.css'/);
-  assert.match(app, /documents:\{styles:\['document-vault\.css'\],scripts:\['document-vault\.js'\]\}/);
+  assert.match(app, /documents:\{styles:\['document-vault\.css'\],scripts:\['mate-notes\.js','document-vault\.js'\]\}/);
   assert.doesNotMatch(custom, /<link[^>]+nearby\.css/);
   assert.doesNotMatch(custom, /<script[^>]+document-vault\.js/);
   const beforeDestination = app.slice(0, app.indexOf('function ensureDestination'));
