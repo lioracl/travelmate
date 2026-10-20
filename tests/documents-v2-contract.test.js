@@ -11,6 +11,7 @@ function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf
 const html = read('trip/custom/index.html');
 const vault = read('assets/document-vault.js');
 const ai = read('assets/ai-assistant.js');
+const notesOwner = read('assets/mate-notes.js');
 const css = read('assets/document-vault.css');
 
 test('Documents V2 exposes the approved seven category filters', () => {
@@ -23,8 +24,10 @@ test('Documents V2 exposes the approved seven category filters', () => {
 test('Documents V2 has five encrypted document groups plus Mate as a separate archive', () => {
   const groups = Array.from(html.matchAll(/class="doc-row[^"]*" data-document-group="([^"]+)"/g), (match) => match[1]);
   assert.deepEqual(groups, ['flights', 'lodging', 'tickets', 'insurance', 'personal']);
-  assert.match(ai, /archive\.dataset\.documentGroup = 'mate'/);
-  assert.match(ai, /TravelMateDocuments[\s\S]*\.refresh/);
+  assert.match(notesOwner, /archive\.dataset\.documentGroup = 'mate'/);
+  assert.match(ai, /TravelMateMateNotes\.refresh\(\)/);
+  assert.doesNotMatch(ai, /archive\.innerHTML\s*=/);
+  assert.match(notesOwner, /TravelMateDocuments[\s\S]*\.refresh/);
 });
 
 test('legacy document categories are normalized without a database migration', () => {

@@ -32,7 +32,7 @@ async function boot(page) {
     client.auth.signOut = async () => { qa.emit(null); return { error: null }; };
     client.auth.signInWithPassword = async () => { qa.emit('B'); return { data: { session: session() }, error: null }; };
   }, { a: trip('A'), b: trip('B') });
-  for (const name of ['cloud-sync', 'trip-store', 'event-contracts', 'trip-experience', 'ai-assistant', 'trip-intelligence']) await page.addScriptTag({ url: '/assets/' + name + '.js' });
+  for (const name of ['cloud-sync', 'trip-store', 'event-contracts', 'trip-experience', 'mate-notes', 'ai-assistant', 'trip-intelligence']) await page.addScriptTag({ url: '/assets/' + name + '.js' });
   await expect(page.locator('[data-memory-list]')).toContainText('PRIVATE MEMORY A');
 }
 test('Budget, Memories and canonical empty values replace the previous account', async ({ page }) => {

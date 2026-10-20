@@ -43,6 +43,7 @@ test('high-risk feature writers no longer access travelmate-trips directly', () 
   for (const relative of [
     'assets/app.js',
     'assets/ai-assistant.js',
+    'assets/mate-notes.js',
     'assets/auto-planner.js',
     'assets/lodging-manager.js',
     'assets/custom-trip.js'
@@ -62,7 +63,13 @@ test('migrated writers preserve feature ownership while delegating persistence',
   assert.match(planner, /store\.saveTripFields\(trip,planBaseline/);
 
   const assistant = read('assets/ai-assistant.js');
-  assert.match(assistant, /store\.saveTrip\(trip\)/);
+  const notesOwner = read('assets/mate-notes.js');
+  assert.match(assistant, /notes\.update\(tripId/);
+  assert.match(assistant, /return appendAiNote\(trip, question, answer, metadata\)/);
+  assert.doesNotMatch(assistant, /store\.saveTrip\(/);
+  assert.match(notesOwner, /store\.saveTrip\(next\)/);
+  assert.ok(notesOwner.includes('var latest = scopedTrip(scope);'));
+  assert.ok(notesOwner.includes('var next = Object.assign({}, latest, { aiNotes: draft.aiNotes });'));
 
   const lodging = read('assets/lodging-manager.js');
   assert.match(lodging, /TravelMateTripStore\.updateTrip\(trip\.id/);

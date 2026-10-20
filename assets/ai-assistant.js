@@ -149,41 +149,8 @@
     quickPrompts().forEach(function (prompt) { var button = document.createElement('button'); button.type = 'button'; button.textContent = prompt; button.addEventListener('click', function () { sendMessage(prompt); }); ui.prompts.appendChild(button); });
   }
 
-  function decodeTextEntities(content) {
-    var named = { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>' };
-    return String(content || '')
-      .replace(/&(amp|quot|apos|lt|gt);/gi, function (match, name) { return named[name.toLowerCase()]; })
-      .replace(/&#(x[0-9a-f]+|\d+);/gi, function (match, value) {
-        var code = /^x/i.test(value) ? parseInt(value.slice(1), 16) : parseInt(value, 10);
-        try { return code >= 0 && code <= 1114111 ? String.fromCodePoint(code) : match; } catch (error) { return match; }
-      });
-  }
-
   function formatAssistantText(content) {
-    var lines = decodeTextEntities(content).replace(/\r\n?/g, '\n').split('\n');
-    var html = [];
-    var listOpen = false;
-    function inline(value) {
-      return escapeText(value)
-        .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
-        .replace(/__([^_\n]+)__/g, '<strong>$1</strong>')
-        .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
-    }
-    function closeList() { if (listOpen) { html.push('</ul>'); listOpen = false; } }
-    lines.forEach(function (line) {
-      var heading = line.match(/^#{1,3}\s+(.+)$/);
-      var bullet = line.match(/^\s*[-*\u2022]\s+(.+)$/);
-      if (bullet) {
-        if (!listOpen) { html.push('<ul>'); listOpen = true; }
-        html.push('<li>' + inline(bullet[1]) + '</li>');
-      } else if (heading) {
-        closeList(); html.push('<h3>' + inline(heading[1]) + '</h3>');
-      } else if (line.trim()) {
-        closeList(); html.push('<p>' + inline(line) + '</p>');
-      } else closeList();
-    });
-    closeList();
-    return html.join('');
+    return window.TravelMateMateNotes.formatResponse(content);
   }
 
   function addMessage(role, content, options) {
@@ -209,7 +176,8 @@
     copy.addEventListener('click', function () { navigator.clipboard && navigator.clipboard.writeText(content); copy.textContent = 'הועתק'; });
     tools.appendChild(speak); tools.appendChild(copy);
     var tripId = currentTripId();
-    var activeTrip = tripId && readTrips().find(function (item) { return String(item.id) === String(tripId); });
+    var noteScope = window.TravelMateMateNotes && window.TravelMateMateNotes.capture(tripId);
+    var activeTrip = noteScope && window.TravelMateMateNotes.getTrip(tripId);
     if (activeTrip) {
       var saveNote = document.createElement('button');
       saveNote.type = 'button';
@@ -220,7 +188,7 @@
           if (state.messages[index].role === 'user') { question = state.messages[index].content; break; }
         }
         if (!question) { saveNote.textContent = '\u05e9\u05d0\u05dc \u05e9\u05d0\u05dc\u05d4 \u05ea\u05d7\u05d9\u05dc\u05d4'; return; }
-        if (saveAiNote(question, content)) {
+        if (saveAiNote(question, content, noteScope)) {
           saveNote.innerHTML = '<i class="fa-solid fa-check"></i> \u05e0\u05e9\u05de\u05e8 \u05d1\u05de\u05e1\u05de\u05db\u05d9 \u05d4\u05d8\u05d9\u05d5\u05dc';
           saveNote.disabled = true;
         } else saveNote.textContent = '\u05db\u05d1\u05e8 \u05e0\u05e9\u05de\u05e8';
@@ -274,52 +242,12 @@
     return new URLSearchParams(location.search).get('id') || tripContext && (tripContext.id || tripContext.tripId);
   }
 
-  function saveAiNote(question, answer) {
-    var trips = readTrips();
-    var tripId = currentTripId();
-    var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
-    if (!appendAiNote(trip, question, answer)) return false;
-    persistTripWithNote(trips, trip);
-    renderAiNotesArchive();
-    return true;
+  function saveAiNote(question, answer, scope) {
+    return persistTripWithNote(currentTripId(), question, answer, undefined, scope);
   }
 
   function renderAiNotesArchive() {
-    var tripId = currentTripId();
-    if (!tripId) return;
-    var documents = document.getElementById('documents');
-    if (!documents) return;
-    var archive = documents.querySelector('[data-ai-notes-archive]');
-    if (!archive) {
-      archive = document.createElement('article');
-      archive.className = 'ai-notes-archive';
-      archive.dataset.aiNotesArchive = '';
-      archive.dataset.documentGroup = 'mate';
-      var host = documents.querySelector('.vault-library') || documents.querySelector('.doc-list') || documents;
-      host.parentNode.insertBefore(archive, host.nextSibling);
-    }
-    var trips = readTrips();
-    var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
-    var notes = trip && Array.isArray(trip.aiNotes) ? trip.aiNotes : [];
-    archive.innerHTML = '<header><span><i class="fa-solid fa-compass"></i></span><div><small>Mate \u00b7 \u05e0\u05d2\u05d9\u05e9 \u05ea\u05de\u05d9\u05d3 \u05d5\u05dc\u05dc\u05d0 \u05db\u05e1\u05e4\u05ea</small><h3>\u05e9\u05d0\u05dc\u05d5\u05ea \u05d5\u05ea\u05e9\u05d5\u05d1\u05d5\u05ea \u05e9\u05de\u05d5\u05e8\u05d5\u05ea</h3><p>\u05e0\u05e9\u05de\u05e8 \u05d1\u05e0\u05e4\u05e8\u05d3 \u05de\u05d4\u05de\u05e1\u05de\u05db\u05d9\u05dd \u05d4\u05de\u05d5\u05e6\u05e4\u05e0\u05d9\u05dd. \u05db\u05dc \u05e9\u05d5\u05e8\u05d4 \u05e0\u05e4\u05ea\u05d7\u05ea \u05d5\u05e0\u05e1\u05d2\u05e8\u05ea \u05d1\u05dc\u05d7\u05d9\u05e6\u05d4.</p></div><b>' + notes.length + '</b></header><div class="ai-notes-list">' +
-      (notes.length ? notes.map(function (note, index) {
-        var kindLabel = note.type === 'navo-recommendation' ? 'המלצה ' : 'שאלה ';
-        var subtitle = note.subtitle ? '<small class="ai-note-subtitle">' + escapeText(note.subtitle) + '</small>' : '';
-        return '<details data-ai-note-id="' + escapeText(note.id) + '"><summary><span><small>' + kindLabel + (index + 1) + '</small><strong>' + escapeText(note.question) + '</strong>' + subtitle + '<small>' + new Intl.DateTimeFormat('he-IL', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(note.createdAt)) + '</small></span><b class="ai-note-toggle"><span>\u05e4\u05ea\u05d9\u05d7\u05d4</span><i class="fa-solid fa-chevron-down"></i></b></summary><div class="ai-note-answer">' + formatAssistantText(note.answer) + '</div><footer><button type="button" data-copy-ai-note><i class="fa-regular fa-copy"></i> \u05d4\u05e2\u05ea\u05e7\u05d4</button><button type="button" data-delete-ai-note><i class="fa-regular fa-trash-can"></i> \u05de\u05d7\u05d9\u05e7\u05d4</button></footer></details>';
-      }).join('') : '<div class="ai-notes-empty"><i class="fa-regular fa-bookmark"></i><span>\u05e2\u05d3\u05d9\u05d9\u05df \u05dc\u05d0 \u05e9\u05de\u05e8\u05ea \u05ea\u05e9\u05d5\u05d1\u05d5\u05ea. \u05dc\u05d7\u05e5 \u201e\u05e9\u05de\u05d5\u05e8 \u05d1\u05de\u05e1\u05de\u05db\u05d9\u05dd\u201c \u05de\u05ea\u05d7\u05ea \u05dc\u05ea\u05e9\u05d5\u05d1\u05d4 \u05e9\u05dc Mate.</span></div>') + '</div>';
-    archive.onclick = function (event) {
-      var row = event.target.closest('[data-ai-note-id]');
-      if (!row) return;
-      var note = notes.find(function (item) { return item.id === row.dataset.aiNoteId; });
-      if (!note) return;
-      if (event.target.closest('[data-copy-ai-note]')) navigator.clipboard && navigator.clipboard.writeText(note.question + '\n\n' + note.answer);
-      if (event.target.closest('[data-delete-ai-note]')) {
-        trip.aiNotes = notes.filter(function (item) { return item.id !== note.id; });
-        persistTripWithNote(trips, trip);
-        renderAiNotesArchive();
-      }
-    };
-    if (window.TravelMateDocuments && typeof window.TravelMateDocuments.refresh === 'function') window.TravelMateDocuments.refresh();
+    if (window.TravelMateMateNotes) window.TravelMateMateNotes.refresh();
   }
 
   function responseIncomplete(data) {
@@ -450,15 +378,11 @@
     return true;
   }
 
-  function persistTripWithNote(trips, trip) {
-    var store = window.TravelMateTripStore;
-    if (store && store.saveTrip) {
-      store.saveTrip(trip);
-      return;
-    }
-    var service = activeCloud();
-    if (service && service.upsertLocalTrip) service.upsertLocalTrip(trip);
-    if (service && service.queueTripSave) service.queueTripSave(trip);
+  function persistTripWithNote(tripId, question, answer, metadata, scope) {
+    var notes = window.TravelMateMateNotes;
+    return Boolean(notes && notes.update(tripId, function (trip) {
+      return appendAiNote(trip, question, answer, metadata);
+    }, scope));
   }
 
   function mergeContinuation(original, continuation) {
@@ -730,12 +654,7 @@
     continueResponse: continueResponse,
     appendNote: appendAiNote,
     saveNoteForTrip: function (tripId, question, answer, metadata) {
-      var trips = readTrips();
-      var trip = trips.find(function (item) { return String(item.id) === String(tripId); });
-      if (!appendAiNote(trip, question, answer, metadata)) return false;
-      persistTripWithNote(trips, trip);
-      renderAiNotesArchive();
-      return true;
+      return persistTripWithNote(tripId, question, answer, metadata);
     },
     openConversation: function (prompt, context) {
       window.TravelMateEvents.emit(window.TravelMateEvents.names.askAi, { prompt: prompt, context: context, source: 'mate-conversation' });
