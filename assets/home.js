@@ -407,7 +407,14 @@
     if (archiveCount && empty) empty.remove();
   }
 
+  var closeTripDateEditor = null;
   function editTripDates(trip, opener) {
+    if (closeTripDateEditor) closeTripDateEditor();
+    var accountId = localStorage.getItem('travelmate-active-user') || '';
+    var tripId = String(trip.id);
+    var tripOwnerId = String(trip.ownerId || accountId);
+    var closed = false;
+    var tripHistory = window.TravelMateHistory;
     var backdrop = document.createElement('section');
     backdrop.className = 'trip-date-editor-backdrop';
     backdrop.innerHTML = '<form class="trip-date-editor" role="dialog" aria-modal="true" aria-labelledby="trip-date-editor-title"><button class="trip-date-editor-close" type="button" aria-label="סגירה"><i class="fa-solid fa-xmark"></i></button><div><small>עדכון הטיול</small><h2 id="trip-date-editor-title">עריכת תאריכים</h2><p>' + escapeText(trip.city) + ', ' + escapeText(trip.country) + '</p></div><label><span>תאריך יציאה</span><input type="date" name="start" value="' + escapeText(trip.start) + '" required></label><label><span>תאריך חזרה</span><input type="date" name="end" value="' + escapeText(trip.end) + '" required></label><p class="trip-date-editor-error" role="alert"></p><button class="trip-date-editor-save" type="submit"><i class="fa-solid fa-calendar-check"></i> שמירת התאריכים</button></form>';
@@ -415,10 +422,41 @@
     document.body.classList.add('trip-date-editor-open');
     var editor = backdrop.querySelector('.trip-date-editor');
     function close() {
+      if (closed) return;
+      closed = true;
+      if (closeTripDateEditor === close) closeTripDateEditor = null;
+      window.removeEventListener('travelmate:account-context-changed', cancelStale);
+      window.removeEventListener('storage', accountStorageChanged);
+      window.removeEventListener('pagehide', close);
+      window.removeEventListener('popstate', close);
+      if (tripHistory) tripHistory.closeOverlay('trip-date-editor');
       document.body.classList.remove('trip-date-editor-open');
       backdrop.remove();
       if (opener && document.contains(opener)) opener.focus();
     }
+    function cancelStale() {
+      if (closed) return;
+      close();
+      window.alert('עריכת התאריכים בוטלה כי החשבון או הטיול השתנו. יש לפתוח את הטיול מחדש.');
+    }
+    function accountStorageChanged(event) {
+      if (cloud.cacheChangeType(event.key) === 'account') cancelStale();
+    }
+    function currentTrip() {
+      if ((localStorage.getItem('travelmate-active-user') || '') !== accountId) return null;
+      if (currentSession && String(currentSession.user.id) !== accountId) return null;
+      return cloud.getLocalTrips().find(function (item) {
+        return String(item.id) === tripId && String(item.ownerId || accountId) === tripOwnerId && !item.deletedAt && !item.deletePending;
+      });
+    }
+    closeTripDateEditor = close;
+    // Account-context events mark an epoch boundary, including A -> B -> A.
+    // Token refresh within the same account does not discard a valid draft.
+    window.addEventListener('travelmate:account-context-changed', cancelStale);
+    window.addEventListener('storage', accountStorageChanged);
+    window.addEventListener('pagehide', close);
+    if (tripHistory) tripHistory.pushOverlay('trip-date-editor', close);
+    else window.addEventListener('popstate', close);
     editor.querySelector('.trip-date-editor-close').addEventListener('click', close);
     backdrop.addEventListener('click', close);
     editor.addEventListener('click', function (event) { event.stopPropagation(); });
@@ -433,20 +471,22 @@
     });
     editor.addEventListener('submit', async function (event) {
       event.preventDefault();
+      if (closed) return;
+      var latest = currentTrip();
+      if (!latest) { cancelStale(); return; }
       var start = editor.elements.start.value;
       var end = editor.elements.end.value;
       var days = daysBetween(start, end);
       var error = editor.querySelector('.trip-date-editor-error');
       if (days < 1) { error.textContent = 'תאריך החזרה חייב להיות אחרי תאריך היציאה.'; return; }
       if (days > 60) { error.textContent = 'אפשר להגדיר טיול של עד 60 ימים.'; return; }
-      trip.start = start;
-      trip.end = end;
-      trip.days = days;
-      cloud.upsertLocalTrip(trip);
-      renderTrips(Array.from(renderedTrips.values()));
+      // Apply only the draft dates to the current canonical trip.
+      var updated = Object.assign({}, latest, { start: start, end: end, days: days });
+      cloud.upsertLocalTrip(updated);
+      renderTrips(cloud.getLocalTrips());
       close();
       if (currentSession) {
-        try { await cloud.saveTrip(trip); }
+        try { await cloud.saveTrip(updated, accountId); }
         catch (saveError) { console.error('Trip dates sync failed', saveError); }
       }
     });
