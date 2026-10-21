@@ -2,9 +2,12 @@ const { test, expect } = require('@playwright/test');
 
 // Full app/feature/TripStore and real browser IndexedDB. Only the cloud service
 // boundary is replaced; all accounts, files, remote responses and FX are synthetic.
+// Keep that routed boundary active across reloads. Service-worker acceptance is
+// covered by its own suite; a worker can otherwise serve the real cloud module.
+test.use({ serviceWorkers: 'block' });
 function cloudBoundary() {
   const trips = () => JSON.parse(localStorage.getItem('travelmate-trips') || '[]');
-  const q = window.receiptQA = { uploads: [], removals: [], saves: [], offline: false, quota: localStorage.getItem('receipt-qa-quota') === '1', hold: false, waits: [], remote: trips()[0], failRemove: false, failQuery: false };
+  const q = window.receiptQA = { uploads: [], removals: [], saves: JSON.parse(sessionStorage.getItem('receipt-qa-saves') || '[]'), offline: false, quota: localStorage.getItem('receipt-qa-quota') === '1', hold: false, waits: [], remote: trips()[0], failRemove: false, failQuery: false };
   const session = () => ({ user: { id: localStorage.getItem('travelmate-active-user') } });
   const client = {
     rpc: async () => { throw Error("Unexpected RPC in controlled cloud fixture"); },
@@ -19,10 +22,16 @@ function cloudBoundary() {
     getClient: async () => client, getSession: async () => session(), getPrivateStorageSession: async () => ({ client, session: session() }),
     getLocalTrips: trips, getTrip: async id => trips().find(t => t.id === id),
     upsertLocalTrip: trip => { if (q.quota) throw Error('synthetic quota'); const list = trips(), i = list.findIndex(t => t.id === trip.id && t.ownerId === trip.ownerId); if (i < 0) list.push(trip); else list[i] = trip; localStorage.setItem('travelmate-trips', JSON.stringify(list)); },
-    queueTripSave: trip => q.saves.push(trip), onAuthChange: async () => () => {},
+    queueTripSave: trip => { q.saves.push(trip); sessionStorage.setItem('receipt-qa-saves', JSON.stringify(q.saves)); }, onAuthChange: async () => () => {},
     listTripChangeEvents: async () => [], getTripChangeReadState: async () => null, listTripMembers: async () => [], subscribeToTripChangeEvents: async () => () => {}
   };
+  q.cloud = window.TravelMateCloud;
   q.release = () => { q.hold = false; q.waits.splice(0).forEach(r => r()); };
+}
+async function ready(page) {
+  await expect.poll(() => page.evaluate(() => Boolean(window.receiptQA && window.receiptQA.cloud === window.TravelMateCloud))).toBe(true);
+  await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker && navigator.serviceWorker.controller))).toBe(false);
+  await expect(page.locator('[data-receipt-form]')).toHaveCount(1);
 }
 async function boot(page) {
   await page.route('**/*', route => new URL(route.request().url()).origin === 'http://127.0.0.1:4173' ? route.continue() : route.abort());
@@ -35,6 +44,7 @@ async function boot(page) {
   await page.route('**/assets/supabase-config.js*', r => r.fulfill({ contentType: 'text/javascript', body: 'window.TRAVELMATE_SUPABASE={documentBucket:"travel-documents"};' }));
   await page.route('**/assets/cloud-sync.js*', r => r.fulfill({ contentType: 'text/javascript', body: '(' + cloudBoundary.toString() + ')();' }));
   await page.goto('/trip/custom/index.html?id=receipt-qa&view=budget', { waitUntil: 'domcontentloaded' });
+  await ready(page);
   await expect(page.locator('[data-receipt-form]')).toHaveCount(1);
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
 }
@@ -68,7 +78,7 @@ for (const width of [390, 430]) test.describe(width + ' RTL receipt persistence'
     expect(await page.evaluate(() => receiptQA.removals)).not.toContain('qa/receipts/receipt-qa/old');
     await page.evaluate(() => { const current = TravelMateTripStore.getTrip('receipt-qa', 'qa'); Object.assign(current, { syncStatus: 'synced', cloudRevision: Number(current.cloudRevision || 0) + 1, cloudUpdatedAt: '2026-10-21T09:00:00.000Z' }); delete current.syncMutationId; delete current.syncConflict; TravelMateCloud.upsertLocalTrip(current); receiptQA.remote = current; dispatchEvent(new Event('travelmate:trip-synced')); });
     await expect.poll(() => page.evaluate(() => receiptQA.removals)).toContain('qa/receipts/receipt-qa/old');
-    await page.reload({ waitUntil: 'domcontentloaded' }); await expect(page.locator('[data-receipt-form]')).toHaveCount(1); expect((await canonical(page)).expenses[0].receiptPath).toBe(saved.expenses[0].receiptPath);
+    await page.reload({ waitUntil: 'domcontentloaded' }); await ready(page); await expect(page.locator('[data-receipt-form]')).toHaveCount(1); expect((await canonical(page)).expenses[0].receiptPath).toBe(saved.expenses[0].receiptPath);
   });
   test('null trip during upload does not close or claim success', async ({ page }) => {
     await boot(page); const f = await form(page); await page.evaluate(() => { receiptQA.hold = true; }); await f.locator('[type="submit"]').click();
@@ -79,20 +89,22 @@ for (const width of [390, 430]) test.describe(width + ' RTL receipt persistence'
   test('real IndexedDB fallback survives reload and commits before local cleanup', async ({ page }) => {
     await boot(page); const f = await form(page); await page.evaluate(() => { receiptQA.offline = true; }); await submit(f); await expect(f).toBeHidden();
     const local = (await canonical(page)).expenses[0]; expect(local.receiptPending).toBe(true); expect(await idb(page, local.receiptLocalKey)).toBeGreaterThan(0);
-    await page.reload({ waitUntil: 'domcontentloaded' }); await expect(page.locator('[data-receipt-form]')).toHaveCount(1);
+    await page.reload({ waitUntil: 'domcontentloaded' }); await ready(page); await expect(page.locator('[data-receipt-form]')).toHaveCount(1);
     await expect.poll(async () => (await canonical(page)).expenses[0].receiptPending).toBe(false);
     await expect.poll(() => idb(page, local.receiptLocalKey)).toBe(null); expect((await canonical(page)).expenses[0].receiptLocalKey).toBeUndefined();
   });
   test('ABA while upload is pending cannot commit into returning account', async ({ page }) => {
     await boot(page); const f = await form(page); await page.evaluate(() => { receiptQA.hold = true; }); await f.locator('[type="submit"]').click();
     await expect.poll(() => page.evaluate(() => receiptQA.waits.length)).toBe(1);
+    const navigated = page.waitForEvent('framenavigated', { predicate: frame => frame === page.mainFrame() });
     await page.evaluate(() => { const original = TravelMateCloud.getLocalTrips(); for (const id of ['other', 'qa']) { localStorage.setItem('travelmate-active-user', id); dispatchEvent(new CustomEvent('travelmate:account-context-changed', { detail: { trips: id === 'qa' ? original : [] } })); } receiptQA.release(); });
+    await navigated; await page.waitForLoadState('domcontentloaded'); await ready(page);
     await expect(f.locator('[type="submit"]')).toBeEnabled(); expect(await page.evaluate(() => receiptQA.saves.length)).toBe(0); expect((await canonical(page)).expenses[0].receiptPath).toBe('qa/receipts/receipt-qa/old');
   });
   test('pending IndexedDB file survives quota on reload and online retry', async ({ page }) => {
     await boot(page); const f = await form(page); await page.evaluate(() => { receiptQA.offline = true; }); await submit(f); await expect(f).toBeHidden();
     const local = (await canonical(page)).expenses[0]; await page.evaluate(() => localStorage.setItem('receipt-qa-quota', '1'));
-    await page.reload({ waitUntil: 'domcontentloaded' }); await expect(page.locator('[data-receipt-form]')).toHaveCount(1);
+    await page.reload({ waitUntil: 'domcontentloaded' }); await ready(page); await expect(page.locator('[data-receipt-form]')).toHaveCount(1);
     await expect.poll(() => page.evaluate(() => receiptQA.uploads.length)).toBe(1);
     expect((await canonical(page)).expenses[0].receiptLocalKey).toBe(local.receiptLocalKey); expect(await idb(page, local.receiptLocalKey)).toBeGreaterThan(0);
     await page.evaluate(() => { receiptQA.quota = false; dispatchEvent(new Event('online')); });
