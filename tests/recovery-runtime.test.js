@@ -27,7 +27,20 @@ function expenseHarness(){
   const panel={querySelector:selector=>selector==='[data-receipt-status]'?status:preview};
   const context={form,panel,Number,Date,console:{warn(){}},state:{expenses:[]},experienceContext:()=>({owner:'qa'}),experienceIsCurrent:()=>true,selectedReceiptFile:()=>({name:'mock.png',type:'image/png',size:10}),expenseById:()=>null,storePrivateReceiptWithRetry:()=>upload.promise,deleteLocalReceipt:async()=>{},removePrivateReceipt:async()=>{},putLocalReceipt:async()=>{throw Error('mock disk failure')},writeJson(){},storageKey:x=>x,saveTripData:()=>{saves++},localDateValue:()=> '2026-10-12',renderExpenseList(){},renderBudgetColumns(){},renderSummary(){},toast(){}};
   const source=read('assets/trip-experience.js'),start=source.indexOf('    var expenseSavePending = false;'),end=source.indexOf('    renderExpenseList();'+String.fromCharCode(10)+'    renderBudgetCharts();',start);
-  assert.ok(start>=0&&end>start);vm.runInNewContext(source.slice(start,end),context);
+  // The handler now delegates acceptance and cleanup to actual module helpers.
+  // Keep the existing submit assertions; use the real canonical store here too.
+  const values=new Map([['travelmate-active-user','qa']]);let rows=[{id:'qa',ownerId:'qa',expenses:[]}];
+  Object.assign(context,{localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,String(v))},location:{search:'?id=qa'},URLSearchParams,
+    experienceAvailable:true,experienceAccountId:'qa',experienceBaseline:JSON.parse(JSON.stringify(rows[0])),
+    cloud:{getLocalTrips:()=>JSON.parse(JSON.stringify(rows)),upsertLocalTrip:t=>{rows=[JSON.parse(JSON.stringify(t))]},queueTripSave:()=>{saves++}}});
+  context.window={TravelMateCloud:context.cloud};context.state.trip=JSON.parse(JSON.stringify(rows[0]));
+  context.experienceContext=()=>({userId:'qa',trip:context.state.trip});
+  context.assertExperienceCurrent=c=>{if(!context.experienceIsCurrent(c))throw Error('AUTH_CONTEXT_CHANGED')};
+  vm.createContext(context);vm.runInContext(read('assets/trip-store.js'),context);
+  const helpers=source.slice(source.indexOf('  function safeExpenses()'),source.indexOf('  function receiptPath('));
+  const recoveryHelpers=source.slice(source.indexOf('  function pendingReceiptSave('),source.indexOf('  async function migrateInlineReceipts('));
+  vm.runInContext(helpers+recoveryHelpers,context);
+  assert.ok(start>=0&&end>start);vm.runInContext(source.slice(start,end),context);
   return{context,form,button,status,upload,saves:()=>saves};
 }
 test('deterministic receipt mock: overlapping submits persist exactly one expense',async()=>{

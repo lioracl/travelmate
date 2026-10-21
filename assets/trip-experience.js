@@ -84,6 +84,26 @@
   function inferBudget() { var explicit = Number(state.trip && state.trip.budget || String(document.querySelector('[data-budget]') && document.querySelector('[data-budget]').textContent || '').replace(/[^0-9.]/g, '') || 0); if (explicit) return explicit; var text = document.querySelector('.budget-card') && document.querySelector('.budget-card').textContent || document.getElementById('budget') && document.getElementById('budget').textContent || ''; var match = text.match(/מתוך\s*([\d,.]+)\s*€/i) || text.match(/([\d,.]+)\s*€/); return match ? Number(match[1].replace(/,/g, '')) : 0; }
   function toast(message) { var old = document.querySelector('.trip-experience-toast'); if (old) old.remove(); var node = document.createElement('div'); node.className = 'trip-experience-toast'; node.textContent = message; document.body.appendChild(node); setTimeout(function () { node.remove(); }, 2800); }
   function safeExpenses() { return state.expenses.map(function (expense) { var copy = Object.assign({}, expense); delete copy.receiptData; return copy; }); }
+  // Inline bytes belong only to the existing owner-scoped local mirror.
+  // Canonical metadata and every cloud save continue to use safeExpenses().
+  function localReceiptExpenses(expenses, previous) {
+    var mirrored = [];
+    try { mirrored = JSON.parse(localStorage.getItem(storageKey('expenses')) || '[]'); } catch (error) {}
+    if (!Array.isArray(mirrored)) mirrored = [];
+    var local = (previous || []).concat(mirrored);
+    var intents = [];
+    try { intents = receiptCleanupItems(experienceAccountId); } catch (error) {}
+    var context = experienceContext();
+    return expenses.map(function (expense) {
+      var original = local.find(function (item) { return item && String(item.id) === String(expense.id) && item.receiptData; });
+      if (!original) return expense;
+      // Financial/note edits do not replace the local receipt. A changed
+      // receipt identity does; never overlay bytes onto its new metadata.
+      var same = !expense.receiptPath && ['receiptPath', 'receiptLocalKey', 'receiptPending', 'receiptName', 'receiptType', 'receiptSize'].every(function (key) { return original[key] === expense[key]; });
+      var pending = intents.some(function (item) { return validReceiptCleanup(item, context) && item.pendingSave && item.pendingSave.inline && String(item.pendingSave.expenseId) === String(expense.id) && item.pendingSave.receiptPath === expense.receiptPath; });
+      return same || pending ? Object.assign({}, expense, { receiptData: original.receiptData }) : expense;
+    });
+  }
   function saveTripData() {
     if (!experienceAvailable || !state.trip || experienceAccountId !== String(localStorage.getItem('travelmate-active-user') || '')) return;
     var draft = Object.assign({}, state.trip, { expenses: safeExpenses(), budgetCategories: state.budgetCategories, memories: state.memories, photoAlbumUrl: state.albumUrl, currencyFee: state.fee, secondaryCurrency: state.secondaryCurrency, budgetUnlimited: state.budgetUnlimited });
@@ -94,22 +114,218 @@
       if (!saved) return;
       state.trip = JSON.parse(JSON.stringify(saved));
       experienceBaseline = JSON.parse(JSON.stringify(saved));
-      state.expenses = saved.expenses || []; state.budgetCategories = saved.budgetCategories || state.budgetCategories;
+      state.expenses = state.expenses.some(function (expense) { return expense.receiptData; }) ? localReceiptExpenses(saved.expenses || [], state.expenses) : saved.expenses || []; state.budgetCategories = saved.budgetCategories || state.budgetCategories;
       state.memories = saved.memories || []; state.albumUrl = saved.photoAlbumUrl || '';
       state.fee = saved.currencyFee == null ? state.fee : saved.currencyFee; state.secondaryCurrency = saved.secondaryCurrency || state.secondaryCurrency; state.budgetUnlimited = saved.budgetUnlimited === true;
     } else { state.trip = draft; }
     writeJson(storageKey('budget-unlimited'), state.budgetUnlimited);
+    return state.trip;
+  }
+
+  // Cleanup intent is durable before creating a replacement. References, not
+  // an upload response, decide whether an object can be retired.
+  var receiptWork = 0;
+  var receiptCleanupRunning = false;
+  var pendingReceiptSync = false;
+  function receiptNonce() { return Array.from(crypto.getRandomValues(new Uint8Array(16)), function (value) { return value.toString(16).padStart(2, '0'); }).join(''); }
+  function receiptCleanupKey(userId) { return 'travelmate-receipt-cleanup:' + encodeURIComponent(userId); }
+  function receiptCleanupItems(userId) {
+    var value = JSON.parse(localStorage.getItem(receiptCleanupKey(userId)) || '[]');
+    if (!Array.isArray(value)) throw new Error('RECEIPT_CLEANUP_INVALID');
+    return value;
+  }
+  function validReceiptCleanup(item, context) {
+    if (!item || item.userId !== context.userId || item.ownerId !== String(context.trip.ownerId || '') || item.tripId !== String(context.trip.id)) return false;
+    if (item.path) return !!context.userId && item.path.indexOf(context.userId + '/receipts/' + encodeURIComponent(item.tripId).replace(/%/g, '_') + '/') === 0 && !/[\\]/.test(item.path) && item.path.split('/').every(function (part) { return part && part !== '.' && part !== '..'; });
+    return typeof item.localKey === 'string' && item.localKey.indexOf((item.ownerId || context.userId || 'guest') + ':' + item.tripId + ':') === 0;
+  }
+  function queueReceiptCleanup(context, resource) {
+    var item = { userId: context.userId, ownerId: String(context.trip.ownerId || ''), tripId: String(context.trip.id), path: resource.receiptPath || '', localKey: resource.receiptLocalKey || '' };
+    if (!validReceiptCleanup(item, context)) return;
+    var items = receiptCleanupItems(context.userId);
+    var store = window.TravelMateTripStore;
+    var canonical = store && store.getTrip && store.getTrip(context.trip.id, context.trip.ownerId);
+    item.retireAfterRevision = Number(canonical && canonical.cloudRevision || 0);
+    if (!items.some(function (old) { return old.userId === item.userId && old.ownerId === item.ownerId && old.tripId === item.tripId && old.path === item.path && old.localKey === item.localKey; })) {
+      items.push(item); localStorage.setItem(receiptCleanupKey(context.userId), JSON.stringify(items));
+    }
+  }
+  function forgetReceiptCleanup(context, resource) {
+    var items = receiptCleanupItems(context.userId).filter(function (item) {
+      return item.ownerId !== String(context.trip.ownerId || '') || item.tripId !== String(context.trip.id) || (item.path ? item.path !== resource.receiptPath : item.localKey !== resource.receiptLocalKey);
+    });
+    localStorage.setItem(receiptCleanupKey(context.userId), JSON.stringify(items));
+  }
+  function receiptReferences(trip, item) {
+    return Array.isArray(trip && trip.expenses) && trip.expenses.some(function (expense) { return item.path ? expense.receiptPath === item.path : expense.receiptLocalKey === item.localKey; });
+  }
+  function receiptReferencesKnown(trip) {
+    return trip && typeof trip === 'object' && !Array.isArray(trip) && (trip.expenses === undefined || (Array.isArray(trip.expenses) && trip.expenses.every(function (expense) { return expense && typeof expense === 'object'; })));
+  }
+  function protectReceiptCleanup(context, expense, protectedValue) {
+    var items = receiptCleanupItems(context.userId);
+    items.forEach(function (item) {
+      if (validReceiptCleanup(item, context) && (item.path ? item.path === expense.receiptPath : item.localKey === expense.receiptLocalKey)) item.persistenceUncertain = protectedValue;
+    });
+    localStorage.setItem(receiptCleanupKey(context.userId), JSON.stringify(items));
+  }
+  function receiptCleanupUnreferenced(context, item) {
+    var store = window.TravelMateTripStore;
+    var current;
+    if (!new URLSearchParams(location.search).get('id') && item.localKey) {
+      // Built-in trips have no canonical row; their existing local mirror is
+      // authoritative for local bytes only. Missing/malformed is not absence.
+      var raw = localStorage.getItem(storageKey('expenses'));
+      if (raw === null) return false;
+      var expenses = JSON.parse(raw);
+      if (!Array.isArray(expenses)) return false;
+      current = { ownerId: item.ownerId, expenses: expenses };
+    } else {
+      if (!store || !store.getTrip) return false;
+      current = store.getTrip(item.tripId, item.ownerId);
+    }
+    // Absence may mean deletion or lost access. Keep intent rather than guess.
+    if (!receiptReferencesKnown(current) || String(current.ownerId || '') !== item.ownerId || receiptReferences(current, item)) return false;
+    var trips = cloud && cloud.getLocalTrips ? cloud.getLocalTrips() : [current];
+    return Array.isArray(trips) && trips.every(receiptReferencesKnown) && !trips.some(function (trip) { return receiptReferences(trip, item); });
+  }
+  function receiptRemoteRetirementConfirmed(context, item, row) {
+    var store = window.TravelMateTripStore;
+    var current = store && store.getTrip && store.getTrip(item.tripId, item.ownerId);
+    if (!current || String(current.ownerId || '') !== item.ownerId || current.syncStatus !== 'synced' || current.syncMutationId || current.syncConflict || current.deletePending) return false;
+    var revision = Number(current.cloudRevision), remoteRevision = Number(row && row.revision);
+    // Absence before an older save commits is not retirement. Require a
+    // positive superseding CAS revision and the same acknowledged snapshot.
+    if (!Number.isSafeInteger(item.retireAfterRevision) || item.retireAfterRevision < 0 || !Number.isSafeInteger(revision) || revision <= item.retireAfterRevision || remoteRevision !== revision) return false;
+    var acknowledged = Date.parse(current.cloudUpdatedAt || '');
+    if (!Number.isFinite(acknowledged) || Date.parse(row.updated_at || '') !== acknowledged) return false;
+    return receiptReferencesKnown(row.payload) && JSON.stringify(row.payload.expenses || []) === JSON.stringify(current.expenses || []) && receiptCleanupUnreferenced(context, item);
+  }
+  async function flushReceiptCleanup() {
+    var context = experienceContext();
+    if (receiptWork || receiptCleanupRunning || !experienceIsCurrent(context)) return;
+    receiptCleanupRunning = true;
+    try {
+      var items = receiptCleanupItems(context.userId);
+      for (var index = 0; index < items.length; index += 1) {
+        var item = items[index];
+        if (!experienceIsCurrent(context) || receiptWork) return;
+        if (item.persistenceUncertain || !validReceiptCleanup(item, context) || !receiptCleanupUnreferenced(context, item)) continue;
+        try {
+          if (item.path) {
+            var access = await privateStorageAccess();
+            if (!experienceIsCurrent(context) || receiptWork || !access.session || String(access.session.user.id) !== context.userId) return;
+            var references = await access.client.from('travel_trips').select('id,user_id,payload,revision,updated_at').eq('user_id', item.ownerId).eq('id', item.tripId).limit(1);
+            if (!experienceIsCurrent(context) || receiptWork) return;
+            var row = references.data && references.data[0];
+            if (references.error || !row || String(row.id) !== item.tripId || String(row.user_id) !== item.ownerId || !receiptReferencesKnown(row.payload) || receiptReferences(row.payload, item)) continue;
+            if (typeof access.client.rpc !== 'function' || !receiptRemoteRetirementConfirmed(context, item, row)) continue;
+            var removed = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').remove([item.path]);
+            if (removed.error) continue;
+          } else {
+            await deleteLocalReceipt(item.localKey, context, function () { return !receiptWork && receiptCleanupUnreferenced(context, item); });
+          }
+          if (!experienceIsCurrent(context)) return;
+          forgetReceiptCleanup(context, { receiptPath: item.path, receiptLocalKey: item.localKey });
+        } catch (error) { /* Keep intent after auth, storage, quota or reference failure. */ }
+      }
+    } catch (error) { /* A malformed/unavailable queue never authorizes deletion. */ }
+    finally { receiptCleanupRunning = false; }
+  }
+  function restoreReceiptState(context, previous) {
+    if (!experienceIsCurrent(context)) return;
+    var store = window.TravelMateTripStore;
+    var current = store && store.getTrip && store.getTrip(context.trip.id, context.trip.ownerId);
+    if (current && String(current.ownerId || '') === String(context.trip.ownerId || '')) {
+      state.trip = JSON.parse(JSON.stringify(current));
+      experienceBaseline = JSON.parse(JSON.stringify(current));
+      state.expenses = localReceiptExpenses(state.trip.expenses || [], previous);
+    } else state.expenses = previous;
+  }
+  function persistReceiptExpense(context, expense, previousExpense) {
+    assertExperienceCurrent(context);
+    var customTrip = !!new URLSearchParams(location.search).get('id');
+    var store = window.TravelMateTripStore;
+    if (customTrip) {
+      var canonical = store && store.getTrip && store.getTrip(context.trip.id, context.trip.ownerId);
+      if (!canonical || String(canonical.ownerId || '') !== String(context.trip.ownerId || '')) throw new Error('RECEIPT_TRIP_REMOVED');
+      var canonicalExpense = (canonical.expenses || []).find(function (item) { return String(item.id) === String(expense.id); });
+      if (previousExpense && !canonicalExpense) throw new Error('RECEIPT_EXPENSE_REMOVED');
+      if (previousExpense && ['receiptPath', 'receiptLocalKey', 'receiptPending'].some(function (key) { return canonicalExpense[key] !== previousExpense[key]; })) throw new Error('RECEIPT_EXPENSE_CHANGED');
+    }
+    var previous = state.expenses;
+    var next = previous.slice();
+    var index = next.findIndex(function (item) { return String(item.id) === String(expense.id); });
+    if (previousExpense && index < 0) throw new Error('RECEIPT_EXPENSE_REMOVED');
+    if (previousExpense && JSON.stringify(next[index]) !== JSON.stringify(previousExpense)) throw new Error('RECEIPT_EXPENSE_CHANGED');
+    if (index >= 0) next[index] = expense; else next.push(expense);
+    state.expenses = next;
+    try {
+      // A thrown save can have queued remote work. Preserve its uploads until
+      // acceptance is known; an uncertain result never authorizes removal.
+      protectReceiptCleanup(context, expense, true);
+      var saved = saveTripData();
+      if (!saved) protectReceiptCleanup(context, expense, false);
+      if (!customTrip) localStorage.setItem(storageKey('expenses'), JSON.stringify(state.expenses));
+      var persisted = customTrip ? store.getTrip(context.trip.id, context.trip.ownerId) : { expenses: JSON.parse(localStorage.getItem(storageKey('expenses')) || '[]') };
+      var accepted = saved && persisted && (persisted.expenses || []).find(function (item) { return String(item.id) === String(expense.id); });
+      if (!accepted || (customTrip && String(persisted.ownerId || '') !== String(context.trip.ownerId || '')) || ['receiptPath', 'receiptLocalKey', 'receiptPending', 'amount', 'currency', 'category', 'date', 'note'].some(function (key) { return accepted[key] !== expense[key]; })) throw new Error('RECEIPT_CANONICAL_SAVE_FAILED');
+      assertExperienceCurrent(context);
+      writeJson(storageKey('expenses'), state.expenses);
+      return accepted;
+    } catch (error) { restoreReceiptState(context, previous); throw error; }
+  }
+  function persistReceiptRemoval(context, expense) {
+    assertExperienceCurrent(context);
+    var previous = state.expenses;
+    var customTrip = !!new URLSearchParams(location.search).get('id');
+    if (customTrip) {
+      var current = window.TravelMateTripStore && window.TravelMateTripStore.getTrip(context.trip.id, context.trip.ownerId);
+      var currentExpense = current && (current.expenses || []).find(function (item) { return String(item.id) === String(expense.id); });
+      if (!current || String(current.ownerId || '') !== String(context.trip.ownerId || '') || JSON.stringify(currentExpense) !== JSON.stringify(expense)) throw new Error('RECEIPT_EXPENSE_CHANGED');
+    }
+    receiptWork += 1;
+    try {
+      if (expense.receiptPath) queueReceiptCleanup(context, { receiptPath: expense.receiptPath });
+      if (expense.receiptLocalKey) queueReceiptCleanup(context, { receiptLocalKey: expense.receiptLocalKey });
+      protectReceiptCleanup(context, expense, true);
+      state.expenses = previous.filter(function (item) { return String(item.id) !== String(expense.id); });
+      var saved = saveTripData();
+      if (!saved) throw new Error('RECEIPT_CANONICAL_SAVE_FAILED');
+      if (!customTrip) localStorage.setItem(storageKey('expenses'), JSON.stringify(state.expenses));
+      var persisted = customTrip ? window.TravelMateTripStore.getTrip(context.trip.id, context.trip.ownerId) : { expenses: JSON.parse(localStorage.getItem(storageKey('expenses')) || '[]') };
+      if (!persisted || (customTrip && String(persisted.ownerId || '') !== String(context.trip.ownerId || '')) || (persisted.expenses || []).some(function (item) { return String(item.id) === String(expense.id); })) throw new Error('RECEIPT_CANONICAL_SAVE_FAILED');
+      assertExperienceCurrent(context);
+      writeJson(storageKey('expenses'), state.expenses);
+      // Metadata removal is accepted. Storage cleanup may still be offline.
+      try { protectReceiptCleanup(context, expense, false); } catch (error) {}
+    } catch (error) { restoreReceiptState(context, previous); throw error; }
+    finally { receiptWork -= 1; flushReceiptCleanup(); }
   }
 
   function receiptPath(expenseId, fileName, userId) {
     var extension = String(fileName || '').split('.').pop().replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 8) || 'bin';
-    return userId + '/receipts/' + encodeURIComponent(tripId()).replace(/%/g, '_') + '/' + String(expenseId) + '-' + Date.now() + '.' + extension;
+    return userId + '/receipts/' + encodeURIComponent(tripId()).replace(/%/g, '_') + '/' + String(expenseId) + '-' + receiptNonce() + '.' + extension;
   }
   function receiptDatabase() { return new Promise(function (resolve, reject) { var request = indexedDB.open('travelmate-private-receipts', 1); request.onupgradeneeded = function () { if (!request.result.objectStoreNames.contains('files')) request.result.createObjectStore('files'); }; request.onsuccess = function () { resolve(request.result); }; request.onerror = function () { reject(request.error); }; }); }
   function receiptLocalKey(expenseId) { return (activeOwnerId() || 'guest') + ':' + tripId() + ':' + String(expenseId); }
-  async function putLocalReceipt(file, expenseId) { var key = receiptLocalKey(expenseId); var database = await receiptDatabase(); await new Promise(function (resolve, reject) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').put({ blob: file, name: file.name || ('receipt-' + expenseId), type: file.type || 'application/octet-stream', size: file.size || 0, savedAt: Date.now() }, key); transaction.oncomplete = resolve; transaction.onerror = function () { reject(transaction.error); }; }); database.close(); return key; }
+  async function putLocalReceipt(file, expenseId) {
+    var context = experienceContext(); assertExperienceCurrent(context);
+    var key = receiptLocalKey(expenseId) + ':' + receiptNonce();
+    queueReceiptCleanup(context, { receiptLocalKey: key });
+    var database = await receiptDatabase();
+    try {
+      assertExperienceCurrent(context);
+      await new Promise(function (resolve, reject) {
+        var transaction = database.transaction('files', 'readwrite');
+        transaction.objectStore('files').put({ blob: file, name: file.name || ('receipt-' + expenseId), type: file.type || 'application/octet-stream', size: file.size || 0, savedAt: Date.now() }, key);
+        transaction.oncomplete = resolve; transaction.onerror = transaction.onabort = function () { reject(transaction.error || new Error('RECEIPT_LOCAL_SAVE_FAILED')); };
+      });
+      assertExperienceCurrent(context); return key;
+    } finally { database.close(); }
+  }
   async function getLocalReceipt(key) { if (!key) return null; var database = await receiptDatabase(); var value = await new Promise(function (resolve, reject) { var request = database.transaction('files').objectStore('files').get(key); request.onsuccess = function () { resolve(request.result || null); }; request.onerror = function () { reject(request.error); }; }); database.close(); return value; }
-  async function deleteLocalReceipt(key) { if (!key) return; var database = await receiptDatabase(); await new Promise(function (resolve) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = resolve; transaction.onerror = resolve; }); database.close(); }
+  async function deleteLocalReceipt(key, context, canDelete) { if (!key) return; context = context || experienceContext(); var database = await receiptDatabase(); try { assertExperienceCurrent(context); if (canDelete && !canDelete()) throw new Error('RECEIPT_REFERENCE_CHANGED'); await new Promise(function (resolve, reject) { var transaction = database.transaction('files', 'readwrite'); transaction.objectStore('files').delete(key); transaction.oncomplete = resolve; transaction.onerror = transaction.onabort = function () { reject(transaction.error || new Error('RECEIPT_LOCAL_DELETE_FAILED')); }; }); } finally { database.close(); } }
   function waitReceiptRetry(delay) { return new Promise(function (resolve) { setTimeout(resolve, delay); }); }
   async function privateStorageAccess() {
     var context = experienceContext(); assertExperienceCurrent(context);
@@ -128,6 +344,7 @@
     assertExperienceCurrent(context);
     if (context.userId !== String(access.session.user.id)) throw new Error('AUTH_CONTEXT_CHANGED');
     var path = receiptPath(expenseId, file.name, access.session.user.id);
+    queueReceiptCleanup(context, { receiptPath: path });
     var result = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').upload(path, file, { cacheControl: '3600', upsert: false, contentType: 'application/octet-stream' });
     assertExperienceCurrent(context);
     if (result.error) throw result.error;
@@ -153,45 +370,113 @@
     if (expense.receiptPath && cloud) { var access = await privateStorageAccess(); assertExperienceCurrent(context); var result = await access.client.storage.from((window.TRAVELMATE_SUPABASE || {}).documentBucket || 'travel-documents').remove([expense.receiptPath]); assertExperienceCurrent(context); if (result.error) throw result.error; }
     if (expense.receiptLocalKey) await deleteLocalReceipt(expense.receiptLocalKey);
   }
-  async function migrateInlineReceipts() {
-    var context = experienceContext();
-    var changed = false;
-    for (var index = 0; index < state.expenses.length; index += 1) {
-      var expense = state.expenses[index];
-      if (!expense.receiptData || expense.receiptPath) continue;
+  function pendingReceiptSave(context, expense, path, inline, localKey) {
+    var items = receiptCleanupItems(context.userId);
+    var intent = items.find(function (item) { return validReceiptCleanup(item, context) && (inline ? item.path === path : expense.receiptLocalKey ? item.localKey === expense.receiptLocalKey : item.path === expense.receiptPath); });
+    // A shared receipt may belong to another uploader. Track acceptance on
+    // our replacement intent; never grant cleanup rights over that old path.
+    if (!intent && !inline) intent = items.find(function (item) { return validReceiptCleanup(item, context) && (localKey ? item.localKey === localKey : item.path === path); });
+    if (!intent) throw new Error('RECEIPT_RECOVERY_INTENT_REQUIRED');
+    intent.persistenceUncertain = true;
+    intent.pendingSave = { expenseId: expense.id, receiptPath: path, localKey: localKey || '', previousPath: expense.receiptPath || '', inline: !!inline };
+    items.forEach(function (item) { if (validReceiptCleanup(item, context) && expense.receiptPath && item.path === expense.receiptPath) item.persistenceUncertain = true; });
+    localStorage.setItem(receiptCleanupKey(context.userId), JSON.stringify(items));
+  }
+  function completePendingReceiptSave(context, path, localKey) {
+    var items = receiptCleanupItems(context.userId);
+    var intent = items.find(function (item) { return validReceiptCleanup(item, context) && item.pendingSave && item.pendingSave.receiptPath === path && String(item.pendingSave.localKey || '') === String(localKey || ''); });
+    if (!intent) return;
+    var previousPath = intent.pendingSave.previousPath;
+    delete intent.pendingSave; intent.persistenceUncertain = false;
+    items.forEach(function (item) { if (validReceiptCleanup(item, context) && previousPath && item.path === previousPath) item.persistenceUncertain = false; });
+    localStorage.setItem(receiptCleanupKey(context.userId), JSON.stringify(items));
+    forgetReceiptCleanup(context, { receiptPath: path, receiptLocalKey: localKey || '' });
+  }
+  function retryPendingReceiptSaves(context) {
+    if (!experienceIsCurrent(context)) return;
+    var items, store = window.TravelMateTripStore;
+    try { items = receiptCleanupItems(context.userId); } catch (error) { return; }
+    var customTrip = !!new URLSearchParams(location.search).get('id');
+    items.forEach(function (item) {
+      if (!validReceiptCleanup(item, context) || !item.pendingSave) return;
       try {
-        var blob = await fetch(expense.receiptData).then(function (response) { return response.blob(); });
-        if (!experienceIsCurrent(context)) return;
-        var file = new File([blob], expense.receiptName || ('receipt-' + expense.id), { type: expense.receiptType || blob.type || 'application/octet-stream' });
-        expense.receiptPath = await storePrivateReceiptWithRetry(file, expense.id);
-        if (!experienceIsCurrent(context)) return;
-        delete expense.receiptData;
-        changed = true;
-      } catch (error) { if (!experienceIsCurrent(context)) return; console.warn('TravelMate receipt migration deferred', error); }
-    }
-    if (changed) { writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); }
+        assertExperienceCurrent(context);
+        var current = customTrip ? store && store.getTrip(context.trip.id, context.trip.ownerId) : { ownerId: context.trip.ownerId, expenses: JSON.parse(localStorage.getItem(storageKey('expenses')) || 'null') };
+        if (!receiptReferencesKnown(current) || String(current.ownerId || '') !== String(context.trip.ownerId || '')) return;
+        var expense = (current.expenses || []).find(function (entry) { return String(entry.id) === String(item.pendingSave.expenseId); });
+        if (!expense || expense.receiptPath !== item.pendingSave.receiptPath || (!item.pendingSave.inline && (Boolean(expense.receiptPending) !== Boolean(item.pendingSave.localKey) || String(expense.receiptLocalKey || '') !== String(item.pendingSave.localKey || '')))) return;
+        // saveTripFields may no-op after a partial write. Re-submit the exact
+        // current canonical trip through its existing save API to retry both
+        // local backup and queue acceptance, without replaying a stale delta.
+        if (customTrip) {
+          if (!store.saveTrip || !store.saveTrip(current)) return;
+          var persisted = store.getTrip(context.trip.id, context.trip.ownerId);
+          if (!persisted || JSON.stringify(persisted.expenses) !== JSON.stringify(current.expenses)) return;
+          assertExperienceCurrent(context);
+          restoreReceiptState(context, state.expenses);
+        }
+        if (item.pendingSave.inline) {
+          state.expenses = state.expenses.map(function (entry) { if (String(entry.id) !== String(expense.id) || entry.receiptPath !== expense.receiptPath) return entry; var copy = Object.assign({}, entry); delete copy.receiptData; return copy; });
+          localStorage.setItem(storageKey('expenses'), JSON.stringify(state.expenses));
+        }
+        completePendingReceiptSave(context, expense.receiptPath, item.pendingSave.localKey);
+      } catch (error) { /* Keep original bytes and retry intent on any uncertainty. */ }
+    });
+  }
+  async function migrateInlineReceipts() {
+    var context = experienceContext(); if (!experienceIsCurrent(context)) return;
+    receiptWork += 1;
+    try {
+      retryPendingReceiptSaves(context);
+      var expenses = JSON.parse(JSON.stringify(state.expenses));
+      for (var index = 0; index < expenses.length; index += 1) {
+        var expense = expenses[index];
+        if (!expense.receiptData || expense.receiptPath) continue;
+        try {
+          var blob = await fetch(expense.receiptData).then(function (response) { return response.blob(); });
+          assertExperienceCurrent(context);
+          var file = new File([blob], expense.receiptName || ('receipt-' + expense.id), { type: expense.receiptType || blob.type || 'application/octet-stream' });
+          var path = await storePrivateReceiptWithRetry(file, expense.id);
+          // Preserve every not-yet-accepted inline byte before canonical
+          // sanitization can remove it from state, including partial saves.
+          localStorage.setItem(storageKey('expenses'), JSON.stringify(state.expenses));
+          pendingReceiptSave(context, expense, path, true);
+          var next = Object.assign({}, expense, { receiptPath: path }); delete next.receiptData;
+          persistReceiptExpense(context, next, expense);
+          state.expenses = state.expenses.map(function (entry) { if (String(entry.id) !== String(expense.id)) return entry; var copy = Object.assign({}, entry); delete copy.receiptData; return copy; });
+          localStorage.setItem(storageKey('expenses'), JSON.stringify(state.expenses));
+          completePendingReceiptSave(context, path);
+          renderExpenseList();
+        } catch (error) { if (!experienceIsCurrent(context)) return; console.warn('TravelMate receipt migration deferred', error); }
+      }
+    } finally { receiptWork -= 1; flushReceiptCleanup(); }
   }
   async function syncPendingReceipts() {
-    var context = experienceContext();
-    var changed = false;
-    for (var index = 0; index < state.expenses.length; index += 1) {
-      var expense = state.expenses[index];
-      if (!expense.receiptPending || !expense.receiptLocalKey) continue;
-      try {
-        var local = await getLocalReceipt(expense.receiptLocalKey); if (!local || !local.blob) continue;
-        if (!experienceIsCurrent(context)) return;
-        var file = new File([local.blob], local.name || expense.receiptName || ('receipt-' + expense.id), { type: local.type || expense.receiptType || 'application/octet-stream' });
-        var previousPath = expense.receiptPath || '';
-        expense.receiptPath = await storePrivateReceiptWithRetry(file, expense.id);
-        if (!experienceIsCurrent(context)) return;
-        expense.receiptPending = false;
-        await deleteLocalReceipt(expense.receiptLocalKey); delete expense.receiptLocalKey;
-        if (!experienceIsCurrent(context)) return;
-        if (previousPath && previousPath !== expense.receiptPath) removePrivateReceipt({ receiptPath: previousPath }).catch(function () {});
-        changed = true;
-      } catch (error) { if (!experienceIsCurrent(context)) return; console.warn('TravelMate receipt sync deferred', error && error.message || error); }
-    }
-    if (changed) { writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); }
+    if (pendingReceiptSync) return;
+    var context = experienceContext(); if (!experienceIsCurrent(context)) return;
+    pendingReceiptSync = true;
+    receiptWork += 1;
+    try {
+      retryPendingReceiptSaves(context);
+      var expenses = JSON.parse(JSON.stringify(state.expenses));
+      for (var index = 0; index < expenses.length; index += 1) {
+        var expense = expenses[index];
+        if (!expense.receiptPending || !expense.receiptLocalKey) continue;
+        try {
+          var local = await getLocalReceipt(expense.receiptLocalKey); if (!local || !local.blob) continue;
+          assertExperienceCurrent(context);
+          queueReceiptCleanup(context, { receiptLocalKey: expense.receiptLocalKey });
+          if (expense.receiptPath) queueReceiptCleanup(context, { receiptPath: expense.receiptPath });
+          var file = new File([local.blob], local.name || expense.receiptName || ('receipt-' + expense.id), { type: local.type || expense.receiptType || 'application/octet-stream' });
+          var path = await storePrivateReceiptWithRetry(file, expense.id);
+          pendingReceiptSave(context, expense, path, false);
+          var next = Object.assign({}, expense, { receiptPath: path, receiptPending: false }); delete next.receiptLocalKey;
+          persistReceiptExpense(context, next, expense);
+          completePendingReceiptSave(context, path);
+          renderExpenseList();
+        } catch (error) { if (!experienceIsCurrent(context)) return; console.warn('TravelMate receipt sync deferred', error && error.message || error); }
+      }
+    } finally { pendingReceiptSync = false; receiptWork -= 1; flushReceiptCleanup(); }
   }
 
   function setupCollapsibleSections() {
@@ -474,7 +759,7 @@
       currencySelect.prepend(localOption);
     }
     currencySelect.value = state.localCurrency; renderBudgetColumns();
-    function toggleForm() { if (expenseSavePending) return; var opening = form.hidden; form.hidden = !form.hidden; if (opening) { form.reset(); delete form.dataset.editingId; form.date.value = localDateValue(); form.currency.value = state.localCurrency; var status = panel.querySelector('[data-receipt-status]'); if (status) status.textContent = ''; panel.querySelector('[data-receipt-preview]').hidden = true; form.amount.focus(); } }
+    function toggleForm() { if (expenseSavePending) return; var opening = form.hidden; form.hidden = !form.hidden; if (opening) { form.reset(); delete form.dataset.editingId; delete form.dataset.receiptDraftId; form.date.value = localDateValue(); form.currency.value = state.localCurrency; var status = panel.querySelector('[data-receipt-status]'); if (status) status.textContent = ''; panel.querySelector('[data-receipt-preview]').hidden = true; form.amount.focus(); } }
     panel.querySelector('[data-expense-toggle]').onclick = toggleForm; var legacyButton = section.querySelector('.section-head .pill-btn'); if (legacyButton) legacyButton.onclick = toggleForm; form.date.value = localDateValue();
     form.receiptCamera.onchange = function () { if (form.receiptCamera.files[0]) { form.receiptFile.value = ''; } previewReceipt(form.receiptCamera.files[0], panel); };
     form.receiptFile.onchange = function () { if (form.receiptFile.files[0]) { form.receiptCamera.value = ''; } previewReceipt(form.receiptFile.files[0], panel); };
@@ -487,27 +772,29 @@
       var amount = Number(form.amount.value);
       if (!Number.isFinite(amount) || amount <= 0 || !form.note.value.trim()) return;
       var context = experienceContext(); if (!experienceIsCurrent(context)) return;
-      var file = selectedReceiptFile(form); var status = panel.querySelector('[data-receipt-status]'); var editing = expenseById(form.dataset.editingId);
+      var file = selectedReceiptFile(form); var status = panel.querySelector('[data-receipt-status]'); var editing = expenseById(form.dataset.editingId || form.dataset.receiptDraftId);
+      editing = editing && JSON.parse(JSON.stringify(editing));
       if (file && file.size > 5 * 1024 * 1024) { status.textContent = 'כדי לשמור את הקבלה בענן יש לבחור קובץ עד 5MB.'; return; }
       var expenseInput = { amount: amount, currency: form.currency.value, category: form.category.value, date: form.date.value, note: form.note.value.trim() };
-      expenseSavePending = true;
+      expenseSavePending = true; receiptWork += 1;
       var submitButton = form.querySelector('button[type="submit"]');
       submitButton.disabled = true; form.setAttribute('aria-busy', 'true');
       try {
+      retryPendingReceiptSaves(context);
       status.textContent = file ? 'שומר את הקבלה…' : '';
-      var expenseId = editing ? editing.id : Date.now();
+      var expenseId = editing ? editing.id : Number(form.dataset.receiptDraftId) || Date.now();
+      form.dataset.receiptDraftId = String(expenseId);
+      if (editing && editing.receiptPath) queueReceiptCleanup(context, { receiptPath: editing.receiptPath });
+      if (editing && editing.receiptLocalKey) queueReceiptCleanup(context, { receiptLocalKey: editing.receiptLocalKey });
       var receiptPathValue = editing && editing.receiptPath || '';
       var receiptLocalKeyValue = editing && editing.receiptLocalKey || '';
       var receiptPendingValue = Boolean(editing && editing.receiptPending);
       var legacyReceiptData = editing && editing.receiptData || '';
       if (file) {
         try {
-          var oldReceipt = editing && editing.receiptPath ? { receiptPath: editing.receiptPath } : null;
           receiptPathValue = await storePrivateReceiptWithRetry(file, expenseId);
-          if (receiptLocalKeyValue) await deleteLocalReceipt(receiptLocalKeyValue);
           receiptLocalKeyValue = ''; receiptPendingValue = false;
           legacyReceiptData = '';
-          if (oldReceipt) removePrivateReceipt(oldReceipt).catch(function () {});
         } catch (receiptError) {
           if (!experienceIsCurrent(context)) return;
           try {
@@ -524,9 +811,17 @@
       var saved = { id: expenseId, amount: expenseInput.amount, currency: expenseInput.currency, category: expenseInput.category, date: expenseInput.date, note: expenseInput.note, receiptName: file ? file.name : editing && editing.receiptName || '', receiptType: file ? file.type : editing && editing.receiptType || '', receiptSize: file ? file.size : editing && editing.receiptSize || 0, receiptPath: receiptPathValue, receiptPending: receiptPendingValue };
       if (receiptLocalKeyValue) saved.receiptLocalKey = receiptLocalKeyValue;
       if (legacyReceiptData && !receiptPathValue) saved.receiptData = legacyReceiptData;
-      if (editing) state.expenses[state.expenses.indexOf(editing)] = saved; else state.expenses.push(saved);
-      writeJson(storageKey('expenses'), state.expenses); saveTripData(); form.reset(); delete form.dataset.editingId; form.date.value = localDateValue(); form.hidden = true; panel.querySelector('[data-receipt-preview]').hidden = true; status.textContent = ''; renderExpenseList(); renderBudgetColumns(); renderSummary(); toast(saved.receiptPending ? 'ההוצאה נשמרה. הקבלה שמורה במכשיר וממתינה לסנכרון פרטי.' : editing ? 'ההוצאה עודכנה.' : 'ההוצאה והקבלה נוספו לקטגוריית ' + saved.category + '.');
+      var replacesReceipt = editing && (editing.receiptLocalKey || editing.receiptPath) && (String(editing.receiptLocalKey || '') !== String(saved.receiptLocalKey || '') || String(editing.receiptPath || '') !== String(saved.receiptPath || ''));
+      if (replacesReceipt) pendingReceiptSave(context, editing, saved.receiptPath, false, saved.receiptLocalKey);
+      persistReceiptExpense(context, saved, editing);
+      if (replacesReceipt) completePendingReceiptSave(context, saved.receiptPath, saved.receiptLocalKey);
+      // A failed queue update is safe: reference checks retain committed files.
+      try { forgetReceiptCleanup(context, saved); } catch (cleanupError) {}
+      form.reset(); delete form.dataset.editingId; delete form.dataset.receiptDraftId; form.date.value = localDateValue(); form.hidden = true; panel.querySelector('[data-receipt-preview]').hidden = true; status.textContent = ''; renderExpenseList(); renderBudgetColumns(); renderSummary(); toast(saved.receiptPending ? 'ההוצאה נשמרה. הקבלה שמורה במכשיר וממתינה לסנכרון פרטי.' : editing ? 'ההוצאה עודכנה.' : 'ההוצאה והקבלה נוספו לקטגוריית ' + saved.category + '.');
+      } catch (saveError) {
+        if (experienceIsCurrent(context)) status.textContent = 'פרטי ההוצאה לא נשמרו. הטיוטה נשארה פתוחה; נסה שוב.';
       } finally {
+        receiptWork -= 1; flushReceiptCleanup();
         expenseSavePending = false; submitButton.disabled = false; form.removeAttribute('aria-busy');
       }
     };
@@ -895,7 +1190,7 @@
   async function openExpenseReceipt(id) { var context = experienceContext(); if (!experienceIsCurrent(context)) return; var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData && !expense.receiptLocalKey)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); if (!experienceIsCurrent(context)) return; if (!blob) throw new Error('RECEIPT_NOT_FOUND'); showReceiptPreview(expense, blob); } catch (error) { toast('לא הצלחנו לפתוח את הקבלה. ודא שהחשבון מחובר או נסה מהמכשיר שבו היא נשמרה.'); } }
   async function downloadExpenseReceipt(id) { var context = experienceContext(); if (!experienceIsCurrent(context)) return; var expense = expenseById(id); if (!expense || (!expense.receiptPath && !expense.receiptData && !expense.receiptLocalKey)) return toast('קובץ הקבלה אינו זמין.'); try { var blob = await receiptBlob(expense); if (!experienceIsCurrent(context)) return; if (!blob) throw new Error('RECEIPT_NOT_FOUND'); var url = URL.createObjectURL(blob); var link = document.createElement('a'); link.href = url; link.download = expense.receiptName || ('receipt-' + expense.id + (String(expense.receiptType).indexOf('pdf') >= 0 ? '.pdf' : '.jpg')); document.body.appendChild(link); link.click(); link.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 60000); } catch (error) { toast('לא הצלחנו להוריד את הקבלה. נסה מהמכשיר שבו היא נשמרה.'); } }
   function editExpense(id) { var expense = expenseById(id); var form = document.querySelector('[data-receipt-form]'); if (!expense || !form) return; form.dataset.editingId = String(expense.id); form.amount.value = expense.amount || ''; form.currency.value = expense.currency || state.localCurrency; form.category.value = expense.category || 'אחר'; form.date.value = expense.date || localDateValue(); form.note.value = expense.note || ''; form.hidden = false; var status = document.querySelector('[data-receipt-status]'); if (status) status.textContent = expense.receiptName ? 'הקבלה הקיימת תישמר, אלא אם תצלם או תעלה קובץ חדש.' : 'ערוך את הפרטים ושמור את ההוצאה.'; form.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  async function deleteExpense(id) { var context = experienceContext(); if (!experienceIsCurrent(context)) return; var expense = expenseById(id); if (!expense || !window.confirm('למחוק את ההוצאה ואת הקבלה המצורפת?')) return; try { await removePrivateReceipt(expense); } catch (error) { return toast('מחיקת הקבלה מהאחסון הפרטי נכשלה. נסה שוב.'); } if (!experienceIsCurrent(context)) return; state.expenses = state.expenses.filter(function (item) { return String(item.id) !== String(id); }); writeJson(storageKey('expenses'), state.expenses); saveTripData(); renderExpenseList(); renderBudgetColumns(); renderSummary(); toast('ההוצאה והקבלה נמחקו.'); }
+  async function deleteExpense(id) { var context = experienceContext(); if (!experienceIsCurrent(context)) return; var expense = expenseById(id); if (!expense || !window.confirm('למחוק את ההוצאה ואת הקבלה המצורפת?')) return; try { persistReceiptRemoval(context, expense); } catch (error) { return toast('מחיקת הקבלה מהאחסון הפרטי נכשלה. נסה שוב.'); } if (!experienceIsCurrent(context)) return; renderExpenseList(); renderBudgetColumns(); renderSummary(); toast('ההוצאה והקבלה נמחקו.'); }
 
   function createMemoriesSection() {
     var content = document.querySelector('.content'); if (!content || document.getElementById('memories')) return; var section = document.createElement('section'); section.id = 'memories'; section.className = 'section trip-memories';
@@ -1025,12 +1320,15 @@
         return Number(euros || 0) === 0 || value ? money(value, state.localCurrency) : money(euros, 'EUR');
       }
     };
-    state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : readExperienceJson('expenses', []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) ? state.trip.budgetCategories : readExperienceJson('budget-categories', null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readExperienceJson('memories', []); state.albumUrl = typeof state.trip.photoAlbumUrl === 'string' ? state.trip.photoAlbumUrl : readExperienceJson('album-url', ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readExperienceJson('currency-fee', 2.5));
+    state.expenses = localReceiptExpenses(Array.isArray(state.trip.expenses) ? state.trip.expenses : readExperienceJson('expenses', []), []); state.budgetCategories = Array.isArray(state.trip.budgetCategories) ? state.trip.budgetCategories : readExperienceJson('budget-categories', null) || defaultBudgetCategories(); state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : readExperienceJson('memories', []); state.albumUrl = typeof state.trip.photoAlbumUrl === 'string' ? state.trip.photoAlbumUrl : readExperienceJson('album-url', ''); state.fee = Number(state.trip.currencyFee != null ? state.trip.currencyFee : readExperienceJson('currency-fee', 2.5));
     injectCurrencyCards(); createBudgetTools(); createCurrencyConverter(); createMemoriesSection(); setupCollapsibleSections();
     loadRate();
     migrateInlineReceipts();
     syncPendingReceipts();
     window.addEventListener('online', syncPendingReceipts);
+    window.addEventListener('online', flushReceiptCleanup);
+    window.addEventListener('travelmate:trip-synced', flushReceiptCleanup);
+    flushReceiptCleanup();
   }
   function refreshFromCanonicalTrip(detail) {
     var tripIdValue = new URLSearchParams(location.search).get('id');
@@ -1049,7 +1347,7 @@
     state.localCurrency = countryCurrency(state.trip.country);
     state.budgetUnlimited = typeof state.trip.budgetUnlimited === 'boolean' ? state.trip.budgetUnlimited : false;
     state.secondaryCurrency = state.trip.secondaryCurrency || (state.localCurrency === 'ILS' ? 'EUR' : 'ILS');
-    state.expenses = Array.isArray(state.trip.expenses) ? state.trip.expenses : [];
+    state.expenses = localReceiptExpenses(Array.isArray(state.trip.expenses) ? state.trip.expenses : [], []);
     state.budgetCategories = Array.isArray(state.trip.budgetCategories) ? state.trip.budgetCategories : defaultBudgetCategories();
     state.memories = Array.isArray(state.trip.memories) ? state.trip.memories : [];
     state.albumUrl = typeof state.trip.photoAlbumUrl === 'string' ? state.trip.photoAlbumUrl : '';
@@ -1070,7 +1368,7 @@
     lifecycleGeneration += 1;
     state.trip = null; state.expenses = []; state.memories = []; state.budgetCategories = []; state.albumUrl = ''; state.budgetUnlimited = false;
     experienceAvailable = false;
-    document.querySelectorAll('[data-memory-form], [data-album-form], [data-receipt-form]').forEach(function (form) { form.reset(); });
+    document.querySelectorAll('[data-memory-form], [data-album-form], [data-receipt-form]').forEach(function (form) { form.reset(); if (form.dataset) { delete form.dataset.editingId; delete form.dataset.receiptDraftId; } });
     document.querySelectorAll('[data-memory-upload-status], [data-receipt-status], [data-memory-file-selection]').forEach(function (node) { node.textContent = ''; });
     document.querySelectorAll('[data-memory-form] button[type="submit"]').forEach(function (button) { button.disabled = false; });
     document.querySelectorAll('.receipt-preview-backdrop, .trip-experience-toast').forEach(function (node) { node.remove(); });
