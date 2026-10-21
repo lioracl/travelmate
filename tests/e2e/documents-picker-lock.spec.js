@@ -59,8 +59,8 @@ async function boot(page, { signedOut = false, view = 'documents', holdVault = f
   return evidence;
 }
 async function navigate(page, view) {
-  await page.locator('[data-shell-more]').click();
-  await page.locator('[data-shell-utilities] [data-view="' + view + '"]').click();
+  await page.locator('[data-mobile-menu]').click();
+  await page.locator('.sidebar nav [data-view="' + view + '"]').click();
   await expect(page.locator('body')).toHaveAttribute('data-trip-view', view);
   if (view === 'documents') await ready(page);
 }
