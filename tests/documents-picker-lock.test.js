@@ -124,5 +124,3 @@ test('empty selection cancels without changing passphrase or starting work', asy
 test('repeated selection while pending remains single-flight and preserves existing completion reset', async () => {
   const f = await fixture(), wait = f.hold('read'); await f.select(); await until(() => f.gate('read').entered); await f.select(); assert.equal(f.calls.reads, 1); wait.resolve(); await f.done(); assert.equal(f.calls.uploads.length, 1); assert.equal(f.input.files.length, 0);
 });
-
-

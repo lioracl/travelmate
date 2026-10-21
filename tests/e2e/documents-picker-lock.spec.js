@@ -131,4 +131,3 @@ for (const width of [390, 430]) test.describe(width + ' RTL Documents picker and
     await expect(page.locator('[data-document-id]')).toHaveCount(1);
   });
 });
-
