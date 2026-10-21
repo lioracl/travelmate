@@ -516,7 +516,7 @@
           uploadedCount += 1;
         }
         form.reset();
-        passphraseInput.value = passphrase;
+        // The passphrase is outside this form; preserve the user's current lock/key.
         setStatus(uploadedCount + ' קבצים הוצפנו ונשמרו בהצלחה בענן הפרטי.');
         await renderDocuments();
       } catch (error) {
