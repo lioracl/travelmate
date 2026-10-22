@@ -53,6 +53,8 @@ async function boot(page, {query='profile', user='A', theme='light', failTrips=f
 async function openProfile(page) {
   await expect(page.locator('body')).toHaveClass(/is-authenticated/);
   await expect.poll(()=>page.evaluate(()=>Boolean(TravelMateFeatures && TravelMateAppShell))).toBe(true);
+  // Cold startup may open Profile itself; decide on explicit entry only after it settles.
+  await expect.poll(()=>page.evaluate(()=>TravelMateAppShell.pilot.snapshot().pending)).toBe(false);
   const visible=await page.locator('[data-cloud-account-backdrop]').isVisible();
   if(!visible)await page.locator('.home-profile-launcher').click();
   await expect(page.locator('[data-v12-pilot="profile"]')).toBeVisible();

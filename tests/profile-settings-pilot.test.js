@@ -204,3 +204,66 @@ test('late complete-document startup works and disposal removes the deferred sta
  const y=setup('?v12pilot=profile',true,{readyState:'interactive',loaderPresent:false});
  y.pilot().dispose();y.installLoader();y.start();y.resolve(true);await settle();assert.equal(y.loads(),0);assert.equal(y.opened(),0);
 });
+
+// Execute the real E2E helper against the full AppShell fixture. The existing Home
+// async open handler is loaded verbatim; locator/transport/mutation delivery are
+// deterministic synthetic boundaries, not a claim of browser actionability.
+async function profileEntryHarness({aba=false,warm=false,stuck=false}={}) {
+ const x=setup();x.start();
+ const home=fs.readFileSync(path.join(__dirname,'../assets/home.js'),'utf8');
+ const handler=home.slice(home.indexOf('  async function openAccountModal(event) {'),home.indexOf('  function closeAccountModal() {'));
+ assert.match(handler,/await window\.TravelMateFeatures\.ensureAccount\(\)/);
+ const owner={window:x.window,document:x.document,accountPanel:x.panel,accountBackdrop:x.backdrop,lastAccountOpenButton:null,console};
+ vm.runInNewContext(handler,owner);
+ x.launcher.listeners.click.clear();
+ x.launcher.addEventListener('click',()=>{void owner.openAccountModal({currentTarget:x.launcher});});
+ if(aba){x.window.dispatch('travelmate:home-auth');x.window.dispatch('travelmate:home-auth');}
+ let completed=false,clicks=0,visibilityReads=0,pendingReads=0;
+ const finish=()=>{if(!completed&&!stuck){completed=true;x.resolve(true);}};
+ const deliver=async()=>{await settle();await settle();x.pilot().sync();};
+ if(warm){finish();await deliver();x.close.click();x.pilot().sync();assert.equal(x.backdrop.hidden,true);}
+ const page={
+  async evaluate(fn){
+   const value=vm.runInNewContext('('+fn.toString()+')()',{TravelMateFeatures:x.window.TravelMateFeatures,TravelMateAppShell:x.window.TravelMateAppShell});
+   if(fn.toString().includes('snapshot()')){pendingReads++;finish();}
+   await deliver();return value;
+  },
+  locator(selector){return {
+   selector,
+   async isVisible(){visibilityReads++;const visible=!x.backdrop.hidden;finish();await deliver();return visible;},
+   async click(){
+    clicks++;
+    if(!x.backdrop.hidden)throw new Error('PROFILE_OVERLAY_INTERCEPTS_LAUNCHER');
+    if(x.pilot().snapshot().pending)throw new Error('LAUNCHER_ACTIVATED_BEFORE_STARTUP_SETTLED');
+    await owner.openAccountModal({currentTarget:x.launcher});await deliver();
+   }
+  };}
+ };
+ function expect(value){return {
+  async toHaveClass(pattern){assert.match(x.body.className,pattern);},
+  async toBeVisible(){await deliver();assert.equal(value.selector,'[data-v12-pilot="profile"]');assert.equal(x.pilot().snapshot().active,'profile');}
+ };}
+ expect.poll=fn=>({async toBe(expected){for(let step=0;step<8;step++){if(await fn()===expected)return;await deliver();}throw new Error('SYNTHETIC_EXPECT_POLL_UNSATISFIED');}});
+ const register=()=>{};register.use=()=>{};register.describe={configure:()=>{}};
+ const file=path.join(process.env.TM_PILOT_HELPER_SOURCE||path.join(__dirname,'..'),'tests/e2e/profile-settings-pilot.spec.js');
+ const context={require:name=>name==='@playwright/test'?{test:register,expect}:require(name),__dirname:path.dirname(file),console};
+ vm.runInNewContext(fs.readFileSync(file,'utf8'),context,{filename:file});
+ return {run:()=>context.openProfile(page),state:()=>({clicks,visibilityReads,pendingReads,active:x.pilot().snapshot().active,epoch:x.pilot().snapshot().epoch})};
+}
+
+test('browser entry helper waits for automatic Profile before deciding whether to click the launcher',async()=>{
+ const h=await profileEntryHarness();await h.run();
+ assert.equal(h.state().clicks,0);assert.equal(h.state().active,'profile');assert.ok(h.state().pendingReads>0);
+});
+
+test('browser entry helper retains normal explicit entry after ABA cancellation and warm close',async()=>{
+ for(const options of [{aba:true},{warm:true}]){
+  const h=await profileEntryHarness(options);await h.run();assert.equal(h.state().clicks,1);assert.equal(h.state().active,'profile');
+  if(options.aba)assert.equal(h.state().epoch,2);
+ }
+});
+
+test('browser entry helper does not click through a loader that has not settled',async()=>{
+ const h=await profileEntryHarness({stuck:true});await assert.rejects(h.run());
+ assert.equal(h.state().clicks,0);assert.equal(h.state().visibilityReads,0);assert.equal(h.state().active,null);
+});
