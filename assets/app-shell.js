@@ -612,6 +612,10 @@
   document.addEventListener('keydown', releaseForOwnerClose, true);
   window.TravelMateAppShell.pilot = Object.freeze({sync:sync, dispose:dispose,
     snapshot:function () { return {enabled:!stopped, active:active && active.mode, epoch:epoch, pending:pending}; }});
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, {once:true});
+  // Deferred shell runs at interactive before the following app.js installs its loader.
+  if (document.readyState === 'loading' ||
+      (document.readyState === 'interactive' && !window.TravelMateFeatures)) {
+    document.addEventListener('DOMContentLoaded', start, {once:true});
+  }
   else start();
 })();

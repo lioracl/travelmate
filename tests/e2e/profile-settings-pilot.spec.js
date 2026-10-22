@@ -6,8 +6,13 @@ const root = path.resolve(__dirname, '../..');
 // Only Cloud/provider/auth boundary is synthetic. No live HTTP/SW/device claim.
 test.use({serviceWorkers:'block'});
 test.describe.configure({retries:0});
+async function capturePilot(page, info, name, options={}) {
+  const file=info.outputPath(name+'.png');
+  await page.screenshot({...options,path:file});
+  await info.attach(name,{path:file,contentType:'image/png'});
+}
 async function boot(page, {query='profile', user='A', theme='light', failTrips=false, holdAccount=false, long=false}={}) {
-  let release, held;
+  let release, held, accountRequestHeld=false;
   const gate = new Promise(resolve => release=resolve);
   const arrived = new Promise(resolve => held=resolve);
   await page.addInitScript(({user,theme,failTrips,long})=>{
@@ -35,7 +40,7 @@ async function boot(page, {query='profile', user='A', theme='light', failTrips=f
     const url=new URL(route.request().url());
     if(url.hostname!=='127.0.0.1')return route.abort();
     if(url.pathname.endsWith('/cloud-sync.js'))return route.fulfill({contentType:'text/javascript',body:'/* Synthetic Cloud boundary is installed before actual app boot. */'});
-    if(holdAccount && url.pathname.endsWith('/security-center.js')){held();await gate;}
+    if(holdAccount && url.pathname.endsWith('/security-center.js')){accountRequestHeld=true;held();await gate;}
     const rel=decodeURIComponent(url.pathname).replace(/^\//,'')||'index.html';
     const file=path.resolve(root,rel);
     if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return route.fulfill({status:404,body:''});
@@ -43,7 +48,7 @@ async function boot(page, {query='profile', user='A', theme='light', failTrips=f
     return route.fulfill({contentType:type,body:fs.readFileSync(file)});
   });
   await page.goto('/index.html'+(query?'?v12pilot='+query:''),{waitUntil:'domcontentloaded'});
-  return {release,arrived};
+  return {release,arrived,isAccountRequestHeld:()=>accountRequestHeld};
 }
 async function openProfile(page) {
   await expect(page.locator('body')).toHaveClass(/is-authenticated/);
@@ -59,7 +64,7 @@ for(const width of [360,390,430,768]) for(const theme of ['light','dark']) {
     await expect(panel.locator('[data-pilot-dock]')).toHaveCount(1);
     await expect(panel.locator('[data-smart-profile-name]')).toContainText('Synthetic A');
     await page.evaluate(()=>{pilotQA.edit=document.querySelector('[data-cloud-account] [data-profile-wizard-open]');});
-    await info.attach('profile-runtime',{body:await page.screenshot({fullPage:true}),contentType:'image/png'});
+    await capturePilot(page,info,'profile-runtime-'+width+'-'+theme,{fullPage:true});
     await panel.locator('.tm121-profile-cover [data-pilot-action="settings"]').click();
     const settings=page.locator('[data-v12-pilot="settings"]');
     await expect(settings).toBeVisible();
@@ -68,7 +73,7 @@ for(const width of [360,390,430,768]) for(const theme of ['light','dark']) {
     await expect(page.locator('[data-cloud-account-backdrop]')).toBeHidden();
     await settings.locator('[data-theme-choice="'+(theme==='light'?'dark':'light')+'"]').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme',theme==='light'?'dark':'light');
-    await info.attach('settings-runtime',{body:await page.screenshot({fullPage:true}),contentType:'image/png'});
+    await capturePilot(page,info,'settings-runtime-'+width+'-'+(theme==='light'?'dark':'light'),{fullPage:true});
     await settings.locator('[data-security-close]').click();
     await expect(page.locator('[data-security-dialog]')).toBeHidden();
     const mobileMenu=page.locator('[data-mobile-menu]');
@@ -95,7 +100,7 @@ for(const width of [360,390,430,768]) for(const theme of ['light','dark']) {
       expect(buttons.every(n=>n>=44)).toBe(true);
     }
     await checkBounds(panel);
-    await info.attach('profile-200-percent',{body:await page.screenshot(),contentType:'image/png'});
+    await capturePilot(page,info,'profile-200-percent-'+width+'-'+theme);
     await panel.locator('.tm121-profile-cover [data-pilot-action="settings"]').click();
     const settings=page.locator('[data-v12-pilot="settings"]');
     await expect(settings).toBeVisible();
@@ -103,7 +108,7 @@ for(const width of [360,390,430,768]) for(const theme of ['light','dark']) {
     const changedTheme=theme==='light'?'dark':'light';
     await settings.locator('[data-theme-choice="'+changedTheme+'"]').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme',changedTheme);
-    await info.attach('settings-200-percent',{body:await page.screenshot(),contentType:'image/png'});
+    await capturePilot(page,info,'settings-200-percent-'+width+'-'+changedTheme);
     await settings.locator('[data-security-close]').click();
     await expect(page.locator('[data-security-dialog]')).toBeHidden();
     await openProfile(page);
@@ -112,7 +117,7 @@ for(const width of [360,390,430,768]) for(const theme of ['light','dark']) {
     await expect(page.locator('[data-cloud-account-backdrop]')).toBeHidden();
     await expect(page.locator('.home-profile-launcher')).toBeFocused();
     expect(await page.evaluate(()=>pilotQA.forbidden)).toEqual([]);
-    await info.attach('long-text-closed',{body:await page.screenshot(),contentType:'image/png'});
+    await capturePilot(page,info,'long-text-closed-'+width+'-'+changedTheme);
   });
 }
 test('default-off keeps original owner and no pilot DOM',async({page})=>{
@@ -121,8 +126,15 @@ test('default-off keeps original owner and no pilot DOM',async({page})=>{
  expect(await page.evaluate(()=>TravelMateAppShell.pilot)).toBeUndefined();await expect(page.locator('[data-v12-pilot]')).toHaveCount(0);
 });
 test('account ABA during actual lazy module load does not replay a stale initial open',async({page})=>{
- const pending=await boot(page,{holdAccount:true});await pending.arrived;
- await page.evaluate(()=>{pilotQA.emit('B');pilotQA.emit('A');});
+ const pending=await boot(page,{holdAccount:true});
+ await expect.poll(pending.isAccountRequestHeld,{message:'actual security-center.js request must reach the held route'}).toBe(true);
+ expect(await page.evaluate(()=>TravelMateAppShell.pilot.snapshot().pending)).toBe(true);
+ const initialEpoch=await page.evaluate(()=>TravelMateAppShell.pilot.snapshot().epoch);
+ await page.evaluate(()=>pilotQA.emit('B'));
+ const switchedEpoch=await page.evaluate(()=>TravelMateAppShell.pilot.snapshot().epoch);
+ expect(switchedEpoch).toBeGreaterThan(initialEpoch);
+ await page.evaluate(()=>pilotQA.emit('A'));
+ expect(await page.evaluate(()=>TravelMateAppShell.pilot.snapshot().epoch)).toBeGreaterThan(switchedEpoch);
  pending.release();
  await expect.poll(()=>page.evaluate(()=>TravelMateAppShell.pilot.snapshot().pending)).toBe(false);
  await expect(page.locator('[data-cloud-account-backdrop]')).toBeHidden();
@@ -168,8 +180,14 @@ test('read-only preference storage preserves the actual saved value and reports 
  await page.locator('[data-v12-pilot="profile"] [data-pilot-action="settings"]').click();
  const settings=page.locator('[data-v12-pilot="settings"]');await expect(settings).toBeVisible();
  const before=await page.evaluate(()=>TravelMateSettings.getVoicePreferences().enabled);
- await page.evaluate(()=>{const original=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(String(key).startsWith('travelmate-settings:'))throw new DOMException('synthetic quota','QuotaExceededError');return original.call(this,key,value);};});
- await settings.locator('[data-voice-enabled]').setChecked(!before);
+ await expect(settings.locator('[data-voice-enabled]')).toBeChecked({checked:before});
+ await page.evaluate(()=>{pilotQA.preferenceWriteAttempts=[];const original=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(String(key).startsWith('travelmate-settings:')){pilotQA.preferenceWriteAttempts.push({key:String(key),value:JSON.parse(value)});throw new DOMException('synthetic quota','QuotaExceededError');}return original.call(this,key,value);};});
+ // The existing owner rolls the checkbox back synchronously on quota failure.
+ await settings.locator('[data-voice-enabled]').click();
+ const attempts=await page.evaluate(()=>pilotQA.preferenceWriteAttempts);
+ expect(attempts).toHaveLength(1);
+ expect(attempts[0].key).toBe('travelmate-settings:A:mate-voice');
+ expect(attempts[0].value.enabled).toBe(!before);
  await expect(settings.locator('[data-voice-enabled]')).toBeChecked({checked:before});
  expect(await page.evaluate(()=>TravelMateSettings.getVoicePreferences().enabled)).toBe(before);
  await expect(settings.locator('[data-voice-settings-status]')).toContainText('ההעדפה לא נשמרה');

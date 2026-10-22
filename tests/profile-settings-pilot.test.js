@@ -30,9 +30,9 @@ class Node {
   dispatch(k,event={}){for(const fn of [...(this.listeners[k]||[])])fn({type:k,target:this,...event});}
   click(){this.dispatch('click');} focus(){const doc=this.ownerDocument;if(!doc||!this.getClientRects().length)return;for(let n=this;n;n=n.parentNode)if(n.inert)return;doc.activeElement=this;this.focusCalls=(this.focusCalls||0)+1;}
 }
-function setup(query='?v12pilot=profile',home=true) {
+function setup(query='?v12pilot=profile',home=true,{readyState='loading',loaderPresent=true}={}) {
   const html=new Node('html'),body=new Node('body',{class:home?'home-page is-authenticated':''});html.appendChild(body);
-  const document=new Node('document');document.body=body;document.documentElement=html;document.readyState='loading';html.document=document;document.activeElement=body;
+  const document=new Node('document');document.body=body;document.documentElement=html;document.readyState=readyState;html.document=document;document.activeElement=body;
   document.querySelector=s=>html.querySelector(s);document.querySelectorAll=s=>html.querySelectorAll(s);document.getElementById=id=>html.querySelector('#'+id);
   document.createElement=t=>new Node(t);document.createComment=()=>new Node('#comment');
   function add(p,t,a={}){const n=new Node(t,a);p.appendChild(n);return n;}
@@ -53,12 +53,12 @@ function setup(query='?v12pilot=profile',home=true) {
   let openCalls=0, settingsCalls=0, resolve; const loading=new Promise(r=>resolve=r);
   launcher.addEventListener('click',()=>{openCalls++;backdrop.hidden=false;}); close.addEventListener('click',()=>{backdrop.hidden=true;});
   settingsLauncher.addEventListener('click',()=>{settingsCalls++;sb.hidden=false;});sc.addEventListener('click',()=>{sb.hidden=true;});
-  const window=new Node('window');window.TravelMateFeatures={ensureAccount:()=>loading};window.TravelMateCloud={getCachedTrips:()=>[]};window.setTimeout=()=>0;window.addEventListener=window.addEventListener.bind(window);
+  const window=new Node('window');let loads=0;const loader={ensureAccount:()=>{loads++;return loading;}};if(loaderPresent)window.TravelMateFeatures=loader;window.TravelMateCloud={getCachedTrips:()=>[]};window.setTimeout=()=>0;window.addEventListener=window.addEventListener.bind(window);
   const observers=[];class Observer{constructor(fn){this.fn=fn;observers.push(this);}observe(){}disconnect(){this.disconnected=true;}}
   window.MutationObserver=Observer;
   const context={window,document,location:{search:query,href:'https://synthetic.invalid/index.html'+query},URL,URLSearchParams,MutationObserver:Observer,console,setTimeout:()=>0,innerHeight:900,getComputedStyle:n=>({visibility:n.visibility||'visible',getPropertyValue:()=>''})};
   vm.runInNewContext(source,context);
-  return {window,document,body,host,panel,backdrop,main,launcher,close,sb,sp,sc,settingsLauncher,input,edit,observers,resolve,opened:()=>openCalls,settingsOpened:()=>settingsCalls,pilot:()=>window.TravelMateAppShell.pilot,start:()=>document.dispatch('DOMContentLoaded')};
+  return {window,document,body,host,panel,backdrop,main,launcher,close,sb,sp,sc,settingsLauncher,input,edit,observers,resolve,loads:()=>loads,installLoader:()=>{window.TravelMateFeatures=loader;},opened:()=>openCalls,settingsOpened:()=>settingsCalls,pilot:()=>window.TravelMateAppShell.pilot,start:()=>document.dispatch('DOMContentLoaded')};
 }
 const settle=async()=>{await Promise.resolve();await Promise.resolve();await Promise.resolve();};
 test('default-off and trip context do not install pilot or load account',()=>{for(const [q,h] of [['',true],['?v12pilot=unknown',true],['?v12pilot=profile',false]]){const x=setup(q,h);assert.equal(x.pilot(),undefined);assert.equal(x.body.querySelectorAll('[data-v12-pilot]').length,0);}});
@@ -178,4 +178,29 @@ test('shared shell source remains free of new persistence, history writes, provi
  const pilot=source.slice(source.indexOf('/* V12.1 opt-in'));
  assert.doesNotMatch(pilot,/localStorage\.setItem|sessionStorage\.setItem|history\.(pushState|replaceState)|getUserMedia|geolocation|\.upload\(|\.speak\(|\.cloneNode\(|innerHTML/);
  assert.match(pilot,/getCachedTrips/);assert.match(pilot,/ticket !== epoch/);assert.match(pilot,/removeEventListener/);
+});
+
+test('deferred shell waits for the subsequent app loader before cold account activation',async()=>{
+ const index=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+ assert.match(index,/<script src="assets\/app-shell\.js[^"]*" defer><\/script><script src="assets\/app\.js[^"]*" defer>/);
+ const x=setup('?v12pilot=profile',true,{readyState:'interactive',loaderPresent:false});
+ await settle();assert.equal(x.loads(),0);assert.equal(x.opened(),0);
+ x.installLoader();x.start();assert.equal(x.loads(),1,'DOMContentLoaded must start the now-present actual loader');
+ assert.equal(x.pilot().snapshot().pending,true);assert.equal(x.opened(),0);
+ x.resolve(true);await settle();assert.equal(x.opened(),1);assert.equal(x.pilot().snapshot().active,'profile');
+});
+
+test('deferred startup retains account ABA fencing while its loader is pending',async()=>{
+ const x=setup('?v12pilot=profile',true,{readyState:'interactive',loaderPresent:false});
+ await settle();x.installLoader();x.start();assert.equal(x.loads(),1);
+ x.window.dispatch('travelmate:home-auth');x.window.dispatch('travelmate:home-auth');
+ x.resolve(true);await settle();assert.equal(x.pilot().snapshot().pending,false);assert.equal(x.opened(),0);
+ assert.equal(x.pilot().snapshot().epoch,2);x.launcher.click();x.pilot().sync();assert.equal(x.pilot().snapshot().active,'profile');
+});
+
+test('late complete-document startup works and disposal removes the deferred startup listener',async()=>{
+ const x=setup('?v12pilot=settings',true,{readyState:'complete'});
+ assert.equal(x.loads(),1);x.resolve(true);await settle();assert.equal(x.settingsOpened(),1);
+ const y=setup('?v12pilot=profile',true,{readyState:'interactive',loaderPresent:false});
+ y.pilot().dispose();y.installLoader();y.start();y.resolve(true);await settle();assert.equal(y.loads(),0);assert.equal(y.opened(),0);
 });
