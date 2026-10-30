@@ -1,0 +1,20 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),cp=require('node:child_process');
+const {plan}=require('../publisher.cjs');
+test('real publisher CLI refuses signing with no protected private key, without producing output',t=>{
+ const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'qa-cli-no-secret-'));t.after(()=>fs.rmSync(tmp,{recursive:true,force:true}));
+ const repo=path.join(tmp,'repo'),source=path.join(repo,'qa-fixtures','approved'),scratch=path.join(tmp,'scratch');
+ fs.mkdirSync(source,{recursive:true});fs.mkdirSync(scratch);fs.mkdirSync(path.join(repo,'.git'));
+ fs.writeFileSync(path.join(source,'smoke.txt'),'SYNTHETIC ONLY');
+ const ctx={eventName:'workflow_dispatch',repository:'lioracl/travelmate',ref:'refs/heads/main',sha:'a'.repeat(40),workflowRef:'lioracl/travelmate/.github/workflows/qa-fixture-signing.yml@refs/heads/main',runId:'123456789',runAttempt:'1',runnerEnvironment:'github-hosted',approvedCommit:'a'.repeat(40),approvedArtifactSha:'f'.repeat(64),qaRunId:'INFRA-STAGE04-CLI-SAFE123'};
+ ctx.approvedArtifactSha=plan({ctx,sourceRoot:source,repoRoot:repo,scratchRoot:scratch,expectedDigestRequired:false}).sha256;
+ const env={...process.env,GITHUB_EVENT_NAME:ctx.eventName,GITHUB_REPOSITORY:ctx.repository,GITHUB_REF:ctx.ref,GITHUB_SHA:ctx.sha,GITHUB_WORKFLOW_REF:ctx.workflowRef,GITHUB_RUN_ID:ctx.runId,GITHUB_RUN_ATTEMPT:ctx.runAttempt,RUNNER_ENVIRONMENT:ctx.runnerEnvironment,QA_APPROVED_COMMIT:ctx.approvedCommit,QA_APPROVED_ARTIFACT_SHA256:ctx.approvedArtifactSha,QA_RUN_ID:ctx.qaRunId,QA_FIXTURE_PUBLISHER_SPKI_SHA256:'1'.repeat(64)};
+ delete env.QA_FIXTURE_SIGNING_PKCS8_B64;
+ const outputRoot=path.join(scratch,'qa-signed');
+ const args=[path.resolve(__dirname,'../publisher.cjs'),'sign','--repo-root',repo,'--source',source,'--scratch',scratch,'--output',outputRoot];
+ const child=cp.spawnSync(process.execPath,args,{env,encoding:'utf8',timeout:5000});
+ assert.equal(child.status,2);
+ assert.match(child.stderr,/QA_FIXTURE_FAIL SIGNING_KEY_NOT_PROVISIONED/);
+ assert.doesNotMatch(child.stdout,/SIGN_PASS/);
+ assert.equal(fs.existsSync(outputRoot),false);
+});

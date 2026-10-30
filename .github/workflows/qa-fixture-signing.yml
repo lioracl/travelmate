@@ -1,0 +1,123 @@
+# NOT DEPLOYED. Proposed separate, manually approved fixture-signing workflow.
+# The repository MUST protect main and the qa-fixture-signing environment with
+# required reviewers, no self-approval / no bypass, branch restriction, and an
+# independently registered publisher SPKI hash before this workflow can be used.
+name: TravelMate QA Fixture Signing (candidate)
+
+on:
+  workflow_dispatch:
+    inputs:
+      approved_commit_sha:
+        description: "Approved exact 40-char main commit SHA (independent review)"
+        type: string
+        required: true
+      approved_artifact_sha256:
+        description: "Approved 64-char canonical fixture-tree/commit digest"
+        type: string
+        required: true
+      qa_run_id:
+        description: "Immutable task run ID, INFRA-STAGE04-* (reviewed)"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: travelmate-qa-signing
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'lioracl/travelmate' &&
+      github.ref == 'refs/heads/main' &&
+      github.sha == inputs.approved_commit_sha
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    env:
+      QA_APPROVED_COMMIT: ${{ inputs.approved_commit_sha }}
+      QA_APPROVED_ARTIFACT_SHA256: ${{ inputs.approved_artifact_sha256 }}
+      QA_RUN_ID: ${{ inputs.qa_run_id }}
+    steps:
+      - name: Fetch exactly approved repository commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Pin Node runtime for cryptographic publisher
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Verify pinned source and policy before requesting protected approval
+        run: |
+          test "$(git rev-parse HEAD)" = "$QA_APPROVED_COMMIT"
+          node --check tools/qa-fixture-provenance/publisher.cjs
+          node --test tools/qa-fixture-provenance/tests/*.test.cjs
+          node tools/qa-fixture-provenance/publisher.cjs plan \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --source "$GITHUB_WORKSPACE/qa-fixtures/approved" \
+            --scratch "$RUNNER_TEMP"
+
+  sign:
+    name: Sign only after QA environment approval
+    needs: preflight
+    if: >-
+      needs.preflight.result == 'success' &&
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'lioracl/travelmate' &&
+      github.ref == 'refs/heads/main' &&
+      github.sha == inputs.approved_commit_sha
+    # Enforce required reviewers / branch limits through the real Environment
+    # configuration; a YAML environment name BY ITSELF proves no protection.
+    environment:
+      name: qa-fixture-signing
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: read
+    env:
+      QA_APPROVED_COMMIT: ${{ inputs.approved_commit_sha }}
+      QA_APPROVED_ARTIFACT_SHA256: ${{ inputs.approved_artifact_sha256 }}
+      QA_RUN_ID: ${{ inputs.qa_run_id }}
+      # Non-secret, independently pinned/public: must match the protected QA
+      # Runner release and reviewed publisher key fingerprint out-of-band.
+      QA_FIXTURE_PUBLISHER_SPKI_SHA256: ${{ vars.QA_FIXTURE_PUBLISHER_SPKI_SHA256 }}
+    steps:
+      - name: Fetch same approved source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Pin Node runtime for cryptographic publisher
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Revalidate exact commit and approved digest after approval
+        run: |
+          test "$(git rev-parse HEAD)" = "$QA_APPROVED_COMMIT"
+          node tools/qa-fixture-provenance/publisher.cjs plan \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --source "$GITHUB_WORKSPACE/qa-fixtures/approved" \
+            --scratch "$RUNNER_TEMP"
+      - name: Sign exact reviewed source bytes (in-memory private key only)
+        env:
+          # Only this step receives the protected environment secret.
+          QA_FIXTURE_SIGNING_PKCS8_B64: ${{ secrets.QA_FIXTURE_SIGNING_PKCS8_B64 }}
+        run: |
+          node tools/qa-fixture-provenance/publisher.cjs sign \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --source "$GITHUB_WORKSPACE/qa-fixtures/approved" \
+            --scratch "$RUNNER_TEMP" \
+            --output "$RUNNER_TEMP/qa-signed"
+      - name: Upload signed fixtures and public proof only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: qa-fixture-signed-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/qa-signed/
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 1
