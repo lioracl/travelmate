@@ -1,0 +1,1 @@
+TravelMate synthetic approved QA fixture — example only.

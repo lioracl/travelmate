@@ -1,0 +1,37 @@
+# Unprivileged pull request checks ONLY. Not a signing or deployment workflow.
+name: TravelMate QA Signing Code Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: travelmate-qa-signing-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  stage04-qa-check:
+    name: Verify signing code without secrets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout pull request merge commit without credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Use reviewed Node 22 release
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.16.0'
+      - name: Validate signing source without loading signing keys
+        run: |
+          node --check tools/qa-fixture-provenance/publisher.cjs
+          node --check tools/qa-fixture-provenance/fixture-trust.cjs
+      - name: Test signing code using synthetic keys only
+        run: node --test tools/qa-fixture-provenance/tests/*.test.cjs
